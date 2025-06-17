@@ -1,0 +1,79 @@
+import { useState, useEffect } from 'react';
+import { phantomWallet } from '@/lib/phantom';
+
+export function useWallet() {
+  const [isConnected, setIsConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [walletAddress, setWalletAddress] = useState<string>('');
+  const [samuBalance, setSamuBalance] = useState(0);
+  const [nftCount, setNftCount] = useState(0);
+
+  useEffect(() => {
+    // Check if wallet was previously connected
+    const checkConnection = async () => {
+      if (phantomWallet.connected && phantomWallet.publicKey) {
+        setIsConnected(true);
+        setWalletAddress(formatAddress(phantomWallet.publicKey));
+        await updateBalances();
+      }
+    };
+    
+    checkConnection();
+  }, []);
+
+  const connect = async () => {
+    try {
+      setIsConnecting(true);
+      const wallet = await phantomWallet.connect();
+      
+      setIsConnected(true);
+      setWalletAddress(formatAddress(wallet.publicKey));
+      await updateBalances();
+    } catch (error) {
+      console.error('Failed to connect wallet:', error);
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  const disconnect = async () => {
+    try {
+      await phantomWallet.disconnect();
+      setIsConnected(false);
+      setWalletAddress('');
+      setSamuBalance(0);
+      setNftCount(0);
+    } catch (error) {
+      console.error('Failed to disconnect wallet:', error);
+    }
+  };
+
+  const updateBalances = async () => {
+    try {
+      const [balance, nfts] = await Promise.all([
+        phantomWallet.getSamuBalance(),
+        phantomWallet.getNftCount()
+      ]);
+      
+      setSamuBalance(balance);
+      setNftCount(nfts);
+    } catch (error) {
+      console.error('Failed to fetch balances:', error);
+    }
+  };
+
+  const formatAddress = (address: string): string => {
+    return `${address.slice(0, 4)}...${address.slice(-4)}`;
+  };
+
+  return {
+    isConnected,
+    isConnecting,
+    walletAddress,
+    samuBalance,
+    nftCount,
+    connect,
+    disconnect,
+    updateBalances
+  };
+}
