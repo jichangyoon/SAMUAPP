@@ -100,7 +100,7 @@ export default function Home() {
                       size="sm"
                       variant="outline"
                       className="text-xs"
-                      disabled={balanceStatus === 'loading'}
+                      disabled={balanceStatus === 'loading' || balanceStatus === 'idle'}
                     >
                       다시 시도
                     </Button>

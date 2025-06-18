@@ -78,14 +78,18 @@ class RealPhantomWallet {
     const methods = [
       // Method 1: Try Helius with proper endpoint
       async () => {
-        const response = await fetch(`https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`, {
+        const response = await fetch(`https://mainnet.helius-rpc.com/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             jsonrpc: '2.0',
             id: 1,
-            method: 'getParsedTokenAccountsByOwner',
-            params: [this._publicKey, { mint: SAMU_MINT }, { encoding: 'jsonParsed' }]
+            method: 'getTokenAccountsByOwner',
+            params: [
+              this._publicKey, 
+              { mint: SAMU_MINT }, 
+              { encoding: 'base64' }
+            ]
           })
         });
         return await response.json();
@@ -143,6 +147,7 @@ class RealPhantomWallet {
         }
         
         if (data.result?.value?.length > 0) {
+          // All methods should return parsed token account data
           const tokenAmount = data.result.value[0].account.data.parsed.info.tokenAmount;
           const balance = parseFloat(tokenAmount.uiAmount || '0');
           console.log(`SAMU balance found via method ${i + 1}:`, balance);
