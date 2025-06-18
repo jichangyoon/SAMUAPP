@@ -73,11 +73,11 @@ class RealPhantomWallet {
       console.log('Fetching SAMU balance for:', this._publicKey);
       console.log('SAMU mint address:', SAMU_MINT);
       
-      // Use alternative RPC endpoint to avoid rate limits
+      // Use authenticated RPC endpoints for reliable token balance queries
       const rpcEndpoints = [
-        'https://rpc.ankr.com/solana',
-        'https://solana-mainnet.g.alchemy.com/v2/demo',
-        'https://api.mainnet-beta.solana.com'
+        `https://mainnet.helius-rpc.com/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`,
+        'https://rpc.hellomoon.io',
+        'https://solana.public-rpc.com'
       ];
       
       let response;

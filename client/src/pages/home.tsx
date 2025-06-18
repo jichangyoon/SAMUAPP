@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { WalletConnect } from "@/components/wallet-connect";
 import { ContestHeader } from "@/components/contest-header";
@@ -19,6 +19,13 @@ export default function Home() {
   
   // Debug log
   console.log('Wallet state:', { isConnected, walletAddress, samuBalance });
+  
+  // Auto-refresh balance when wallet connects
+  useEffect(() => {
+    if (isConnected && samuBalance === 0) {
+      updateBalances();
+    }
+  }, [isConnected, updateBalances]);
   const [sortBy, setSortBy] = useState("votes");
   const [currentTab, setCurrentTab] = useState("contest");
 
