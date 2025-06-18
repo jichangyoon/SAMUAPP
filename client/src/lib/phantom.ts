@@ -77,16 +77,16 @@ class RealPhantomWallet {
     
     const endpoints = [
       {
+        url: `https://mainnet.helius-rpc.com/?api-key=${apiKey}`,
+        name: 'Helius Enhanced'
+      },
+      {
         url: `https://rpc.helius.xyz/?api-key=${apiKey}`,
-        name: 'Helius RPC'
+        name: 'Helius Standard'
       },
       {
         url: 'https://api.mainnet-beta.solana.com',
         name: 'Solana Official'
-      },
-      {
-        url: 'https://solana-mainnet.phantom.tech',
-        name: 'Phantom RPC'
       }
     ];
 
