@@ -10,82 +10,81 @@ export function useWallet() {
 
 
   useEffect(() => {
-    // Wait for phantom to be fully loaded
-    const checkConnectionWithDelay = () => {
-      setTimeout(async () => {
-        const phantom = (window as any).phantom?.solana;
-        
-        if (phantom && phantom.isConnected && phantom.publicKey) {
+    let mounted = true;
+    
+    const initializeWallet = async () => {
+      const phantom = (window as any).phantom?.solana;
+      
+      if (!phantom) {
+        console.log('Phantom wallet not found');
+        return;
+      }
+      
+      try {
+        // Check if already connected
+        if (phantom.isConnected && phantom.publicKey) {
           const publicKeyString = phantom.publicKey.toBase58();
-          setIsConnected(true);
-          setWalletAddress(formatAddress(publicKeyString));
-          await updateBalances();
-        } else if (phantomWallet.connected && phantomWallet.publicKey) {
-          setIsConnected(true);
-          setWalletAddress(formatAddress(phantomWallet.publicKey));
-          await updateBalances();
+          if (mounted) {
+            setIsConnected(true);
+            setWalletAddress(formatAddress(publicKeyString));
+            await updateBalances();
+          }
         } else {
           // Try silent auto-connect for trusted connections
-          try {
-            if (phantom) {
-              const response = await phantom.connect({ onlyIfTrusted: true });
-              if (response.publicKey) {
-                const publicKeyString = response.publicKey.toBase58();
-                setIsConnected(true);
-                setWalletAddress(formatAddress(publicKeyString));
-                await updateBalances();
-              }
-            }
-          } catch (error) {
-            // Silent fail for auto-connect
+          const response = await phantom.connect({ onlyIfTrusted: true });
+          if (response.publicKey && mounted) {
+            const publicKeyString = response.publicKey.toBase58();
+            setIsConnected(true);
+            setWalletAddress(formatAddress(publicKeyString));
+            await updateBalances();
           }
         }
-      }, 500); // Give phantom time to initialize
+      } catch (error) {
+        // Silent fail for auto-connect
+        console.log('Auto-connect failed:', error);
+      }
     };
     
-    checkConnectionWithDelay();
+    // Wait for phantom to be ready
+    setTimeout(initializeWallet, 1000);
     
-    // Also check when phantom becomes available
-    const phantomLoadChecker = setInterval(() => {
-      const phantom = (window as any).phantom?.solana;
-      if (phantom && phantom.isConnected && phantom.publicKey && !isConnected) {
-        const publicKeyString = phantom.publicKey.toBase58();
-        setIsConnected(true);
-        setWalletAddress(formatAddress(publicKeyString));
-        updateBalances();
-        clearInterval(phantomLoadChecker);
-      }
-    }, 1000);
-    
-    // Clear interval after 10 seconds
-    setTimeout(() => clearInterval(phantomLoadChecker), 10000);
-    
-    return () => clearInterval(phantomLoadChecker);
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   useEffect(() => {
-    // Listen for account changes
-    if (typeof window !== 'undefined' && (window as any).phantom?.solana) {
-      const phantom = (window as any).phantom.solana;
-      
-      phantom.on('accountChanged', (publicKey: any) => {
-        if (publicKey) {
-          setWalletAddress(formatAddress(publicKey.toBase58()));
-          updateBalances();
-        } else {
-          // Wallet disconnected
-          setIsConnected(false);
-          setWalletAddress('');
-          setSamuBalance(0);
-        }
-      });
-
-      phantom.on('disconnect', () => {
+    const phantom = (window as any).phantom?.solana;
+    if (!phantom) return;
+    
+    const handleAccountChange = (publicKey: any) => {
+      if (publicKey) {
+        const publicKeyString = publicKey.toBase58();
+        setIsConnected(true);
+        setWalletAddress(formatAddress(publicKeyString));
+        updateBalances();
+      } else {
         setIsConnected(false);
         setWalletAddress('');
         setSamuBalance(0);
-      });
-    }
+        setBalanceStatus('idle');
+      }
+    };
+
+    const handleDisconnect = () => {
+      setIsConnected(false);
+      setWalletAddress('');
+      setSamuBalance(0);
+      setBalanceStatus('idle');
+    };
+
+    phantom.on('accountChanged', handleAccountChange);
+    phantom.on('disconnect', handleDisconnect);
+    
+    return () => {
+      phantom.off('accountChanged', handleAccountChange);
+      phantom.off('disconnect', handleDisconnect);
+    };
   }, []);
 
   const connect = async () => {

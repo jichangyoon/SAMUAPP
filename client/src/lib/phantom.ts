@@ -66,28 +66,27 @@ class RealPhantomWallet {
 
   get connected(): boolean {
     // Always check the actual phantom connection state
-    if (this._phantom && this._phantom.isConnected) {
+    if (this._phantom && this._phantom.isConnected && this._phantom.publicKey) {
       this._connected = true;
-      if (this._phantom.publicKey && !this._publicKey) {
-        this._publicKey = this._phantom.publicKey.toBase58();
-      }
+      this._publicKey = this._phantom.publicKey.toBase58();
       return true;
     }
-    return this._connected;
+    return false;
   }
 
   get publicKey(): string | null {
     // Always get the current public key from phantom if available
     if (this._phantom && this._phantom.publicKey) {
-      this._publicKey = this._phantom.publicKey.toBase58();
+      return this._phantom.publicKey.toBase58();
     }
-    return this._publicKey;
+    return null;
   }
 
   async getSamuBalance(): Promise<number> {
-    if (!this._connected || !this._publicKey) return 0;
+    const currentPublicKey = this.publicKey;
+    if (!this.connected || !currentPublicKey) return 0;
 
-    console.log('Fetching SAMU balance for:', this._publicKey);
+    console.log('Fetching SAMU balance for:', currentPublicKey);
     console.log('SAMU mint address:', SAMU_MINT);
     
     const apiKey = import.meta.env.VITE_HELIUS_API_KEY;
@@ -139,7 +138,7 @@ class RealPhantomWallet {
               id: 1,
               method: 'getTokenAccountsByOwner',
               params: [
-                this._publicKey, 
+                currentPublicKey, 
                 { mint: SAMU_MINT }, 
                 { encoding: 'jsonParsed' }
               ]
