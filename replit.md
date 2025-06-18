@@ -105,6 +105,8 @@ Changelog:
 - June 18, 2025. Implemented comprehensive mobile Phantom wallet integration with deeplink support
 - June 18, 2025. Added Pump.fun-style mobile wallet connection flow for Capacitor-wrapped app
 - June 18, 2025. Completed mobile-first wallet connection system supporting both in-app and deeplink flows
+- June 18, 2025. Created downloadable Android project package (samu-android-project.tar.gz) for local APK building
+- June 18, 2025. Fixed Tailwind CSS path configuration issue that temporarily broke UI styling
 ```
 
 ## User Preferences
