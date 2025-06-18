@@ -24,6 +24,8 @@ The application follows a modern full-stack architecture with clear separation o
 - **Forms**: React Hook Form with Zod validation
 - **State Management**: TanStack Query for API calls and caching
 - **Mobile-First**: Responsive design optimized for mobile devices
+- **Navigation**: Dual-tab system separating Meme Contest and Goods Shop functionality
+- **Commerce Integration**: Shopping cart system with SAMU token-based payments
 
 ### Backend Architecture
 - **API Structure**: RESTful endpoints for memes and voting
@@ -44,6 +46,8 @@ The application follows a modern full-stack architecture with clear separation o
 3. **Voting System**: Token holders vote with power based on SAMU holdings + NFT multipliers
 4. **Real-time Updates**: TanStack Query manages data fetching and cache invalidation
 5. **Image Storage**: Base64 encoded images stored directly in database (MVP approach)
+6. **Goods Shop**: Hall of Fame memes converted to purchasable merchandise with SAMU token payments
+7. **Web2 Integration**: Physical goods fulfillment pipeline for real-world merchandise delivery
 
 ## External Dependencies
 
@@ -84,6 +88,10 @@ The application is configured for deployment on Replit with the following setup:
 Changelog:
 - June 17, 2025. Initial setup
 - June 17, 2025. Added comprehensive Leaderboard with current rankings, top creators, and Hall of Fame
+- June 18, 2025. Added Goods Shop feature with SAMU token-based purchasing system
+- June 18, 2025. Implemented Hall of Fame meme-to-merchandise pipeline
+- June 18, 2025. Updated navigation to separate Meme Contest and Goods Shop sections
+- June 18, 2025. Converted all UI text to English for international accessibility
 ```
 
 ## User Preferences

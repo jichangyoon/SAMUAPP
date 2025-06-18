@@ -7,12 +7,12 @@ import { useWallet } from "@/hooks/use-wallet";
 import { useToast } from "@/hooks/use-toast";
 import { ShoppingCart, Star, Trophy, Shirt, Coffee, Sticker } from "lucide-react";
 
-// 명예의 전당 밈을 기반으로 한 굿즈 데이터
+// Hall of Fame meme-based goods data
 const goodsData = [
   {
     id: 1,
-    name: "SAMU TO MARS 티셔츠",
-    description: "명예의 전당 1위 밈을 새긴 프리미엄 코튼 티셔츠",
+    name: "SAMU TO MARS T-Shirt",
+    description: "Premium cotton t-shirt featuring the #1 Hall of Fame meme",
     price: 2500,
     currency: "SAMU",
     category: "clothing",
@@ -24,8 +24,8 @@ const goodsData = [
   },
   {
     id: 2,
-    name: "PACK LEADER 머그컵",
-    description: "늑대 무리의 리더답게 아침을 시작하세요",
+    name: "PACK LEADER Mug",
+    description: "Start your morning like the alpha of the pack",
     price: 1200,
     currency: "SAMU",
     category: "lifestyle",
@@ -37,8 +37,8 @@ const goodsData = [
   },
   {
     id: 3,
-    name: "DIAMOND HODLER 스티커팩",
-    description: "다이아몬드 손을 증명하는 홀로그램 스티커 5장 세트",
+    name: "DIAMOND HODLER Sticker Pack",
+    description: "Hologram sticker set (5 pieces) - prove your diamond hands",
     price: 800,
     currency: "SAMU",
     category: "accessories",
@@ -50,13 +50,13 @@ const goodsData = [
   },
   {
     id: 4,
-    name: "SAMU 늑대 후드티",
-    description: "프리미엄 후드티 - SAMU 로고와 늑대 그래픽",
+    name: "SAMU Wolf Hoodie",
+    description: "Premium hoodie featuring SAMU logo and wolf graphics",
     price: 4500,
     currency: "SAMU",
     category: "clothing",
     image: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%232C3E50'/%3E%3Crect x='60' y='120' width='280' height='200' rx='30' fill='%23F7DC6F'/%3E%3Ccircle cx='200' cy='180' r='40' fill='%232C3E50'/%3E%3Cpath d='M160 160 L180 140 L200 160 L220 140 L240 160 L220 180 L180 180 Z' fill='%23F7DC6F'/%3E%3Ctext x='200' y='280' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold' fill='%232C3E50'%3ESAMU WOLF HOODIE%3C/text%3E%3C/svg%3E",
-    originalMeme: "커뮤니티 디자인",
+    originalMeme: "Community Design",
     originalAuthor: "SAMU Team",
     limited: false,
     stock: 300
