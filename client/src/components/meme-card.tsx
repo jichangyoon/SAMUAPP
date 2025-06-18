@@ -97,7 +97,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-2">
               <div className="w-6 h-6 bg-[hsl(50,85%,75%)] rounded-full flex items-center justify-center">
-                <span className="text-xs font-bold text-[hsl(201,30%,25%)]">
+                <span className="text-xs font-bold text-black">
                   {meme.authorUsername.charAt(0).toUpperCase()}
                 </span>
               </div>
@@ -120,7 +120,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
             <Button
               onClick={() => setShowVoteDialog(true)}
               disabled={!canVote}
-              className="flex-1 bg-[hsl(50,85%,75%)] hover:bg-[hsl(50,75%,65%)] text-[hsl(201,30%,25%)] font-semibold"
+              className="flex-1 bg-[hsl(50,85%,75%)] hover:bg-[hsl(50,75%,65%)] text-black font-semibold"
             >
               <ArrowUp className="h-4 w-4 mr-2" />
               Vote

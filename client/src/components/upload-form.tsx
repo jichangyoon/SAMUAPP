@@ -96,7 +96,7 @@ export function UploadForm({ onSuccess }: UploadFormProps) {
   return (
     <Card className="samu-card-shadow">
       <CardHeader>
-        <CardTitle className="text-lg text-[hsl(201,30%,25%)]">Submit Your Meme</CardTitle>
+        <CardTitle className="text-lg text-foreground">Submit Your Meme</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -108,7 +108,7 @@ export function UploadForm({ onSuccess }: UploadFormProps) {
                 <FormItem>
                   <FormLabel>Meme Image</FormLabel>
                   <FormControl>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[hsl(50,85%,75%)] transition-colors duration-200">
+                    <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-[hsl(50,85%,75%)] transition-colors duration-200">
                       {preview ? (
                         <div className="space-y-4">
                           <img
@@ -129,13 +129,13 @@ export function UploadForm({ onSuccess }: UploadFormProps) {
                         </div>
                       ) : (
                         <>
-                          <Upload className="h-12 w-12 mx-auto text-gray-400 mb-2" />
-                          <p className="text-gray-500 text-sm mb-2">
+                          <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
+                          <p className="text-muted-foreground text-sm mb-2">
                             Drag & drop your meme or click to browse
                           </p>
                           <Button
                             type="button"
-                            className="bg-[hsl(50,85%,75%)] hover:bg-[hsl(50,75%,65%)] text-[hsl(201,30%,25%)]"
+                            className="bg-[hsl(50,85%,75%)] hover:bg-[hsl(50,75%,65%)] text-black"
                           >
                             Choose File
                           </Button>
