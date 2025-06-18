@@ -15,7 +15,7 @@ import type { Meme } from "@shared/schema";
 import samuLogo1 from "@assets/photo_2025-05-26_08-40-22_1750170004880.jpg";
 
 export default function Home() {
-  const { isConnected, walletAddress, samuBalance, nftCount } = useWallet();
+  const { isConnected, walletAddress, samuBalance } = useWallet();
   const [sortBy, setSortBy] = useState("votes");
   const [currentTab, setCurrentTab] = useState("contest");
 
@@ -62,14 +62,11 @@ export default function Home() {
               <span className="font-medium">Connected:</span>
               <span className="font-mono text-xs">{walletAddress}</span>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-center">
-                <div className="font-bold">{samuBalance.toLocaleString()}</div>
-                <div className="text-xs opacity-75">SAMU</div>
-              </div>
-              <div className="text-center">
-                <div className="font-bold">{nftCount}</div>
-                <div className="text-xs opacity-75">NFTs</div>
+            <div className="flex items-center justify-center">
+              <div className="text-center bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/20 dark:to-orange-900/20 p-3 rounded-lg">
+                <div className="font-bold text-xl text-[hsl(30,100%,50%)]">{samuBalance.toLocaleString()}</div>
+                <div className="text-xs opacity-75">SAMU Tokens</div>
+                <div className="text-xs font-medium text-green-600 mt-1">Voting Power: {samuBalance.toLocaleString()}</div>
               </div>
             </div>
           </div>

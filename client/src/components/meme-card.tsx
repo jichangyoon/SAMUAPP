@@ -17,10 +17,10 @@ interface MemeCardProps {
 export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   const [showVoteDialog, setShowVoteDialog] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
-  const { walletAddress, samuBalance, nftCount } = useWallet();
+  const { walletAddress, samuBalance } = useWallet();
   const { toast } = useToast();
 
-  const votingPower = samuBalance + (nftCount * 100); // NFTs give 100x multiplier
+  const votingPower = samuBalance; // Voting power based on SAMU balance only
 
   const handleVote = async () => {
     if (!canVote || !walletAddress) {
@@ -152,7 +152,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
               <span className="font-semibold text-[hsl(30,100%,50%)]">{votingPower.toLocaleString()}</span>
             </div>
             <div className="text-xs text-gray-500">
-              Based on SAMU tokens ({samuBalance.toLocaleString()}) + NFT multiplier ({nftCount} × 100)
+              Based on your SAMU token balance: {samuBalance.toLocaleString()}
             </div>
           </div>
 

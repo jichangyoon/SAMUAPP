@@ -88,7 +88,7 @@ export function useWallet() {
     isConnecting,
     walletAddress,
     samuBalance,
-
+    votingPower: samuBalance, // Voting power based on SAMU balance only
     connect,
     disconnect,
     updateBalances
