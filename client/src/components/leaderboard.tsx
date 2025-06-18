@@ -104,7 +104,7 @@ export function Leaderboard() {
         <TabsContent value="current" className="mt-4 space-y-3">
           <Card className="samu-card-shadow">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg text-[hsl(201,30%,25%)] flex items-center">
+              <CardTitle className="text-lg text-foreground flex items-center">
                 <TrendingUp className="h-5 w-5 mr-2 text-[hsl(30,100%,50%)]" />
                 Current Contest Rankings
               </CardTitle>
@@ -147,7 +147,7 @@ export function Leaderboard() {
         <TabsContent value="creators" className="mt-4 space-y-3">
           <Card className="samu-card-shadow">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg text-[hsl(201,30%,25%)] flex items-center">
+              <CardTitle className="text-lg text-foreground flex items-center">
                 <Crown className="h-5 w-5 mr-2 text-[hsl(30,100%,50%)]" />
                 Top Creators
               </CardTitle>
@@ -161,15 +161,15 @@ export function Leaderboard() {
                     </div>
                     <div className="flex items-center space-x-2">
                       <Avatar className="h-8 w-8 bg-[hsl(50,85%,75%)]">
-                        <AvatarFallback className="text-[hsl(201,30%,25%)] font-bold text-xs">
+                        <AvatarFallback className="text-black font-bold text-xs">
                           {creator.username.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-semibold text-[hsl(201,30%,25%)] text-sm">
+                        <div className="font-semibold text-foreground text-sm">
                           {creator.username}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-muted-foreground">
                           {creator.memeCount} memes submitted
                         </div>
                       </div>
@@ -179,7 +179,7 @@ export function Leaderboard() {
                     <div className="font-bold text-[hsl(30,100%,50%)]">
                       {creator.totalVotes.toLocaleString()}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-muted-foreground">
                       avg {creator.avgVotes}
                     </div>
                   </div>
@@ -187,7 +187,7 @@ export function Leaderboard() {
               ))}
               
               {topCreators.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-muted-foreground">
                   No creators yet
                 </div>
               )}
@@ -199,11 +199,11 @@ export function Leaderboard() {
         <TabsContent value="hall-of-fame" className="mt-4 space-y-3">
           <Card className="samu-card-shadow">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg text-[hsl(201,30%,25%)] flex items-center">
+              <CardTitle className="text-lg text-foreground flex items-center">
                 <Trophy className="h-5 w-5 mr-2 text-yellow-500" />
                 Hall of Fame
               </CardTitle>
-              <p className="text-sm text-gray-600">Past contest winners</p>
+              <p className="text-sm text-muted-foreground">Past contest winners</p>
             </CardHeader>
             <CardContent className="space-y-3">
               {hallOfFameData.map((winner, index) => (
@@ -223,10 +223,10 @@ export function Leaderboard() {
                   
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-bold text-[hsl(201,30%,25%)] mb-1">
+                      <div className="font-bold text-foreground mb-1">
                         {winner.title}
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-muted-foreground">
                         by {winner.author}
                       </div>
                     </div>
