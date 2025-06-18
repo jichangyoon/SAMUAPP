@@ -18,7 +18,7 @@ export default function Home() {
   const { isConnected, walletAddress, samuBalance, balanceStatus, updateBalances, isConnecting } = useWallet();
   
   // Debug log
-  console.log('Wallet state:', { isConnected, walletAddress, samuBalance });
+  console.log('Wallet state:', { isConnected, walletAddress, samuBalance, balanceStatus });
   
   // Auto-refresh balance when wallet connects
   useEffect(() => {
@@ -65,7 +65,7 @@ export default function Home() {
       </header>
 
       {/* Wallet Status */}
-      {isConnected && (
+      {isConnected && walletAddress && (
         <div className="max-w-md mx-auto px-4 py-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg mb-4">
           <div className="flex flex-col space-y-3">
             <div className="flex items-center justify-between">
@@ -82,7 +82,7 @@ export default function Home() {
                 </div>
                 <div className="text-sm font-medium opacity-75 mb-2">SAMU Tokens</div>
                 
-                {balanceStatus === 'success' && samuBalance > 0 && (
+                {samuBalance > 0 && (
                   <div className="text-sm font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full">
                     Voting Power: {samuBalance.toLocaleString()}
                   </div>
