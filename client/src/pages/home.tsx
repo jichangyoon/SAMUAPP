@@ -15,7 +15,7 @@ import type { Meme } from "@shared/schema";
 import samuLogo1 from "@assets/photo_2025-05-26_08-40-22_1750170004880.jpg";
 
 export default function Home() {
-  const { isConnected, walletAddress, samuBalance, balanceStatus, updateBalances } = useWallet();
+  const { isConnected, walletAddress, samuBalance, balanceStatus, updateBalances, isConnecting } = useWallet();
   
   // Debug log
   console.log('Wallet state:', { isConnected, walletAddress, samuBalance });
@@ -84,7 +84,13 @@ export default function Home() {
                 
                 {balanceStatus === 'success' && samuBalance > 0 && (
                   <div className="text-sm font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full">
-                    투표력: {samuBalance.toLocaleString()}
+                    Voting Power: {samuBalance.toLocaleString()}
+                  </div>
+                )}
+                
+                {balanceStatus === 'loading' && (
+                  <div className="text-sm text-gray-600 bg-gray-50 dark:bg-gray-900/20 px-3 py-1 rounded">
+                    Checking SAMU balance...
                   </div>
                 )}
                 
@@ -92,17 +98,16 @@ export default function Home() {
                   <div className="mt-2">
                     <div className="text-xs text-amber-600 mb-2 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded">
                       {balanceStatus === 'error' 
-                        ? '토큰 조회 실패 - 네트워크 문제' 
-                        : 'SAMU 토큰이 없습니다'}
+                        ? 'Token query failed - Network issue' 
+                        : 'No SAMU tokens found'}
                     </div>
                     <Button 
                       onClick={updateBalances}
                       size="sm"
                       variant="outline"
                       className="text-xs"
-                      disabled={balanceStatus === 'loading' || balanceStatus === 'idle'}
                     >
-                      다시 시도
+                      Try Again
                     </Button>
                   </div>
                 )}
@@ -114,8 +119,9 @@ export default function Home() {
                       size="sm"
                       variant="outline"
                       className="text-xs"
+                      disabled={balanceStatus === 'loading'}
                     >
-                      토큰 잔액 조회
+                      Check Token Balance
                     </Button>
                   </div>
                 )}

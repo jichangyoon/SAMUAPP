@@ -84,18 +84,18 @@ class RealPhantomWallet {
           body: JSON.stringify({
             jsonrpc: '2.0',
             id: 1,
-            method: 'getTokenAccountsByOwner',
+            method: 'getParsedTokenAccountsByOwner',
             params: [
               this._publicKey, 
               { mint: SAMU_MINT }, 
-              { encoding: 'base64' }
+              { encoding: 'jsonParsed' }
             ]
           })
         });
         return await response.json();
       },
       
-      // Method 2: Use mainnet endpoint  
+      // Method 2: Use QuickNode public endpoint
       async () => {
         const response = await fetch('https://api.mainnet-beta.solana.com', {
           method: 'POST',
@@ -110,29 +110,19 @@ class RealPhantomWallet {
         return await response.json();
       },
       
-      // Method 3: Try with longer timeout
+      // Method 3: Use GenesysGo endpoint
       async () => {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-        
-        try {
-          const response = await fetch('https://solana-api.projectserum.com', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            signal: controller.signal,
-            body: JSON.stringify({
-              jsonrpc: '2.0',
-              id: 1,
-              method: 'getParsedTokenAccountsByOwner',
-              params: [this._publicKey, { mint: SAMU_MINT }, { encoding: 'jsonParsed' }]
-            })
-          });
-          clearTimeout(timeoutId);
-          return await response.json();
-        } catch (error) {
-          clearTimeout(timeoutId);
-          throw error;
-        }
+        const response = await fetch('https://ssc-dao.genesysgo.net/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'getParsedTokenAccountsByOwner',
+            params: [this._publicKey, { mint: SAMU_MINT }, { encoding: 'jsonParsed' }]
+          })
+        });
+        return await response.json();
       }
     ];
 
