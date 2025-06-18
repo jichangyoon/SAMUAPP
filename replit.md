@@ -100,6 +100,8 @@ Changelog:
 - June 18, 2025. Enhanced phantom wallet integration with real-time connection state tracking
 - June 18, 2025. Resolved SAMU token balance display issue - now showing correct 47.7B tokens
 - June 18, 2025. Completed stable wallet auto-reconnection with delayed initialization for Phantom readiness
+- June 18, 2025. Added Capacitor integration for native Android/iOS app generation
+- June 18, 2025. Successfully converted web application to Android app with complete project structure
 ```
 
 ## User Preferences
