@@ -153,17 +153,17 @@ export function GoodsShop() {
 
       {/* 카테고리 탭 */}
       <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-        <TabsList className="grid w-full grid-cols-4 h-12">
+        <TabsList className="grid w-full grid-cols-4 h-10">
           {categories.map((category) => {
             const Icon = category.icon;
             return (
               <TabsTrigger 
                 key={category.id} 
                 value={category.id} 
-                className="text-xs flex flex-col gap-1"
+                className="text-xs flex flex-col gap-0.5"
               >
-                <Icon className="h-4 w-4" />
-                {category.name}
+                <Icon className="h-3 w-3" />
+                <span className="text-xs">{category.name}</span>
               </TabsTrigger>
             );
           })}
@@ -175,51 +175,51 @@ export function GoodsShop() {
               {filteredGoods.map((item) => (
                 <Card key={item.id} className="overflow-hidden">
                   <div className="flex">
-                    <div className="w-24 h-24 flex-shrink-0">
+                    <div className="w-20 h-20 flex-shrink-0">
                       <img 
                         src={item.image} 
                         alt={item.name}
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <div className="flex-1 p-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-sm text-[hsl(201,30%,25%)]">
+                    <div className="flex-1 p-2">
+                      <div className="flex items-start justify-between h-full">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-xs text-[hsl(201,30%,25%)] leading-tight">
                             {item.name}
                           </h3>
-                          <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                          <p className="text-xs text-gray-600 mt-1 leading-tight line-clamp-1">
                             {item.description}
                           </p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Badge variant="secondary" className="text-xs">
-                              <Trophy className="h-3 w-3 mr-1" />
-                              Based on: {item.originalMeme}
+                          <div className="flex flex-wrap items-center gap-1 mt-1">
+                            <Badge variant="secondary" className="text-xs px-1 py-0 h-4">
+                              <Trophy className="h-2 w-2 mr-1" />
+                              {item.originalMeme}
                             </Badge>
                             {item.limited && (
-                              <Badge variant="destructive" className="text-xs">
+                              <Badge variant="destructive" className="text-xs px-1 py-0 h-4">
                                 Limited
                               </Badge>
                             )}
                           </div>
                         </div>
-                        <div className="text-right ml-2">
-                          <div className="font-bold text-[hsl(35,70%,50%)]">
+                        <div className="text-right ml-2 flex-shrink-0">
+                          <div className="font-bold text-xs text-[hsl(35,70%,50%)]">
                             {item.price.toLocaleString()}
                           </div>
-                          <div className="text-xs text-gray-500">SAMU</div>
+                          <div className="text-xs text-gray-500 -mt-1">SAMU</div>
                           <Button
                             size="sm"
-                            className="mt-2 h-8 text-xs"
+                            className="mt-1 h-6 text-xs px-2"
                             onClick={() => addToCart(item.id)}
                             disabled={cart.includes(item.id)}
                           >
-                            {cart.includes(item.id) ? "Added" : "Add to Cart"}
+                            {cart.includes(item.id) ? "Added" : "Add"}
                           </Button>
                         </div>
                       </div>
-                      <div className="mt-2 text-xs text-gray-500">
-                        Original: {item.originalAuthor} • Stock: {item.stock}
+                      <div className="mt-1 text-xs text-gray-500">
+                        By {item.originalAuthor} • Stock: {item.stock}
                       </div>
                     </div>
                   </div>
