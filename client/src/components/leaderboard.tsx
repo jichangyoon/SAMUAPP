@@ -95,18 +95,18 @@ export function Leaderboard() {
     <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3 h-10">
-          <TabsTrigger value="current" className="text-xs">현재 순위</TabsTrigger>
-          <TabsTrigger value="creators" className="text-xs">톱 크리에이터</TabsTrigger>
-          <TabsTrigger value="hall-of-fame" className="text-xs">명예의 전당</TabsTrigger>
+          <TabsTrigger value="current" className="text-xs">Current</TabsTrigger>
+          <TabsTrigger value="creators" className="text-xs">Top Creators</TabsTrigger>
+          <TabsTrigger value="hall-of-fame" className="text-xs">Hall of Fame</TabsTrigger>
         </TabsList>
 
-        {/* 현재 콘테스트 순위 */}
+        {/* Current Contest Rankings */}
         <TabsContent value="current" className="mt-4 space-y-3">
           <Card className="samu-card-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg text-[hsl(201,30%,25%)] flex items-center">
                 <TrendingUp className="h-5 w-5 mr-2 text-[hsl(30,100%,50%)]" />
-                현재 콘테스트 순위
+                Current Contest Rankings
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -136,20 +136,20 @@ export function Leaderboard() {
               
               {topMemes.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
-                  아직 투표된 밈이 없습니다
+                  No memes with votes yet
                 </div>
               )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* 톱 크리에이터 */}
+        {/* Top Creators */}
         <TabsContent value="creators" className="mt-4 space-y-3">
           <Card className="samu-card-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg text-[hsl(201,30%,25%)] flex items-center">
                 <Crown className="h-5 w-5 mr-2 text-[hsl(30,100%,50%)]" />
-                톱 크리에이터
+                Top Creators
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -170,7 +170,7 @@ export function Leaderboard() {
                           {creator.username}
                         </div>
                         <div className="text-xs text-gray-500">
-                          {creator.memeCount}개 밈 제출
+                          {creator.memeCount} memes submitted
                         </div>
                       </div>
                     </div>
@@ -180,7 +180,7 @@ export function Leaderboard() {
                       {creator.totalVotes.toLocaleString()}
                     </div>
                     <div className="text-xs text-gray-500">
-                      평균 {creator.avgVotes}
+                      avg {creator.avgVotes}
                     </div>
                   </div>
                 </div>
@@ -188,22 +188,22 @@ export function Leaderboard() {
               
               {topCreators.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
-                  아직 크리에이터가 없습니다
+                  No creators yet
                 </div>
               )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* 명예의 전당 */}
+        {/* Hall of Fame */}
         <TabsContent value="hall-of-fame" className="mt-4 space-y-3">
           <Card className="samu-card-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg text-[hsl(201,30%,25%)] flex items-center">
                 <Trophy className="h-5 w-5 mr-2 text-yellow-500" />
-                명예의 전당
+                Hall of Fame
               </CardTitle>
-              <p className="text-sm text-gray-600">과거 콘테스트 우승작들</p>
+              <p className="text-sm text-gray-600">Past contest winners</p>
             </CardHeader>
             <CardContent className="space-y-3">
               {hallOfFameData.map((winner, index) => (
@@ -212,7 +212,7 @@ export function Leaderboard() {
                     <div className="flex items-center space-x-2">
                       <Trophy className="h-4 w-4 text-yellow-500" />
                       <Badge className="bg-yellow-500 text-white text-xs">
-                        {index === 0 ? "최신 우승작" : "과거 우승작"}
+                        {index === 0 ? "Latest Winner" : "Past Winner"}
                       </Badge>
                     </div>
                     <div className="text-xs text-gray-500 flex items-center">
@@ -235,7 +235,7 @@ export function Leaderboard() {
                         {winner.votes.toLocaleString()}
                       </div>
                       <div className="text-xs text-green-600 font-semibold">
-                        상금: {winner.prize}
+                        Prize: {winner.prize}
                       </div>
                     </div>
                   </div>
