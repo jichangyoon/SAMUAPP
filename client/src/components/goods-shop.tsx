@@ -70,10 +70,10 @@ export function GoodsShop() {
   const { toast } = useToast();
 
   const categories = [
-    { id: "all", name: "전체", icon: ShoppingCart },
-    { id: "clothing", name: "의류", icon: Shirt },
-    { id: "lifestyle", name: "라이프스타일", icon: Coffee },
-    { id: "accessories", name: "액세서리", icon: Sticker }
+    { id: "all", name: "All", icon: ShoppingCart },
+    { id: "clothing", name: "Clothing", icon: Shirt },
+    { id: "lifestyle", name: "Lifestyle", icon: Coffee },
+    { id: "accessories", name: "Accessories", icon: Sticker }
   ];
 
   const filteredGoods = selectedCategory === "all" 
@@ -83,8 +83,8 @@ export function GoodsShop() {
   const addToCart = (goodsId: number) => {
     if (!isConnected) {
       toast({
-        title: "지갑 연결 필요",
-        description: "굿즈 구매를 위해 지갑을 연결해주세요.",
+        title: "Wallet Connection Required",
+        description: "Please connect your wallet to purchase goods.",
         variant: "destructive",
       });
       return;
@@ -93,8 +93,8 @@ export function GoodsShop() {
     const item = goodsData.find(g => g.id === goodsId);
     if (item && samuBalance < item.price) {
       toast({
-        title: "SAMU 잔액 부족",
-        description: `${item.price.toLocaleString()} SAMU가 필요합니다.`,
+        title: "Insufficient SAMU Balance",
+        description: `${item.price.toLocaleString()} SAMU required.`,
         variant: "destructive",
       });
       return;
@@ -102,8 +102,8 @@ export function GoodsShop() {
 
     setCart(prev => [...prev, goodsId]);
     toast({
-      title: "장바구니에 추가됨",
-      description: `${item?.name}이 장바구니에 추가되었습니다.`,
+      title: "Added to Cart",
+      description: `${item?.name} has been added to your cart.`,
     });
   };
 
@@ -125,10 +125,10 @@ export function GoodsShop() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-[hsl(201,30%,25%)] flex items-center justify-center gap-2">
             <Trophy className="h-6 w-6" />
-            SAMU 굿즈샵
+            SAMU Goods Shop
           </CardTitle>
           <CardDescription className="text-[hsl(201,30%,35%)]">
-            명예의 전당 밈들이 굿즈로! SAMU 토큰으로 구매하세요
+            Hall of Fame memes turned into goods! Purchase with SAMU tokens
           </CardDescription>
         </CardHeader>
       </Card>
@@ -140,11 +140,11 @@ export function GoodsShop() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShoppingCart className="h-5 w-5 text-green-600" />
-                <span className="font-medium">장바구니: {cart.length}개</span>
+                <span className="font-medium">Cart: {cart.length} items</span>
               </div>
               <div className="text-right">
                 <div className="font-bold text-green-700">{getTotalPrice().toLocaleString()} SAMU</div>
-                <Button size="sm" className="mt-1">주문하기</Button>
+                <Button size="sm" className="mt-1">Checkout</Button>
               </div>
             </div>
           </CardContent>
@@ -198,7 +198,7 @@ export function GoodsShop() {
                             </Badge>
                             {item.limited && (
                               <Badge variant="destructive" className="text-xs">
-                                한정판
+                                Limited
                               </Badge>
                             )}
                           </div>
@@ -214,12 +214,12 @@ export function GoodsShop() {
                             onClick={() => addToCart(item.id)}
                             disabled={cart.includes(item.id)}
                           >
-                            {cart.includes(item.id) ? "추가됨" : "담기"}
+                            {cart.includes(item.id) ? "Added" : "Add to Cart"}
                           </Button>
                         </div>
                       </div>
                       <div className="mt-2 text-xs text-gray-500">
-                        원작자: {item.originalAuthor} • 재고: {item.stock}개
+                        Original: {item.originalAuthor} • Stock: {item.stock}
                       </div>
                     </div>
                   </div>
@@ -234,8 +234,8 @@ export function GoodsShop() {
       <Card className="bg-blue-50 border-blue-200">
         <CardContent className="p-4 text-center">
           <p className="text-sm text-blue-700">
-            💡 명예의 전당에 선정된 밈들이 굿즈로 제작됩니다.<br />
-            SAMU 토큰으로 구매하고 실제 굿즈를 받아보세요!
+            💡 Hall of Fame memes are turned into physical goods.<br />
+            Purchase with SAMU tokens and receive real merchandise!
           </p>
         </CardContent>
       </Card>

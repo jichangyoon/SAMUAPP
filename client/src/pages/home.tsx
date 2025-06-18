@@ -80,8 +80,8 @@ export default function Home() {
       <nav className="max-w-md mx-auto px-4 py-3 bg-white border-b border-gray-200">
         <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 h-10">
-            <TabsTrigger value="contest" className="text-sm">밈 콘테스트</TabsTrigger>
-            <TabsTrigger value="goods" className="text-sm">굿즈샵</TabsTrigger>
+            <TabsTrigger value="contest" className="text-sm">Meme Contest</TabsTrigger>
+            <TabsTrigger value="goods" className="text-sm">Goods Shop</TabsTrigger>
           </TabsList>
           
           <TabsContent value="contest" className="mt-4">
