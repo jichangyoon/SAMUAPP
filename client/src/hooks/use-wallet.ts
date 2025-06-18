@@ -10,17 +10,23 @@ export function useWallet() {
 
 
   useEffect(() => {
-    // Check if wallet was previously connected
+    // Check connection status on mount and when phantom changes
     const checkConnection = async () => {
-      if (phantomWallet.connected && phantomWallet.publicKey) {
+      const phantom = (window as any).phantom?.solana;
+      
+      if (phantom && phantom.isConnected && phantom.publicKey) {
+        const publicKeyString = phantom.publicKey.toBase58();
+        setIsConnected(true);
+        setWalletAddress(formatAddress(publicKeyString));
+        await updateBalances();
+      } else if (phantomWallet.connected && phantomWallet.publicKey) {
         setIsConnected(true);
         setWalletAddress(formatAddress(phantomWallet.publicKey));
         await updateBalances();
       } else {
-        // Check if phantom is available and auto-connect if previously connected
-        const phantom = (window as any).phantom?.solana;
-        if (phantom && phantom.isConnected) {
-          try {
+        // Try silent auto-connect for trusted connections
+        try {
+          if (phantom) {
             const response = await phantom.connect({ onlyIfTrusted: true });
             if (response.publicKey) {
               const publicKeyString = response.publicKey.toBase58();
@@ -28,9 +34,9 @@ export function useWallet() {
               setWalletAddress(formatAddress(publicKeyString));
               await updateBalances();
             }
-          } catch (error) {
-            // Silent fail for auto-connect
           }
+        } catch (error) {
+          // Silent fail for auto-connect
         }
       }
     };

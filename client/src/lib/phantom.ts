@@ -15,6 +15,12 @@ class RealPhantomWallet {
     // Check if Phantom is available
     if (typeof window !== 'undefined') {
       this._phantom = (window as any).phantom?.solana;
+      
+      // Check if already connected on initialization
+      if (this._phantom && this._phantom.isConnected && this._phantom.publicKey) {
+        this._connected = true;
+        this._publicKey = this._phantom.publicKey.toBase58();
+      }
     }
   }
 
