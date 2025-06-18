@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useWallet } from "@/hooks/use-wallet";
 import { useToast } from "@/hooks/use-toast";
-import { ShoppingCart, Trophy, Shirt, Coffee, Sticker } from "lucide-react";
+import { ShoppingCart, Trophy, Shirt, Coffee, Sticker, X } from "lucide-react";
 
 // Hall of Fame meme-based goods data
 const goodsData = [
@@ -66,6 +67,7 @@ const goodsData = [
 export function GoodsShop() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [cart, setCart] = useState<number[]>([]);
+  const [selectedItem, setSelectedItem] = useState<typeof goodsData[0] | null>(null);
   const { isConnected, walletAddress, samuBalance } = useWallet();
   const { toast } = useToast();
 
@@ -173,7 +175,11 @@ export function GoodsShop() {
           <TabsContent key={category.id} value={category.id} className="mt-2">
             <div className="space-y-2">
               {filteredGoods.map((item) => (
-                <Card key={item.id} className="overflow-hidden">
+                <Card 
+                  key={item.id} 
+                  className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => setSelectedItem(item)}
+                >
                   <div className="flex p-2">
                     <div className="w-16 h-16 flex-shrink-0">
                       <img 
@@ -188,9 +194,6 @@ export function GoodsShop() {
                           <h3 className="font-semibold text-xs text-[hsl(201,30%,25%)] truncate">
                             {item.name}
                           </h3>
-                          <p className="text-xs text-gray-600 mt-0.5 line-clamp-1">
-                            {item.description}
-                          </p>
                           <div className="flex items-center gap-1 mt-1">
                             <Badge variant="secondary" className="text-xs px-1 py-0 h-3 leading-none">
                               <Trophy className="h-2 w-2 mr-0.5" />
@@ -214,7 +217,10 @@ export function GoodsShop() {
                           <Button
                             size="sm"
                             className="mt-1 h-5 text-xs px-2 leading-none"
-                            onClick={() => addToCart(item.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addToCart(item.id);
+                            }}
                             disabled={cart.includes(item.id)}
                           >
                             {cart.includes(item.id) ? "Added" : "Add"}
@@ -239,6 +245,78 @@ export function GoodsShop() {
           </p>
         </CardContent>
       </Card>
+
+      {/* 제품 상세 다이얼로그 */}
+      <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span>{selectedItem?.name}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedItem(null)}
+                className="h-6 w-6 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedItem && (
+            <div className="space-y-4">
+              <div className="w-full aspect-square">
+                <img 
+                  src={selectedItem.image} 
+                  alt={selectedItem.name}
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              </div>
+              
+              <div className="space-y-3">
+                <p className="text-sm text-gray-600">
+                  {selectedItem.description}
+                </p>
+                
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary" className="text-xs">
+                    <Trophy className="h-3 w-3 mr-1" />
+                    Based on: {selectedItem.originalMeme}
+                  </Badge>
+                  {selectedItem.limited && (
+                    <Badge variant="destructive" className="text-xs">
+                      Limited Edition
+                    </Badge>
+                  )}
+                </div>
+                
+                <div className="text-sm text-gray-500">
+                  <div>Original Creator: {selectedItem.originalAuthor}</div>
+                  <div>Stock Available: {selectedItem.stock} units</div>
+                </div>
+                
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <div>
+                    <div className="text-lg font-bold text-[hsl(35,70%,50%)]">
+                      {selectedItem.price.toLocaleString()} SAMU
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      addToCart(selectedItem.id);
+                      setSelectedItem(null);
+                    }}
+                    disabled={cart.includes(selectedItem.id)}
+                    className="bg-[hsl(50,85%,75%)] hover:bg-[hsl(50,75%,65%)] text-[hsl(201,30%,25%)]"
+                  >
+                    {cart.includes(selectedItem.id) ? "Already Added" : "Add to Cart"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
