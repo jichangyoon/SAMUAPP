@@ -16,6 +16,22 @@ export function useWallet() {
         setIsConnected(true);
         setWalletAddress(formatAddress(phantomWallet.publicKey));
         await updateBalances();
+      } else {
+        // Check if phantom is available and auto-connect if previously connected
+        const phantom = (window as any).phantom?.solana;
+        if (phantom && phantom.isConnected) {
+          try {
+            const response = await phantom.connect({ onlyIfTrusted: true });
+            if (response.publicKey) {
+              const publicKeyString = response.publicKey.toBase58();
+              setIsConnected(true);
+              setWalletAddress(formatAddress(publicKeyString));
+              await updateBalances();
+            }
+          } catch (error) {
+            // Silent fail for auto-connect
+          }
+        }
       }
     };
     
@@ -52,7 +68,11 @@ export function useWallet() {
       
       setIsConnected(true);
       setWalletAddress(formatAddress(wallet.publicKey));
-      await updateBalances();
+      
+      // Force update balances after connection
+      setTimeout(async () => {
+        await updateBalances();
+      }, 100);
     } catch (error) {
       console.error('Failed to connect wallet:', error);
     } finally {
