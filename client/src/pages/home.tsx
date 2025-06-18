@@ -156,7 +156,7 @@ export default function Home() {
           
           <TabsContent value="my-memes">
             <Card className="p-6 text-center">
-              <p className="text-gray-500">
+              <p className="text-muted-foreground">
                 {isConnected ? "Your submitted memes will appear here." : "Connect your wallet to view your memes."}
               </p>
             </Card>
