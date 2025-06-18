@@ -71,16 +71,16 @@ export default function Home() {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="font-medium text-green-600">지갑 연결됨</span>
+                <span className="font-medium text-green-600">Wallet Connected</span>
               </div>
               <span className="font-mono text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{walletAddress}</span>
             </div>
             <div className="text-center">
               <div className="bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-lg border-2 border-[hsl(30,100%,50%)]">
                 <div className="font-bold text-2xl text-[hsl(30,100%,50%)] mb-1">
-                  {balanceStatus === 'loading' ? '조회 중...' : samuBalance.toLocaleString()}
+                  {balanceStatus === 'loading' ? 'Checking...' : samuBalance.toLocaleString()}
                 </div>
-                <div className="text-sm font-medium opacity-75 mb-2">SAMU 토큰</div>
+                <div className="text-sm font-medium opacity-75 mb-2">SAMU Tokens</div>
                 
                 {balanceStatus === 'success' && samuBalance > 0 && (
                   <div className="text-sm font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full">
