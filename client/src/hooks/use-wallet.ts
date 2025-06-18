@@ -104,6 +104,13 @@ export function useWallet() {
       const balance = await phantomWallet.getSamuBalance();
       setSamuBalance(Math.floor(balance)); // Round down for display
       setBalanceStatus('success');
+      
+      // Ensure wallet is marked as connected if we successfully got balance
+      const phantom = (window as any).phantom?.solana;
+      if (phantom && phantom.isConnected && phantom.publicKey) {
+        setIsConnected(true);
+        setWalletAddress(formatAddress(phantom.publicKey.toBase58()));
+      }
     } catch (error) {
       console.error('Failed to fetch balances:', error);
       setSamuBalance(0);

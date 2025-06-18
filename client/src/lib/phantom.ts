@@ -65,10 +65,22 @@ class RealPhantomWallet {
   }
 
   get connected(): boolean {
-    return this._connected && this._phantom?.isConnected;
+    // Always check the actual phantom connection state
+    if (this._phantom && this._phantom.isConnected) {
+      this._connected = true;
+      if (this._phantom.publicKey && !this._publicKey) {
+        this._publicKey = this._phantom.publicKey.toBase58();
+      }
+      return true;
+    }
+    return this._connected;
   }
 
   get publicKey(): string | null {
+    // Always get the current public key from phantom if available
+    if (this._phantom && this._phantom.publicKey) {
+      this._publicKey = this._phantom.publicKey.toBase58();
+    }
     return this._publicKey;
   }
 

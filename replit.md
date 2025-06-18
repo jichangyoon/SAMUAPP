@@ -96,6 +96,8 @@ Changelog:
 - June 18, 2025. Simplified voting system to use SAMU tokens only (removed NFT complexity)
 - June 18, 2025. Fixed server port binding issue and RPC endpoint runtime errors
 - June 18, 2025. Improved error handling for Solana token balance queries
+- June 18, 2025. Fixed wallet connection state synchronization issues after logout/login cycles
+- June 18, 2025. Enhanced phantom wallet integration with real-time connection state tracking
 ```
 
 ## User Preferences
