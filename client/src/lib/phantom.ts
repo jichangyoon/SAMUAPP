@@ -72,18 +72,21 @@ class RealPhantomWallet {
     console.log('Fetching SAMU balance for:', this._publicKey);
     console.log('SAMU mint address:', SAMU_MINT);
     
+    const apiKey = import.meta.env.VITE_HELIUS_API_KEY;
+    console.log('API 키 확인:', apiKey ? '있음' : '없음');
+    
     const endpoints = [
       {
-        url: `https://mainnet.helius-rpc.com/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`,
-        name: 'Helius mainnet'
+        url: `https://rpc.helius.xyz/?api-key=${apiKey}`,
+        name: 'Helius RPC'
       },
       {
         url: 'https://api.mainnet-beta.solana.com',
-        name: 'Solana Labs'
+        name: 'Solana Official'
       },
       {
-        url: 'https://rpc.ankr.com/solana',
-        name: 'Ankr'
+        url: 'https://solana-mainnet.phantom.tech',
+        name: 'Phantom RPC'
       }
     ];
 
@@ -91,13 +94,15 @@ class RealPhantomWallet {
       try {
         console.log(`시도 중: ${endpoint.name}`);
         
-        const response = await fetch(endpoint.url, {
+        let response;
+        
+        response = await fetch(endpoint.url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             jsonrpc: '2.0',
             id: 1,
-            method: 'getParsedTokenAccountsByOwner',
+            method: 'getTokenAccountsByOwner',
             params: [
               this._publicKey, 
               { mint: SAMU_MINT }, 
