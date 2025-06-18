@@ -75,9 +75,10 @@ class RealPhantomWallet {
       
       // Use authenticated RPC endpoints for reliable token balance queries
       const rpcEndpoints = [
-        `https://mainnet.helius-rpc.com/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`,
-        'https://rpc.hellomoon.io',
-        'https://solana.public-rpc.com'
+        `https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`,
+        'https://api.mainnet-beta.solana.com',
+        'https://solana-api.syndica.io/access-token/demo',
+        'https://solana.blockdaemon.com/mainnet/rpd-0/native'
       ];
       
       let response;
@@ -145,6 +146,11 @@ class RealPhantomWallet {
       
       // If we get here, all endpoints failed
       console.error('All RPC endpoints failed. Last error:', lastError);
+      
+      // Show user-friendly error message
+      console.warn('Unable to fetch SAMU balance due to RPC issues. Please check your wallet manually or try again later.');
+      
+      // Return 0 to indicate unable to fetch balance (not that user has 0 tokens)
       return 0;
       
     } catch (error) {

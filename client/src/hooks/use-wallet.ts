@@ -6,6 +6,7 @@ export function useWallet() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [samuBalance, setSamuBalance] = useState(0);
+  const [balanceStatus, setBalanceStatus] = useState<'loading' | 'success' | 'error' | 'idle'>('idle');
 
 
   useEffect(() => {
@@ -65,6 +66,7 @@ export function useWallet() {
       setIsConnected(false);
       setWalletAddress('');
       setSamuBalance(0);
+      setBalanceStatus('idle');
     } catch (error) {
       console.error('Failed to disconnect wallet:', error);
     }
@@ -72,10 +74,13 @@ export function useWallet() {
 
   const updateBalances = async () => {
     try {
+      setBalanceStatus('loading');
       const balance = await phantomWallet.getSamuBalance();
       setSamuBalance(Math.floor(balance)); // Round down for display
+      setBalanceStatus(balance > 0 ? 'success' : 'error');
     } catch (error) {
       console.error('Failed to fetch balances:', error);
+      setBalanceStatus('error');
     }
   };
 
@@ -88,6 +93,7 @@ export function useWallet() {
     isConnecting,
     walletAddress,
     samuBalance,
+    balanceStatus,
     votingPower: samuBalance, // Voting power based on SAMU balance only
     connect,
     disconnect,

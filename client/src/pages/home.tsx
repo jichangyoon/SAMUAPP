@@ -15,7 +15,7 @@ import type { Meme } from "@shared/schema";
 import samuLogo1 from "@assets/photo_2025-05-26_08-40-22_1750170004880.jpg";
 
 export default function Home() {
-  const { isConnected, walletAddress, samuBalance, updateBalances } = useWallet();
+  const { isConnected, walletAddress, samuBalance, balanceStatus, updateBalances } = useWallet();
   
   // Debug log
   console.log('Wallet state:', { isConnected, walletAddress, samuBalance });
@@ -77,23 +77,45 @@ export default function Home() {
             </div>
             <div className="text-center">
               <div className="bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-lg border-2 border-[hsl(30,100%,50%)]">
-                <div className="font-bold text-2xl text-[hsl(30,100%,50%)] mb-1">{samuBalance.toLocaleString()}</div>
-                <div className="text-sm font-medium opacity-75 mb-2">SAMU 토큰</div>
-                <div className="text-sm font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full">
-                  투표력: {samuBalance.toLocaleString()}
+                <div className="font-bold text-2xl text-[hsl(30,100%,50%)] mb-1">
+                  {balanceStatus === 'loading' ? '조회 중...' : samuBalance.toLocaleString()}
                 </div>
-                {samuBalance === 0 && (
+                <div className="text-sm font-medium opacity-75 mb-2">SAMU 토큰</div>
+                
+                {balanceStatus === 'success' && samuBalance > 0 && (
+                  <div className="text-sm font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full">
+                    투표력: {samuBalance.toLocaleString()}
+                  </div>
+                )}
+                
+                {(balanceStatus === 'error' || (balanceStatus === 'success' && samuBalance === 0)) && (
                   <div className="mt-2">
                     <div className="text-xs text-amber-600 mb-2 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded">
-                      SAMU 토큰이 없거나 조회 중입니다
+                      {balanceStatus === 'error' 
+                        ? '토큰 조회 실패 - 네트워크 문제' 
+                        : 'SAMU 토큰이 없습니다'}
                     </div>
                     <Button 
                       onClick={updateBalances}
                       size="sm"
                       variant="outline"
                       className="text-xs"
+                      disabled={balanceStatus === 'loading'}
                     >
-                      잔액 새로고침
+                      {balanceStatus === 'loading' ? '조회 중...' : '다시 시도'}
+                    </Button>
+                  </div>
+                )}
+                
+                {balanceStatus === 'idle' && (
+                  <div className="mt-2">
+                    <Button 
+                      onClick={updateBalances}
+                      size="sm"
+                      variant="outline"
+                      className="text-xs"
+                    >
+                      토큰 잔액 조회
                     </Button>
                   </div>
                 )}
