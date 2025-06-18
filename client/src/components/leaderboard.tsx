@@ -244,11 +244,11 @@ export function Leaderboard() {
             </CardContent>
           </Card>
           
-          {/* 통계 카드 */}
+          {/* Statistics Card */}
           <Card className="samu-card-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg text-[hsl(201,30%,25%)]">
-                전체 통계
+                Overall Statistics
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -257,13 +257,13 @@ export function Leaderboard() {
                   <div className="text-2xl font-bold text-[hsl(30,100%,50%)]">
                     {memes.length + hallOfFameData.length}
                   </div>
-                  <div className="text-sm text-gray-600">총 밈 수</div>
+                  <div className="text-sm text-gray-600">Total Memes</div>
                 </div>
                 <div className="text-center p-3 bg-gray-50 rounded-lg">
                   <div className="text-2xl font-bold text-[hsl(25,60%,35%)]">
                     {memes.reduce((sum, meme) => sum + meme.votes, 0).toLocaleString()}
                   </div>
-                  <div className="text-sm text-gray-600">총 투표 수</div>
+                  <div className="text-sm text-gray-600">Total Votes</div>
                 </div>
               </div>
             </CardContent>
