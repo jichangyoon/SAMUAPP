@@ -77,9 +77,10 @@ export function useWallet() {
       setBalanceStatus('loading');
       const balance = await phantomWallet.getSamuBalance();
       setSamuBalance(Math.floor(balance)); // Round down for display
-      setBalanceStatus(balance > 0 ? 'success' : 'error');
+      setBalanceStatus('success');
     } catch (error) {
       console.error('Failed to fetch balances:', error);
+      setSamuBalance(0);
       setBalanceStatus('error');
     }
   };

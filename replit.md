@@ -94,6 +94,8 @@ Changelog:
 - June 18, 2025. Converted all UI text to English for international accessibility
 - June 18, 2025. Implemented real Phantom wallet integration with SAMU token detection (EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF)
 - June 18, 2025. Simplified voting system to use SAMU tokens only (removed NFT complexity)
+- June 18, 2025. Fixed server port binding issue and RPC endpoint runtime errors
+- June 18, 2025. Improved error handling for Solana token balance queries
 ```
 
 ## User Preferences
