@@ -69,94 +69,96 @@ class RealPhantomWallet {
   async getSamuBalance(): Promise<number> {
     if (!this._connected || !this._publicKey) return 0;
 
-    try {
-      console.log('Fetching SAMU balance for:', this._publicKey);
-      console.log('SAMU mint address:', SAMU_MINT);
+    console.log('Fetching SAMU balance for:', this._publicKey);
+    console.log('SAMU mint address:', SAMU_MINT);
+    
+    // Since RPC services are failing, we'll use a direct approach
+    // This function will attempt to connect through multiple methods
+    
+    const methods = [
+      // Method 1: Try Helius with proper endpoint
+      async () => {
+        const response = await fetch(`https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'getParsedTokenAccountsByOwner',
+            params: [this._publicKey, { mint: SAMU_MINT }, { encoding: 'jsonParsed' }]
+          })
+        });
+        return await response.json();
+      },
       
-      // Use authenticated RPC endpoints for reliable token balance queries
-      const rpcEndpoints = [
-        `https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`,
-        'https://api.mainnet-beta.solana.com',
-        'https://solana-api.syndica.io/access-token/demo',
-        'https://solana.blockdaemon.com/mainnet/rpd-0/native'
-      ];
+      // Method 2: Use mainnet endpoint  
+      async () => {
+        const response = await fetch('https://api.mainnet-beta.solana.com', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'getParsedTokenAccountsByOwner',
+            params: [this._publicKey, { mint: SAMU_MINT }, { encoding: 'jsonParsed' }]
+          })
+        });
+        return await response.json();
+      },
       
-      let response;
-      let lastError;
-      
-      for (const endpoint of rpcEndpoints) {
+      // Method 3: Try with longer timeout
+      async () => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        
         try {
-          response = await fetch(endpoint, {
+          const response = await fetch('https://solana-api.projectserum.com', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
             body: JSON.stringify({
               jsonrpc: '2.0',
               id: 1,
               method: 'getParsedTokenAccountsByOwner',
-              params: [
-                this._publicKey,
-                {
-                  mint: SAMU_MINT,
-                },
-                {
-                  encoding: 'jsonParsed',
-                },
-              ],
-            }),
+              params: [this._publicKey, { mint: SAMU_MINT }, { encoding: 'jsonParsed' }]
+            })
           });
-          
-          if (response.ok) {
-            const data = await response.json();
-            console.log('SAMU balance response from', endpoint, ':', data);
-            
-            if (!data.error) {
-              // Success - process the result
-              if (!data.result || !data.result.value || data.result.value.length === 0) {
-                console.log('No SAMU token accounts found');
-                return 0;
-              }
-
-              const tokenAccount = data.result.value[0];
-              const tokenAmount = tokenAccount.account.data.parsed.info.tokenAmount;
-              
-              console.log('Token amount data:', tokenAmount);
-              
-              const balance = parseFloat(tokenAmount.uiAmount || '0');
-              console.log('Final SAMU balance:', balance);
-              
-              return balance;
-            } else {
-              lastError = data.error;
-              console.warn('RPC Error from', endpoint, ':', data.error);
-              continue;
-            }
-          } else {
-            lastError = { message: `HTTP ${response.status}` };
-            console.warn('HTTP Error from', endpoint, ':', response.status);
-            continue;
-          }
-        } catch (err) {
-          lastError = err;
-          console.warn('Network error from', endpoint, ':', err);
-          continue;
+          clearTimeout(timeoutId);
+          return await response.json();
+        } catch (error) {
+          clearTimeout(timeoutId);
+          throw error;
         }
       }
-      
-      // If we get here, all endpoints failed
-      console.error('All RPC endpoints failed. Last error:', lastError);
-      
-      // Show user-friendly error message
-      console.warn('Unable to fetch SAMU balance due to RPC issues. Please check your wallet manually or try again later.');
-      
-      // Return 0 to indicate unable to fetch balance (not that user has 0 tokens)
-      return 0;
-      
-    } catch (error) {
-      console.error('Error fetching SAMU balance:', error);
-      return 0;
+    ];
+
+    for (let i = 0; i < methods.length; i++) {
+      try {
+        console.log(`Trying method ${i + 1}...`);
+        const data = await methods[i]();
+        
+        if (data.error) {
+          console.warn(`Method ${i + 1} failed:`, data.error);
+          continue;
+        }
+        
+        if (data.result?.value?.length > 0) {
+          const tokenAmount = data.result.value[0].account.data.parsed.info.tokenAmount;
+          const balance = parseFloat(tokenAmount.uiAmount || '0');
+          console.log(`SAMU balance found via method ${i + 1}:`, balance);
+          return balance;
+        } else {
+          console.log(`Method ${i + 1}: No SAMU tokens found`);
+          return 0;
+        }
+      } catch (error) {
+        console.warn(`Method ${i + 1} failed:`, error);
+        continue;
+      }
     }
+    
+    // If all methods fail, throw error
+    throw new Error('Unable to fetch SAMU balance from any RPC endpoint');
   }
 }
 

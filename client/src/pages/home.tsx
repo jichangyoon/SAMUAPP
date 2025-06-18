@@ -102,7 +102,7 @@ export default function Home() {
                       className="text-xs"
                       disabled={balanceStatus === 'loading'}
                     >
-                      {balanceStatus === 'loading' ? '조회 중...' : '다시 시도'}
+                      다시 시도
                     </Button>
                   </div>
                 )}
