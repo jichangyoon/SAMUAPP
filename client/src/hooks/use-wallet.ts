@@ -19,6 +19,31 @@ export function useWallet() {
     };
     
     checkConnection();
+
+    // Listen for account changes
+    if (typeof window !== 'undefined' && (window as any).phantom?.solana) {
+      const phantom = (window as any).phantom.solana;
+      
+      phantom.on('accountChanged', (publicKey: any) => {
+        if (publicKey) {
+          setWalletAddress(formatAddress(publicKey.toBase58()));
+          updateBalances();
+        } else {
+          // Wallet disconnected
+          setIsConnected(false);
+          setWalletAddress('');
+          setSamuBalance(0);
+          setNftCount(0);
+        }
+      });
+
+      phantom.on('disconnect', () => {
+        setIsConnected(false);
+        setWalletAddress('');
+        setSamuBalance(0);
+        setNftCount(0);
+      });
+    }
   }, []);
 
   const connect = async () => {
