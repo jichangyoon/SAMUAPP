@@ -70,6 +70,9 @@ class RealPhantomWallet {
     if (!this._connected || !this._publicKey) return 0;
 
     try {
+      console.log('Fetching SAMU balance for:', this._publicKey);
+      console.log('SAMU mint address:', SAMU_MINT);
+      
       // Use Solana RPC API directly to avoid Web3.js dependency issues
       const response = await fetch('https://api.mainnet-beta.solana.com', {
         method: 'POST',
@@ -93,8 +96,15 @@ class RealPhantomWallet {
       });
 
       const data = await response.json();
+      console.log('SAMU balance response:', data);
+      
+      if (data.error) {
+        console.error('RPC Error:', data.error);
+        return 0;
+      }
       
       if (!data.result || !data.result.value || data.result.value.length === 0) {
+        console.log('No SAMU token accounts found');
         return 0; // No SAMU tokens found
       }
 
@@ -102,8 +112,13 @@ class RealPhantomWallet {
       const tokenAccount = data.result.value[0];
       const tokenAmount = tokenAccount.account.data.parsed.info.tokenAmount;
       
+      console.log('Token amount data:', tokenAmount);
+      
       // Return the UI amount (already converted from smallest unit)
-      return parseFloat(tokenAmount.uiAmount || '0');
+      const balance = parseFloat(tokenAmount.uiAmount || '0');
+      console.log('Final SAMU balance:', balance);
+      
+      return balance;
     } catch (error) {
       console.error('Error fetching SAMU balance:', error);
       return 0;

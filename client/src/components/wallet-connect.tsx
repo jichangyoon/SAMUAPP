@@ -24,11 +24,11 @@ export function WalletConnect() {
     <Button
       onClick={connect}
       disabled={isConnecting}
-      size="sm"
-      className="bg-[hsl(50,85%,75%)] hover:bg-[hsl(50,75%,65%)] text-[hsl(201,30%,25%)] font-semibold"
+      size="lg"
+      className="bg-gradient-to-r from-[hsl(50,85%,75%)] to-[hsl(30,85%,65%)] hover:from-[hsl(50,75%,65%)] hover:to-[hsl(30,75%,55%)] text-[hsl(201,30%,25%)] font-bold shadow-lg border-2 border-[hsl(30,100%,50%)]"
     >
-      <Wallet className="h-4 w-4 mr-2" />
-      {isConnecting ? "Connecting..." : "Connect"}
+      <Wallet className="h-5 w-5 mr-2" />
+      {isConnecting ? "연결 중..." : "Phantom 지갑 연결"}
     </Button>
   );
 }

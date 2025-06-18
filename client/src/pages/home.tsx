@@ -15,7 +15,10 @@ import type { Meme } from "@shared/schema";
 import samuLogo1 from "@assets/photo_2025-05-26_08-40-22_1750170004880.jpg";
 
 export default function Home() {
-  const { isConnected, walletAddress, samuBalance } = useWallet();
+  const { isConnected, walletAddress, samuBalance, updateBalances } = useWallet();
+  
+  // Debug log
+  console.log('Wallet state:', { isConnected, walletAddress, samuBalance });
   const [sortBy, setSortBy] = useState("votes");
   const [currentTab, setCurrentTab] = useState("contest");
 
@@ -56,17 +59,37 @@ export default function Home() {
 
       {/* Wallet Status */}
       {isConnected && (
-        <div className="max-w-md mx-auto px-4 py-3 samu-gradient text-[hsl(201,30%,25%)]">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center space-x-2">
-              <span className="font-medium">Connected:</span>
-              <span className="font-mono text-xs">{walletAddress}</span>
+        <div className="max-w-md mx-auto px-4 py-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg mb-4">
+          <div className="flex flex-col space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="font-medium text-green-600">지갑 연결됨</span>
+              </div>
+              <span className="font-mono text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{walletAddress}</span>
             </div>
-            <div className="flex items-center justify-center">
-              <div className="text-center bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/20 dark:to-orange-900/20 p-3 rounded-lg">
-                <div className="font-bold text-xl text-[hsl(30,100%,50%)]">{samuBalance.toLocaleString()}</div>
-                <div className="text-xs opacity-75">SAMU Tokens</div>
-                <div className="text-xs font-medium text-green-600 mt-1">Voting Power: {samuBalance.toLocaleString()}</div>
+            <div className="text-center">
+              <div className="bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-lg border-2 border-[hsl(30,100%,50%)]">
+                <div className="font-bold text-2xl text-[hsl(30,100%,50%)] mb-1">{samuBalance.toLocaleString()}</div>
+                <div className="text-sm font-medium opacity-75 mb-2">SAMU 토큰</div>
+                <div className="text-sm font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full">
+                  투표력: {samuBalance.toLocaleString()}
+                </div>
+                {samuBalance === 0 && (
+                  <div className="mt-2">
+                    <div className="text-xs text-amber-600 mb-2 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded">
+                      SAMU 토큰이 없거나 조회 중입니다
+                    </div>
+                    <Button 
+                      onClick={updateBalances}
+                      size="sm"
+                      variant="outline"
+                      className="text-xs"
+                    >
+                      잔액 새로고침
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
