@@ -131,6 +131,12 @@ export function useWallet() {
       setBalanceStatus('idle');
       
       console.log('Wallet disconnected successfully');
+      
+      // Force page refresh to completely reset all state
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+      
     } catch (error) {
       console.error('Failed to disconnect wallet:', error);
       // Force reset state even if disconnect fails
@@ -138,6 +144,11 @@ export function useWallet() {
       setWalletAddress('');
       setSamuBalance(0);
       setBalanceStatus('idle');
+      
+      // Still refresh the page to ensure clean state
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     }
   };
 
