@@ -94,7 +94,7 @@ class RealPhantomWallet {
 
       const data = await response.json();
       
-      if (data.result?.value?.length === 0) {
+      if (!data.result || !data.result.value || data.result.value.length === 0) {
         return 0; // No SAMU tokens found
       }
 
@@ -110,55 +110,7 @@ class RealPhantomWallet {
     }
   }
 
-  async getNftCount(): Promise<number> {
-    if (!this._connected || !this._publicKey) return 0;
 
-    try {
-      // Get all token accounts for the wallet using direct RPC call
-      const response = await fetch('https://api.mainnet-beta.solana.com', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'getParsedTokenAccountsByOwner',
-          params: [
-            this._publicKey,
-            {
-              programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
-            },
-            {
-              encoding: 'jsonParsed',
-            },
-          ],
-        }),
-      });
-
-      const data = await response.json();
-      
-      if (!data.result?.value) {
-        return 0;
-      }
-
-      let nftCount = 0;
-      for (const account of data.result.value) {
-        const tokenInfo = account.account.data.parsed.info;
-        const tokenAmount = tokenInfo.tokenAmount;
-        
-        // Check if it's an NFT (amount = 1, decimals = 0)
-        if (tokenAmount.decimals === 0 && parseFloat(tokenAmount.amount) === 1) {
-          nftCount++;
-        }
-      }
-
-      return nftCount;
-    } catch (error) {
-      console.error('Error fetching NFT count:', error);
-      return 0;
-    }
-  }
 }
 
 export const phantomWallet = new RealPhantomWallet();

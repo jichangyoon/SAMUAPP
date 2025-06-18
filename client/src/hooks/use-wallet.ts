@@ -6,7 +6,7 @@ export function useWallet() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [samuBalance, setSamuBalance] = useState(0);
-  const [nftCount, setNftCount] = useState(0);
+
 
   useEffect(() => {
     // Check if wallet was previously connected
@@ -33,7 +33,6 @@ export function useWallet() {
           setIsConnected(false);
           setWalletAddress('');
           setSamuBalance(0);
-          setNftCount(0);
         }
       });
 
@@ -41,7 +40,6 @@ export function useWallet() {
         setIsConnected(false);
         setWalletAddress('');
         setSamuBalance(0);
-        setNftCount(0);
       });
     }
   }, []);
@@ -67,7 +65,6 @@ export function useWallet() {
       setIsConnected(false);
       setWalletAddress('');
       setSamuBalance(0);
-      setNftCount(0);
     } catch (error) {
       console.error('Failed to disconnect wallet:', error);
     }
@@ -75,13 +72,8 @@ export function useWallet() {
 
   const updateBalances = async () => {
     try {
-      const [balance, nfts] = await Promise.all([
-        phantomWallet.getSamuBalance(),
-        phantomWallet.getNftCount()
-      ]);
-      
+      const balance = await phantomWallet.getSamuBalance();
       setSamuBalance(Math.floor(balance)); // Round down for display
-      setNftCount(nfts);
     } catch (error) {
       console.error('Failed to fetch balances:', error);
     }
@@ -96,7 +88,7 @@ export function useWallet() {
     isConnecting,
     walletAddress,
     samuBalance,
-    nftCount,
+
     connect,
     disconnect,
     updateBalances
