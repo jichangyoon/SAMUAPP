@@ -207,15 +207,15 @@ export function Leaderboard() {
             </CardHeader>
             <CardContent className="space-y-3">
               {hallOfFameData.map((winner, index) => (
-                <div key={winner.id} className="p-4 border border-yellow-200 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg">
+                <div key={winner.id} className="p-4 border border-yellow-500/30 bg-gradient-to-r from-yellow-900/20 to-orange-900/20 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-2">
                       <Trophy className="h-4 w-4 text-yellow-500" />
-                      <Badge className="bg-yellow-500 text-white text-xs">
+                      <Badge className="bg-yellow-500 text-black text-xs">
                         {index === 0 ? "Latest Winner" : "Past Winner"}
                       </Badge>
                     </div>
-                    <div className="text-xs text-gray-500 flex items-center">
+                    <div className="text-xs text-muted-foreground flex items-center">
                       <Calendar className="h-3 w-3 mr-1" />
                       {winner.contestDate}
                     </div>
@@ -234,7 +234,7 @@ export function Leaderboard() {
                       <div className="font-bold text-[hsl(30,100%,50%)]">
                         {winner.votes.toLocaleString()}
                       </div>
-                      <div className="text-xs text-green-600 font-semibold">
+                      <div className="text-xs text-green-400 font-semibold">
                         Prize: {winner.prize}
                       </div>
                     </div>
