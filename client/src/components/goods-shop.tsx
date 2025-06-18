@@ -122,12 +122,12 @@ export function GoodsShop() {
     <div className="space-y-6 pb-20">
       {/* 굿즈샵 헤더 */}
       <Card className="bg-gradient-to-r from-[hsl(50,85%,75%)] to-[hsl(35,70%,70%)] border-0">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-[hsl(201,30%,25%)] flex items-center justify-center gap-2">
-            <Trophy className="h-6 w-6" />
+        <CardHeader className="text-center py-3">
+          <CardTitle className="text-lg font-bold text-[hsl(201,30%,25%)] flex items-center justify-center gap-2">
+            <Trophy className="h-4 w-4" />
             SAMU Goods Shop
           </CardTitle>
-          <CardDescription className="text-[hsl(201,30%,35%)]">
+          <CardDescription className="text-xs text-[hsl(201,30%,35%)] mt-1">
             Hall of Fame memes turned into goods! Purchase with SAMU tokens
           </CardDescription>
         </CardHeader>
@@ -136,15 +136,15 @@ export function GoodsShop() {
       {/* 장바구니 요약 */}
       {cart.length > 0 && (
         <Card className="bg-green-50 border-green-200">
-          <CardContent className="p-4">
+          <CardContent className="p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ShoppingCart className="h-5 w-5 text-green-600" />
-                <span className="font-medium">Cart: {cart.length} items</span>
+                <ShoppingCart className="h-4 w-4 text-green-600" />
+                <span className="font-medium text-sm">Cart: {cart.length} items</span>
               </div>
               <div className="text-right">
-                <div className="font-bold text-green-700">{getTotalPrice().toLocaleString()} SAMU</div>
-                <Button size="sm" className="mt-1">Checkout</Button>
+                <div className="font-bold text-sm text-green-700">{getTotalPrice().toLocaleString()} SAMU</div>
+                <Button size="sm" className="mt-1 h-6 text-xs">Checkout</Button>
               </div>
             </div>
           </CardContent>
@@ -170,56 +170,56 @@ export function GoodsShop() {
         </TabsList>
 
         {categories.map((category) => (
-          <TabsContent key={category.id} value={category.id} className="mt-4">
-            <div className="grid gap-4">
+          <TabsContent key={category.id} value={category.id} className="mt-2">
+            <div className="space-y-2">
               {filteredGoods.map((item) => (
                 <Card key={item.id} className="overflow-hidden">
-                  <div className="flex">
-                    <div className="w-20 h-20 flex-shrink-0">
+                  <div className="flex p-2">
+                    <div className="w-16 h-16 flex-shrink-0">
                       <img 
                         src={item.image} 
                         alt={item.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover rounded"
                       />
                     </div>
-                    <div className="flex-1 p-2">
-                      <div className="flex items-start justify-between h-full">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-xs text-[hsl(201,30%,25%)] leading-tight">
+                    <div className="flex-1 ml-3 min-w-0">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1 min-w-0 pr-2">
+                          <h3 className="font-semibold text-xs text-[hsl(201,30%,25%)] truncate">
                             {item.name}
                           </h3>
-                          <p className="text-xs text-gray-600 mt-1 leading-tight line-clamp-1">
+                          <p className="text-xs text-gray-600 mt-0.5 line-clamp-1">
                             {item.description}
                           </p>
-                          <div className="flex flex-wrap items-center gap-1 mt-1">
-                            <Badge variant="secondary" className="text-xs px-1 py-0 h-4">
-                              <Trophy className="h-2 w-2 mr-1" />
+                          <div className="flex items-center gap-1 mt-1">
+                            <Badge variant="secondary" className="text-xs px-1 py-0 h-3 leading-none">
+                              <Trophy className="h-2 w-2 mr-0.5" />
                               {item.originalMeme}
                             </Badge>
                             {item.limited && (
-                              <Badge variant="destructive" className="text-xs px-1 py-0 h-4">
+                              <Badge variant="destructive" className="text-xs px-1 py-0 h-3 leading-none">
                                 Limited
                               </Badge>
                             )}
                           </div>
+                          <div className="text-xs text-gray-500 mt-0.5">
+                            By {item.originalAuthor} • Stock: {item.stock}
+                          </div>
                         </div>
-                        <div className="text-right ml-2 flex-shrink-0">
+                        <div className="text-right flex-shrink-0">
                           <div className="font-bold text-xs text-[hsl(35,70%,50%)]">
                             {item.price.toLocaleString()}
                           </div>
-                          <div className="text-xs text-gray-500 -mt-1">SAMU</div>
+                          <div className="text-xs text-gray-500 leading-none">SAMU</div>
                           <Button
                             size="sm"
-                            className="mt-1 h-6 text-xs px-2"
+                            className="mt-1 h-5 text-xs px-2 leading-none"
                             onClick={() => addToCart(item.id)}
                             disabled={cart.includes(item.id)}
                           >
                             {cart.includes(item.id) ? "Added" : "Add"}
                           </Button>
                         </div>
-                      </div>
-                      <div className="mt-1 text-xs text-gray-500">
-                        By {item.originalAuthor} • Stock: {item.stock}
                       </div>
                     </div>
                   </div>
@@ -232,8 +232,8 @@ export function GoodsShop() {
 
       {/* 안내 메시지 */}
       <Card className="bg-blue-50 border-blue-200">
-        <CardContent className="p-4 text-center">
-          <p className="text-sm text-blue-700">
+        <CardContent className="p-3 text-center">
+          <p className="text-xs text-blue-700">
             💡 Hall of Fame memes are turned into physical goods.<br />
             Purchase with SAMU tokens and receive real merchandise!
           </p>
