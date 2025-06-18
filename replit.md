@@ -83,6 +83,7 @@ The application is configured for deployment on Replit with the following setup:
 ```
 Changelog:
 - June 17, 2025. Initial setup
+- June 17, 2025. Added comprehensive Leaderboard with current rankings, top creators, and Hall of Fame
 ```
 
 ## User Preferences
