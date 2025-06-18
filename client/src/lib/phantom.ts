@@ -88,10 +88,14 @@ class RealPhantomWallet {
         })
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
       const data = await response.json();
       
       if (data.error) {
-        console.warn('RPC request failed:', data.error);
+        console.warn('RPC error:', data.error);
         return 0;
       }
       
@@ -101,7 +105,7 @@ class RealPhantomWallet {
         console.log('SAMU balance found:', balance);
         return balance;
       } else {
-        console.log('No SAMU tokens found');
+        console.log('No SAMU tokens found in this wallet');
         return 0;
       }
     } catch (error) {
