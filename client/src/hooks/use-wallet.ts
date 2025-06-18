@@ -7,6 +7,7 @@ export function useWallet() {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [samuBalance, setSamuBalance] = useState(0);
   const [balanceStatus, setBalanceStatus] = useState<'loading' | 'success' | 'error' | 'idle'>('idle');
+  const [userDisconnected, setUserDisconnected] = useState(false);
 
 
   useEffect(() => {
@@ -15,8 +16,7 @@ export function useWallet() {
     const initializeWallet = async () => {
       const phantom = (window as any).phantom?.solana;
       
-      if (!phantom) {
-        console.log('Phantom wallet not found');
+      if (!phantom || userDisconnected) {
         return;
       }
       
@@ -29,8 +29,8 @@ export function useWallet() {
             setWalletAddress(formatAddress(publicKeyString));
             await updateBalances();
           }
-        } else {
-          // Try silent auto-connect for trusted connections
+        } else if (!userDisconnected) {
+          // Try silent auto-connect only if user hasn't explicitly disconnected
           const response = await phantom.connect({ onlyIfTrusted: true });
           if (response.publicKey && mounted) {
             const publicKeyString = response.publicKey.toBase58();
@@ -90,6 +90,10 @@ export function useWallet() {
   const connect = async () => {
     try {
       setIsConnecting(true);
+      
+      // Reset disconnected flag when user explicitly connects
+      setUserDisconnected(false);
+      
       const wallet = await phantomWallet.connect();
       
       setIsConnected(true);
@@ -108,13 +112,32 @@ export function useWallet() {
 
   const disconnect = async () => {
     try {
+      // Set user disconnected flag first
+      setUserDisconnected(true);
+      
+      // Disconnect from phantom
+      const phantom = (window as any).phantom?.solana;
+      if (phantom) {
+        await phantom.disconnect();
+      }
+      
+      // Disconnect from our wrapper
       await phantomWallet.disconnect();
+      
+      // Reset all state
       setIsConnected(false);
       setWalletAddress('');
       setSamuBalance(0);
       setBalanceStatus('idle');
+      
+      console.log('Wallet disconnected successfully');
     } catch (error) {
       console.error('Failed to disconnect wallet:', error);
+      // Force reset state even if disconnect fails
+      setIsConnected(false);
+      setWalletAddress('');
+      setSamuBalance(0);
+      setBalanceStatus('idle');
     }
   };
 

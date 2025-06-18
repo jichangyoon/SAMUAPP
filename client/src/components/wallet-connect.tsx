@@ -11,11 +11,12 @@ export function WalletConnect() {
         onClick={disconnect}
         variant="outline"
         size="sm"
-        className="bg-green-100 text-green-700 border-green-200 hover:bg-green-200"
+        className="bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
       >
-        <span className="font-mono text-xs">
+        <span className="font-mono text-xs mr-2">
           {walletAddress}
         </span>
+        <span className="text-xs">Disconnect</span>
       </Button>
     );
   }
