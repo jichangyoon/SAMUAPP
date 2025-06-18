@@ -61,7 +61,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
     if (navigator.share) {
       navigator.share({
         title: meme.title,
-        text: meme.description,
+        text: meme.description || "",
         url: window.location.href,
       });
     } else {
