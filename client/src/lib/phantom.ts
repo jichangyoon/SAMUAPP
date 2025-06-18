@@ -96,20 +96,38 @@ class RealPhantomWallet {
         
         let response;
         
-        response = await fetch(endpoint.url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jsonrpc: '2.0',
-            id: 1,
-            method: 'getTokenAccountsByOwner',
-            params: [
-              this._publicKey, 
-              { mint: SAMU_MINT }, 
-              { encoding: 'jsonParsed' }
-            ]
-          })
-        });
+        if (endpoint.name.includes('Helius')) {
+          // Helius DAS API 사용
+          response = await fetch(endpoint.url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              id: 'samu-balance-check',
+              method: 'searchAssets',
+              params: {
+                ownerAddress: this._publicKey,
+                tokenType: 'fungible'
+              }
+            })
+          });
+        } else {
+          // 기존 RPC 메소드
+          response = await fetch(endpoint.url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              id: 1,
+              method: 'getTokenAccountsByOwner',
+              params: [
+                this._publicKey, 
+                { mint: SAMU_MINT }, 
+                { encoding: 'jsonParsed' }
+              ]
+            })
+          });
+        }
 
         if (!response.ok) {
           console.warn(`${endpoint.name}: HTTP ${response.status}`);
@@ -123,14 +141,34 @@ class RealPhantomWallet {
           continue;
         }
         
-        if (data.result?.value?.length > 0) {
-          const tokenAmount = data.result.value[0].account.data.parsed.info.tokenAmount;
-          const balance = parseFloat(tokenAmount.uiAmount || '0');
-          console.log(`${endpoint.name}에서 SAMU 잔액 발견:`, balance);
-          return balance;
+        if (endpoint.name.includes('Helius')) {
+          // DAS API 응답 처리
+          if (data.result?.items) {
+            // SAMU 토큰 찾기
+            const samuToken = data.result.items.find((item: any) => 
+              item.id === SAMU_MINT
+            );
+            
+            if (samuToken && samuToken.token_info) {
+              const balance = samuToken.token_info.balance / Math.pow(10, samuToken.token_info.decimals || 9);
+              console.log(`${endpoint.name}에서 SAMU 잔액 발견:`, balance);
+              return balance;
+            } else {
+              console.log(`${endpoint.name}: 이 지갑에 SAMU 토큰이 없습니다`);
+              return 0;
+            }
+          }
         } else {
-          console.log(`${endpoint.name}: 이 지갑에 SAMU 토큰이 없습니다`);
-          return 0;
+          // 기존 RPC 응답 처리
+          if (data.result?.value?.length > 0) {
+            const tokenAmount = data.result.value[0].account.data.parsed.info.tokenAmount;
+            const balance = parseFloat(tokenAmount.uiAmount || '0');
+            console.log(`${endpoint.name}에서 SAMU 잔액 발견:`, balance);
+            return balance;
+          } else {
+            console.log(`${endpoint.name}: 이 지갑에 SAMU 토큰이 없습니다`);
+            return 0;
+          }
         }
       } catch (error) {
         console.warn(`${endpoint.name} 실패:`, error);
