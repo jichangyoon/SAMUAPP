@@ -250,17 +250,10 @@ export function GoodsShop() {
       <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
-              <span>{selectedItem?.name}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedItem(null)}
-                className="h-6 w-6 p-0"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </DialogTitle>
+            <DialogTitle>{selectedItem?.name}</DialogTitle>
+            <DialogDescription>
+              Product details and purchase options
+            </DialogDescription>
           </DialogHeader>
           
           {selectedItem && (
