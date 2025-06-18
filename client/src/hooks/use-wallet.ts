@@ -10,39 +10,60 @@ export function useWallet() {
 
 
   useEffect(() => {
-    // Check connection status on mount and when phantom changes
-    const checkConnection = async () => {
+    // Wait for phantom to be fully loaded
+    const checkConnectionWithDelay = () => {
+      setTimeout(async () => {
+        const phantom = (window as any).phantom?.solana;
+        
+        if (phantom && phantom.isConnected && phantom.publicKey) {
+          const publicKeyString = phantom.publicKey.toBase58();
+          setIsConnected(true);
+          setWalletAddress(formatAddress(publicKeyString));
+          await updateBalances();
+        } else if (phantomWallet.connected && phantomWallet.publicKey) {
+          setIsConnected(true);
+          setWalletAddress(formatAddress(phantomWallet.publicKey));
+          await updateBalances();
+        } else {
+          // Try silent auto-connect for trusted connections
+          try {
+            if (phantom) {
+              const response = await phantom.connect({ onlyIfTrusted: true });
+              if (response.publicKey) {
+                const publicKeyString = response.publicKey.toBase58();
+                setIsConnected(true);
+                setWalletAddress(formatAddress(publicKeyString));
+                await updateBalances();
+              }
+            }
+          } catch (error) {
+            // Silent fail for auto-connect
+          }
+        }
+      }, 500); // Give phantom time to initialize
+    };
+    
+    checkConnectionWithDelay();
+    
+    // Also check when phantom becomes available
+    const phantomLoadChecker = setInterval(() => {
       const phantom = (window as any).phantom?.solana;
-      
-      if (phantom && phantom.isConnected && phantom.publicKey) {
+      if (phantom && phantom.isConnected && phantom.publicKey && !isConnected) {
         const publicKeyString = phantom.publicKey.toBase58();
         setIsConnected(true);
         setWalletAddress(formatAddress(publicKeyString));
-        await updateBalances();
-      } else if (phantomWallet.connected && phantomWallet.publicKey) {
-        setIsConnected(true);
-        setWalletAddress(formatAddress(phantomWallet.publicKey));
-        await updateBalances();
-      } else {
-        // Try silent auto-connect for trusted connections
-        try {
-          if (phantom) {
-            const response = await phantom.connect({ onlyIfTrusted: true });
-            if (response.publicKey) {
-              const publicKeyString = response.publicKey.toBase58();
-              setIsConnected(true);
-              setWalletAddress(formatAddress(publicKeyString));
-              await updateBalances();
-            }
-          }
-        } catch (error) {
-          // Silent fail for auto-connect
-        }
+        updateBalances();
+        clearInterval(phantomLoadChecker);
       }
-    };
+    }, 1000);
     
-    checkConnection();
+    // Clear interval after 10 seconds
+    setTimeout(() => clearInterval(phantomLoadChecker), 10000);
+    
+    return () => clearInterval(phantomLoadChecker);
+  }, []);
 
+  useEffect(() => {
     // Listen for account changes
     if (typeof window !== 'undefined' && (window as any).phantom?.solana) {
       const phantom = (window as any).phantom.solana;
