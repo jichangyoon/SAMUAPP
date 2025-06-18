@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useWallet } from "@/hooks/use-wallet";
 import { useToast } from "@/hooks/use-toast";
-import { ShoppingCart, Star, Trophy, Shirt, Coffee, Sticker } from "lucide-react";
+import { ShoppingCart, Trophy, Shirt, Coffee, Sticker } from "lucide-react";
 
 // Hall of Fame meme-based goods data
 const goodsData = [
@@ -193,8 +193,8 @@ export function GoodsShop() {
                           </p>
                           <div className="flex items-center gap-2 mt-2">
                             <Badge variant="secondary" className="text-xs">
-                              <Star className="h-3 w-3 mr-1" />
-                              {item.originalMeme}
+                              <Trophy className="h-3 w-3 mr-1" />
+                              Based on: {item.originalMeme}
                             </Badge>
                             {item.limited && (
                               <Badge variant="destructive" className="text-xs">
