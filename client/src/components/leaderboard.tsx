@@ -111,16 +111,16 @@ export function Leaderboard() {
             </CardHeader>
             <CardContent className="space-y-3">
               {topMemes.map((meme, index) => (
-                <div key={meme.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={meme.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                   <div className="flex items-center space-x-3">
                     <div className="flex items-center justify-center w-8 h-8">
                       {getRankIcon(index + 1)}
                     </div>
                     <div>
-                      <div className="font-semibold text-[hsl(201,30%,25%)] text-sm">
+                      <div className="font-semibold text-foreground text-sm">
                         {meme.title}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-muted-foreground">
                         by {meme.authorUsername}
                       </div>
                     </div>
@@ -129,13 +129,13 @@ export function Leaderboard() {
                     <div className="font-bold text-[hsl(30,100%,50%)]">
                       {meme.votes.toLocaleString()}
                     </div>
-                    <div className="text-xs text-gray-500">votes</div>
+                    <div className="text-xs text-muted-foreground">votes</div>
                   </div>
                 </div>
               ))}
               
               {topMemes.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-muted-foreground">
                   No memes with votes yet
                 </div>
               )}
@@ -154,7 +154,7 @@ export function Leaderboard() {
             </CardHeader>
             <CardContent className="space-y-3">
               {topCreators.map((creator: any, index) => (
-                <div key={creator.username} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={creator.username} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                   <div className="flex items-center space-x-3">
                     <div className="flex items-center justify-center w-8 h-8">
                       {getRankIcon(index + 1)}
