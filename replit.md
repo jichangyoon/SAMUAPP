@@ -98,6 +98,8 @@ Changelog:
 - June 18, 2025. Improved error handling for Solana token balance queries
 - June 18, 2025. Fixed wallet connection state synchronization issues after logout/login cycles
 - June 18, 2025. Enhanced phantom wallet integration with real-time connection state tracking
+- June 18, 2025. Resolved SAMU token balance display issue - now showing correct 47.7B tokens
+- June 18, 2025. Completed stable wallet auto-reconnection with delayed initialization for Phantom readiness
 ```
 
 ## User Preferences

@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, bigint, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -9,7 +9,7 @@ export const memes = pgTable("memes", {
   imageUrl: text("image_url").notNull(),
   authorWallet: text("author_wallet").notNull(),
   authorUsername: text("author_username").notNull(),
-  votes: integer("votes").notNull().default(0),
+  votes: bigint("votes", { mode: "number" }).notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -17,7 +17,7 @@ export const votes = pgTable("votes", {
   id: serial("id").primaryKey(),
   memeId: integer("meme_id").notNull(),
   voterWallet: text("voter_wallet").notNull(),
-  votingPower: integer("voting_power").notNull(),
+  votingPower: bigint("voting_power", { mode: "number" }).notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
