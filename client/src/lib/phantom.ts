@@ -72,46 +72,69 @@ class RealPhantomWallet {
     console.log('Fetching SAMU balance for:', this._publicKey);
     console.log('SAMU mint address:', SAMU_MINT);
     
-    try {
-      const response = await fetch(`https://mainnet.helius-rpc.com/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'getParsedTokenAccountsByOwner',
-          params: [
-            this._publicKey, 
-            { mint: SAMU_MINT }, 
-            { encoding: 'jsonParsed' }
-          ]
-        })
-      });
+    const endpoints = [
+      {
+        url: `https://mainnet.helius-rpc.com/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`,
+        name: 'Helius mainnet'
+      },
+      {
+        url: 'https://api.mainnet-beta.solana.com',
+        name: 'Solana Labs'
+      },
+      {
+        url: 'https://rpc.ankr.com/solana',
+        name: 'Ankr'
+      }
+    ];
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
+    for (const endpoint of endpoints) {
+      try {
+        console.log(`시도 중: ${endpoint.name}`);
+        
+        const response = await fetch(endpoint.url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'getParsedTokenAccountsByOwner',
+            params: [
+              this._publicKey, 
+              { mint: SAMU_MINT }, 
+              { encoding: 'jsonParsed' }
+            ]
+          })
+        });
 
-      const data = await response.json();
-      
-      if (data.error) {
-        console.warn('RPC error:', data.error);
-        return 0;
+        if (!response.ok) {
+          console.warn(`${endpoint.name}: HTTP ${response.status}`);
+          continue;
+        }
+
+        const data = await response.json();
+        
+        if (data.error) {
+          console.warn(`${endpoint.name} RPC error:`, data.error);
+          continue;
+        }
+        
+        if (data.result?.value?.length > 0) {
+          const tokenAmount = data.result.value[0].account.data.parsed.info.tokenAmount;
+          const balance = parseFloat(tokenAmount.uiAmount || '0');
+          console.log(`${endpoint.name}에서 SAMU 잔액 발견:`, balance);
+          return balance;
+        } else {
+          console.log(`${endpoint.name}: 이 지갑에 SAMU 토큰이 없습니다`);
+          return 0;
+        }
+      } catch (error) {
+        console.warn(`${endpoint.name} 실패:`, error);
+        continue;
       }
-      
-      if (data.result?.value?.length > 0) {
-        const tokenAmount = data.result.value[0].account.data.parsed.info.tokenAmount;
-        const balance = parseFloat(tokenAmount.uiAmount || '0');
-        console.log('SAMU balance found:', balance);
-        return balance;
-      } else {
-        console.log('No SAMU tokens found in this wallet');
-        return 0;
-      }
-    } catch (error) {
-      console.warn('Failed to fetch SAMU balance:', error);
-      return 0;
     }
+    
+    console.warn('모든 엔드포인트 실패, SAMU 잔액을 가져올 수 없습니다');
+    return 0;
   }
 }
 
