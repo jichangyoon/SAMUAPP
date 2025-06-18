@@ -73,59 +73,85 @@ class RealPhantomWallet {
       console.log('Fetching SAMU balance for:', this._publicKey);
       console.log('SAMU mint address:', SAMU_MINT);
       
-      // Use Solana RPC API directly to avoid Web3.js dependency issues
-      const response = await fetch('https://api.mainnet-beta.solana.com', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'getParsedTokenAccountsByOwner',
-          params: [
-            this._publicKey,
-            {
-              mint: SAMU_MINT,
-            },
-            {
-              encoding: 'jsonParsed',
-            },
-          ],
-        }),
-      });
-
-      const data = await response.json();
-      console.log('SAMU balance response:', data);
+      // Use alternative RPC endpoint to avoid rate limits
+      const rpcEndpoints = [
+        'https://rpc.ankr.com/solana',
+        'https://solana-mainnet.g.alchemy.com/v2/demo',
+        'https://api.mainnet-beta.solana.com'
+      ];
       
-      if (data.error) {
-        console.error('RPC Error:', data.error);
-        return 0;
+      let response;
+      let lastError;
+      
+      for (const endpoint of rpcEndpoints) {
+        try {
+          response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              id: 1,
+              method: 'getParsedTokenAccountsByOwner',
+              params: [
+                this._publicKey,
+                {
+                  mint: SAMU_MINT,
+                },
+                {
+                  encoding: 'jsonParsed',
+                },
+              ],
+            }),
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            console.log('SAMU balance response from', endpoint, ':', data);
+            
+            if (!data.error) {
+              // Success - process the result
+              if (!data.result || !data.result.value || data.result.value.length === 0) {
+                console.log('No SAMU token accounts found');
+                return 0;
+              }
+
+              const tokenAccount = data.result.value[0];
+              const tokenAmount = tokenAccount.account.data.parsed.info.tokenAmount;
+              
+              console.log('Token amount data:', tokenAmount);
+              
+              const balance = parseFloat(tokenAmount.uiAmount || '0');
+              console.log('Final SAMU balance:', balance);
+              
+              return balance;
+            } else {
+              lastError = data.error;
+              console.warn('RPC Error from', endpoint, ':', data.error);
+              continue;
+            }
+          } else {
+            lastError = { message: `HTTP ${response.status}` };
+            console.warn('HTTP Error from', endpoint, ':', response.status);
+            continue;
+          }
+        } catch (err) {
+          lastError = err;
+          console.warn('Network error from', endpoint, ':', err);
+          continue;
+        }
       }
       
-      if (!data.result || !data.result.value || data.result.value.length === 0) {
-        console.log('No SAMU token accounts found');
-        return 0; // No SAMU tokens found
-      }
-
-      // Get the token amount from the first account
-      const tokenAccount = data.result.value[0];
-      const tokenAmount = tokenAccount.account.data.parsed.info.tokenAmount;
+      // If we get here, all endpoints failed
+      console.error('All RPC endpoints failed. Last error:', lastError);
+      return 0;
       
-      console.log('Token amount data:', tokenAmount);
-      
-      // Return the UI amount (already converted from smallest unit)
-      const balance = parseFloat(tokenAmount.uiAmount || '0');
-      console.log('Final SAMU balance:', balance);
-      
-      return balance;
     } catch (error) {
       console.error('Error fetching SAMU balance:', error);
       return 0;
     }
   }
-
-
 }
 
 export const phantomWallet = new RealPhantomWallet();
