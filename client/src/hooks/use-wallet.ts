@@ -80,7 +80,7 @@ export function useWallet() {
         phantomWallet.getNftCount()
       ]);
       
-      setSamuBalance(balance);
+      setSamuBalance(Math.floor(balance)); // Round down for display
       setNftCount(nfts);
     } catch (error) {
       console.error('Failed to fetch balances:', error);

@@ -41,9 +41,9 @@ The application follows a modern full-stack architecture with clear separation o
 
 ## Data Flow
 
-1. **User Authentication**: Mock Phantom wallet integration (development mode)
+1. **User Authentication**: Real Phantom wallet integration with mainnet SAMU token detection
 2. **Meme Submission**: Users upload images with metadata via form submission
-3. **Voting System**: Token holders vote with power based on SAMU holdings + NFT multipliers
+3. **Voting System**: Token holders vote with power based on actual SAMU holdings + NFT multipliers
 4. **Real-time Updates**: TanStack Query manages data fetching and cache invalidation
 5. **Image Storage**: Base64 encoded images stored directly in database (MVP approach)
 6. **Goods Shop**: Hall of Fame memes converted to purchasable merchandise with SAMU token payments
@@ -92,6 +92,7 @@ Changelog:
 - June 18, 2025. Implemented Hall of Fame meme-to-merchandise pipeline
 - June 18, 2025. Updated navigation to separate Meme Contest and Goods Shop sections
 - June 18, 2025. Converted all UI text to English for international accessibility
+- June 18, 2025. Implemented real Phantom wallet integration with SAMU token detection (EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF)
 ```
 
 ## User Preferences

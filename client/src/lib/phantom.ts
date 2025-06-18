@@ -37,7 +37,7 @@ class RealPhantomWallet {
       this._publicKey = publicKeyString;
       
       return {
-        publicKey: this._publicKey,
+        publicKey: this._publicKey as string,
         connected: this._connected
       };
     } catch (error) {
