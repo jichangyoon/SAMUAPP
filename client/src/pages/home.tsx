@@ -95,72 +95,72 @@ export default function Home() {
               
               <TabsContent value="contest-main" className="mt-0">
                 <main className="space-y-4 pb-20">
-              {/* Contest Header */}
-              <ContestHeader />
+                  {/* Contest Header */}
+                  <ContestHeader />
 
-              {/* Upload Section */}
-              {isConnected && (
-                <UploadForm onSuccess={() => refetch()} />
-              )}
+                  {/* Upload Section */}
+                  {isConnected && (
+                    <UploadForm onSuccess={() => refetch()} />
+                  )}
 
-              {/* Meme Gallery */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-lg font-semibold text-[hsl(201,30%,25%)]">Contest Entries</h2>
-                  <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-32 h-8 text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="votes">Most Votes</SelectItem>
-                      <SelectItem value="latest">Latest</SelectItem>
-                      <SelectItem value="trending">Trending</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                  {/* Meme Gallery */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h2 className="text-lg font-semibold text-[hsl(201,30%,25%)]">Contest Entries</h2>
+                      <Select value={sortBy} onValueChange={setSortBy}>
+                        <SelectTrigger className="w-32 h-8 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="votes">Most Votes</SelectItem>
+                          <SelectItem value="latest">Latest</SelectItem>
+                          <SelectItem value="trending">Trending</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                {isLoading ? (
-                  <div className="space-y-4">
-                    {[1, 2, 3].map((i) => (
-                      <Card key={i} className="animate-pulse">
-                        <div className="aspect-square bg-gray-200" />
-                        <CardContent className="p-4">
-                          <div className="h-4 bg-gray-200 rounded mb-2" />
-                          <div className="h-3 bg-gray-200 rounded w-3/4" />
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {sortedMemes.map((meme) => (
-                      <MemeCard 
-                        key={meme.id} 
-                        meme={meme} 
-                        onVote={() => refetch()}
-                        canVote={isConnected}
-                      />
-                    ))}
-                    
-                    {sortedMemes.length === 0 && (
-                      <Card>
-                        <CardContent className="p-8 text-center">
-                          <p className="text-gray-500">No memes submitted yet. Be the first!</p>
-                        </CardContent>
-                      </Card>
+                    {isLoading ? (
+                      <div className="space-y-4">
+                        {[1, 2, 3].map((i) => (
+                          <Card key={i} className="animate-pulse">
+                            <div className="aspect-square bg-gray-200" />
+                            <CardContent className="p-4">
+                              <div className="h-4 bg-gray-200 rounded mb-2" />
+                              <div className="h-3 bg-gray-200 rounded w-3/4" />
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {sortedMemes.map((meme) => (
+                          <MemeCard 
+                            key={meme.id} 
+                            meme={meme} 
+                            onVote={() => refetch()}
+                            canVote={isConnected}
+                          />
+                        ))}
+                        
+                        {sortedMemes.length === 0 && (
+                          <Card>
+                            <CardContent className="p-8 text-center">
+                              <p className="text-gray-500">No memes submitted yet. Be the first!</p>
+                            </CardContent>
+                          </Card>
+                        )}
+                      </div>
+                    )}
+
+                    {sortedMemes.length > 0 && (
+                      <div className="text-center mt-6">
+                        <Button variant="outline" className="bg-gray-100 hover:bg-gray-200">
+                          Load More Memes
+                        </Button>
+                      </div>
                     )}
                   </div>
-                )}
-
-                {sortedMemes.length > 0 && (
-                  <div className="text-center mt-6">
-                    <Button variant="outline" className="bg-gray-100 hover:bg-gray-200">
-                      Load More Memes
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </main>
+                </main>
               </TabsContent>
               
               <TabsContent value="leaderboard">
