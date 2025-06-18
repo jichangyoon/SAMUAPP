@@ -19,6 +19,24 @@ export function useWallet() {
     const initializeWallet = async () => {
       const phantom = (window as any).phantom?.solana;
       
+      // Check if user came back from /connected route (mobile deeplink return)
+      const isComingFromPhantom = window.location.pathname === '/connected';
+      if (isComingFromPhantom) {
+        // Clear the route and try to connect
+        window.history.replaceState({}, '', '/');
+        
+        // Wait a bit for Phantom to initialize after deeplink return
+        setTimeout(async () => {
+          if (phantom && phantom.isConnected && phantom.publicKey) {
+            const publicKeyString = phantom.publicKey.toBase58();
+            setIsConnected(true);
+            setWalletAddress(formatAddress(publicKeyString));
+            await updateBalances();
+          }
+        }, 1000);
+        return;
+      }
+      
       if (!phantom || userDisconnected) {
         return;
       }

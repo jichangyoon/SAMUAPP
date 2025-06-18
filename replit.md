@@ -102,6 +102,9 @@ Changelog:
 - June 18, 2025. Completed stable wallet auto-reconnection with delayed initialization for Phantom readiness
 - June 18, 2025. Added Capacitor integration for native Android/iOS app generation
 - June 18, 2025. Successfully converted web application to Android app with complete project structure
+- June 18, 2025. Implemented comprehensive mobile Phantom wallet integration with deeplink support
+- June 18, 2025. Added Pump.fun-style mobile wallet connection flow for Capacitor-wrapped app
+- June 18, 2025. Completed mobile-first wallet connection system supporting both in-app and deeplink flows
 ```
 
 ## User Preferences
