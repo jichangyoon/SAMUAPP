@@ -119,7 +119,6 @@ export default function Home() {
                       size="sm"
                       variant="outline"
                       className="text-xs"
-                      disabled={balanceStatus === 'loading'}
                     >
                       Check Token Balance
                     </Button>
