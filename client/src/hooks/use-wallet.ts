@@ -7,7 +7,10 @@ export function useWallet() {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [samuBalance, setSamuBalance] = useState(0);
   const [balanceStatus, setBalanceStatus] = useState<'loading' | 'success' | 'error' | 'idle'>('idle');
-  const [userDisconnected, setUserDisconnected] = useState(false);
+  const [userDisconnected, setUserDisconnected] = useState(() => {
+    // Check localStorage for user disconnect state
+    return localStorage.getItem('wallet-disconnected') === 'true';
+  });
 
 
   useEffect(() => {
@@ -93,6 +96,7 @@ export function useWallet() {
       
       // Reset disconnected flag when user explicitly connects
       setUserDisconnected(false);
+      localStorage.removeItem('wallet-disconnected');
       
       const wallet = await phantomWallet.connect();
       
@@ -112,8 +116,9 @@ export function useWallet() {
 
   const disconnect = async () => {
     try {
-      // Set user disconnected flag first
+      // Set user disconnected flag and store in localStorage
       setUserDisconnected(true);
+      localStorage.setItem('wallet-disconnected', 'true');
       
       // Disconnect from phantom
       const phantom = (window as any).phantom?.solana;
@@ -144,6 +149,7 @@ export function useWallet() {
       setWalletAddress('');
       setSamuBalance(0);
       setBalanceStatus('idle');
+      localStorage.setItem('wallet-disconnected', 'true');
       
       // Still refresh the page to ensure clean state
       setTimeout(() => {
