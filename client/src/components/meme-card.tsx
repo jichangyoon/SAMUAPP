@@ -61,7 +61,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
     if (navigator.share) {
       navigator.share({
         title: meme.title,
-        text: meme.description || "",
+        text: meme.description,
         url: window.location.href,
       });
     } else {
@@ -76,7 +76,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   return (
     <>
       <Card className="overflow-hidden samu-card-shadow samu-voting-card">
-        <div className="aspect-square bg-muted flex items-center justify-center">
+        <div className="aspect-square bg-gray-100 flex items-center justify-center">
           <img
             src={meme.imageUrl}
             alt={meme.title}
@@ -89,7 +89,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
           />
           <div className="hidden text-center p-8">
             <div className="text-4xl mb-2">🖼️</div>
-            <p className="text-muted-foreground">Image failed to load</p>
+            <p className="text-gray-500">Image failed to load</p>
           </div>
         </div>
 
@@ -97,22 +97,22 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-2">
               <div className="w-6 h-6 bg-[hsl(50,85%,75%)] rounded-full flex items-center justify-center">
-                <span className="text-xs font-bold text-black">
+                <span className="text-xs font-bold text-[hsl(201,30%,25%)]">
                   {meme.authorUsername.charAt(0).toUpperCase()}
                 </span>
               </div>
-              <span className="text-sm text-muted-foreground">{meme.authorUsername}</span>
+              <span className="text-sm text-gray-600">{meme.authorUsername}</span>
             </div>
             <div className="text-right">
               <div className="text-lg font-bold text-[hsl(30,100%,50%)]">{meme.votes.toLocaleString()}</div>
-              <div className="text-xs text-muted-foreground">votes</div>
+              <div className="text-xs text-gray-500">votes</div>
             </div>
           </div>
 
           <div className="mb-3">
-            <h3 className="font-semibold text-foreground mb-1">{meme.title}</h3>
+            <h3 className="font-semibold text-[hsl(201,30%,25%)] mb-1">{meme.title}</h3>
             {meme.description && (
-              <p className="text-sm text-muted-foreground">{meme.description}</p>
+              <p className="text-sm text-gray-600">{meme.description}</p>
             )}
           </div>
 
@@ -120,7 +120,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
             <Button
               onClick={() => setShowVoteDialog(true)}
               disabled={!canVote}
-              className="flex-1 bg-[hsl(50,85%,75%)] hover:bg-[hsl(50,75%,65%)] text-black font-semibold"
+              className="flex-1 bg-[hsl(50,85%,75%)] hover:bg-[hsl(50,75%,65%)] text-[hsl(201,30%,25%)] font-semibold"
             >
               <ArrowUp className="h-4 w-4 mr-2" />
               Vote
@@ -146,12 +146,12 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
             </DialogDescription>
           </DialogHeader>
           
-          <div className="bg-muted rounded-lg p-4">
+          <div className="bg-gray-50 rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-muted-foreground">Your voting power:</span>
+              <span className="text-sm text-gray-600">Your voting power:</span>
               <span className="font-semibold text-[hsl(30,100%,50%)]">{votingPower.toLocaleString()}</span>
             </div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs text-gray-500">
               Based on SAMU tokens ({samuBalance.toLocaleString()}) + NFT multiplier ({nftCount} × 100)
             </div>
           </div>

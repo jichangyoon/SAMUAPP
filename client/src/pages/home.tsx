@@ -29,9 +29,9 @@ export default function Home() {
   });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-card shadow-sm border-b border-border">
+      <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-md mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -42,7 +42,7 @@ export default function Home() {
                   className="w-8 h-8 rounded-full object-cover"
                 />
               </div>
-              <span className="text-lg font-bold text-foreground">SAMU</span>
+              <span className="text-lg font-bold text-[hsl(201,30%,25%)]">SAMU</span>
             </div>
             <WalletConnect />
           </div>
@@ -51,7 +51,7 @@ export default function Home() {
 
       {/* Wallet Status */}
       {isConnected && (
-        <div className="max-w-md mx-auto px-4 py-3 samu-gradient text-primary-foreground">
+        <div className="max-w-md mx-auto px-4 py-3 samu-gradient text-[hsl(201,30%,25%)]">
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center space-x-2">
               <span className="font-medium">Connected:</span>
@@ -72,7 +72,7 @@ export default function Home() {
       )}
 
       {/* Navigation Tabs */}
-      <nav className="max-w-md mx-auto px-4 py-3 bg-card border-b border-border">
+      <nav className="max-w-md mx-auto px-4 py-3 bg-white border-b border-gray-200">
         <Tabs defaultValue="contest" className="w-full">
           <TabsList className="grid w-full grid-cols-3 h-10">
             <TabsTrigger value="contest" className="text-sm">Contest</TabsTrigger>
@@ -93,7 +93,7 @@ export default function Home() {
               {/* Meme Gallery */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-lg font-semibold text-foreground">Contest Entries</h2>
+                  <h2 className="text-lg font-semibold text-[hsl(201,30%,25%)]">Contest Entries</h2>
                   <Select value={sortBy} onValueChange={setSortBy}>
                     <SelectTrigger className="w-32 h-8 text-sm">
                       <SelectValue />
@@ -110,10 +110,10 @@ export default function Home() {
                   <div className="space-y-4">
                     {[1, 2, 3].map((i) => (
                       <Card key={i} className="animate-pulse">
-                        <div className="aspect-square bg-muted" />
+                        <div className="aspect-square bg-gray-200" />
                         <CardContent className="p-4">
-                          <div className="h-4 bg-muted rounded mb-2" />
-                          <div className="h-3 bg-muted rounded w-3/4" />
+                          <div className="h-4 bg-gray-200 rounded mb-2" />
+                          <div className="h-3 bg-gray-200 rounded w-3/4" />
                         </CardContent>
                       </Card>
                     ))}
@@ -132,7 +132,7 @@ export default function Home() {
                     {sortedMemes.length === 0 && (
                       <Card>
                         <CardContent className="p-8 text-center">
-                          <p className="text-muted-foreground">No memes submitted yet. Be the first!</p>
+                          <p className="text-gray-500">No memes submitted yet. Be the first!</p>
                         </CardContent>
                       </Card>
                     )}
@@ -141,7 +141,7 @@ export default function Home() {
 
                 {sortedMemes.length > 0 && (
                   <div className="text-center mt-6">
-                    <Button variant="outline" className="bg-muted hover:bg-muted/80">
+                    <Button variant="outline" className="bg-gray-100 hover:bg-gray-200">
                       Load More Memes
                     </Button>
                   </div>
@@ -156,7 +156,7 @@ export default function Home() {
           
           <TabsContent value="my-memes">
             <Card className="p-6 text-center">
-              <p className="text-muted-foreground">
+              <p className="text-gray-500">
                 {isConnected ? "Your submitted memes will appear here." : "Connect your wallet to view your memes."}
               </p>
             </Card>

@@ -104,23 +104,23 @@ export function Leaderboard() {
         <TabsContent value="current" className="mt-4 space-y-3">
           <Card className="samu-card-shadow">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg text-foreground flex items-center">
+              <CardTitle className="text-lg text-[hsl(201,30%,25%)] flex items-center">
                 <TrendingUp className="h-5 w-5 mr-2 text-[hsl(30,100%,50%)]" />
                 Current Contest Rankings
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {topMemes.map((meme, index) => (
-                <div key={meme.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                <div key={meme.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <div className="flex items-center justify-center w-8 h-8">
                       {getRankIcon(index + 1)}
                     </div>
                     <div>
-                      <div className="font-semibold text-foreground text-sm">
+                      <div className="font-semibold text-[hsl(201,30%,25%)] text-sm">
                         {meme.title}
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-xs text-gray-500">
                         by {meme.authorUsername}
                       </div>
                     </div>
@@ -129,13 +129,13 @@ export function Leaderboard() {
                     <div className="font-bold text-[hsl(30,100%,50%)]">
                       {meme.votes.toLocaleString()}
                     </div>
-                    <div className="text-xs text-muted-foreground">votes</div>
+                    <div className="text-xs text-gray-500">votes</div>
                   </div>
                 </div>
               ))}
               
               {topMemes.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="text-center py-8 text-gray-500">
                   No memes with votes yet
                 </div>
               )}
@@ -147,29 +147,29 @@ export function Leaderboard() {
         <TabsContent value="creators" className="mt-4 space-y-3">
           <Card className="samu-card-shadow">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg text-foreground flex items-center">
+              <CardTitle className="text-lg text-[hsl(201,30%,25%)] flex items-center">
                 <Crown className="h-5 w-5 mr-2 text-[hsl(30,100%,50%)]" />
                 Top Creators
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {topCreators.map((creator: any, index) => (
-                <div key={creator.username} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                <div key={creator.username} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <div className="flex items-center justify-center w-8 h-8">
                       {getRankIcon(index + 1)}
                     </div>
                     <div className="flex items-center space-x-2">
                       <Avatar className="h-8 w-8 bg-[hsl(50,85%,75%)]">
-                        <AvatarFallback className="text-black font-bold text-xs">
+                        <AvatarFallback className="text-[hsl(201,30%,25%)] font-bold text-xs">
                           {creator.username.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-semibold text-foreground text-sm">
+                        <div className="font-semibold text-[hsl(201,30%,25%)] text-sm">
                           {creator.username}
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-xs text-gray-500">
                           {creator.memeCount} memes submitted
                         </div>
                       </div>
@@ -179,7 +179,7 @@ export function Leaderboard() {
                     <div className="font-bold text-[hsl(30,100%,50%)]">
                       {creator.totalVotes.toLocaleString()}
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-gray-500">
                       avg {creator.avgVotes}
                     </div>
                   </div>
@@ -187,7 +187,7 @@ export function Leaderboard() {
               ))}
               
               {topCreators.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="text-center py-8 text-gray-500">
                   No creators yet
                 </div>
               )}
@@ -199,23 +199,23 @@ export function Leaderboard() {
         <TabsContent value="hall-of-fame" className="mt-4 space-y-3">
           <Card className="samu-card-shadow">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg text-foreground flex items-center">
+              <CardTitle className="text-lg text-[hsl(201,30%,25%)] flex items-center">
                 <Trophy className="h-5 w-5 mr-2 text-yellow-500" />
                 Hall of Fame
               </CardTitle>
-              <p className="text-sm text-muted-foreground">Past contest winners</p>
+              <p className="text-sm text-gray-600">Past contest winners</p>
             </CardHeader>
             <CardContent className="space-y-3">
               {hallOfFameData.map((winner, index) => (
-                <div key={winner.id} className="p-4 border border-yellow-500/30 bg-gradient-to-r from-yellow-900/20 to-orange-900/20 rounded-lg">
+                <div key={winner.id} className="p-4 border border-yellow-200 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-2">
                       <Trophy className="h-4 w-4 text-yellow-500" />
-                      <Badge className="bg-yellow-500 text-black text-xs">
+                      <Badge className="bg-yellow-500 text-white text-xs">
                         {index === 0 ? "Latest Winner" : "Past Winner"}
                       </Badge>
                     </div>
-                    <div className="text-xs text-muted-foreground flex items-center">
+                    <div className="text-xs text-gray-500 flex items-center">
                       <Calendar className="h-3 w-3 mr-1" />
                       {winner.contestDate}
                     </div>
@@ -223,10 +223,10 @@ export function Leaderboard() {
                   
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-bold text-foreground mb-1">
+                      <div className="font-bold text-[hsl(201,30%,25%)] mb-1">
                         {winner.title}
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-sm text-gray-600">
                         by {winner.author}
                       </div>
                     </div>
@@ -234,7 +234,7 @@ export function Leaderboard() {
                       <div className="font-bold text-[hsl(30,100%,50%)]">
                         {winner.votes.toLocaleString()}
                       </div>
-                      <div className="text-xs text-green-400 font-semibold">
+                      <div className="text-xs text-green-600 font-semibold">
                         Prize: {winner.prize}
                       </div>
                     </div>

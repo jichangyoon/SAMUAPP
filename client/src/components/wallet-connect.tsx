@@ -11,7 +11,7 @@ export function WalletConnect() {
         onClick={disconnect}
         variant="outline"
         size="sm"
-        className="bg-green-600 text-white border-green-500 hover:bg-green-700"
+        className="bg-green-100 text-green-700 border-green-200 hover:bg-green-200"
       >
         <span className="font-mono text-xs">
           {walletAddress}
@@ -25,7 +25,7 @@ export function WalletConnect() {
       onClick={connect}
       disabled={isConnecting}
       size="sm"
-      className="bg-[hsl(50,85%,75%)] hover:bg-[hsl(50,75%,65%)] text-black font-semibold"
+      className="bg-[hsl(50,85%,75%)] hover:bg-[hsl(50,75%,65%)] text-[hsl(201,30%,25%)] font-semibold"
     >
       <Wallet className="h-4 w-4 mr-2" />
       {isConnecting ? "Connecting..." : "Connect"}
