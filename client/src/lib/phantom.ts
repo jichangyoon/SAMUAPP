@@ -24,11 +24,65 @@ class RealPhantomWallet {
     }
   }
 
+  private isMobile(): boolean {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  }
+
+  private isInPhantomApp(): boolean {
+    return (window as any).phantom?.solana?.isPhantom === true;
+  }
+
+  private getAppUrl(): string {
+    // Get current app URL - in production this would be your deployed app URL
+    const currentUrl = window.location.origin;
+    return encodeURIComponent(currentUrl);
+  }
+
   async connect(): Promise<PhantomWallet> {
+    // Mobile + Phantom app detection
+    if (this.isMobile() && this.isInPhantomApp() && this._phantom) {
+      try {
+        const response = await this._phantom.connect();
+        this._connected = true;
+        const publicKeyString = response.publicKey?.toBase58();
+        
+        if (!publicKeyString) {
+          throw new Error('Failed to get public key from wallet');
+        }
+        
+        this._publicKey = publicKeyString;
+        
+        return {
+          publicKey: this._publicKey as string,
+          connected: this._connected
+        };
+      } catch (error) {
+        console.error('Failed to connect within Phantom app:', error);
+        throw error;
+      }
+    }
+
+    // Mobile + not in Phantom app = use deeplink
+    if (this.isMobile() && !this.isInPhantomApp()) {
+      const appUrl = this.getAppUrl();
+      const connectUrl = `https://phantom.app/ul/v1/connect?app_url=${appUrl}&redirect_link=${appUrl}/connected`;
+      
+      // Redirect to Phantom app
+      window.location.href = connectUrl;
+      
+      // Return a pending connection state - the actual connection will happen after redirect
+      throw new Error('REDIRECT_TO_PHANTOM');
+    }
+
+    // Desktop/Web browser flow
     if (!this._phantom) {
-      // If Phantom is not installed, open installation page
-      window.open('https://phantom.app/', '_blank');
-      throw new Error('Phantom wallet not installed. Please install Phantom wallet extension.');
+      // Check if we should wait for Phantom to load
+      const phantom = await this.waitForPhantom(3000);
+      if (!phantom) {
+        window.open('https://phantom.app/', '_blank');
+        throw new Error('Phantom wallet not installed. Please install Phantom wallet extension.');
+      }
+      this._phantom = phantom;
     }
 
     try {
@@ -48,8 +102,29 @@ class RealPhantomWallet {
       };
     } catch (error) {
       console.error('Failed to connect to Phantom:', error);
-      throw new Error('Failed to connect to Phantom wallet');
+      throw error;
     }
+  }
+
+  private async waitForPhantom(timeout: number = 3000): Promise<any> {
+    return new Promise((resolve) => {
+      if ((window as any).phantom?.solana) {
+        resolve((window as any).phantom.solana);
+        return;
+      }
+
+      let timeElapsed = 0;
+      const interval = setInterval(() => {
+        if ((window as any).phantom?.solana) {
+          clearInterval(interval);
+          resolve((window as any).phantom.solana);
+        } else if (timeElapsed >= timeout) {
+          clearInterval(interval);
+          resolve(null);
+        }
+        timeElapsed += 100;
+      }, 100);
+    });
   }
 
   async disconnect(): Promise<void> {

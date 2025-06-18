@@ -108,6 +108,12 @@ export function useWallet() {
         await updateBalances();
       }, 100);
     } catch (error) {
+      const err = error as Error;
+      if (err?.message === 'REDIRECT_TO_PHANTOM') {
+        // Mobile redirect to Phantom app - don't show error, just inform user
+        console.log('Redirecting to Phantom app for mobile connection...');
+        return;
+      }
       console.error('Failed to connect wallet:', error);
     } finally {
       setIsConnecting(false);
