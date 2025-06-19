@@ -176,6 +176,8 @@ Changelog:
 - June 19, 2025. Updated all text colors from dark to light variants for better dark mode visibility
 - June 19, 2025. Converted all UI components (meme cards, leaderboard, goods shop, forms) to dark theme
 - June 19, 2025. Maintained SAMU brand colors while switching to black background design
+- June 19, 2025. Fixed all remaining white text elements and invisible UI components for complete black theme consistency
+- June 19, 2025. Updated SAMU Goods Shop header from gradient to clean single-color yellow background for better visual harmony
 ```
 
 ## User Preferences
