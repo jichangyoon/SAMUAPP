@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { phantomWallet } from '@/lib/phantom';
+import { phantomWallet } from '@/lib/phantom-simple';
 
 export function useWallet() {
   const [isConnected, setIsConnected] = useState(false);

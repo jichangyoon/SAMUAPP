@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useWallet } from "@/hooks/use-wallet";
+import { useWallet } from "@/hooks/use-wallet-simple";
 import { Wallet, Smartphone } from "lucide-react";
 import { useState, useEffect } from "react";
 
