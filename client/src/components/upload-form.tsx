@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useWallet } from "@/hooks/use-wallet";
+import { useWallet } from "@/hooks/use-wallet-ultra-stable";
 import { useToast } from "@/hooks/use-toast";
 import { Upload } from "lucide-react";
 

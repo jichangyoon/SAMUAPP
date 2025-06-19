@@ -6,7 +6,7 @@ import { UploadForm } from "@/components/upload-form";
 import { MemeCard } from "@/components/meme-card";
 import { Leaderboard } from "@/components/leaderboard";
 import { GoodsShop } from "@/components/goods-shop";
-import { useWallet } from "@/hooks/use-wallet-simple";
+import { useWallet } from "@/hooks/use-wallet-ultra-stable";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

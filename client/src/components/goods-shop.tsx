@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useWallet } from "@/hooks/use-wallet";
+import { useWallet } from "@/hooks/use-wallet-ultra-stable";
 import { useToast } from "@/hooks/use-toast";
 import { ShoppingCart, Trophy, Shirt, Coffee, Sticker, X } from "lucide-react";
 
