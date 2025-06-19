@@ -117,6 +117,7 @@ Changelog:
 - June 19, 2025. Added Android colors.xml with SAMU brand colors for stable APK generation
 - June 19, 2025. Fixed duplicate ic_launcher_background resource conflict in Android build system
 - June 19, 2025. Upgraded Android API from 34 to 35 for androidx.core library compatibility
+- June 19, 2025. Forced Java 17 compatibility across all Android modules to resolve Capacitor build conflicts
 ```
 
 ## User Preferences
