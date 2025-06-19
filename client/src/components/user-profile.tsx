@@ -15,9 +15,12 @@ interface UserProfileProps {
   samuBalance: number;
 }
 
-export function UserProfile({ isOpen, onClose, samuBalance, votingPower }: UserProfileProps) {
+export function UserProfile({ isOpen, onClose, samuBalance }: UserProfileProps) {
   const { user } = usePrivy();
   
+  const walletAddress = user?.wallet?.address || user?.linkedAccounts?.find(account => account.type === 'wallet')?.address || '';
+  const displayAddress = walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : '';
+
   // 사용자가 만든 밈들 가져오기
   const { data: allMemes = [] } = useQuery<any[]>({
     queryKey: ['/api/memes'],
@@ -25,18 +28,26 @@ export function UserProfile({ isOpen, onClose, samuBalance, votingPower }: UserP
 
   // 사용자가 투표한 밈들 가져오기  
   const { data: userVotes = [] } = useQuery<any[]>({
-    queryKey: ['/api/votes', user?.wallet?.address],
-    enabled: !!user?.wallet?.address,
+    queryKey: ['/api/votes', walletAddress],
+    enabled: !!walletAddress,
   });
 
-  const walletAddress = user?.wallet?.address || user?.linkedAccounts?.find(account => account.type === 'wallet')?.address || '';
-  const displayAddress = walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : '';
+  // 투표력 데이터 가져오기
+  const { data: votingPowerData } = useQuery<any>({
+    queryKey: ['/api/voting-power', walletAddress],
+    enabled: !!walletAddress,
+  });
   
   // 필터링된 사용자 밈들
   const myMemes = allMemes.filter((meme: any) => meme.authorWallet === walletAddress);
   
   const totalVotesReceived = myMemes.reduce((sum: number, meme: any) => sum + meme.votes, 0);
   const contestProgress = 75; // 임시 값, 실제로는 콘테스트 기간 계산
+  
+  // 투표력 계산
+  const votingPower = votingPowerData?.remainingPower ?? Math.floor(samuBalance * 0.8);
+  const totalVotingPower = votingPowerData?.totalPower ?? samuBalance;
+  const usedVotingPower = votingPowerData?.usedPower ?? 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

@@ -195,7 +195,6 @@ export default function Home() {
         isOpen={showUserProfile}
         onClose={() => setShowUserProfile(false)}
         samuBalance={samuBalance}
-        votingPower={Math.floor(samuBalance * 0.8)} // 임시: 투표력은 SAMU 잔액의 80%
       />
     </div>
   );
