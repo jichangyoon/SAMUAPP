@@ -233,7 +233,8 @@ class SimplePhantomWallet {
             console.log(`${endpoint}: 토큰 계정 없음`);
           }
         } catch (error) {
-          console.log(`${endpoint} 오류:`, error);
+          // 모든 네트워크 오류를 조용히 처리
+          console.log(`${endpoint} 연결 실패`);
           continue;
         }
       }
