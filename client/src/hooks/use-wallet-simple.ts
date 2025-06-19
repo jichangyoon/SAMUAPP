@@ -76,7 +76,7 @@ export function useWallet() {
     let mounted = true;
     let timeoutId: NodeJS.Timeout;
     
-    if (isConnected && walletAddress && balanceStatus === 'idle') {
+    if (isConnected && walletAddress && (balanceStatus === 'idle' || balanceStatus === 'error')) {
       const fetchBalance = async () => {
         if (!mounted) return;
         
@@ -85,14 +85,32 @@ export function useWallet() {
           console.log('SAMU 잔액 조회 시작...');
           const balance = await phantomWallet.getSamuBalance();
           
-          if (mounted) {
-            setSamuBalance(balance);
+          console.log('조회된 잔액:', balance, typeof balance);
+          
+          if (mounted && balance !== undefined && balance !== null) {
+            console.log('React 상태 업데이트 중:', balance);
+            
+            // 상태 업데이트를 별도로 실행
+            setSamuBalance(prev => {
+              console.log('setSamuBalance 호출:', prev, '->', balance);
+              return balance;
+            });
+            
+            setBalanceStatus(prev => {
+              console.log('setBalanceStatus 호출:', prev, '->', 'success');
+              return 'success';
+            });
+            
+            console.log('React 상태 업데이트 완료');
+          } else if (mounted) {
+            console.log('잔액이 유효하지 않음:', balance);
+            setSamuBalance(0);
             setBalanceStatus('success');
-            console.log('잔액 조회 완료:', balance);
           }
         } catch (error) {
           console.error('잔액 조회 실패:', error);
           if (mounted) {
+            setSamuBalance(0);
             setBalanceStatus('error');
           }
         }
