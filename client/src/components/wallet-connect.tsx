@@ -3,7 +3,7 @@ import { Wallet, LogOut } from "lucide-react";
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 
 export function WalletConnect() {
-  const { ready, authenticated, user, login, logout, connectWallet } = usePrivy();
+  const { ready, authenticated, user, login, logout } = usePrivy();
   const { wallets } = useWallets();
 
   if (!ready) {

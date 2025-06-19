@@ -78,14 +78,9 @@ export default function Home() {
             <div className="text-center">
               <div className="bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-lg border-2 border-[hsl(30,100%,50%)]">
                 <div className="font-bold text-2xl text-[hsl(30,100%,50%)] mb-1">
-                  Email Connected
+                  Connected
                 </div>
-                <div className="text-sm font-medium opacity-75 mb-2">
-                  {userWallet ? `Ethereum Wallet: ${userWallet.address.slice(0, 6)}...${userWallet.address.slice(-4)}` : 'Ready for Participation'}
-                </div>
-                <div className="text-xs text-amber-600 mt-2 bg-amber-50 px-2 py-1 rounded">
-                  Note: SAMU tokens require Solana wallet (separate setup needed)
-                </div>
+                <div className="text-sm font-medium opacity-75 mb-2">Wallet Ready</div>
               </div>
             </div>
           </div>

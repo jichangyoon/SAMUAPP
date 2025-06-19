@@ -26,14 +26,12 @@ function App() {
           theme: 'light',
           accentColor: '#f59e0b'
         },
-        loginMethods: ['email'],
+        loginMethods: ['wallet', 'email'],
         embeddedWallets: {
           createOnLogin: 'all-users',
         },
-        externalWallets: {
-          coinbaseWallet: {
-            connectionOptions: 'smartWalletOnly'
-          }
+        mfa: {
+          noPromptOnMfaRequired: false
         }
       }}
     >
