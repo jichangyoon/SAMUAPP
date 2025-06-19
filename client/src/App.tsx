@@ -20,7 +20,7 @@ function Router() {
 function App() {
   return (
     <PrivyProvider
-      appId={import.meta.env.VITE_PRIVY_APP_ID || "cm4lxokwb0004r6xgqfogvvyp"}
+      appId="cmc3cduly00mrjs0nuj2jyuz8"
       config={{
         appearance: {
           theme: 'light',

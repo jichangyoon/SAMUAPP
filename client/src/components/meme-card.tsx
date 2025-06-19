@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useWallet } from "@/hooks/use-wallet-ultra-stable";
+import { usePrivy } from '@privy-io/react-auth';
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowUp, Share2 } from "lucide-react";
@@ -17,7 +17,9 @@ interface MemeCardProps {
 export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   const [showVoteDialog, setShowVoteDialog] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
-  const { walletAddress, samuBalance } = useWallet();
+  const { authenticated, user } = usePrivy();
+  const walletAddress = user?.wallet?.address || '';
+  const samuBalance = 1; // Simplified for now
   const { toast } = useToast();
 
   const votingPower = samuBalance; // Voting power based on SAMU balance only

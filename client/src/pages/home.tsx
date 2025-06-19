@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { WalletConnect } from "@/components/wallet-connect";
 import { ContestHeader } from "@/components/contest-header";
@@ -6,7 +6,7 @@ import { UploadForm } from "@/components/upload-form";
 import { MemeCard } from "@/components/meme-card";
 import { Leaderboard } from "@/components/leaderboard";
 import { GoodsShop } from "@/components/goods-shop";
-import { useWallet } from "@/hooks/use-wallet-ultra-stable";
+import { usePrivy } from '@privy-io/react-auth';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,39 +15,17 @@ import type { Meme } from "@shared/schema";
 import samuLogo1 from "@assets/photo_2025-05-26_08-40-22_1750170004880.jpg";
 
 export default function Home() {
-  // State hooks must be called first and in consistent order
   const [sortBy, setSortBy] = useState("votes");
   const [currentTab, setCurrentTab] = useState("contest");
-  const [renderKey, setRenderKey] = useState(0);
   
-  // Custom hooks after state hooks
-  const { isConnected, walletAddress, samuBalance, balanceStatus, isConnecting } = useWallet();
+  // Privy wallet hooks
+  const { authenticated, user } = usePrivy();
   
-  // Force re-render when balance updates
-  useEffect(() => {
-    if (samuBalance > 0) {
-      setRenderKey(prev => prev + 1);
-    }
-  }, [samuBalance]);
+  const isConnected = authenticated;
+  const walletAddress = user?.wallet?.address || '';
   
   // Debug log
-  console.log('Wallet state:', { isConnected, walletAddress, samuBalance, balanceStatus });
-  
-  // URL 파라미터에서 팬텀 콜백 데이터 처리
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const phantomData = urlParams.get('phantom_encryption_public_key');
-    const errorCode = urlParams.get('errorCode');
-    
-    if (phantomData) {
-      console.log('팬텀 콜백 데이터 수신:', phantomData);
-      // 팬텀에서 돌아온 경우 메인 페이지로 리다이렉트
-      window.history.replaceState({}, document.title, '/');
-    } else if (errorCode) {
-      console.log('팬텀 연결 오류:', errorCode);
-      window.history.replaceState({}, document.title, '/');
-    }
-  }, []);
+  console.log('Privy state:', { authenticated, user, walletAddress });
 
   const { data: memes = [], isLoading, refetch } = useQuery<Meme[]>({
     queryKey: ["/api/memes"],
@@ -98,42 +76,9 @@ export default function Home() {
             <div className="text-center">
               <div className="bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-lg border-2 border-[hsl(30,100%,50%)]">
                 <div className="font-bold text-2xl text-[hsl(30,100%,50%)] mb-1">
-                  {balanceStatus === 'loading' ? 'Checking...' : 
-                   balanceStatus === 'success' ? samuBalance.toLocaleString() : 
-                   balanceStatus === 'error' ? 'Error' : '0'}
+                  Connected
                 </div>
-                <div className="text-sm font-medium opacity-75 mb-2">SAMU Tokens</div>
-                
-                {samuBalance > 0 && (
-                  <div className="text-sm font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full">
-                    Voting Power: {samuBalance.toLocaleString()}
-                  </div>
-                )}
-                
-                {balanceStatus === 'loading' && (
-                  <div className="text-sm text-gray-600 bg-gray-50 dark:bg-gray-900/20 px-3 py-1 rounded">
-                    Checking SAMU balance...
-                  </div>
-                )}
-                
-                {(balanceStatus === 'error' || (balanceStatus === 'success' && samuBalance === 0)) && (
-                  <div className="mt-2">
-                    <div className="text-xs text-amber-600 mb-2 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded">
-                      {balanceStatus === 'error' 
-                        ? 'Token query failed - Network issue' 
-                        : 'No SAMU tokens found'}
-                    </div>
-                    <div className="text-xs text-amber-600">
-                      Refresh the page to retry
-                    </div>
-                  </div>
-                )}
-                
-                {balanceStatus === 'idle' && (
-                  <div className="mt-2 text-xs text-gray-500">
-                    Connect wallet to see SAMU balance
-                  </div>
-                )}
+                <div className="text-sm font-medium opacity-75 mb-2">Wallet Ready</div>
               </div>
             </div>
           </div>
@@ -149,7 +94,6 @@ export default function Home() {
           </TabsList>
           
           <TabsContent value="contest" className="mt-4">
-            {/* Contest Sub-Navigation */}
             <Tabs defaultValue="contest-main" className="w-full">
               <TabsList className="grid w-full grid-cols-3 h-10">
                 <TabsTrigger value="contest-main" className="text-sm">Contest</TabsTrigger>
