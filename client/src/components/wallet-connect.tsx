@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Wallet, LogOut, Plus } from "lucide-react";
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useState, useEffect } from 'react';
@@ -92,14 +93,19 @@ export function WalletConnect() {
     }
 
     return (
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-2">
         {/* SAMU Balance Display */}
         {isSolana && (
-          <div className="text-right mr-2">
+          <div className="text-right">
             <div className="text-xs font-bold text-[hsl(30,100%,50%)]">
               {balanceStatus === 'loading' ? 'Loading...' : samuBalance.toLocaleString()}
             </div>
             <div className="text-xs text-gray-600">SAMU</div>
+            {samuBalance > 0 && (
+              <div className="text-xs font-medium text-green-600 bg-green-50 px-1 rounded mt-0.5">
+                Vote: {samuBalance > 1000000 ? `${(samuBalance / 1000000).toFixed(1)}M` : samuBalance.toLocaleString()}
+              </div>
+            )}
           </div>
         )}
         
