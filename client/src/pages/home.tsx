@@ -113,11 +113,6 @@ export default function Home() {
                   {/* Contest Header */}
                   <ContestHeader />
 
-                  {/* Upload Section */}
-                  {isConnected && (
-                    <UploadForm onSuccess={() => refetch()} />
-                  )}
-
                   {/* Meme Gallery */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
