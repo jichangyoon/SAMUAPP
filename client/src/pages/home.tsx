@@ -90,7 +90,9 @@ export default function Home() {
             <div className="text-center">
               <div className="bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-lg border-2 border-[hsl(30,100%,50%)]">
                 <div className="font-bold text-2xl text-[hsl(30,100%,50%)] mb-1">
-                  {balanceStatus === 'loading' ? 'Checking...' : samuBalance.toLocaleString()}
+                  {balanceStatus === 'loading' ? 'Checking...' : 
+                   balanceStatus === 'success' ? samuBalance.toLocaleString() : 
+                   balanceStatus === 'error' ? 'Error' : '0'}
                 </div>
                 <div className="text-sm font-medium opacity-75 mb-2">SAMU Tokens</div>
                 

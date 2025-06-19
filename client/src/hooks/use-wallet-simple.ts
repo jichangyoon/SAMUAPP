@@ -78,8 +78,8 @@ export function useWallet() {
     const fetchBalance = async () => {
       if (!mounted || !isConnected || !walletAddress) return;
       
-      // 이미 로딩 중이거나 성공한 경우 스킵
-      if (balanceStatus === 'loading' || balanceStatus === 'success') return;
+      // 로딩 중인 경우에만 스킵 (success는 스킵하지 않음)
+      if (balanceStatus === 'loading') return;
       
       console.log('SAMU 잔액 조회 시작 - 상태:', balanceStatus);
       setBalanceStatus('loading');
@@ -109,6 +109,7 @@ export function useWallet() {
     };
 
     if (isConnected && walletAddress) {
+      // 항상 잔액 조회 실행 (지갑 주소가 바뀔 때마다)
       fetchBalance();
     } else {
       setSamuBalance(0);
@@ -149,11 +150,14 @@ export function useWallet() {
   const disconnect = async () => {
     try {
       await phantomWallet.disconnect();
+      
+      // 완전히 상태 초기화
       setIsConnected(false);
       setWalletAddress('');
       setSamuBalance(0);
       setBalanceStatus('idle');
-      console.log('지갑 연결 해제됨');
+      
+      console.log('지갑 연결 해제됨 - 상태 완전 초기화');
     } catch (error) {
       console.error('Disconnect failed:', error);
     }
