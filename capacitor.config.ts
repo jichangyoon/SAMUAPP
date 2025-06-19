@@ -5,7 +5,8 @@ const config: CapacitorConfig = {
   appName: 'SAMU',
   webDir: 'dist/public',
   server: {
-    androidScheme: 'https'
+    androidScheme: 'https',
+    url: 'https://meme-chain-rally-wlckddbs12345.replit.app'
   }
 };
 
