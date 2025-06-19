@@ -23,9 +23,11 @@ export function WalletConnect() {
   // Fetch SAMU balance for Solana wallets
   useEffect(() => {
     if (authenticated && walletAddress && isSolana) {
+      console.log('Fetching SAMU balance for wallet:', walletAddress);
       setBalanceStatus('loading');
       getSamuTokenBalance(walletAddress)
         .then(balance => {
+          console.log('SAMU balance received:', balance);
           setSamuBalance(balance);
           setBalanceStatus('success');
         })
@@ -34,8 +36,9 @@ export function WalletConnect() {
           setSamuBalance(0);
           setBalanceStatus('error');
         });
-    } else {
-      setSamuBalance(0);
+    } else if (!authenticated && samuBalance === 0) {
+      // Only reset balance if we don't have a cached balance
+      console.log('Not fetching SAMU balance - authenticated:', authenticated, 'walletAddress:', walletAddress, 'isSolana:', isSolana);
       setBalanceStatus('idle');
     }
   }, [authenticated, walletAddress, isSolana]);
@@ -98,7 +101,7 @@ export function WalletConnect() {
         {isSolana && (
           <div className="text-right">
             <div className="text-xs font-bold text-[hsl(30,100%,50%)]">
-              {balanceStatus === 'loading' ? 'Loading...' : samuBalance.toLocaleString()}
+              {balanceStatus === 'loading' ? 'Loading...' : `${samuBalance.toLocaleString()}`}
             </div>
             <div className="text-xs text-muted-foreground">SAMU</div>
           </div>
