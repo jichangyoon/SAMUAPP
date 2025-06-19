@@ -7,6 +7,13 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
     url: 'https://meme-chain-rally-wlckddbs12345.replit.app'
+  },
+  plugins: {
+    App: {
+      deepLink: {
+        scheme: 'samuapp'
+      }
+    }
   }
 };
 

@@ -24,6 +24,22 @@ export default function Home() {
   
   // Debug log
   console.log('Wallet state:', { isConnected, walletAddress, samuBalance, balanceStatus });
+  
+  // URL 파라미터에서 팬텀 콜백 데이터 처리
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const phantomData = urlParams.get('phantom_encryption_public_key');
+    const errorCode = urlParams.get('errorCode');
+    
+    if (phantomData) {
+      console.log('팬텀 콜백 데이터 수신:', phantomData);
+      // 팬텀에서 돌아온 경우 메인 페이지로 리다이렉트
+      window.history.replaceState({}, document.title, '/');
+    } else if (errorCode) {
+      console.log('팬텀 연결 오류:', errorCode);
+      window.history.replaceState({}, document.title, '/');
+    }
+  }, []);
 
   const { data: memes = [], isLoading, refetch } = useQuery<Meme[]>({
     queryKey: ["/api/memes"],

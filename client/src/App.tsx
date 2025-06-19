@@ -11,6 +11,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/connected" component={Home} />
+      <Route path="/phantom-callback" component={Home} />
       <Route component={NotFound} />
     </Switch>
   );

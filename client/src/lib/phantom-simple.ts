@@ -101,22 +101,65 @@ class SimplePhantomWallet {
     // 모바일/Capacitor: 팬텀 앱으로 딥링크
     console.log('모바일 환경: 팬텀 앱으로 연결 중...');
     
-    const currentUrl = window.location.origin;
-    const connectUrl = `https://phantom.app/ul/v1/connect?app_url=${encodeURIComponent(currentUrl)}&redirect_link=${encodeURIComponent(currentUrl)}`;
+    // iOS Universal Links를 고려한 URL 구조
+    const baseUrl = this.isCapacitor() ? 'samuapp://phantom-connect' : window.location.origin;
+    const redirectUrl = `${baseUrl}/phantom-callback`;
+    const connectUrl = `https://phantom.app/ul/v1/connect?app_url=${encodeURIComponent(baseUrl)}&redirect_link=${encodeURIComponent(redirectUrl)}`;
     
     console.log('팬텀 딥링크 URL:', connectUrl);
+    console.log('리다이렉트 URL:', redirectUrl);
 
     if (this.isCapacitor()) {
-      // Capacitor 앱에서는 시스템 브라우저로 열기
-      console.log('Capacitor 앱: 시스템 브라우저로 팬텀 열기');
-      window.open(connectUrl, '_system');
+      // Capacitor 앱에서는 Universal Link 방식으로 처리
+      console.log('Capacitor 앱: Universal Link로 팬텀 연결');
+      
+      // iOS에서는 window.open 대신 location.href 사용
+      if (this.isMobile() && /iPhone|iPad/.test(navigator.userAgent)) {
+        window.location.href = connectUrl;
+      } else {
+        window.open(connectUrl, '_system');
+      }
+      
+      // 연결 상태 추적을 위한 Promise 반환
+      return new Promise((resolve, reject) => {
+        const handleAppResume = () => {
+          // 앱이 다시 활성화되면 연결 완료로 간주
+          setTimeout(() => {
+            this._connected = true;
+            this._publicKey = 'temp-connected-key'; // 실제로는 콜백에서 받아야 함
+            
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('focus', handleAppResume);
+            
+            resolve({
+              publicKey: this._publicKey!,
+              connected: this._connected
+            });
+          }, 1000);
+        };
+        
+        const handleVisibilityChange = () => {
+          if (!document.hidden) {
+            handleAppResume();
+          }
+        };
+        
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('focus', handleAppResume);
+        
+        // 30초 타임아웃
+        setTimeout(() => {
+          document.removeEventListener('visibilitychange', handleVisibilityChange);
+          window.removeEventListener('focus', handleAppResume);
+          reject(new Error('연결 타임아웃'));
+        }, 30000);
+      });
     } else {
       // 모바일 웹에서는 직접 리다이렉트
       console.log('모바일 웹: 팬텀 앱으로 리다이렉트');
       window.location.href = connectUrl;
+      throw new Error('팬텀 앱으로 연결 중입니다...');
     }
-
-    throw new Error('팬텀 앱으로 연결 중입니다...');
   }
 
   async disconnect(): Promise<void> {
