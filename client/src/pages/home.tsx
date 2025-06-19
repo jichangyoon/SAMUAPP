@@ -6,7 +6,7 @@ import { UploadForm } from "@/components/upload-form";
 import { MemeCard } from "@/components/meme-card";
 import { Leaderboard } from "@/components/leaderboard";
 import { GoodsShop } from "@/components/goods-shop";
-import { useWallet } from "@/hooks/use-wallet-ultra-stable";
+import { usePrivyWallet } from "@/lib/privy-wallet";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,7 +21,7 @@ export default function Home() {
   const [renderKey, setRenderKey] = useState(0);
   
   // Custom hooks after state hooks
-  const { isConnected, walletAddress, samuBalance, balanceStatus, isConnecting } = useWallet();
+  const { isConnected, walletAddress, samuBalance, balanceStatus, isConnecting } = usePrivyWallet();
   
   // Force re-render when balance updates
   useEffect(() => {
