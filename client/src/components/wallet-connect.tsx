@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { useWallet } from "@/hooks/use-wallet-simple";
+import { useWallet } from "@/hooks/use-wallet-ultra-stable";
 import { Wallet, Smartphone } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export function WalletConnect() {
-  const { isConnected, walletAddress, connect, disconnect, isConnecting } = useWallet();
+  const { isConnected, walletAddress, samuBalance, balanceStatus, connectWallet, disconnectWallet, isConnecting } = useWallet();
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -20,7 +20,7 @@ export function WalletConnect() {
   if (isConnected) {
     return (
       <Button
-        onClick={disconnect}
+        onClick={disconnectWallet}
         variant="outline"
         size="sm"
         className="bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
@@ -35,7 +35,7 @@ export function WalletConnect() {
 
   return (
     <Button
-      onClick={connect}
+      onClick={connectWallet}
       disabled={isConnecting}
       size="lg"
       className="bg-gradient-to-r from-[hsl(50,85%,75%)] to-[hsl(30,85%,65%)] hover:from-[hsl(50,75%,65%)] hover:to-[hsl(30,75%,55%)] text-[hsl(201,30%,25%)] font-bold shadow-lg border-2 border-[hsl(30,100%,50%)]"
