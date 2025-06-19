@@ -130,7 +130,7 @@ export function WalletConnect() {
     <Button
       onClick={login}
       size="sm"
-      className="bg-gradient-to-r from-[hsl(50,85%,75%)] to-[hsl(30,85%,65%)] hover:from-[hsl(50,75%,65%)] hover:to-[hsl(30,75%,55%)] text-black font-bold shadow-sm border border-[hsl(30,100%,50%)]"
+      className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-sm border border-primary"
     >
       <Wallet className="h-4 w-4 mr-1" />
       Connect

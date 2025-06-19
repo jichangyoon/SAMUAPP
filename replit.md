@@ -178,6 +178,8 @@ Changelog:
 - June 19, 2025. Maintained SAMU brand colors while switching to black background design
 - June 19, 2025. Fixed all remaining white text elements and invisible UI components for complete black theme consistency
 - June 19, 2025. Updated SAMU Goods Shop header from gradient to clean single-color yellow background for better visual harmony
+- June 19, 2025. Set black theme as default application theme and cleaned up legacy light theme code
+- June 19, 2025. Removed unnecessary theme switching code and standardized color usage across components
 ```
 
 ## User Preferences
