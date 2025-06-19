@@ -168,7 +168,7 @@ export default function Home() {
 
                     {sortedMemes.length > 0 && (
                       <div className="text-center mt-6">
-                        <Button variant="outline" className="bg-gray-100 hover:bg-gray-200">
+                        <Button variant="outline" className="bg-accent text-foreground hover:bg-accent/80 border-border">
                           Load More Memes
                         </Button>
                       </div>
