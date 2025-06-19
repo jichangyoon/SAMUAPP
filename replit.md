@@ -166,6 +166,10 @@ Changelog:
 - June 19, 2025. New users will receive Solana wallets automatically upon first login via email
 - June 19, 2025. Implemented Solana wallet prioritization - users with multiple wallets now display Solana address first
 - June 19, 2025. Fixed wallet selection logic to use user.linkedAccounts instead of useWallets hook for proper Solana detection
+- June 19, 2025. Implemented real SAMU token balance checking using Solana RPC endpoints with proper error handling
+- June 19, 2025. Fixed runtime error overlays by adding comprehensive error handling and timeout controls
+- June 19, 2025. Added multiple RPC endpoint fallback system for reliable SAMU token balance queries
+- June 19, 2025. Enhanced wallet status display to show actual SAMU token balances and voting power
 ```
 
 ## User Preferences
