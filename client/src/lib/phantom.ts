@@ -51,11 +51,10 @@ class RealPhantomWallet {
     if (this.isCapacitorApp()) {
       try {
         // Use native deep linking for Capacitor
-        const { Browser } = await import('@capacitor/browser');
         const phantomConnectUrl = `https://phantom.app/ul/v1/connect?app_url=${encodeURIComponent('https://meme-chain-rally-wlckddbs12345.replit.app')}&redirect_link=${encodeURIComponent('https://meme-chain-rally-wlckddbs12345.replit.app/phantom-callback')}`;
         
-        // Open Phantom app using Capacitor Browser
-        await Browser.open({ url: phantomConnectUrl });
+        // Open Phantom app using window.open with _system target for native behavior
+        window.open(phantomConnectUrl, '_system');
         
         // Return pending state while user completes connection in Phantom app
         return new Promise((resolve, reject) => {
