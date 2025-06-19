@@ -113,6 +113,8 @@ Changelog:
 - June 19, 2025. Fixed Java 17 compatibility issues in Android build configuration for stable APK generation
 - June 19, 2025. Added attached_assets folder with SAMU logo images to complete project package
 - June 19, 2025. Created final production-ready project bundle (samu-complete-with-assets.tar.gz) with all dependencies
+- June 19, 2025. Fixed Theme.SplashScreen missing style error in Android build configuration
+- June 19, 2025. Added Android colors.xml with SAMU brand colors for stable APK generation
 ```
 
 ## User Preferences
