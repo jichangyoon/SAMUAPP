@@ -115,6 +115,7 @@ Changelog:
 - June 19, 2025. Created final production-ready project bundle (samu-complete-with-assets.tar.gz) with all dependencies
 - June 19, 2025. Fixed Theme.SplashScreen missing style error in Android build configuration
 - June 19, 2025. Added Android colors.xml with SAMU brand colors for stable APK generation
+- June 19, 2025. Fixed duplicate ic_launcher_background resource conflict in Android build system
 ```
 
 ## User Preferences
