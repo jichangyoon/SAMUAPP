@@ -172,6 +172,10 @@ Changelog:
 - June 19, 2025. Enhanced wallet status display to show actual SAMU token balances and voting power
 - June 19, 2025. Improved mobile wallet UI - removed duplicate wallet cards and optimized header display
 - June 19, 2025. Streamlined wallet connection interface with compact SAMU balance display only
+- June 19, 2025. Implemented complete black dark theme across entire application
+- June 19, 2025. Updated all text colors from dark to light variants for better dark mode visibility
+- June 19, 2025. Converted all UI components (meme cards, leaderboard, goods shop, forms) to dark theme
+- June 19, 2025. Maintained SAMU brand colors while switching to black background design
 ```
 
 ## User Preferences

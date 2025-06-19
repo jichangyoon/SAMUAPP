@@ -132,13 +132,13 @@ export function GoodsShop() {
   return (
     <div className="space-y-6 pb-20">
       {/* 굿즈샵 헤더 */}
-      <Card className="bg-gradient-to-r from-[hsl(50,85%,75%)] to-[hsl(35,70%,70%)] border-0">
+      <Card className="bg-gradient-to-r from-primary/80 to-primary/60 border-0">
         <CardHeader className="text-center py-3">
-          <CardTitle className="text-lg font-bold text-[hsl(201,30%,25%)] flex items-center justify-center gap-2">
+          <CardTitle className="text-lg font-bold text-primary-foreground flex items-center justify-center gap-2">
             <Trophy className="h-4 w-4" />
             SAMU Goods Shop
           </CardTitle>
-          <CardDescription className="text-xs text-[hsl(201,30%,35%)] mt-1">
+          <CardDescription className="text-xs text-primary-foreground/80 mt-1">
             Hall of Fame memes turned into goods! Purchase with SAMU tokens
           </CardDescription>
         </CardHeader>
@@ -146,15 +146,15 @@ export function GoodsShop() {
 
       {/* 장바구니 요약 */}
       {cart.length > 0 && (
-        <Card className="bg-green-50 border-green-200">
+        <Card className="bg-green-950/20 border-green-800">
           <CardContent className="p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ShoppingCart className="h-4 w-4 text-green-600" />
-                <span className="font-medium text-sm">Cart: {cart.length} items</span>
+                <ShoppingCart className="h-4 w-4 text-green-400" />
+                <span className="font-medium text-sm text-foreground">Cart: {cart.length} items</span>
               </div>
               <div className="text-right">
-                <div className="font-bold text-sm text-green-700">{getTotalPrice().toLocaleString()} SAMU</div>
+                <div className="font-bold text-sm text-green-400">{getTotalPrice().toLocaleString()} SAMU</div>
                 <Button size="sm" className="mt-1 h-6 text-xs">Checkout</Button>
               </div>
             </div>
@@ -200,7 +200,7 @@ export function GoodsShop() {
                     <div className="flex-1 ml-3 min-w-0">
                       <div className="flex justify-between items-start">
                         <div className="flex-1 min-w-0 pr-2">
-                          <h3 className="font-semibold text-xs text-[hsl(201,30%,25%)] truncate">
+                          <h3 className="font-semibold text-xs text-foreground truncate">
                             {item.name}
                           </h3>
                           <div className="flex items-center gap-1 mt-1">
@@ -214,15 +214,15 @@ export function GoodsShop() {
                               </Badge>
                             )}
                           </div>
-                          <div className="text-xs text-gray-500 mt-0.5">
+                          <div className="text-xs text-muted-foreground mt-0.5">
                             By {item.originalAuthor} • Stock: {item.stock}
                           </div>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <div className="font-bold text-xs text-[hsl(35,70%,50%)]">
+                          <div className="font-bold text-xs text-primary">
                             {item.price.toLocaleString()}
                           </div>
-                          <div className="text-xs text-gray-500 leading-none">SAMU</div>
+                          <div className="text-xs text-muted-foreground leading-none">SAMU</div>
                           <Button
                             size="sm"
                             className="mt-1 h-5 text-xs px-2 leading-none"
@@ -246,9 +246,9 @@ export function GoodsShop() {
       </Tabs>
 
       {/* 안내 메시지 */}
-      <Card className="bg-blue-50 border-blue-200">
+      <Card className="bg-blue-950/20 border-blue-800">
         <CardContent className="p-3 text-center">
-          <p className="text-xs text-blue-700">
+          <p className="text-xs text-blue-400">
             💡 Hall of Fame memes are turned into physical goods.<br />
             Purchase with SAMU tokens and receive real merchandise!
           </p>
@@ -276,7 +276,7 @@ export function GoodsShop() {
               </div>
               
               <div className="space-y-3">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   {selectedItem.description}
                 </p>
                 

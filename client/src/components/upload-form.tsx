@@ -174,7 +174,7 @@ export function UploadForm({ onSuccess }: UploadFormProps) {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title</FormLabel>
+                  <FormLabel className="text-foreground">Title</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter meme title" {...field} />
                   </FormControl>
@@ -188,7 +188,7 @@ export function UploadForm({ onSuccess }: UploadFormProps) {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description (Optional)</FormLabel>
+                  <FormLabel className="text-foreground">Description (Optional)</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Add a description for your meme"
