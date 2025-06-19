@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { WalletConnect } from "@/components/wallet-connect";
 import { ContestHeader } from "@/components/contest-header";
@@ -11,12 +11,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getSamuTokenBalance, isSolanaAddress } from "@/lib/solana";
 import type { Meme } from "@shared/schema";
 import samuLogo1 from "@assets/photo_2025-05-26_08-40-22_1750170004880.jpg";
 
 export default function Home() {
   const [sortBy, setSortBy] = useState("votes");
   const [currentTab, setCurrentTab] = useState("contest");
+  const [samuBalance, setSamuBalance] = useState<number>(0);
+  const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   
   // Privy wallet hooks
   const { authenticated, user } = usePrivy();
@@ -29,9 +32,24 @@ export default function Home() {
   
   const isConnected = authenticated;
   const walletAddress = selectedWalletAccount?.address || '';
+  const isSolana = selectedWalletAccount?.chainType === 'solana';
   
-  // Debug log
-  console.log('Home Privy state:', { authenticated, user, walletAddress, chainType: selectedWalletAccount?.chainType });
+  // Fetch SAMU balance for Solana wallets
+  useEffect(() => {
+    if (isConnected && walletAddress && isSolana) {
+      setBalanceStatus('loading');
+      getSamuTokenBalance(walletAddress).then(balance => {
+        setSamuBalance(balance);
+        setBalanceStatus('success');
+      }).catch(error => {
+        console.error('Failed to fetch SAMU balance:', error);
+        setBalanceStatus('error');
+      });
+    } else {
+      setSamuBalance(0);
+      setBalanceStatus('idle');
+    }
+  }, [isConnected, walletAddress, isSolana]);
 
   const { data: memes = [], isLoading, refetch } = useQuery<Meme[]>({
     queryKey: ["/api/memes"],
@@ -82,9 +100,24 @@ export default function Home() {
             <div className="text-center">
               <div className="bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-lg border-2 border-[hsl(30,100%,50%)]">
                 <div className="font-bold text-2xl text-[hsl(30,100%,50%)] mb-1">
-                  Connected
+                  {balanceStatus === 'loading' ? 'Checking...' : samuBalance.toLocaleString()}
                 </div>
-                <div className="text-sm font-medium opacity-75 mb-2">Wallet Ready</div>
+                <div className="text-sm font-medium opacity-75 mb-2">SAMU Tokens</div>
+                {isSolana && samuBalance > 0 && (
+                  <div className="text-sm font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full">
+                    Voting Power: {samuBalance.toLocaleString()}
+                  </div>
+                )}
+                {balanceStatus === 'loading' && (
+                  <div className="text-sm text-gray-600 bg-gray-50 dark:bg-gray-900/20 px-3 py-1 rounded">
+                    Checking SAMU balance...
+                  </div>
+                )}
+                {(balanceStatus === 'error' || !isSolana) && (
+                  <div className="text-sm text-gray-600 bg-gray-50 dark:bg-gray-900/20 px-3 py-1 rounded">
+                    {!isSolana ? 'Ethereum wallet - no SAMU tokens' : 'Balance check failed'}
+                  </div>
+                )}
               </div>
             </div>
           </div>
