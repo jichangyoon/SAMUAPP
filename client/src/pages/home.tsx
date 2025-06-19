@@ -22,12 +22,16 @@ export default function Home() {
   const { authenticated, user } = usePrivy();
   const { wallets } = useWallets();
   
+  // Get wallet using same logic as WalletConnect component
+  const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
+  const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
+  const selectedWalletAccount = solanaWallet || walletAccounts[0];
+  
   const isConnected = authenticated;
-  const userWallet = wallets[0];
-  const walletAddress = userWallet?.address || user?.wallet?.address || '';
+  const walletAddress = selectedWalletAccount?.address || '';
   
   // Debug log
-  console.log('Privy state:', { authenticated, user, walletAddress });
+  console.log('Home Privy state:', { authenticated, user, walletAddress, chainType: selectedWalletAccount?.chainType });
 
   const { data: memes = [], isLoading, refetch } = useQuery<Meme[]>({
     queryKey: ["/api/memes"],

@@ -25,7 +25,12 @@ export function UploadForm({ onSuccess }: UploadFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const { authenticated, user } = usePrivy();
-  const walletAddress = user?.wallet?.address || '';
+  
+  // Get wallet using same logic as WalletConnect component - prioritize Solana
+  const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
+  const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
+  const selectedWalletAccount = solanaWallet || walletAccounts[0];
+  const walletAddress = selectedWalletAccount?.address || '';
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof uploadSchema>>({

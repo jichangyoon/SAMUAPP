@@ -18,7 +18,12 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   const [showVoteDialog, setShowVoteDialog] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
   const { authenticated, user } = usePrivy();
-  const walletAddress = user?.wallet?.address || '';
+  
+  // Get wallet using same logic as WalletConnect component - prioritize Solana
+  const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
+  const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
+  const selectedWalletAccount = solanaWallet || walletAccounts[0];
+  const walletAddress = selectedWalletAccount?.address || '';
   const samuBalance = 1; // Simplified for now
   const { toast } = useToast();
 
