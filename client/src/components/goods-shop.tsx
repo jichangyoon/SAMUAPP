@@ -138,7 +138,7 @@ export function GoodsShop() {
             <Trophy className="h-4 w-4" />
             SAMU Goods Shop
           </CardTitle>
-          <CardDescription className="text-xs text-black/90 mt-1">
+          <CardDescription className="text-xs text-black/90 mt-1 whitespace-nowrap">
             Hall of Fame memes turned into goods! Purchase with SAMU tokens
           </CardDescription>
         </CardHeader>
