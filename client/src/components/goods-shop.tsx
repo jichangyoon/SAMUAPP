@@ -132,13 +132,13 @@ export function GoodsShop() {
   return (
     <div className="space-y-6 pb-20">
       {/* 굿즈샵 헤더 */}
-      <Card className="bg-gradient-to-r from-primary/80 to-primary/60 border-0">
+      <Card className="bg-gradient-to-r from-[hsl(30,100%,50%)] to-[hsl(25,85%,45%)] border-0">
         <CardHeader className="text-center py-3">
-          <CardTitle className="text-lg font-bold text-primary-foreground flex items-center justify-center gap-2">
+          <CardTitle className="text-lg font-bold text-black flex items-center justify-center gap-2">
             <Trophy className="h-4 w-4" />
             SAMU Goods Shop
           </CardTitle>
-          <CardDescription className="text-xs text-primary-foreground/80 mt-1">
+          <CardDescription className="text-xs text-black/80 mt-1">
             Hall of Fame memes turned into goods! Purchase with SAMU tokens
           </CardDescription>
         </CardHeader>

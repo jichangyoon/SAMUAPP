@@ -137,10 +137,10 @@ export default function Home() {
                       <div className="space-y-4">
                         {[1, 2, 3].map((i) => (
                           <Card key={i} className="animate-pulse">
-                            <div className="aspect-square bg-gray-200" />
+                            <div className="aspect-square bg-accent" />
                             <CardContent className="p-4">
-                              <div className="h-4 bg-gray-200 rounded mb-2" />
-                              <div className="h-3 bg-gray-200 rounded w-3/4" />
+                              <div className="h-4 bg-accent rounded mb-2" />
+                              <div className="h-3 bg-accent rounded w-3/4" />
                             </CardContent>
                           </Card>
                         ))}
