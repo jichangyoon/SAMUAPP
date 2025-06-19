@@ -29,6 +29,10 @@ function App() {
         loginMethods: ['wallet', 'email'],
         embeddedWallets: {
           createOnLogin: 'all-users',
+          requireUserPasswordOnCreate: false,
+        },
+        solana: {
+          cluster: 'mainnet-beta'
         },
         mfa: {
           noPromptOnMfaRequired: false

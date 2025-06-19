@@ -16,12 +16,16 @@ export function WalletConnect() {
   }
 
   if (authenticated && user) {
-    // Find any wallet associated with the user
-    const userWallet = wallets[0]; // First available wallet
+    // Get the first available wallet
+    const userWallet = wallets[0];
     const walletAddress = userWallet?.address || '';
     const displayAddress = walletAddress 
       ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
       : 'Connected';
+    
+    // Check if it's a Solana address (Base58 format, typically 32-44 chars)
+    const isSolanaAddress = walletAddress && walletAddress.length >= 32 && walletAddress.length <= 44 && !walletAddress.startsWith('0x');
+    const chainType = isSolanaAddress ? 'solana' : 'ethereum';
 
     // If user is authenticated but has no wallet, show email status
     if (!userWallet && user.email) {
@@ -55,7 +59,7 @@ export function WalletConnect() {
             {displayAddress}
           </span>
           <span className="text-xs">
-            {user.email?.address || 'Wallet User'}
+            {chainType === 'solana' ? '🟣 Solana' : chainType === 'ethereum' ? '🔵 Ethereum' : 'Wallet'} | {user.email?.address || 'User'}
           </span>
         </div>
         <LogOut className="h-4 w-4 ml-2" />
