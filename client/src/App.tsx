@@ -26,7 +26,7 @@ function App() {
           theme: 'light',
           accentColor: '#f59e0b'
         },
-        loginMethods: ['wallet'],
+        loginMethods: ['wallet', 'email'],
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
         },
