@@ -26,9 +26,14 @@ function App() {
           theme: 'light',
           accentColor: '#f59e0b'
         },
-        loginMethods: ['wallet', 'email'],
+        loginMethods: ['email'],
         embeddedWallets: {
           createOnLogin: 'all-users',
+        },
+        externalWallets: {
+          coinbaseWallet: {
+            connectionOptions: 'smartWalletOnly'
+          }
         }
       }}
     >

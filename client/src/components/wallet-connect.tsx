@@ -23,26 +23,23 @@ export function WalletConnect() {
       ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
       : 'Connected';
 
-    // If user is authenticated but has no wallet, show email status with Solana option
+    // If user is authenticated but has no wallet, show email status
     if (!userWallet && user.email) {
       return (
-        <div className="flex flex-col gap-2">
-          <Button
-            onClick={logout}
-            variant="outline"
-            size="sm"
-            className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200"
-          >
-            <div className="flex flex-col items-center gap-1">
-              <span className="text-xs">
-                {user.email.address}
-              </span>
-              <span className="text-xs">Email Connected</span>
-            </div>
-            <LogOut className="h-4 w-4 ml-2" />
-          </Button>
-
-        </div>
+        <Button
+          onClick={logout}
+          variant="outline"
+          size="sm"
+          className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200"
+        >
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-xs">
+              {user.email.address}
+            </span>
+            <span className="text-xs">Email Connected</span>
+          </div>
+          <LogOut className="h-4 w-4 ml-2" />
+        </Button>
       );
     }
 
