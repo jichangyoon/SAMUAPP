@@ -159,7 +159,7 @@ export default function Home() {
                         {sortedMemes.length === 0 && (
                           <Card>
                             <CardContent className="p-8 text-center">
-                              <p className="text-gray-500">No memes submitted yet. Be the first!</p>
+                              <p className="text-muted-foreground">No memes submitted yet. Be the first!</p>
                             </CardContent>
                           </Card>
                         )}

@@ -42,7 +42,7 @@ export function WalletConnect() {
 
   if (!ready) {
     return (
-      <Button disabled size="sm" className="bg-gray-200 text-gray-500">
+      <Button disabled size="sm" className="bg-muted text-muted-foreground">
         <Wallet className="h-4 w-4 mr-1" />
         Loading...
       </Button>

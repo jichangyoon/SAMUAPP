@@ -292,7 +292,7 @@ export function GoodsShop() {
                   )}
                 </div>
                 
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-muted-foreground">
                   <div>Original Creator: {selectedItem.originalAuthor}</div>
                   <div>Stock Available: {selectedItem.stock} units</div>
                 </div>
