@@ -20,9 +20,11 @@ export default function Home() {
   
   // Privy wallet hooks
   const { authenticated, user } = usePrivy();
+  const { wallets } = useWallets();
   
   const isConnected = authenticated;
-  const walletAddress = user?.wallet?.address || '';
+  const userWallet = wallets[0];
+  const walletAddress = userWallet?.address || user?.wallet?.address || '';
   
   // Debug log
   console.log('Privy state:', { authenticated, user, walletAddress });
