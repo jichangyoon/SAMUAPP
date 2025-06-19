@@ -28,12 +28,11 @@ function App() {
         },
         loginMethods: ['wallet', 'email'],
         embeddedWallets: {
-          createOnLogin: 'all-users',
-          requireUserPasswordOnCreate: false,
+          solana: {
+            createOnLogin: 'users-without-wallets',
+          },
         },
-        solana: {
-          cluster: 'mainnet-beta'
-        },
+
         mfa: {
           noPromptOnMfaRequired: false
         }

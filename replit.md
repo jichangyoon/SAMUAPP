@@ -162,6 +162,8 @@ Changelog:
 - June 19, 2025. Migrated from Phantom wallet to Privy universal Web3 authentication system for better cross-platform support
 - June 19, 2025. Completed Privy wallet integration with simplified wallet connection flow for mobile and web compatibility
 - June 19, 2025. Removed all Phantom-specific code and deeplink handlers in favor of Privy's universal authentication
+- June 19, 2025. Configured Privy for automatic Solana embedded wallet creation using 'users-without-wallets' setting
+- June 19, 2025. New users will receive Solana wallets automatically upon first login via email
 ```
 
 ## User Preferences
