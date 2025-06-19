@@ -38,13 +38,16 @@ export default function Home() {
   useEffect(() => {
     if (isConnected && walletAddress && isSolana) {
       setBalanceStatus('loading');
-      getSamuTokenBalance(walletAddress).then(balance => {
-        setSamuBalance(balance);
-        setBalanceStatus('success');
-      }).catch(error => {
-        console.error('Failed to fetch SAMU balance:', error);
-        setBalanceStatus('error');
-      });
+      getSamuTokenBalance(walletAddress)
+        .then(balance => {
+          setSamuBalance(balance);
+          setBalanceStatus('success');
+        })
+        .catch(error => {
+          console.warn('Failed to fetch SAMU balance:', error);
+          setSamuBalance(0);
+          setBalanceStatus('error');
+        });
     } else {
       setSamuBalance(0);
       setBalanceStatus('idle');
