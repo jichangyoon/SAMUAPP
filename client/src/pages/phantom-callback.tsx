@@ -38,7 +38,7 @@ export default function PhantomCallback() {
     } else {
       // 딥링크 핸들러로 데이터 전달
       import('../lib/deeplink-handler').then(({ deepLinkHandler }) => {
-        deepLinkHandler.executeCallback('phantom', {
+        deepLinkHandler.triggerCallback('phantom', {
           publicKey,
           connected: !!publicKey,
           errorMessage

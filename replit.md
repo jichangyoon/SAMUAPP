@@ -151,6 +151,9 @@ Changelog:
 - June 19, 2025. Fixed mobile APK Phantom wallet connection issues with improved deeplink handling
 - June 19, 2025. Added Ionic project configuration (ionic.config.json) for proper build system recognition
 - June 19, 2025. Enhanced mobile detection and Universal Links implementation for native app wallet integration
+- June 19, 2025. Implemented direct phantom:// deeplink scheme for reliable mobile wallet connection
+- June 19, 2025. Added dedicated /phantom-callback route for processing wallet connection responses
+- June 19, 2025. Integrated Capacitor Browser plugin for stable app-to-app transitions in mobile APK
 ```
 
 ## User Preferences
