@@ -170,6 +170,8 @@ Changelog:
 - June 19, 2025. Fixed runtime error overlays by adding comprehensive error handling and timeout controls
 - June 19, 2025. Added multiple RPC endpoint fallback system for reliable SAMU token balance queries
 - June 19, 2025. Enhanced wallet status display to show actual SAMU token balances and voting power
+- June 19, 2025. Improved mobile wallet UI - removed duplicate wallet cards and optimized header display
+- June 19, 2025. Streamlined wallet connection interface with compact SAMU balance display only
 ```
 
 ## User Preferences

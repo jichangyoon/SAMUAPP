@@ -101,11 +101,6 @@ export function WalletConnect() {
               {balanceStatus === 'loading' ? 'Loading...' : samuBalance.toLocaleString()}
             </div>
             <div className="text-xs text-gray-600">SAMU</div>
-            {samuBalance > 0 && (
-              <div className="text-xs font-medium text-green-600 bg-green-50 px-1 rounded mt-0.5">
-                Power: {samuBalance > 1000000 ? `${(samuBalance / 1000000).toFixed(1)}M` : samuBalance.toLocaleString()}
-              </div>
-            )}
           </div>
         )}
         
