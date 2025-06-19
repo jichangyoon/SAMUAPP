@@ -129,6 +129,10 @@ Changelog:
 - June 19, 2025. Fixed React Hook order errors and phantom wallet connection issues
 - June 19, 2025. Resolved RPC endpoint access problems - now using reliable free endpoints for SAMU token balance queries
 - June 19, 2025. Optimized wallet connection with duplicate request prevention and improved error handling
+- June 19, 2025. Implemented iOS Universal Links system for native Phantom wallet deep-link integration
+- June 19, 2025. Added comprehensive deeplink handler with Capacitor App plugin for mobile wallet connections
+- June 19, 2025. Created GitHub Actions workflow for automated Android APK building with artifact uploads
+- June 19, 2025. Completed production-ready deployment system with comprehensive build guides and instructions
 ```
 
 ## User Preferences
