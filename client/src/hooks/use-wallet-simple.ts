@@ -8,42 +8,104 @@ export function useWallet() {
   const [samuBalance, setSamuBalance] = useState(0);
   const [balanceStatus, setBalanceStatus] = useState<'loading' | 'success' | 'error' | 'idle'>('idle');
 
-  // Check connection status on mount
+  // Initialize wallet connection state and setup listeners
   useEffect(() => {
-    const checkConnection = () => {
+    let mounted = true;
+    
+    const initializeWallet = async () => {
+      // Wait a bit for Phantom to fully load
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      if (!mounted) return;
+      
+      // Check if already connected
       if (phantomWallet.connected && phantomWallet.publicKey) {
         setIsConnected(true);
         setWalletAddress(phantomWallet.publicKey);
         console.log('지갑 연결 상태 확인됨:', phantomWallet.publicKey);
       }
+
+      // Listen for account changes
+      if (typeof window !== 'undefined' && (window as any).phantom?.solana) {
+        const phantom = (window as any).phantom.solana;
+        
+        const handleAccountChange = (publicKey: any) => {
+          if (publicKey && mounted) {
+            const newAddress = publicKey.toBase58();
+            console.log('계정 변경됨:', newAddress);
+            setIsConnected(true);
+            setWalletAddress(newAddress);
+          } else if (mounted) {
+            console.log('지갑 연결 해제됨');
+            setIsConnected(false);
+            setWalletAddress('');
+            setSamuBalance(0);
+            setBalanceStatus('idle');
+          }
+        };
+
+        const handleDisconnect = () => {
+          if (mounted) {
+            console.log('지갑 연결 해제 이벤트');
+            setIsConnected(false);
+            setWalletAddress('');
+            setSamuBalance(0);
+            setBalanceStatus('idle');
+          }
+        };
+
+        phantom.on('accountChanged', handleAccountChange);
+        phantom.on('disconnect', handleDisconnect);
+
+        return () => {
+          phantom.removeListener('accountChanged', handleAccountChange);
+          phantom.removeListener('disconnect', handleDisconnect);
+        };
+      }
     };
 
-    checkConnection();
+    initializeWallet();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  // Fetch SAMU balance when connected
+  // Fetch SAMU balance when wallet is connected
   useEffect(() => {
+    let mounted = true;
+    
     if (isConnected && walletAddress) {
       const fetchBalance = async () => {
+        if (!mounted) return;
+        
         setBalanceStatus('loading');
         try {
+          console.log('SAMU 잔액 조회 시작...');
           const balance = await phantomWallet.getSamuBalance();
-          setSamuBalance(balance);
-          setBalanceStatus('success');
-          console.log('Wallet state:', {
-            isConnected,
-            walletAddress: walletAddress.slice(0, 4) + '...' + walletAddress.slice(-4),
-            samuBalance: balance,
-            balanceStatus: 'success'
-          });
+          
+          if (mounted) {
+            setSamuBalance(balance);
+            setBalanceStatus('success');
+            console.log('잔액 조회 완료:', balance);
+          }
         } catch (error) {
-          console.error('Balance fetch failed:', error);
-          setBalanceStatus('error');
+          console.error('잔액 조회 실패:', error);
+          if (mounted) {
+            setBalanceStatus('error');
+          }
         }
       };
 
       fetchBalance();
+    } else if (!isConnected) {
+      setSamuBalance(0);
+      setBalanceStatus('idle');
     }
+
+    return () => {
+      mounted = false;
+    };
   }, [isConnected, walletAddress]);
 
   const connect = async () => {

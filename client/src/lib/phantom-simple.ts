@@ -142,26 +142,79 @@ class SimplePhantomWallet {
 
   async getSamuBalance(): Promise<number> {
     if (!this._publicKey) {
+      console.log('공개키가 없어서 잔액 조회 불가');
       return 0;
     }
 
     try {
-      console.log(`Fetching SAMU balance for:`, this._publicKey);
-      console.log(`SAMU mint address:`, SAMU_MINT);
+      console.log(`SAMU 잔액 조회 시작:`, this._publicKey);
+      console.log(`SAMU mint 주소:`, SAMU_MINT);
 
-      // Check if API key is available
-      const apiKey = import.meta.env.VITE_HELIUS_API_KEY;
-      console.log('API 키 확인:', apiKey ? '있음' : '없음');
-      
-      if (!apiKey) {
-        console.warn('Helius API key not found');
-        return 0;
+      // Try multiple RPC endpoints for reliability
+      const rpcEndpoints = [
+        'https://rpc.helius.xyz/?api-key=public',
+        'https://mainnet.helius-rpc.com/?api-key=public',
+        'https://solana-mainnet.g.alchemy.com/v2/demo',
+        'https://api.mainnet-beta.solana.com',
+        'https://try-rpc.mainnet.solana.blockdaemon.tech',
+        'https://rpc.ankr.com/solana'
+      ];
+
+      for (const endpoint of rpcEndpoints) {
+        try {
+          console.log(`${endpoint}로 토큰 조회 중...`);
+          
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              id: 1,
+              method: 'getTokenAccountsByOwner',
+              params: [
+                this._publicKey,
+                {
+                  mint: SAMU_MINT
+                },
+                {
+                  encoding: 'jsonParsed'
+                }
+              ]
+            })
+          });
+
+          if (!response.ok) {
+            console.log(`${endpoint} 응답 오류:`, response.status);
+            continue;
+          }
+
+          const data = await response.json();
+          
+          if (data.error) {
+            console.log(`${endpoint} RPC 오류:`, data.error);
+            continue;
+          }
+          
+          if (data.result && data.result.value && data.result.value.length > 0) {
+            const tokenAccount = data.result.value[0];
+            const balance = tokenAccount.account.data.parsed.info.tokenAmount.uiAmount;
+            console.log(`${endpoint}에서 SAMU 잔액 발견:`, balance);
+            return Math.floor(balance || 0);
+          } else {
+            console.log(`${endpoint}: 토큰 계정 없음`);
+          }
+        } catch (error) {
+          console.log(`${endpoint} 오류:`, error);
+          continue;
+        }
       }
 
-      // Try Helius Enhanced API first (most reliable)
-      console.log('시도 중: Helius Enhanced');
+      // If no balance found, try checking if the wallet has any token accounts at all
+      console.log('모든 토큰 계정 확인 중...');
       try {
-        const response = await fetch(`https://mainnet.helius-rpc.com/?api-key=${apiKey}`, {
+        const response = await fetch('https://api.mainnet-beta.solana.com', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -173,7 +226,7 @@ class SimplePhantomWallet {
             params: [
               this._publicKey,
               {
-                mint: SAMU_MINT
+                programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
               },
               {
                 encoding: 'jsonParsed'
@@ -183,21 +236,29 @@ class SimplePhantomWallet {
         });
 
         const data = await response.json();
-        
-        if (data.result && data.result.value && data.result.value.length > 0) {
-          const balance = data.result.value[0].account.data.parsed.info.tokenAmount.uiAmount;
-          console.log('Helius Enhanced에서 SAMU 잔액 발견:', balance);
-          return Math.floor(balance || 0);
+        if (data.result && data.result.value) {
+          console.log(`전체 토큰 계정 수: ${data.result.value.length}`);
+          
+          // Check if SAMU token is among them
+          const samuAccount = data.result.value.find((account: any) => 
+            account.account.data.parsed.info.mint === SAMU_MINT
+          );
+          
+          if (samuAccount) {
+            const balance = samuAccount.account.data.parsed.info.tokenAmount.uiAmount;
+            console.log('전체 토큰 목록에서 SAMU 발견:', balance);
+            return Math.floor(balance || 0);
+          }
         }
       } catch (error) {
-        console.error('Helius Enhanced 오류:', error);
+        console.log('전체 토큰 계정 조회 실패:', error);
       }
 
       console.log('SAMU 토큰을 찾을 수 없습니다');
       return 0;
 
     } catch (error) {
-      console.error('Balance fetch error:', error);
+      console.error('SAMU 잔액 조회 전체 실패:', error);
       return 0;
     }
   }
