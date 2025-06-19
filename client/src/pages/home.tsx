@@ -6,6 +6,7 @@ import { UploadForm } from "@/components/upload-form";
 import { MemeCard } from "@/components/meme-card";
 import { Leaderboard } from "@/components/leaderboard";
 import { GoodsShop } from "@/components/goods-shop";
+import { UserProfile } from "@/components/user-profile";
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,6 +21,7 @@ export default function Home() {
   const [currentTab, setCurrentTab] = useState("contest");
   const [samuBalance, setSamuBalance] = useState<number>(0);
   const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [showUserProfile, setShowUserProfile] = useState(false);
   
   // Privy wallet hooks
   const { authenticated, user } = usePrivy();
@@ -72,7 +74,7 @@ export default function Home() {
         <div className="max-w-md mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <button 
-              onClick={() => setCurrentTab("goods")}
+              onClick={() => setShowUserProfile(true)}
               className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
             >
               <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center samu-wolf-logo">
@@ -196,6 +198,14 @@ export default function Home() {
           </TabsContent>
         </Tabs>
       </nav>
+
+      {/* User Profile Modal */}
+      <UserProfile 
+        isOpen={showUserProfile}
+        onClose={() => setShowUserProfile(false)}
+        samuBalance={samuBalance}
+        votingPower={Math.floor(samuBalance * 0.8)} // 임시: 투표력은 SAMU 잔액의 80%
+      />
     </div>
   );
 }
