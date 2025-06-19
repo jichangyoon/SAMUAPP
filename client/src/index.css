@@ -36,35 +36,35 @@
 }
 
 .dark {
-  --background: hsl(0, 0%, 5%);
-  --foreground: hsl(0, 0%, 95%);
-  --muted: hsl(0, 0%, 12%);
-  --muted-foreground: hsl(0, 0%, 60%);
-  --popover: hsl(0, 0%, 8%);
-  --popover-foreground: hsl(0, 0%, 95%);
-  --card: hsl(0, 0%, 8%);
-  --card-foreground: hsl(0, 0%, 95%);
-  --border: hsl(0, 0%, 15%);
-  --input: hsl(0, 0%, 15%);
+  --background: hsl(0, 0%, 0%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(0, 0%, 5%);
+  --muted-foreground: hsl(0, 0%, 65%);
+  --popover: hsl(0, 0%, 2%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(0, 0%, 2%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(0, 0%, 10%);
+  --input: hsl(0, 0%, 8%);
   --primary: hsl(50, 85%, 75%);
-  --primary-foreground: hsl(0, 0%, 10%);
-  --secondary: hsl(0, 0%, 12%);
-  --secondary-foreground: hsl(0, 0%, 90%);
-  --accent: hsl(0, 0%, 15%);
-  --accent-foreground: hsl(0, 0%, 90%);
+  --primary-foreground: hsl(0, 0%, 5%);
+  --secondary: hsl(0, 0%, 5%);
+  --secondary-foreground: hsl(0, 0%, 95%);
+  --accent: hsl(0, 0%, 8%);
+  --accent-foreground: hsl(0, 0%, 95%);
   --destructive: hsl(0, 70%, 55%);
-  --destructive-foreground: hsl(0, 0%, 95%);
+  --destructive-foreground: hsl(0, 0%, 98%);
   --ring: hsl(50, 85%, 75%);
   
   /* Dark mode SAMU colors */
   --samu-yellow: hsl(50, 85%, 75%);
   --samu-yellow-dark: hsl(50, 75%, 65%);
-  --samu-gray: hsl(0, 0%, 70%);
-  --samu-gray-light: hsl(0, 0%, 80%);
-  --samu-brown: hsl(25, 40%, 60%);
-  --samu-brown-light: hsl(25, 35%, 70%);
-  --samu-orange: hsl(30, 100%, 60%);
-  --samu-orange-light: hsl(15, 100%, 70%);
+  --samu-gray: hsl(0, 0%, 75%);
+  --samu-gray-light: hsl(0, 0%, 85%);
+  --samu-brown: hsl(25, 40%, 65%);
+  --samu-brown-light: hsl(25, 35%, 75%);
+  --samu-orange: hsl(30, 100%, 65%);
+  --samu-orange-light: hsl(15, 100%, 75%);
 }
 
 @layer base {

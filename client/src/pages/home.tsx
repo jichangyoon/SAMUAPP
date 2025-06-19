@@ -82,7 +82,7 @@ export default function Home() {
                   className="w-8 h-8 rounded-full object-cover"
                 />
               </div>
-              <span className="text-lg font-bold text-primary-foreground">SAMU</span>
+              <span className="text-lg font-bold text-primary">SAMU</span>
             </button>
             <WalletConnect />
           </div>
