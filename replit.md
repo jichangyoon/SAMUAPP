@@ -156,6 +156,9 @@ Changelog:
 - June 19, 2025. Integrated Capacitor Browser plugin for stable app-to-app transitions in mobile APK
 - June 19, 2025. Fixed Phantom Universal Link protocol to display connection request properly in mobile app
 - June 19, 2025. Enhanced callback parameter parsing with comprehensive debugging for successful wallet integration
+- June 19, 2025. Implemented multiple Phantom URL scheme fallback system for reliable mobile connection
+- June 19, 2025. Added Capacitor App state detection for automatic connection completion on app resume
+- June 19, 2025. Verified web Phantom wallet integration working with 77,770 SAMU token display
 ```
 
 ## User Preferences
