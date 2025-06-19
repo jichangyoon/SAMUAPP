@@ -39,6 +39,12 @@ class UltraStablePhantomWallet {
     try {
       console.log('팬텀 연결 시작...');
       
+      // 모바일 환경에서는 딥링크 방식 사용
+      if (this.isCapacitor() || this.isMobile()) {
+        return await this.connectMobile();
+      }
+      
+      // 웹 환경에서는 기존 방식 사용
       if (!this._phantom) {
         await this.initializePhantom();
         if (!this._phantom) {
@@ -59,6 +65,69 @@ class UltraStablePhantomWallet {
       console.log('연결 실패:', error);
       throw error;
     }
+  }
+
+  private async connectMobile(): Promise<PhantomWallet> {
+    console.log('모바일 팬텀 연결 시작...');
+    
+    // 딥링크 콜백 처리를 위한 Promise 생성
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('팬텀 연결 시간 초과'));
+      }, 30000);
+
+      // 딥링크 핸들러에 콜백 등록
+      import('./deeplink-handler').then(({ deepLinkHandler }) => {
+        deepLinkHandler.registerCallback('phantom', (data: any) => {
+          clearTimeout(timeout);
+          console.log('팬텀 딥링크 콜백 수신:', data);
+          
+          if (data.publicKey && data.connected) {
+            this._publicKey = data.publicKey;
+            this._connected = true;
+            console.log('모바일 팬텀 연결 성공:', this._publicKey);
+            resolve({
+              publicKey: this._publicKey!,
+              connected: true
+            });
+          } else if (data.errorCode || data.errorMessage) {
+            console.log('팬텀 연결 오류:', data.errorMessage || data.errorCode);
+            reject(new Error(data.errorMessage || '팬텀 연결 실패'));
+          } else {
+            reject(new Error('팬텀 연결 실패 - 응답 데이터 부족'));
+          }
+        });
+      }).catch(error => {
+        console.log('딥링크 핸들러 로드 실패:', error);
+        reject(error);
+      });
+
+      // 팬텀 앱 열기
+      const phantomUrl = this.generatePhantomConnectUrl();
+      console.log('팬텀 앱 열기:', phantomUrl);
+      
+      if (this.isCapacitor()) {
+        // Capacitor 환경에서는 window.open 사용
+        window.open(phantomUrl, '_system');
+      } else {
+        // 일반 모바일 브라우저에서는 location 변경
+        window.location.href = phantomUrl;
+      }
+    });
+  }
+
+  private generatePhantomConnectUrl(): string {
+    const baseUrl = this.isCapacitor() ? 'samuapp://phantom-callback' : 
+                    'https://meme-chain-rally-wlckddbs12345.replit.app/phantom-callback';
+    
+    const params = new URLSearchParams({
+      dapp_encryption_public_key: 'phantom_connect_request',
+      cluster: 'mainnet-beta',
+      app_url: baseUrl,
+      redirect_path: '/phantom-callback'
+    });
+
+    return `https://phantom.app/ul/connect?${params.toString()}`;
   }
 
   async disconnect(): Promise<void> {

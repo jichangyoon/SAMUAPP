@@ -66,12 +66,22 @@ export class DeepLinkHandler {
 
   private parsePhantomCallback(urlObj: URL): any {
     const params = new URLSearchParams(urlObj.search);
+    const fragment = urlObj.hash.substring(1);
+    const fragmentParams = new URLSearchParams(fragment);
+    
+    // 팬텀 딥링크 응답 파라미터 파싱
+    const publicKey = params.get('publicKey') || 
+                     fragmentParams.get('publicKey') ||
+                     params.get('phantom_encryption_public_key') ||
+                     fragmentParams.get('phantom_encryption_public_key');
     
     return {
-      publicKey: params.get('phantom_encryption_public_key'),
-      session: params.get('session'),
-      errorCode: params.get('errorCode'),
-      errorMessage: params.get('errorMessage')
+      publicKey: publicKey,
+      connected: !!(publicKey && !params.get('errorCode') && !fragmentParams.get('errorCode')),
+      session: params.get('session') || fragmentParams.get('session'),
+      errorCode: params.get('errorCode') || fragmentParams.get('errorCode'),
+      errorMessage: params.get('errorMessage') || fragmentParams.get('errorMessage'),
+      data: params.get('data') || fragmentParams.get('data')
     };
   }
 

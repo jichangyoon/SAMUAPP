@@ -148,6 +148,9 @@ Changelog:
 - June 19, 2025. Configured GitHub Actions workflow for automatic APK building with Ionic Framework integration
 - June 19, 2025. Added comprehensive deployment documentation for GitHub-based APK generation
 - June 19, 2025. Updated README.md with GitHub Actions setup instructions and automated build process
+- June 19, 2025. Fixed mobile APK Phantom wallet connection issues with improved deeplink handling
+- June 19, 2025. Added Ionic project configuration (ionic.config.json) for proper build system recognition
+- June 19, 2025. Enhanced mobile detection and Universal Links implementation for native app wallet integration
 ```
 
 ## User Preferences

@@ -1,0 +1,7 @@
+{
+  "name": "samu-meme-contest",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "custom"
+}
