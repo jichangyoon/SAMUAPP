@@ -1,36 +1,24 @@
 import { Button } from "@/components/ui/button";
-import { useWallet } from "@/hooks/use-wallet-ultra-stable";
-import { Wallet, Smartphone } from "lucide-react";
+import { usePrivyWallet } from "@/lib/privy-wallet";
+import { Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect } from "react";
 
 export function WalletConnect() {
-  const { isConnected, walletAddress, samuBalance, balanceStatus, connectWallet, disconnectWallet, isConnecting } = useWallet();
-  const [isMobile, setIsMobile] = useState(false);
+  const { isConnected, walletAddress, samuBalance, balanceStatus, isConnecting, connectWallet, disconnectWallet } = usePrivyWallet();
   const { toast } = useToast();
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const handleConnect = async () => {
     try {
       await connectWallet();
       toast({
-        title: "연결 성공",
-        description: "지갑이 성공적으로 연결되었습니다.",
+        title: "Connection Successful",
+        description: "Wallet connected successfully.",
       });
     } catch (error) {
-      console.error('지갑 연결 실패:', error);
+      console.error('Wallet connection failed:', error);
       toast({
-        title: "연결 실패",
-        description: "지갑 연결에 실패했습니다. Privy 지갑을 사용해보세요.",
+        title: "Connection Failed",
+        description: "Failed to connect wallet. Please try again.",
         variant: "destructive",
       });
     }
@@ -40,11 +28,11 @@ export function WalletConnect() {
     try {
       await disconnectWallet();
       toast({
-        title: "연결 해제",
-        description: "지갑 연결이 해제되었습니다.",
+        title: "Disconnected",
+        description: "Wallet disconnected successfully.",
       });
     } catch (error) {
-      console.error('지갑 연결 해제 실패:', error);
+      console.error('Wallet disconnect failed:', error);
     }
   };
 
@@ -78,12 +66,8 @@ export function WalletConnect() {
       size="lg"
       className="bg-gradient-to-r from-[hsl(50,85%,75%)] to-[hsl(30,85%,65%)] hover:from-[hsl(50,75%,65%)] hover:to-[hsl(30,75%,55%)] text-[hsl(201,30%,25%)] font-bold shadow-lg border-2 border-[hsl(30,100%,50%)]"
     >
-      {isMobile ? (
-        <Smartphone className="h-5 w-5 mr-2" />
-      ) : (
-        <Wallet className="h-5 w-5 mr-2" />
-      )}
-      {isConnecting ? "연결 중..." : "지갑 연결 (Privy)"}
+      <Wallet className="h-5 w-5 mr-2" />
+      {isConnecting ? "Connecting..." : "Connect Wallet"}
     </Button>
   );
 }
