@@ -28,10 +28,34 @@ function App() {
         },
         loginMethods: ['wallet', 'email'],
         embeddedWallets: {
+          createOnLogin: 'off',
           solana: {
             createOnLogin: 'users-without-wallets',
           },
         },
+        supportedChains: [
+          {
+            id: 1,
+            name: 'Ethereum',
+            network: 'ethereum',
+            nativeCurrency: {
+              name: 'Ether',
+              symbol: 'ETH',
+              decimals: 18,
+            },
+            rpcUrls: {
+              default: {
+                http: ['https://mainnet.infura.io/v3/'],
+              },
+            },
+            blockExplorers: {
+              default: {
+                name: 'Etherscan',
+                url: 'https://etherscan.io',
+              },
+            },
+          },
+        ],
 
         mfa: {
           noPromptOnMfaRequired: false

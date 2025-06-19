@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Wallet, LogOut } from "lucide-react";
+import { Wallet, LogOut, Plus } from "lucide-react";
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 
 export function WalletConnect() {
