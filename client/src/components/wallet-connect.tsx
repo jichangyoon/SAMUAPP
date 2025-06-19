@@ -1,33 +1,56 @@
 import { Button } from "@/components/ui/button";
 import { Wallet, LogOut, Plus } from "lucide-react";
 import { usePrivy, useWallets } from '@privy-io/react-auth';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getSamuTokenBalance } from "@/lib/solana";
 
 export function WalletConnect() {
   const { ready, authenticated, user, login, logout, createWallet } = usePrivy();
   const { wallets } = useWallets();
   const [isCreatingWallet, setIsCreatingWallet] = useState(false);
+  const [samuBalance, setSamuBalance] = useState<number>(0);
+  const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  // Get wallet using same logic as Home component
+  const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
+  const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
+  const selectedWalletAccount = solanaWallet || walletAccounts[0];
+  
+  const walletAddress = selectedWalletAccount?.address || '';
+  const isSolana = selectedWalletAccount?.chainType === 'solana';
+
+  // Fetch SAMU balance for Solana wallets
+  useEffect(() => {
+    if (authenticated && walletAddress && isSolana) {
+      setBalanceStatus('loading');
+      getSamuTokenBalance(walletAddress)
+        .then(balance => {
+          setSamuBalance(balance);
+          setBalanceStatus('success');
+        })
+        .catch(error => {
+          console.warn('Failed to fetch SAMU balance:', error);
+          setSamuBalance(0);
+          setBalanceStatus('error');
+        });
+    } else {
+      setSamuBalance(0);
+      setBalanceStatus('idle');
+    }
+  }, [authenticated, walletAddress, isSolana]);
 
   if (!ready) {
     return (
-      <Button disabled size="lg" className="bg-gray-200 text-gray-500">
-        <Wallet className="h-5 w-5 mr-2" />
+      <Button disabled size="sm" className="bg-gray-200 text-gray-500">
+        <Wallet className="h-4 w-4 mr-1" />
         Loading...
       </Button>
     );
   }
 
   if (authenticated && user) {
-    // Get all linked accounts (including embedded wallets)
-    const walletAccounts = user.linkedAccounts?.filter(account => account.type === 'wallet') || [];
-    
-    // Prioritize Solana wallet over Ethereum
-    const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
-    const selectedWalletAccount = solanaWallet || walletAccounts[0];
-    
-    const walletAddress = selectedWalletAccount?.address || '';
     const displayAddress = walletAddress 
-      ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+      ? `${walletAddress.slice(0, 4)}...${walletAddress.slice(-3)}`
       : 'Connected';
     
     const chainType = selectedWalletAccount?.chainType || 'unknown';
@@ -53,8 +76,8 @@ export function WalletConnect() {
             size="sm"
             className="bg-amber-500 text-white hover:bg-amber-600"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            {isCreatingWallet ? 'Creating...' : 'Create Solana Wallet'}
+            <Plus className="h-3 w-3 mr-1" />
+            {isCreatingWallet ? 'Creating...' : 'Create Wallet'}
           </Button>
           <Button
             onClick={logout}
@@ -62,40 +85,54 @@ export function WalletConnect() {
             size="sm"
             className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-3 w-3" />
           </Button>
         </div>
       );
     }
 
     return (
-      <Button
-        onClick={logout}
-        variant="outline"
-        size="sm"
-        className="bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
-      >
-        <div className="flex flex-col items-center gap-1">
-          <span className="font-mono text-xs">
-            {displayAddress}
-          </span>
-          <span className="text-xs">
-            {chainType === 'solana' ? '🟣 Solana' : chainType === 'ethereum' ? '🔵 Ethereum' : 'Wallet'} | {user.email?.address || 'User'}
-          </span>
-        </div>
-        <LogOut className="h-4 w-4 ml-2" />
-      </Button>
+      <div className="flex items-center gap-1">
+        {/* SAMU Balance Display */}
+        {isSolana && (
+          <div className="text-right mr-2">
+            <div className="text-xs font-bold text-[hsl(30,100%,50%)]">
+              {balanceStatus === 'loading' ? 'Loading...' : samuBalance.toLocaleString()}
+            </div>
+            <div className="text-xs text-gray-600">SAMU</div>
+          </div>
+        )}
+        
+        {/* Wallet Info Button */}
+        <Button
+          onClick={logout}
+          variant="outline"
+          size="sm"
+          className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100 px-2 py-1 h-auto"
+        >
+          <div className="flex flex-col items-start">
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="font-mono text-xs">{displayAddress}</span>
+            </div>
+            <span className="text-xs opacity-75">
+              {chainType === 'solana' ? 'Solana' : chainType === 'ethereum' ? 'Ethereum' : 'Wallet'}
+            </span>
+          </div>
+          <LogOut className="h-3 w-3 ml-1" />
+        </Button>
+      </div>
     );
   }
 
   return (
     <Button
       onClick={login}
-      size="lg"
-      className="bg-gradient-to-r from-[hsl(50,85%,75%)] to-[hsl(30,85%,65%)] hover:from-[hsl(50,75%,65%)] hover:to-[hsl(30,75%,55%)] text-[hsl(201,30%,25%)] font-bold shadow-lg border-2 border-[hsl(30,100%,50%)]"
+      size="sm"
+      className="bg-gradient-to-r from-[hsl(50,85%,75%)] to-[hsl(30,85%,65%)] hover:from-[hsl(50,75%,65%)] hover:to-[hsl(30,75%,55%)] text-[hsl(201,30%,25%)] font-bold shadow-sm border border-[hsl(30,100%,50%)]"
     >
-      <Wallet className="h-5 w-5 mr-2" />
-      Connect Wallet
+      <Wallet className="h-4 w-4 mr-1" />
+      Connect
     </Button>
   );
 }
