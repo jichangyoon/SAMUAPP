@@ -132,8 +132,28 @@ export function useWallet() {
       
       setIsConnected(true);
       setWalletAddress(result.publicKey);
+      setSamuBalance(0);
+      setBalanceStatus('idle');
       
       console.log('지갑 연결 성공!');
+      
+      // 즉시 잔액 조회 실행
+      setTimeout(async () => {
+        console.log('연결 후 즉시 잔액 조회 시작');
+        setBalanceStatus('loading');
+        
+        try {
+          const balance = await phantomWallet.getSamuBalance();
+          console.log('연결 후 잔액 조회 완료:', balance);
+          
+          setSamuBalance(balance || 0);
+          setBalanceStatus('success');
+        } catch (error) {
+          console.error('연결 후 잔액 조회 실패:', error);
+          setSamuBalance(0);
+          setBalanceStatus('error');
+        }
+      }, 1000);
       
     } catch (error: any) {
       console.error('지갑 연결 실패:', error);
