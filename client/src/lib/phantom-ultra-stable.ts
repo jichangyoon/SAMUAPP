@@ -151,11 +151,21 @@ class UltraStablePhantomWallet {
       'samuapp://phantom-callback' : 
       'https://meme-chain-rally-wlckddbs12345.replit.app/phantom-callback';
 
+    // 실제 Web3 앱들이 사용하는 팬텀 연결 프로토콜
+    const connectData = {
+      dapp_encryption_public_key: '11111111111111111111111111111111',
+      cluster: 'mainnet-beta',
+      app_url: redirectUrl,
+      redirect_path: '/phantom-callback'
+    };
+
+    const encodedData = btoa(JSON.stringify(connectData));
+
     return [
-      ['Phantom Universal Link', `https://phantom.app/ul/browse/${encodeURIComponent('https://phantom.app/ul/connect')}?ref=${encodeURIComponent(redirectUrl)}`],
-      ['Direct Phantom', `phantom://ul/connect?app_url=${encodeURIComponent(redirectUrl)}&cluster=mainnet-beta`],
-      ['Phantom Browse', `phantom://ul/browse/https%3A//phantom.app/ul/connect%3Fapp_url%3D${encodeURIComponent(redirectUrl)}`],
-      ['Simple Open', 'phantom://']
+      ['Phantom WalletConnect', `https://phantom.app/ul/connect?dapp_encryption_public_key=11111111111111111111111111111111&cluster=mainnet-beta&app_url=${encodeURIComponent(redirectUrl)}&redirect_path=/phantom-callback`],
+      ['Phantom Mobile Protocol', `phantom://ul/connect?data=${encodedData}`],
+      ['WalletConnect Universal', `https://phantom.app/ul/v1/connect?dapp_encryption_public_key=11111111111111111111111111111111&cluster=mainnet-beta&app_url=${encodeURIComponent(redirectUrl)}`],
+      ['Phantom Deep Link', `phantom://connect?dapp_encryption_public_key=11111111111111111111111111111111&cluster=mainnet-beta&app_url=${encodeURIComponent(redirectUrl)}`]
     ];
   }
 
