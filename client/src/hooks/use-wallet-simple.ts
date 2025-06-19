@@ -5,7 +5,7 @@ export function useWallet() {
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [walletAddress, setWalletAddress] = useState<string>('');
-  const [samuBalance, setSamuBalance] = useState(0);
+  const [samuBalance, setSamuBalance] = useState<number>(0);
   const [balanceStatus, setBalanceStatus] = useState<'loading' | 'success' | 'error' | 'idle'>('idle');
 
   // Initialize wallet connection state and setup listeners

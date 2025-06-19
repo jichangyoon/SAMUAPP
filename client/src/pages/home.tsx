@@ -18,9 +18,17 @@ export default function Home() {
   // State hooks must be called first and in consistent order
   const [sortBy, setSortBy] = useState("votes");
   const [currentTab, setCurrentTab] = useState("contest");
+  const [renderKey, setRenderKey] = useState(0);
   
   // Custom hooks after state hooks
   const { isConnected, walletAddress, samuBalance, balanceStatus, isConnecting } = useWallet();
+  
+  // Force re-render when balance updates
+  useEffect(() => {
+    if (samuBalance > 0) {
+      setRenderKey(prev => prev + 1);
+    }
+  }, [samuBalance]);
   
   // Debug log
   console.log('Wallet state:', { isConnected, walletAddress, samuBalance, balanceStatus });
