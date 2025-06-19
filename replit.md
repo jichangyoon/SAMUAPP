@@ -164,6 +164,8 @@ Changelog:
 - June 19, 2025. Removed all Phantom-specific code and deeplink handlers in favor of Privy's universal authentication
 - June 19, 2025. Configured Privy for automatic Solana embedded wallet creation using 'users-without-wallets' setting
 - June 19, 2025. New users will receive Solana wallets automatically upon first login via email
+- June 19, 2025. Implemented Solana wallet prioritization - users with multiple wallets now display Solana address first
+- June 19, 2025. Fixed wallet selection logic to use user.linkedAccounts instead of useWallets hook for proper Solana detection
 ```
 
 ## User Preferences

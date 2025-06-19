@@ -18,19 +18,22 @@ export function WalletConnect() {
   }
 
   if (authenticated && user) {
+    // Get all linked accounts (including embedded wallets)
+    const walletAccounts = user.linkedAccounts?.filter(account => account.type === 'wallet') || [];
+    
     // Prioritize Solana wallet over Ethereum
-    const solanaWallet = wallets.find(w => w.chainType === 'solana');
-    const userWallet = solanaWallet || wallets[0];
-    const walletAddress = userWallet?.address || '';
+    const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
+    const selectedWalletAccount = solanaWallet || walletAccounts[0];
+    
+    const walletAddress = selectedWalletAccount?.address || '';
     const displayAddress = walletAddress 
       ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
       : 'Connected';
     
-    // Check wallet type
-    const chainType = userWallet?.chainType || 'unknown';
+    const chainType = selectedWalletAccount?.chainType || 'unknown';
 
     // If user is authenticated but has no wallet, offer to create Solana wallet
-    if (!userWallet && user.email) {
+    if (!selectedWalletAccount && user.email) {
       const handleCreateWallet = async () => {
         setIsCreatingWallet(true);
         try {
