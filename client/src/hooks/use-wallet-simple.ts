@@ -71,11 +71,21 @@ export function useWallet() {
       
       setIsConnected(true);
       setWalletAddress(result.publicKey);
+      setWalletStatus('connected');
       
       console.log('지갑 연결 성공!');
       
+      // 즉시 잔액 조회
+      setBalanceStatus('loading');
+      const balance = await phantomWallet.getSamuBalance();
+      setSamuBalance(balance);
+      setBalanceStatus('success');
+      
+      console.log('SAMU 잔액 업데이트:', balance);
+      
     } catch (error: any) {
       console.error('지갑 연결 실패:', error);
+      setBalanceStatus('error');
       
       // 딥링크 리다이렉트는 에러가 아님
       if (error.message.includes('연결 중')) {
