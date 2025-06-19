@@ -33,31 +33,6 @@ function App() {
             createOnLogin: 'users-without-wallets',
           },
         },
-        // Disable Ethereum chain support to prevent ETH wallet creation
-        supportedChains: [],
-        supportedChains: [
-          {
-            id: 1,
-            name: 'Ethereum',
-            network: 'ethereum',
-            nativeCurrency: {
-              name: 'Ether',
-              symbol: 'ETH',
-              decimals: 18,
-            },
-            rpcUrls: {
-              default: {
-                http: ['https://mainnet.infura.io/v3/'],
-              },
-            },
-            blockExplorers: {
-              default: {
-                name: 'Etherscan',
-                url: 'https://etherscan.io',
-              },
-            },
-          },
-        ],
 
         mfa: {
           noPromptOnMfaRequired: false
