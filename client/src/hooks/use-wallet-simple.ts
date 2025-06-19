@@ -74,8 +74,9 @@ export function useWallet() {
   // Fetch SAMU balance when wallet is connected
   useEffect(() => {
     let mounted = true;
+    let timeoutId: NodeJS.Timeout;
     
-    if (isConnected && walletAddress) {
+    if (isConnected && walletAddress && balanceStatus === 'idle') {
       const fetchBalance = async () => {
         if (!mounted) return;
         
@@ -97,7 +98,8 @@ export function useWallet() {
         }
       };
 
-      fetchBalance();
+      // Add small delay to prevent multiple rapid requests
+      timeoutId = setTimeout(fetchBalance, 100);
     } else if (!isConnected) {
       setSamuBalance(0);
       setBalanceStatus('idle');
@@ -105,8 +107,9 @@ export function useWallet() {
 
     return () => {
       mounted = false;
+      if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [isConnected, walletAddress]);
+  }, [isConnected, walletAddress, balanceStatus]);
 
   const connect = async () => {
     if (isConnecting) return;

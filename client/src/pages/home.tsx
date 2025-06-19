@@ -15,14 +15,15 @@ import type { Meme } from "@shared/schema";
 import samuLogo1 from "@assets/photo_2025-05-26_08-40-22_1750170004880.jpg";
 
 export default function Home() {
+  // State hooks must be called first and in consistent order
+  const [sortBy, setSortBy] = useState("votes");
+  const [currentTab, setCurrentTab] = useState("contest");
+  
+  // Custom hooks after state hooks
   const { isConnected, walletAddress, samuBalance, balanceStatus, isConnecting } = useWallet();
   
   // Debug log
   console.log('Wallet state:', { isConnected, walletAddress, samuBalance, balanceStatus });
-  
-  // Wallet hook automatically handles balance refreshing
-  const [sortBy, setSortBy] = useState("votes");
-  const [currentTab, setCurrentTab] = useState("contest");
 
   const { data: memes = [], isLoading, refetch } = useQuery<Meme[]>({
     queryKey: ["/api/memes"],

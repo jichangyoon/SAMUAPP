@@ -150,14 +150,13 @@ class SimplePhantomWallet {
       console.log(`SAMU 잔액 조회 시작:`, this._publicKey);
       console.log(`SAMU mint 주소:`, SAMU_MINT);
 
-      // Try multiple RPC endpoints for reliability
+      // Try free RPC endpoints that don't require authentication
       const rpcEndpoints = [
-        'https://rpc.helius.xyz/?api-key=public',
-        'https://mainnet.helius-rpc.com/?api-key=public',
-        'https://solana-mainnet.g.alchemy.com/v2/demo',
-        'https://api.mainnet-beta.solana.com',
-        'https://try-rpc.mainnet.solana.blockdaemon.tech',
-        'https://rpc.ankr.com/solana'
+        'https://solana-mainnet.public.blastapi.io',
+        'https://solana-mainnet.rpc.extrnode.com',
+        'https://solana.publicnode.com',
+        'https://rpc.solanabeach.io',
+        'https://solana-mainnet.phantom.tech'
       ];
 
       for (const endpoint of rpcEndpoints) {
@@ -211,49 +210,7 @@ class SimplePhantomWallet {
         }
       }
 
-      // If no balance found, try checking if the wallet has any token accounts at all
-      console.log('모든 토큰 계정 확인 중...');
-      try {
-        const response = await fetch('https://api.mainnet-beta.solana.com', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            jsonrpc: '2.0',
-            id: 1,
-            method: 'getTokenAccountsByOwner',
-            params: [
-              this._publicKey,
-              {
-                programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-              },
-              {
-                encoding: 'jsonParsed'
-              }
-            ]
-          })
-        });
-
-        const data = await response.json();
-        if (data.result && data.result.value) {
-          console.log(`전체 토큰 계정 수: ${data.result.value.length}`);
-          
-          // Check if SAMU token is among them
-          const samuAccount = data.result.value.find((account: any) => 
-            account.account.data.parsed.info.mint === SAMU_MINT
-          );
-          
-          if (samuAccount) {
-            const balance = samuAccount.account.data.parsed.info.tokenAmount.uiAmount;
-            console.log('전체 토큰 목록에서 SAMU 발견:', balance);
-            return Math.floor(balance || 0);
-          }
-        }
-      } catch (error) {
-        console.log('전체 토큰 계정 조회 실패:', error);
-      }
-
+      // If no balance found from primary endpoints, return 0
       console.log('SAMU 토큰을 찾을 수 없습니다');
       return 0;
 
