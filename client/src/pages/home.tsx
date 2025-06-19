@@ -103,10 +103,9 @@ export default function Home() {
           
           <TabsContent value="contest" className="mt-4">
             <Tabs defaultValue="contest-main" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 h-10">
+              <TabsList className="grid w-full grid-cols-2 h-10">
                 <TabsTrigger value="contest-main" className="text-sm">Contest</TabsTrigger>
                 <TabsTrigger value="leaderboard" className="text-sm">Leaderboard</TabsTrigger>
-                <TabsTrigger value="my-memes" className="text-sm">My Memes</TabsTrigger>
               </TabsList>
               
               <TabsContent value="contest-main" className="mt-0">
@@ -181,14 +180,6 @@ export default function Home() {
               
               <TabsContent value="leaderboard">
                 <Leaderboard />
-              </TabsContent>
-              
-              <TabsContent value="my-memes">
-                <Card className="p-6 text-center border-border bg-card">
-                  <p className="text-muted-foreground">
-                    {isConnected ? "Your submitted memes will appear here." : "Connect your wallet to view your memes."}
-                  </p>
-                </Card>
               </TabsContent>
             </Tabs>
           </TabsContent>

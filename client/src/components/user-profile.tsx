@@ -13,7 +13,6 @@ interface UserProfileProps {
   isOpen: boolean;
   onClose: () => void;
   samuBalance: number;
-  votingPower: number;
 }
 
 export function UserProfile({ isOpen, onClose, samuBalance, votingPower }: UserProfileProps) {
@@ -119,7 +118,7 @@ export function UserProfile({ isOpen, onClose, samuBalance, votingPower }: UserP
             </TabsList>
 
             <TabsContent value="upload" className="mt-6">
-              <UploadForm onSuccess={() => {}} />
+              <UploadForm onSuccess={onClose} />
             </TabsContent>
 
             <TabsContent value="my-memes" className="mt-6">

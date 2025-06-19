@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertMemeSchema, insertVoteSchema } from "@shared/schema";
+import { votingPowerManager } from "./voting-power";
 import multer from "multer";
 
 // Configure multer for file uploads
@@ -156,6 +157,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ balance: 0 });
     } catch (error) {
       res.status(500).json({ balance: 0 });
+    }
+  });
+
+  // Voting power API routes
+  app.get('/api/voting-power/:walletAddress', async (req, res) => {
+    try {
+      const { walletAddress } = req.params;
+      let votingPower = votingPowerManager.getVotingPower(walletAddress);
+      
+      // If no voting power data exists, initialize it
+      if (!votingPower) {
+        // Get SAMU balance to initialize voting power
+        const SAMU_TOKEN_MINT = 'EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF';
+        const RPC_ENDPOINTS = [
+          'https://api.mainnet-beta.solana.com',
+          'https://rpc.ankr.com/solana'
+        ];
+
+        let samuBalance = 0;
+        for (const endpoint of RPC_ENDPOINTS) {
+          try {
+            const response = await fetch(endpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                jsonrpc: '2.0',
+                id: Math.floor(Math.random() * 1000),
+                method: 'getTokenAccountsByOwner',
+                params: [
+                  walletAddress,
+                  { mint: SAMU_TOKEN_MINT },
+                  { encoding: 'jsonParsed' },
+                ],
+              }),
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              if (!data.error) {
+                const tokenAccounts = data.result?.value || [];
+                if (tokenAccounts.length > 0) {
+                  samuBalance = tokenAccounts[0]?.account?.data?.parsed?.info?.tokenAmount?.uiAmount || 0;
+                  break;
+                }
+              }
+            }
+          } catch (error) {
+            continue;
+          }
+        }
+        
+        votingPower = votingPowerManager.initializeVotingPower(walletAddress, samuBalance);
+      }
+      
+      res.json(votingPower);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get voting power' });
+    }
+  });
+
+  app.post('/api/voting-power/:walletAddress/use', async (req, res) => {
+    try {
+      const { walletAddress } = req.params;
+      const { powerUsed } = req.body;
+      
+      const success = votingPowerManager.useVotingPower(walletAddress, powerUsed);
+      
+      if (success) {
+        const updatedPower = votingPowerManager.getVotingPower(walletAddress);
+        res.json({ success: true, votingPower: updatedPower });
+      } else {
+        res.status(400).json({ success: false, error: 'Insufficient voting power' });
+      }
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to use voting power' });
     }
   });
 
