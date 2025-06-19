@@ -18,16 +18,16 @@ export function WalletConnect() {
   }
 
   if (authenticated && user) {
-    // Get the first available wallet
-    const userWallet = wallets[0];
+    // Prioritize Solana wallet over Ethereum
+    const solanaWallet = wallets.find(w => w.chainType === 'solana');
+    const userWallet = solanaWallet || wallets[0];
     const walletAddress = userWallet?.address || '';
     const displayAddress = walletAddress 
       ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
       : 'Connected';
     
-    // Check if it's a Solana address (Base58 format, typically 32-44 chars)
-    const isSolanaAddress = walletAddress && walletAddress.length >= 32 && walletAddress.length <= 44 && !walletAddress.startsWith('0x');
-    const chainType = isSolanaAddress ? 'solana' : 'ethereum';
+    // Check wallet type
+    const chainType = userWallet?.chainType || 'unknown';
 
     // If user is authenticated but has no wallet, offer to create Solana wallet
     if (!userWallet && user.email) {

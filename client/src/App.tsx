@@ -28,7 +28,7 @@ function App() {
         },
         loginMethods: ['wallet', 'email'],
         embeddedWallets: {
-          createOnLogin: 'off',
+          createOnLogin: 'users-without-wallets',
           solana: {
             createOnLogin: 'users-without-wallets',
           },
