@@ -25,10 +25,17 @@ export function WalletConnect() {
         size="sm"
         className="bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
       >
-        <span className="font-mono text-xs mr-2">
-          {walletAddress}
-        </span>
-        <span className="text-xs">Disconnect</span>
+        <div className="flex flex-col items-center gap-1">
+          <span className="font-mono text-xs">
+            {walletAddress.slice(0, 4)}...{walletAddress.slice(-4)}
+          </span>
+          {balanceStatus === 'loading' ? (
+            <span className="text-xs animate-pulse">Loading...</span>
+          ) : (
+            <span className="text-xs font-bold">{samuBalance.toLocaleString()} SAMU</span>
+          )}
+        </div>
+        <span className="text-xs ml-2">Disconnect</span>
       </Button>
     );
   }
