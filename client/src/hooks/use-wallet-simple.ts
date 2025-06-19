@@ -93,10 +93,12 @@ export function useWallet() {
             console.log('잔액 상태 업데이트:', balance);
             setSamuBalance(balance);
             setBalanceStatus('success');
+            setForceRender(prev => prev + 1);
           } else {
             console.log('잔액 0으로 설정');
             setSamuBalance(0);
             setBalanceStatus('success');
+            setForceRender(prev => prev + 1);
           }
         }
       } catch (error) {
