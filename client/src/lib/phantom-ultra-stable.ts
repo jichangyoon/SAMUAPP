@@ -70,11 +70,30 @@ class UltraStablePhantomWallet {
   private async connectMobile(): Promise<PhantomWallet> {
     console.log('모바일 팬텀 연결 시작...');
     
-    // 딥링크 콜백 처리를 위한 Promise 생성
+    // 팬텀 앱이 설치되어 있는지 확인
+    const phantomUrl = this.generatePhantomConnectUrl();
+    console.log('팬텀 앱 열기:', phantomUrl);
+
+    // 즉시 팬텀 앱 열기 시도
+    try {
+      if (this.isCapacitor()) {
+        // Capacitor 환경에서는 Browser 플러그인 사용
+        const { Browser } = await import('@capacitor/browser');
+        await Browser.open({ url: phantomUrl });
+      } else {
+        // 모바일 브라우저에서는 새 탭으로 열기
+        window.open(phantomUrl, '_blank');
+      }
+    } catch (error) {
+      console.log('팬텀 앱 열기 실패, window.location 사용:', error);
+      window.location.href = phantomUrl;
+    }
+
+    // 딥링크 콜백 대기
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
-        reject(new Error('팬텀 연결 시간 초과'));
-      }, 30000);
+        reject(new Error('팬텀 연결 시간 초과 - 팬텀 앱에서 승인 후 앱으로 돌아와주세요'));
+      }, 60000); // 1분으로 연장
 
       // 딥링크 핸들러에 콜백 등록
       import('./deeplink-handler').then(({ deepLinkHandler }) => {
@@ -97,37 +116,38 @@ class UltraStablePhantomWallet {
             reject(new Error('팬텀 연결 실패 - 응답 데이터 부족'));
           }
         });
+
+        // 앱으로 돌아왔을 때 처리 (Capacitor 환경)
+        if (this.isCapacitor()) {
+          import('@capacitor/app').then(({ App }) => {
+            App.addListener('appStateChange', ({ isActive }) => {
+              if (isActive) {
+                // 앱이 다시 활성화되면 연결 확인
+                setTimeout(() => {
+                  console.log('앱 재활성화 - 팬텀 연결 상태 확인');
+                  // 실제 팬텀 지갑 확인 로직 추가 필요
+                }, 500);
+              }
+            });
+          }).catch(console.log);
+        }
       }).catch(error => {
         console.log('딥링크 핸들러 로드 실패:', error);
         reject(error);
       });
-
-      // 팬텀 앱 열기
-      const phantomUrl = this.generatePhantomConnectUrl();
-      console.log('팬텀 앱 열기:', phantomUrl);
-      
-      if (this.isCapacitor()) {
-        // Capacitor 환경에서는 window.open 사용
-        window.open(phantomUrl, '_system');
-      } else {
-        // 일반 모바일 브라우저에서는 location 변경
-        window.location.href = phantomUrl;
-      }
     });
   }
 
   private generatePhantomConnectUrl(): string {
-    const baseUrl = this.isCapacitor() ? 'samuapp://phantom-callback' : 
-                    'https://meme-chain-rally-wlckddbs12345.replit.app/phantom-callback';
-    
-    const params = new URLSearchParams({
-      dapp_encryption_public_key: 'phantom_connect_request',
-      cluster: 'mainnet-beta',
-      app_url: baseUrl,
-      redirect_path: '/phantom-callback'
-    });
-
-    return `https://phantom.app/ul/connect?${params.toString()}`;
+    // 간단한 팬텀 모바일 딥링크 사용
+    if (this.isCapacitor()) {
+      // Capacitor 환경에서는 앱 스킴 사용
+      return 'phantom://v1/connect?redirect=samuapp://phantom-callback';
+    } else {
+      // 모바일 브라우저에서는 팬텀 Universal Link 사용
+      const redirectUrl = encodeURIComponent('https://meme-chain-rally-wlckddbs12345.replit.app/phantom-callback');
+      return `phantom://v1/connect?redirect=${redirectUrl}`;
+    }
   }
 
   async disconnect(): Promise<void> {

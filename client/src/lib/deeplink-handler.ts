@@ -96,6 +96,11 @@ export class DeepLinkHandler {
     }
   }
 
+  // Public method for external callback execution
+  public triggerCallback(type: string, data: any) {
+    this.executeCallback(type, data);
+  }
+
   // 팬텀 Universal Link 생성
   generatePhantomConnectUrl(baseUrl: string): string {
     const redirectUrl = `${baseUrl}/phantom-callback`;
