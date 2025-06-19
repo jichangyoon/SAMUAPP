@@ -74,60 +74,51 @@ export function useWallet() {
   // Fetch SAMU balance when wallet is connected
   useEffect(() => {
     let mounted = true;
-    let timeoutId: NodeJS.Timeout;
     
-    if (isConnected && walletAddress && (balanceStatus === 'idle' || balanceStatus === 'error')) {
-      const fetchBalance = async () => {
-        if (!mounted) return;
+    const fetchBalance = async () => {
+      if (!mounted || !isConnected || !walletAddress) return;
+      
+      // 이미 로딩 중이거나 성공한 경우 스킵
+      if (balanceStatus === 'loading' || balanceStatus === 'success') return;
+      
+      console.log('SAMU 잔액 조회 시작 - 상태:', balanceStatus);
+      setBalanceStatus('loading');
+      
+      try {
+        const balance = await phantomWallet.getSamuBalance();
+        console.log('조회된 잔액:', balance, typeof balance);
         
-        setBalanceStatus('loading');
-        try {
-          console.log('SAMU 잔액 조회 시작...');
-          const balance = await phantomWallet.getSamuBalance();
-          
-          console.log('조회된 잔액:', balance, typeof balance);
-          
-          if (mounted && balance !== undefined && balance !== null) {
-            console.log('React 상태 업데이트 중:', balance);
-            
-            // 상태 업데이트를 별도로 실행
-            setSamuBalance(prev => {
-              console.log('setSamuBalance 호출:', prev, '->', balance);
-              return balance;
-            });
-            
-            setBalanceStatus(prev => {
-              console.log('setBalanceStatus 호출:', prev, '->', 'success');
-              return 'success';
-            });
-            
-            console.log('React 상태 업데이트 완료');
-          } else if (mounted) {
-            console.log('잔액이 유효하지 않음:', balance);
+        if (mounted) {
+          if (typeof balance === 'number' && balance >= 0) {
+            console.log('잔액 상태 업데이트:', balance);
+            setSamuBalance(balance);
+            setBalanceStatus('success');
+          } else {
+            console.log('잔액 0으로 설정');
             setSamuBalance(0);
             setBalanceStatus('success');
           }
-        } catch (error) {
-          console.error('잔액 조회 실패:', error);
-          if (mounted) {
-            setSamuBalance(0);
-            setBalanceStatus('error');
-          }
         }
-      };
+      } catch (error) {
+        console.error('잔액 조회 실패:', error);
+        if (mounted) {
+          setSamuBalance(0);
+          setBalanceStatus('error');
+        }
+      }
+    };
 
-      // Add small delay to prevent multiple rapid requests
-      timeoutId = setTimeout(fetchBalance, 100);
-    } else if (!isConnected) {
+    if (isConnected && walletAddress) {
+      fetchBalance();
+    } else {
       setSamuBalance(0);
       setBalanceStatus('idle');
     }
 
     return () => {
       mounted = false;
-      if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [isConnected, walletAddress, balanceStatus]);
+  }, [isConnected, walletAddress]);
 
   const connect = async () => {
     if (isConnecting) return;

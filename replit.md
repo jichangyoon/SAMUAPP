@@ -133,6 +133,8 @@ Changelog:
 - June 19, 2025. Added comprehensive deeplink handler with Capacitor App plugin for mobile wallet connections
 - June 19, 2025. Created GitHub Actions workflow for automated Android APK building with artifact uploads
 - June 19, 2025. Completed production-ready deployment system with comprehensive build guides and instructions
+- June 19, 2025. Fixed web Phantom wallet connection issues - separated desktop browser extension from mobile deeplink logic
+- June 19, 2025. Resolved SAMU token balance display problems with improved React state management and RPC endpoint optimization
 ```
 
 ## User Preferences
