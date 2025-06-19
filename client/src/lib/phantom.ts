@@ -28,12 +28,20 @@ class RealPhantomWallet {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   }
 
+  private isCapacitorApp(): boolean {
+    return !!(window as any).Capacitor?.isNativePlatform?.();
+  }
+
   private isInPhantomApp(): boolean {
     return (window as any).phantom?.solana?.isPhantom === true;
   }
 
   private getAppUrl(): string {
-    // Get current app URL - in production this would be your deployed app URL
+    // For Capacitor apps, use a custom scheme
+    if (this.isCapacitorApp()) {
+      return 'samuapp://phantom-connect';
+    }
+    // For web, use the current origin
     const currentUrl = window.location.origin;
     return encodeURIComponent(currentUrl);
   }
