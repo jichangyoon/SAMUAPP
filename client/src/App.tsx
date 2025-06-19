@@ -33,6 +33,8 @@ function App() {
             createOnLogin: 'users-without-wallets',
           },
         },
+        // Disable Ethereum chain support to prevent ETH wallet creation
+        supportedChains: [],
         supportedChains: [
           {
             id: 1,

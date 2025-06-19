@@ -1,10 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Wallet, LogOut, Plus } from "lucide-react";
 import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { useState } from 'react';
 
 export function WalletConnect() {
-  const { ready, authenticated, user, login, logout } = usePrivy();
+  const { ready, authenticated, user, login, logout, createWallet } = usePrivy();
   const { wallets } = useWallets();
+  const [isCreatingWallet, setIsCreatingWallet] = useState(false);
 
   if (!ready) {
     return (
@@ -27,23 +29,39 @@ export function WalletConnect() {
     const isSolanaAddress = walletAddress && walletAddress.length >= 32 && walletAddress.length <= 44 && !walletAddress.startsWith('0x');
     const chainType = isSolanaAddress ? 'solana' : 'ethereum';
 
-    // If user is authenticated but has no wallet, show email status
+    // If user is authenticated but has no wallet, offer to create Solana wallet
     if (!userWallet && user.email) {
+      const handleCreateWallet = async () => {
+        setIsCreatingWallet(true);
+        try {
+          await createWallet();
+        } catch (error) {
+          console.error('Failed to create wallet:', error);
+        } finally {
+          setIsCreatingWallet(false);
+        }
+      };
+
       return (
-        <Button
-          onClick={logout}
-          variant="outline"
-          size="sm"
-          className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200"
-        >
-          <div className="flex flex-col items-center gap-1">
-            <span className="text-xs">
-              {user.email.address}
-            </span>
-            <span className="text-xs">Email Connected</span>
-          </div>
-          <LogOut className="h-4 w-4 ml-2" />
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleCreateWallet}
+            disabled={isCreatingWallet}
+            size="sm"
+            className="bg-amber-500 text-white hover:bg-amber-600"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            {isCreatingWallet ? 'Creating...' : 'Create Solana Wallet'}
+          </Button>
+          <Button
+            onClick={logout}
+            variant="outline"
+            size="sm"
+            className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200"
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
       );
     }
 
