@@ -32,28 +32,6 @@ class SimplePhantomWallet {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   }
 
-  // 팬텀 설치 여부 확인 (단순화)
-  async isPhantomInstalled(): Promise<boolean> {
-    if (!this.isMobile() && !this.isCapacitor()) {
-      // 데스크톱: 확장 프로그램 확인
-      return !!(window as any).phantom?.solana;
-    }
-
-    // 모바일: 항상 true로 가정 (팬텀 앱이 설치되어 있다고 가정)
-    console.log('모바일 환경: 팬텀 앱 설치됨으로 가정');
-    return true;
-  }
-
-  // 지갑 상태 확인 (Pump.fun 스타일)
-  async getWalletStatus(): Promise<'detected' | 'not-detected' | 'connected'> {
-    if (this._connected) {
-      return 'connected';
-    }
-
-    const isInstalled = await this.isPhantomInstalled();
-    return isInstalled ? 'detected' : 'not-detected';
-  }
-
   private async waitForPhantom(timeout: number = 3000): Promise<any> {
     return new Promise((resolve) => {
       if ((window as any).phantom?.solana) {
@@ -120,38 +98,25 @@ class SimplePhantomWallet {
       }
     }
 
-    // 모바일/Capacitor: 단순한 팬텀 연결
-    console.log('모바일 환경: 팬텀 연결');
+    // 모바일/Capacitor: 팬텀 앱으로 딥링크
+    console.log('모바일 환경: 팬텀 앱으로 연결 중...');
     
+    const currentUrl = window.location.origin;
+    const connectUrl = `https://phantom.app/ul/v1/connect?app_url=${encodeURIComponent(currentUrl)}&redirect_link=${encodeURIComponent(currentUrl)}`;
+    
+    console.log('팬텀 딥링크 URL:', connectUrl);
+
     if (this.isCapacitor()) {
-      // Capacitor 앱에서 팬텀 딥링크
-      console.log('Capacitor 앱: 팬텀 딥링크 실행');
-      
-      // 단순한 딥링크
-      const phantomUrl = 'phantom://ul/v1/connect?app_url=samuapp://&redirect_link=samuapp://connected';
-      window.open(phantomUrl, '_system');
-      
-      // 3초 후 자동 연결 완료
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          this._connected = true;
-          this._publicKey = '4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk'; // 실제 테스트 지갑
-          
-          console.log('모바일 팬텀 연결 완료:', this._publicKey);
-          resolve({
-            publicKey: this._publicKey,
-            connected: this._connected
-          });
-        }, 3000);
-      });
+      // Capacitor 앱에서는 시스템 브라우저로 열기
+      console.log('Capacitor 앱: 시스템 브라우저로 팬텀 열기');
+      window.open(connectUrl, '_system');
     } else {
-      // 모바일 웹
+      // 모바일 웹에서는 직접 리다이렉트
       console.log('모바일 웹: 팬텀 앱으로 리다이렉트');
-      const phantomUrl = 'https://phantom.app/ul/v1/connect?app_url=' + encodeURIComponent(window.location.origin);
-      window.location.href = phantomUrl;
-      
-      throw new Error('팬텀 앱으로 연결 중입니다...');
+      window.location.href = connectUrl;
     }
+
+    throw new Error('팬텀 앱으로 연결 중입니다...');
   }
 
   async disconnect(): Promise<void> {

@@ -4,7 +4,7 @@ import { Wallet, Smartphone } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export function WalletConnect() {
-  const { isConnected, walletAddress, connect, disconnect, isConnecting, walletStatus } = useWallet();
+  const { isConnected, walletAddress, connect, disconnect, isConnecting } = useWallet();
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -33,55 +33,19 @@ export function WalletConnect() {
     );
   }
 
-  // Pump.fun 스타일의 지갑 상태 표시
-  const getWalletButtonContent = () => {
-    if (isConnecting) {
-      return {
-        text: "연결 중...",
-        icon: isMobile ? <Smartphone className="h-5 w-5 mr-2" /> : <Wallet className="h-5 w-5 mr-2" />,
-        className: "bg-yellow-500 hover:bg-yellow-600 text-white"
-      };
-    }
-
-    switch (walletStatus) {
-      case 'detected':
-        return {
-          text: isMobile ? "Phantom Wallet - detected" : "Phantom Extension - detected",
-          icon: isMobile ? <Smartphone className="h-5 w-5 mr-2" /> : <Wallet className="h-5 w-5 mr-2" />,
-          className: "bg-gradient-to-r from-[hsl(50,85%,75%)] to-[hsl(30,85%,65%)] hover:from-[hsl(50,75%,65%)] hover:to-[hsl(30,75%,55%)] text-[hsl(201,30%,25%)] font-bold shadow-lg border-2 border-[hsl(30,100%,50%)]"
-        };
-      case 'not-detected':
-        return {
-          text: isMobile ? "Install Phantom App" : "Install Phantom Extension",
-          icon: isMobile ? <Smartphone className="h-5 w-5 mr-2" /> : <Wallet className="h-5 w-5 mr-2" />,
-          className: "bg-gray-500 hover:bg-gray-600 text-white"
-        };
-      case 'checking':
-        return {
-          text: "Checking Phantom...",
-          icon: isMobile ? <Smartphone className="h-5 w-5 mr-2" /> : <Wallet className="h-5 w-5 mr-2" />,
-          className: "bg-blue-500 hover:bg-blue-600 text-white"
-        };
-      default:
-        return {
-          text: "Connect Wallet",
-          icon: isMobile ? <Smartphone className="h-5 w-5 mr-2" /> : <Wallet className="h-5 w-5 mr-2" />,
-          className: "bg-gray-500 hover:bg-gray-600 text-white"
-        };
-    }
-  };
-
-  const buttonContent = getWalletButtonContent();
-
   return (
     <Button
       onClick={connect}
-      disabled={isConnecting || walletStatus === 'checking'}
+      disabled={isConnecting}
       size="lg"
-      className={buttonContent.className}
+      className="bg-gradient-to-r from-[hsl(50,85%,75%)] to-[hsl(30,85%,65%)] hover:from-[hsl(50,75%,65%)] hover:to-[hsl(30,75%,55%)] text-[hsl(201,30%,25%)] font-bold shadow-lg border-2 border-[hsl(30,100%,50%)]"
     >
-      {buttonContent.icon}
-      {buttonContent.text}
+      {isMobile ? (
+        <Smartphone className="h-5 w-5 mr-2" />
+      ) : (
+        <Wallet className="h-5 w-5 mr-2" />
+      )}
+      {isConnecting ? "연결 중..." : isMobile ? "Phantom 앱에서 열기" : "Phantom 지갑 연결"}
     </Button>
   );
 }

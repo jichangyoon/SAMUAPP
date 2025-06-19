@@ -7,32 +7,18 @@ export function useWallet() {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [samuBalance, setSamuBalance] = useState(0);
   const [balanceStatus, setBalanceStatus] = useState<'loading' | 'success' | 'error' | 'idle'>('idle');
-  const [walletStatus, setWalletStatus] = useState<'detected' | 'not-detected' | 'connected' | 'checking'>('checking');
 
-  // Check connection status and wallet detection on mount
+  // Check connection status on mount
   useEffect(() => {
-    const checkWalletStatus = async () => {
-      // First check if already connected
+    const checkConnection = () => {
       if (phantomWallet.connected && phantomWallet.publicKey) {
         setIsConnected(true);
         setWalletAddress(phantomWallet.publicKey);
-        setWalletStatus('connected');
         console.log('지갑 연결 상태 확인됨:', phantomWallet.publicKey);
-        return;
-      }
-
-      // Check if phantom is installed/detected
-      try {
-        const status = await phantomWallet.getWalletStatus();
-        setWalletStatus(status);
-        console.log('팬텀 지갑 상태:', status);
-      } catch (error) {
-        console.error('팬텀 상태 확인 오류:', error);
-        setWalletStatus('not-detected');
       }
     };
 
-    checkWalletStatus();
+    checkConnection();
   }, []);
 
   // Fetch SAMU balance when connected
@@ -71,21 +57,11 @@ export function useWallet() {
       
       setIsConnected(true);
       setWalletAddress(result.publicKey);
-      setWalletStatus('connected');
       
       console.log('지갑 연결 성공!');
       
-      // 즉시 잔액 조회
-      setBalanceStatus('loading');
-      const balance = await phantomWallet.getSamuBalance();
-      setSamuBalance(balance);
-      setBalanceStatus('success');
-      
-      console.log('SAMU 잔액 업데이트:', balance);
-      
     } catch (error: any) {
       console.error('지갑 연결 실패:', error);
-      setBalanceStatus('error');
       
       // 딥링크 리다이렉트는 에러가 아님
       if (error.message.includes('연결 중')) {
@@ -115,7 +91,6 @@ export function useWallet() {
     walletAddress,
     samuBalance,
     balanceStatus,
-    walletStatus,
     connect,
     disconnect
   };
