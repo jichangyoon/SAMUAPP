@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build SAMU Android APK
 
 on:
   push:
@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout code
+    - name: Checkout Repository
       uses: actions/checkout@v4
       
-    - name: Setup Node.js
+    - name: Setup Node.js 20
       uses: actions/setup-node@v4
       with:
         node-version: '20'
@@ -29,47 +29,59 @@ jobs:
         
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
+      with:
+        api-level: 34
+        build-tools: 34.0.0
+        
+    - name: Install Dependencies
+      run: |
+        npm ci
+        npm install -g @ionic/cli @capacitor/cli
       
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Build web assets
+    - name: Build Web Application
       run: npm run build
       
-    - name: Sync Capacitor
+    - name: Capacitor Sync
       run: npx cap sync android
       
-    - name: Build Android APK
+    - name: Grant Execute Permission
+      run: chmod +x android/gradlew
+      
+    - name: Build Debug APK
       working-directory: ./android
-      run: |
-        chmod +x ./gradlew
-        ./gradlew assembleDebug
-        
-    - name: Upload APK artifact
+      run: ./gradlew assembleDebug --no-daemon --stacktrace
+      
+    - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: samu-app-debug
+        name: samu-android-apk-${{ github.run_number }}
         path: android/app/build/outputs/apk/debug/app-debug.apk
+        retention-days: 30
         
-    - name: Create Release
+    - name: Create GitHub Release
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
       uses: softprops/action-gh-release@v1
       with:
         tag_name: v${{ github.run_number }}
-        name: SAMU App Release v${{ github.run_number }}
+        name: SAMU App v${{ github.run_number }}
         body: |
-          ## SAMU Meme Contest App
+          # SAMU Meme Contest Mobile App
           
-          ### Features
-          - 팬텀 지갑 연결
-          - SAMU 토큰 잔액 조회
-          - 밈 업로드 및 투표
-          - 상품 구매 시스템
+          ## 🚀 Features
+          - Phantom Wallet Integration
+          - SAMU Token Balance Display
+          - Meme Upload & Voting System
+          - Goods Shop with Token Payments
+          - Mobile-Optimized UI
           
-          ### Installation
-          1. Download the APK file
-          2. Enable "Install from unknown sources" in Android settings
-          3. Install the APK
+          ## 📱 Installation
+          1. Download `app-debug.apk` from Assets below
+          2. Enable "Unknown sources" in Android Settings
+          3. Install the APK file
+          
+          ## 🔗 Links
+          - Web App: https://meme-chain-rally-wlckddbs12345.replit.app
+          - Repository: ${{ github.server_url }}/${{ github.repository }}
           
         files: |
           android/app/build/outputs/apk/debug/app-debug.apk
@@ -77,3 +89,10 @@ jobs:
         prerelease: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Build Summary
+      run: |
+        echo "✅ APK Build Completed Successfully"
+        echo "📱 File: android/app/build/outputs/apk/debug/app-debug.apk"
+        echo "📦 Size: $(du -h android/app/build/outputs/apk/debug/app-debug.apk | cut -f1)"
+        echo "🔗 Download from Actions Artifacts or GitHub Releases"
