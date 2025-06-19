@@ -17,14 +17,21 @@ export class DeepLinkHandler {
   private initializeListeners() {
     // Capacitor 환경에서 딥링크 이벤트 처리
     if ((window as any).Capacitor?.isNativePlatform()) {
-      import('@capacitor/app').then(({ App }) => {
-        App.addListener('appUrlOpen', (event) => {
-          console.log('딥링크 수신:', event.url);
-          this.handleDeepLink(event.url);
+      try {
+        // 동적 import로 Capacitor App 플러그인 로드
+        const loadCapacitorApp = async () => {
+          const { App } = await import('@capacitor/app');
+          App.addListener('appUrlOpen', (event: any) => {
+            console.log('딥링크 수신:', event.url);
+            this.handleDeepLink(event.url);
+          });
+        };
+        loadCapacitorApp().catch(error => {
+          console.log('Capacitor App 플러그인 로드 실패:', error);
         });
-      }).catch(error => {
-        console.log('Capacitor App 플러그인 로드 실패:', error);
-      });
+      } catch (error) {
+        console.log('Capacitor 환경 확인 실패:', error);
+      }
     }
 
     // 웹 환경에서 URL 변경 감지

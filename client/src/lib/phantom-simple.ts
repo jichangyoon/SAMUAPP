@@ -6,6 +6,8 @@ export interface PhantomWallet {
 // SAMU Token mint address
 const SAMU_MINT = 'EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF';
 
+import { deepLinkHandler } from '@/lib/deeplink-handler';
+
 class SimplePhantomWallet {
   private _connected = false;
   private _publicKey: string | null = null;
@@ -113,44 +115,29 @@ class SimplePhantomWallet {
       // Capacitor 앱에서는 Universal Link 방식으로 처리
       console.log('Capacitor 앱: Universal Link로 팬텀 연결');
       
-      // iOS에서는 window.open 대신 location.href 사용
-      if (this.isMobile() && /iPhone|iPad/.test(navigator.userAgent)) {
-        window.location.href = connectUrl;
-      } else {
-        window.open(connectUrl, '_system');
-      }
-      
-      // 연결 상태 추적을 위한 Promise 반환
+      // 딥링크 핸들러를 통한 연결
       return new Promise((resolve, reject) => {
-        const handleAppResume = () => {
-          // 앱이 다시 활성화되면 연결 완료로 간주
-          setTimeout(() => {
+        // 팬텀 콜백 리스너 등록
+        deepLinkHandler.registerCallback('phantom', (data: any) => {
+          if (data.publicKey) {
             this._connected = true;
-            this._publicKey = 'temp-connected-key'; // 실제로는 콜백에서 받아야 함
-            
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            window.removeEventListener('focus', handleAppResume);
-            
+            this._publicKey = data.publicKey;
             resolve({
               publicKey: this._publicKey!,
               connected: this._connected
             });
-          }, 1000);
-        };
-        
-        const handleVisibilityChange = () => {
-          if (!document.hidden) {
-            handleAppResume();
+          } else if (data.errorCode) {
+            reject(new Error(`팬텀 연결 오류: ${data.errorMessage || data.errorCode}`));
           }
-        };
+        });
         
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        window.addEventListener('focus', handleAppResume);
+        // 딥링크로 팬텀 앱 열기
+        deepLinkHandler.openDeepLink(connectUrl).catch(error => {
+          reject(error);
+        });
         
         // 30초 타임아웃
         setTimeout(() => {
-          document.removeEventListener('visibilitychange', handleVisibilityChange);
-          window.removeEventListener('focus', handleAppResume);
           reject(new Error('연결 타임아웃'));
         }, 30000);
       });
