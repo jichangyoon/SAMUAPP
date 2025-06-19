@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { PrivyProvider } from '@privy-io/react-auth';
+import { useEffect } from 'react';
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 
@@ -18,13 +19,18 @@ function Router() {
 }
 
 function App() {
+  // Set dark mode as default
+  useEffect(() => {
+    document.documentElement.classList.add('dark');
+  }, []);
+
   return (
     <PrivyProvider
       appId="cmc3cduly00mrjs0nuj2jyuz8"
       config={{
         appearance: {
-          theme: 'light',
-          accentColor: '#f59e0b'
+          theme: 'dark',
+          accentColor: '#fbbf24'
         },
         loginMethods: ['wallet', 'email'],
         embeddedWallets: {

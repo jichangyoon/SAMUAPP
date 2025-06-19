@@ -109,11 +109,11 @@ export function WalletConnect() {
           onClick={logout}
           variant="outline"
           size="sm"
-          className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100 px-2 py-1 h-auto"
+          className="bg-green-950/20 text-green-400 border-green-800 hover:bg-green-950/30 px-2 py-1 h-auto"
         >
           <div className="flex flex-col items-start">
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
               <span className="font-mono text-xs">{displayAddress}</span>
             </div>
             <span className="text-xs opacity-75">

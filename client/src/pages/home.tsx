@@ -66,23 +66,23 @@ export default function Home() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200">
+      <header className="sticky top-0 z-50 bg-card shadow-sm border-b border-border">
         <div className="max-w-md mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <button 
               onClick={() => setCurrentTab("goods")}
               className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
             >
-              <div className="w-10 h-10 rounded-full bg-[hsl(50,85%,75%)] flex items-center justify-center samu-wolf-logo">
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center samu-wolf-logo">
                 <img 
                   src={samuLogo1} 
                   alt="SAMU Wolf" 
                   className="w-8 h-8 rounded-full object-cover"
                 />
               </div>
-              <span className="text-lg font-bold text-[hsl(201,30%,25%)]">SAMU</span>
+              <span className="text-lg font-bold text-primary-foreground">SAMU</span>
             </button>
             <WalletConnect />
           </div>
@@ -92,7 +92,7 @@ export default function Home() {
 
 
       {/* Main Navigation */}
-      <nav className="max-w-md mx-auto px-4 py-3 bg-white border-b border-gray-200">
+      <nav className="max-w-md mx-auto px-4 py-3 bg-card border-b border-border">
         <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 h-10">
             <TabsTrigger value="contest" className="text-sm">Meme Contest</TabsTrigger>
