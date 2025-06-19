@@ -68,10 +68,11 @@ class SimplePhantomWallet {
       userAgent: navigator.userAgent
     });
 
-    // Desktop: Phantom 브라우저 확장 프로그램 사용
+    // Desktop 웹 환경: Phantom 브라우저 확장 프로그램만 사용
     if (!this.isMobile() && !this.isCapacitor()) {
       console.log('데스크톱 환경: 팬텀 확장 프로그램 확인 중...');
       
+      // 팬텀 확장 프로그램 기다리기
       if (!this._phantom) {
         this._phantom = await this.waitForPhantom(3000);
       }
@@ -100,10 +101,9 @@ class SimplePhantomWallet {
       }
     }
 
-    // 모바일/Capacitor: 팬텀 앱으로 딥링크
+    // 모바일 환경에서만 딥링크 사용
     console.log('모바일 환경: 팬텀 앱으로 연결 중...');
     
-    // iOS Universal Links를 고려한 URL 구조
     const baseUrl = this.isCapacitor() ? 'samuapp://phantom-connect' : window.location.origin;
     const redirectUrl = `${baseUrl}/phantom-callback`;
     const connectUrl = `https://phantom.app/ul/v1/connect?app_url=${encodeURIComponent(baseUrl)}&redirect_link=${encodeURIComponent(redirectUrl)}`;
@@ -112,10 +112,9 @@ class SimplePhantomWallet {
     console.log('리다이렉트 URL:', redirectUrl);
 
     if (this.isCapacitor()) {
-      // Capacitor 앱에서는 Universal Link 방식으로 처리
+      // Capacitor 앱에서는 딥링크 핸들러 사용
       console.log('Capacitor 앱: Universal Link로 팬텀 연결');
       
-      // 딥링크 핸들러를 통한 연결
       return new Promise((resolve, reject) => {
         // 팬텀 콜백 리스너 등록
         deepLinkHandler.registerCallback('phantom', (data: any) => {
@@ -131,12 +130,10 @@ class SimplePhantomWallet {
           }
         });
         
-        // 딥링크로 팬텀 앱 열기
         deepLinkHandler.openDeepLink(connectUrl).catch(error => {
           reject(error);
         });
         
-        // 30초 타임아웃
         setTimeout(() => {
           reject(new Error('연결 타임아웃'));
         }, 30000);
@@ -180,13 +177,13 @@ class SimplePhantomWallet {
       console.log(`SAMU 잔액 조회 시작:`, this._publicKey);
       console.log(`SAMU mint 주소:`, SAMU_MINT);
 
-      // Try free RPC endpoints that don't require authentication
+      // Try multiple RPC endpoints with retry logic
       const rpcEndpoints = [
-        'https://solana-mainnet.public.blastapi.io',
-        'https://solana-mainnet.rpc.extrnode.com',
-        'https://solana.publicnode.com',
+        'https://solana.drpc.org',
         'https://rpc.solanabeach.io',
-        'https://solana-mainnet.phantom.tech'
+        'https://solana-rpc.publicnode.com',
+        'https://solana-mainnet.core.chainstack.com',
+        'https://solana.publicnode.com'
       ];
 
       for (const endpoint of rpcEndpoints) {
@@ -197,6 +194,7 @@ class SimplePhantomWallet {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              'Accept': 'application/json',
             },
             body: JSON.stringify({
               jsonrpc: '2.0',
