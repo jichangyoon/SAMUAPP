@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { PrivyProvider } from '@privy-io/react-auth';
 import { privyConfig } from './lib/privy-config';
+import ErrorBoundary from './error-boundary';
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 import PhantomCallback from "@/pages/phantom-callback";
@@ -22,17 +23,19 @@ function Router() {
 
 function App() {
   return (
-    <PrivyProvider
-      appId={privyConfig.appId}
-      config={privyConfig.config}
-    >
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </QueryClientProvider>
-    </PrivyProvider>
+    <ErrorBoundary>
+      <PrivyProvider
+        appId={privyConfig.appId}
+        config={privyConfig.config}
+      >
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </QueryClientProvider>
+      </PrivyProvider>
+    </ErrorBoundary>
   );
 }
 
