@@ -136,6 +136,7 @@ Changelog:
 - June 19, 2025. Fixed web Phantom wallet connection issues - separated desktop browser extension from mobile deeplink logic
 - June 19, 2025. Resolved SAMU token balance display problems with improved React state management and RPC endpoint optimization
 - June 19, 2025. Successfully completed web Phantom wallet integration - 77,770 SAMU tokens displaying correctly with stable connection
+- June 19, 2025. Fixed React state rendering issue preventing SAMU token balance display after wallet reconnection
 ```
 
 ## User Preferences

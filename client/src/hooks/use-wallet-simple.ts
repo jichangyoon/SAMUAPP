@@ -91,14 +91,15 @@ export function useWallet() {
         if (mounted) {
           if (typeof balance === 'number' && balance >= 0) {
             console.log('잔액 상태 업데이트:', balance);
-            setSamuBalance(balance);
+            setSamuBalance(prevBalance => {
+              console.log('setSamuBalance 실행:', prevBalance, '->', balance);
+              return balance;
+            });
             setBalanceStatus('success');
-            setForceRender(prev => prev + 1);
           } else {
             console.log('잔액 0으로 설정');
-            setSamuBalance(0);
+            setSamuBalance(() => 0);
             setBalanceStatus('success');
-            setForceRender(prev => prev + 1);
           }
         }
       } catch (error) {
@@ -148,11 +149,11 @@ export function useWallet() {
           const balance = await phantomWallet.getSamuBalance();
           console.log('연결 후 잔액 조회 완료:', balance);
           
-          setSamuBalance(balance || 0);
+          setSamuBalance(() => balance || 0);
           setBalanceStatus('success');
         } catch (error) {
           console.error('연결 후 잔액 조회 실패:', error);
-          setSamuBalance(0);
+          setSamuBalance(() => 0);
           setBalanceStatus('error');
         }
       }, 1000);
@@ -176,7 +177,7 @@ export function useWallet() {
       // 완전히 상태 초기화
       setIsConnected(false);
       setWalletAddress('');
-      setSamuBalance(0);
+      setSamuBalance(() => 0);
       setBalanceStatus('idle');
       
       console.log('지갑 연결 해제됨 - 상태 완전 초기화');
