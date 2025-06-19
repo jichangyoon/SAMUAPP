@@ -309,7 +309,7 @@ export function GoodsShop() {
                       setSelectedItem(null);
                     }}
                     disabled={cart.includes(selectedItem.id)}
-                    className="bg-[hsl(50,85%,75%)] hover:bg-[hsl(50,75%,65%)] text-[hsl(201,30%,25%)]"
+                    className="bg-[hsl(50,85%,75%)] hover:bg-[hsl(50,75%,65%)] text-black"
                   >
                     {cart.includes(selectedItem.id) ? "Already Added" : "Add to Cart"}
                   </Button>

@@ -120,7 +120,7 @@ export default function Home() {
                   {/* Meme Gallery */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-lg font-semibold text-[hsl(201,30%,25%)]">Contest Entries</h2>
+                      <h2 className="text-lg font-semibold text-foreground">Contest Entries</h2>
                       <Select value={sortBy} onValueChange={setSortBy}>
                         <SelectTrigger className="w-32 h-8 text-sm">
                           <SelectValue />

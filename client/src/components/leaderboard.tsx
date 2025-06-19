@@ -70,7 +70,7 @@ export function Leaderboard() {
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1: return <Trophy className="h-5 w-5 text-yellow-400" />;
-      case 2: return <Medal className="h-5 w-5 text-gray-300" />;
+      case 2: return <Medal className="h-5 w-5 text-muted-foreground" />;
       case 3: return <Medal className="h-5 w-5 text-amber-400" />;
       default: return <span className="text-sm font-bold text-muted-foreground">#{rank}</span>;
     }
@@ -245,25 +245,25 @@ export function Leaderboard() {
           </Card>
           
           {/* Statistics Card */}
-          <Card className="samu-card-shadow">
+          <Card className="border-border bg-card">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg text-[hsl(201,30%,25%)]">
+              <CardTitle className="text-lg text-primary">
                 Overall Statistics
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
-                  <div className="text-2xl font-bold text-[hsl(30,100%,50%)]">
+                <div className="text-center p-3 bg-accent rounded-lg">
+                  <div className="text-2xl font-bold text-primary">
                     {memes.length + hallOfFameData.length}
                   </div>
-                  <div className="text-sm text-gray-600">Total Memes</div>
+                  <div className="text-sm text-muted-foreground">Total Memes</div>
                 </div>
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
-                  <div className="text-2xl font-bold text-[hsl(25,60%,35%)]">
+                <div className="text-center p-3 bg-accent rounded-lg">
+                  <div className="text-2xl font-bold text-primary">
                     {memes.reduce((sum, meme) => sum + meme.votes, 0).toLocaleString()}
                   </div>
-                  <div className="text-sm text-gray-600">Total Votes</div>
+                  <div className="text-sm text-muted-foreground">Total Votes</div>
                 </div>
               </div>
             </CardContent>

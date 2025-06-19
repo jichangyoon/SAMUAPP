@@ -145,20 +145,20 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
       </Card>
 
       <Dialog open={showVoteDialog} onOpenChange={setShowVoteDialog}>
-        <DialogContent className="max-w-sm mx-4">
+        <DialogContent className="max-w-sm mx-4 bg-card border-border">
           <DialogHeader>
-            <DialogTitle>Confirm Your Vote</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-foreground">Confirm Your Vote</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
               You're about to vote for "{meme.title}" by {meme.authorUsername}
             </DialogDescription>
           </DialogHeader>
           
-          <div className="bg-gray-50 rounded-lg p-4">
+          <div className="bg-accent rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Your voting power:</span>
-              <span className="font-semibold text-[hsl(30,100%,50%)]">{votingPower.toLocaleString()}</span>
+              <span className="text-sm text-muted-foreground">Your voting power:</span>
+              <span className="font-semibold text-primary">{votingPower.toLocaleString()}</span>
             </div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-muted-foreground">
               Based on your SAMU token balance: {samuBalance.toLocaleString()}
             </div>
           </div>
@@ -174,7 +174,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
             <Button
               onClick={handleVote}
               disabled={isVoting}
-              className="flex-1 bg-[hsl(30,100%,50%)] hover:bg-[hsl(15,100%,60%)] text-white"
+              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {isVoting ? "Voting..." : "Confirm Vote"}
             </Button>
