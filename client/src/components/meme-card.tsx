@@ -82,8 +82,8 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
 
   return (
     <>
-      <Card className="overflow-hidden samu-card-shadow samu-voting-card">
-        <div className="aspect-square bg-gray-100 flex items-center justify-center">
+      <Card className="overflow-hidden border-border bg-card">
+        <div className="aspect-square bg-accent flex items-center justify-center">
           <img
             src={meme.imageUrl}
             alt={meme.title}
@@ -96,30 +96,30 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
           />
           <div className="hidden text-center p-8">
             <div className="text-4xl mb-2">🖼️</div>
-            <p className="text-gray-500">Image failed to load</p>
+            <p className="text-muted-foreground">Image failed to load</p>
           </div>
         </div>
 
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-[hsl(50,85%,75%)] rounded-full flex items-center justify-center">
-                <span className="text-xs font-bold text-[hsl(201,30%,25%)]">
+              <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                <span className="text-xs font-bold text-primary-foreground">
                   {meme.authorUsername.charAt(0).toUpperCase()}
                 </span>
               </div>
-              <span className="text-sm text-gray-600">{meme.authorUsername}</span>
+              <span className="text-sm text-muted-foreground">{meme.authorUsername}</span>
             </div>
             <div className="text-right">
-              <div className="text-lg font-bold text-[hsl(30,100%,50%)]">{meme.votes.toLocaleString()}</div>
-              <div className="text-xs text-gray-500">votes</div>
+              <div className="text-lg font-bold text-primary">{meme.votes.toLocaleString()}</div>
+              <div className="text-xs text-muted-foreground">votes</div>
             </div>
           </div>
 
           <div className="mb-3">
-            <h3 className="font-semibold text-[hsl(201,30%,25%)] mb-1">{meme.title}</h3>
+            <h3 className="font-semibold text-foreground mb-1">{meme.title}</h3>
             {meme.description && (
-              <p className="text-sm text-gray-600">{meme.description}</p>
+              <p className="text-sm text-muted-foreground">{meme.description}</p>
             )}
           </div>
 
@@ -127,7 +127,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
             <Button
               onClick={() => setShowVoteDialog(true)}
               disabled={!canVote}
-              className="flex-1 bg-[hsl(50,85%,75%)] hover:bg-[hsl(50,75%,65%)] text-[hsl(201,30%,25%)] font-semibold"
+              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
             >
               <ArrowUp className="h-4 w-4 mr-2" />
               Vote
