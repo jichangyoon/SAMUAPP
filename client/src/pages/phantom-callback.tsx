@@ -14,7 +14,9 @@ export default function PhantomCallback() {
     const publicKey = urlParams.get('public_key') || 
                      urlParams.get('publicKey') || 
                      fragmentParams.get('public_key') ||
-                     fragmentParams.get('publicKey');
+                     fragmentParams.get('publicKey') ||
+                     urlParams.get('phantom_encryption_public_key') ||
+                     fragmentParams.get('phantom_encryption_public_key');
     
     const errorMessage = urlParams.get('errorMessage') || fragmentParams.get('errorMessage');
     

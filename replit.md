@@ -154,6 +154,8 @@ Changelog:
 - June 19, 2025. Implemented direct phantom:// deeplink scheme for reliable mobile wallet connection
 - June 19, 2025. Added dedicated /phantom-callback route for processing wallet connection responses
 - June 19, 2025. Integrated Capacitor Browser plugin for stable app-to-app transitions in mobile APK
+- June 19, 2025. Fixed Phantom Universal Link protocol to display connection request properly in mobile app
+- June 19, 2025. Enhanced callback parameter parsing with comprehensive debugging for successful wallet integration
 ```
 
 ## User Preferences

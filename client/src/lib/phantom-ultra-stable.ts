@@ -139,15 +139,20 @@ class UltraStablePhantomWallet {
   }
 
   private generatePhantomConnectUrl(): string {
-    // 간단한 팬텀 모바일 딥링크 사용
-    if (this.isCapacitor()) {
-      // Capacitor 환경에서는 앱 스킴 사용
-      return 'phantom://v1/connect?redirect=samuapp://phantom-callback';
-    } else {
-      // 모바일 브라우저에서는 팬텀 Universal Link 사용
-      const redirectUrl = encodeURIComponent('https://meme-chain-rally-wlckddbs12345.replit.app/phantom-callback');
-      return `phantom://v1/connect?redirect=${redirectUrl}`;
-    }
+    // 팬텀 모바일 딥링크 프로토콜 사용
+    const dappUrl = this.isCapacitor() ? 
+      'samuapp://phantom-callback' : 
+      'https://meme-chain-rally-wlckddbs12345.replit.app/phantom-callback';
+    
+    const params = new URLSearchParams({
+      dapp_encryption_public_key: '4CbKFKBTw7EGUCdM5MZpJx4qM7rexgU8v7xhQV3Kf7Qs',
+      cluster: 'mainnet-beta',
+      app_url: dappUrl,
+      redirect_path: '/phantom-callback'
+    });
+
+    // 팬텀 Universal Link 사용
+    return `https://phantom.app/ul/connect?${params.toString()}`;
   }
 
   async disconnect(): Promise<void> {

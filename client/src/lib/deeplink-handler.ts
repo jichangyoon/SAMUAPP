@@ -69,18 +69,32 @@ export class DeepLinkHandler {
     const fragment = urlObj.hash.substring(1);
     const fragmentParams = new URLSearchParams(fragment);
     
-    // 팬텀 딥링크 응답 파라미터 파싱
-    const publicKey = params.get('publicKey') || 
+    // 팬텀 Universal Link 응답 파라미터 파싱
+    const publicKey = params.get('public_key') || 
+                     params.get('publicKey') || 
+                     fragmentParams.get('public_key') ||
                      fragmentParams.get('publicKey') ||
                      params.get('phantom_encryption_public_key') ||
                      fragmentParams.get('phantom_encryption_public_key');
     
+    const errorCode = params.get('errorCode') || fragmentParams.get('errorCode');
+    const errorMessage = params.get('errorMessage') || fragmentParams.get('errorMessage');
+    
+    console.log('팬텀 콜백 파싱:', { 
+      url: urlObj.href, 
+      publicKey, 
+      errorCode, 
+      errorMessage,
+      allParams: Object.fromEntries(params),
+      allFragments: Object.fromEntries(fragmentParams)
+    });
+    
     return {
       publicKey: publicKey,
-      connected: !!(publicKey && !params.get('errorCode') && !fragmentParams.get('errorCode')),
+      connected: !!(publicKey && !errorCode),
       session: params.get('session') || fragmentParams.get('session'),
-      errorCode: params.get('errorCode') || fragmentParams.get('errorCode'),
-      errorMessage: params.get('errorMessage') || fragmentParams.get('errorMessage'),
+      errorCode: errorCode,
+      errorMessage: errorMessage,
       data: params.get('data') || fragmentParams.get('data')
     };
   }
