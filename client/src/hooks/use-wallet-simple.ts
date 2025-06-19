@@ -7,18 +7,32 @@ export function useWallet() {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [samuBalance, setSamuBalance] = useState(0);
   const [balanceStatus, setBalanceStatus] = useState<'loading' | 'success' | 'error' | 'idle'>('idle');
+  const [walletStatus, setWalletStatus] = useState<'detected' | 'not-detected' | 'connected' | 'checking'>('checking');
 
-  // Check connection status on mount
+  // Check connection status and wallet detection on mount
   useEffect(() => {
-    const checkConnection = () => {
+    const checkWalletStatus = async () => {
+      // First check if already connected
       if (phantomWallet.connected && phantomWallet.publicKey) {
         setIsConnected(true);
         setWalletAddress(phantomWallet.publicKey);
+        setWalletStatus('connected');
         console.log('지갑 연결 상태 확인됨:', phantomWallet.publicKey);
+        return;
+      }
+
+      // Check if phantom is installed/detected
+      try {
+        const status = await phantomWallet.getWalletStatus();
+        setWalletStatus(status);
+        console.log('팬텀 지갑 상태:', status);
+      } catch (error) {
+        console.error('팬텀 상태 확인 오류:', error);
+        setWalletStatus('not-detected');
       }
     };
 
-    checkConnection();
+    checkWalletStatus();
   }, []);
 
   // Fetch SAMU balance when connected
@@ -91,6 +105,7 @@ export function useWallet() {
     walletAddress,
     samuBalance,
     balanceStatus,
+    walletStatus,
     connect,
     disconnect
   };
