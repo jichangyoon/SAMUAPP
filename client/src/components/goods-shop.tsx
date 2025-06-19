@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useWallet } from "@/hooks/use-wallet-ultra-stable";
+import { usePrivy } from '@privy-io/react-auth';
 import { useToast } from "@/hooks/use-toast";
 import { ShoppingCart, Trophy, Shirt, Coffee, Sticker, X } from "lucide-react";
 
@@ -68,7 +68,10 @@ export function GoodsShop() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [cart, setCart] = useState<number[]>([]);
   const [selectedItem, setSelectedItem] = useState<typeof goodsData[0] | null>(null);
-  const { isConnected, walletAddress, samuBalance } = useWallet();
+  const { authenticated, user } = usePrivy();
+  const isConnected = authenticated;
+  const walletAddress = user?.wallet?.address || '';
+  const samuBalance = 1000; // Simplified for now
   const { toast } = useToast();
 
   const categories = [

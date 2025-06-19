@@ -24,10 +24,9 @@ function App() {
       config={{
         appearance: {
           theme: 'light',
-          accentColor: '#f59e0b',
-          logo: 'https://replit.com/favicon.ico'
+          accentColor: '#f59e0b'
         },
-        loginMethods: ['wallet', 'email'],
+        loginMethods: ['wallet'],
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
         },

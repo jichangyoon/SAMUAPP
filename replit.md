@@ -159,6 +159,9 @@ Changelog:
 - June 19, 2025. Implemented multiple Phantom URL scheme fallback system for reliable mobile connection
 - June 19, 2025. Added Capacitor App state detection for automatic connection completion on app resume
 - June 19, 2025. Verified web Phantom wallet integration working with 77,770 SAMU token display
+- June 19, 2025. Migrated from Phantom wallet to Privy universal Web3 authentication system for better cross-platform support
+- June 19, 2025. Completed Privy wallet integration with simplified wallet connection flow for mobile and web compatibility
+- June 19, 2025. Removed all Phantom-specific code and deeplink handlers in favor of Privy's universal authentication
 ```
 
 ## User Preferences

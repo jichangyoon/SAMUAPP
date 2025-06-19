@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useWallet } from "@/hooks/use-wallet-ultra-stable";
+import { usePrivy } from '@privy-io/react-auth';
 import { useToast } from "@/hooks/use-toast";
 import { Upload } from "lucide-react";
 
@@ -24,7 +24,8 @@ interface UploadFormProps {
 export function UploadForm({ onSuccess }: UploadFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
-  const { walletAddress } = useWallet();
+  const { authenticated, user } = usePrivy();
+  const walletAddress = user?.wallet?.address || '';
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof uploadSchema>>({
