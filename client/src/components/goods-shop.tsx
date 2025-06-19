@@ -134,11 +134,11 @@ export function GoodsShop() {
       {/* 굿즈샵 헤더 */}
       <Card className="bg-[hsl(50,85%,75%)] border-0">
         <CardHeader className="text-center py-3">
-          <CardTitle className="text-lg font-bold text-[hsl(25,60%,35%)] flex items-center justify-center gap-2">
+          <CardTitle className="text-lg font-bold text-black flex items-center justify-center gap-2">
             <Trophy className="h-4 w-4" />
             SAMU Goods Shop
           </CardTitle>
-          <CardDescription className="text-xs text-[hsl(25,60%,35%)]/80 mt-1">
+          <CardDescription className="text-xs text-black/90 mt-1">
             Hall of Fame memes turned into goods! Purchase with SAMU tokens
           </CardDescription>
         </CardHeader>
