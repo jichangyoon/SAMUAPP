@@ -28,7 +28,7 @@ function App() {
         },
         loginMethods: ['wallet', 'email'],
         embeddedWallets: {
-          createOnLogin: 'users-without-wallets',
+          createOnLogin: 'all-users',
         },
         mfa: {
           noPromptOnMfaRequired: false

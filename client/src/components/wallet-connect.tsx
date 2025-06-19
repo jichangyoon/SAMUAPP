@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { Wallet, LogOut } from "lucide-react";
-import { usePrivy } from '@privy-io/react-auth';
+import { Wallet, LogOut, Plus } from "lucide-react";
+import { usePrivy, useWallets } from '@privy-io/react-auth';
 
 export function WalletConnect() {
   const { ready, authenticated, user, login, logout } = usePrivy();
+  const { wallets, createWallet } = useWallets();
 
   if (!ready) {
     return (
@@ -15,10 +16,42 @@ export function WalletConnect() {
   }
 
   if (authenticated && user) {
-    const walletAddress = user.wallet?.address || '';
+    // Find any wallet associated with the user
+    const userWallet = wallets[0]; // First available wallet
+    const walletAddress = userWallet?.address || '';
     const displayAddress = walletAddress 
       ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
       : 'Connected';
+
+    // If user is authenticated but has no wallet, show create wallet option
+    if (!userWallet && user.email) {
+      return (
+        <div className="flex flex-col gap-2">
+          <Button
+            onClick={logout}
+            variant="outline"
+            size="sm"
+            className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200"
+          >
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-xs">
+                {user.email.address}
+              </span>
+              <span className="text-xs">Email Connected</span>
+            </div>
+            <LogOut className="h-4 w-4 ml-2" />
+          </Button>
+          <Button
+            onClick={createWallet}
+            size="sm"
+            className="bg-green-100 text-green-700 border-green-200 hover:bg-green-200"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Create Wallet
+          </Button>
+        </div>
+      );
+    }
 
     return (
       <Button
