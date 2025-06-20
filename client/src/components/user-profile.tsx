@@ -143,21 +143,21 @@ export function UserProfile({ isOpen, onClose, samuBalance, solBalance }: UserPr
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[98vw] h-[98vh] max-w-md sm:max-w-2xl md:max-w-4xl max-h-[98vh] overflow-y-auto bg-card border-border p-3 sm:p-4 md:p-6 m-1">
-        <DialogHeader className="pb-2">
-          <DialogTitle className="text-xl sm:text-2xl text-foreground flex items-center gap-2">
-            <User className="h-5 w-5 sm:h-6 sm:w-6" />
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card border-border">
+        <DialogHeader>
+          <DialogTitle className="text-2xl text-foreground flex items-center gap-2">
+            <User className="h-6 w-6" />
             My SAMU Profile
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-3 sm:space-y-6">
+        <div className="space-y-6">
           {/* 사용자 기본 정보 */}
           <Card className="bg-gradient-to-r from-primary/20 to-primary/10 border-border">
-            <CardContent className="p-3 sm:p-6">
-              <div className="flex items-center gap-3 sm:gap-4 mb-4">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4 mb-4">
                 <div className="relative">
-                  <Avatar className="h-12 w-12 sm:h-16 sm:w-16">
+                  <Avatar className="h-16 w-16">
                     <AvatarImage src={imagePreview || profileImage} />
                     <AvatarFallback className="bg-primary/20 text-primary text-lg">
                       {displayName.slice(0, 2).toUpperCase()}
@@ -226,26 +226,26 @@ export function UserProfile({ isOpen, onClose, samuBalance, solBalance }: UserPr
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div className="text-center">
-                  <div className="text-lg sm:text-2xl font-bold text-primary">{samuBalance.toLocaleString()}</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">SAMU Tokens</div>
+                  <div className="text-2xl font-bold text-primary">{samuBalance.toLocaleString()}</div>
+                  <div className="text-sm text-muted-foreground">SAMU Tokens</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg sm:text-2xl font-bold text-purple-400">{solBalance.toFixed(4)}</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">SOL Balance</div>
+                  <div className="text-2xl font-bold text-purple-400">{solBalance.toFixed(4)}</div>
+                  <div className="text-sm text-muted-foreground">SOL Balance</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg sm:text-2xl font-bold text-green-400">{votingPower.toLocaleString()}</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Voting Power</div>
+                  <div className="text-2xl font-bold text-green-400">{votingPower.toLocaleString()}</div>
+                  <div className="text-sm text-muted-foreground">Voting Power</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg sm:text-2xl font-bold text-blue-400">{myMemes.length}</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Memes Created</div>
+                  <div className="text-2xl font-bold text-blue-400">{myMemes.length}</div>
+                  <div className="text-sm text-muted-foreground">Memes Created</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg sm:text-2xl font-bold text-yellow-400">{totalVotesReceived}</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Votes Received</div>
+                  <div className="text-2xl font-bold text-yellow-400">{totalVotesReceived}</div>
+                  <div className="text-sm text-muted-foreground">Votes Received</div>
                 </div>
               </div>
             </CardContent>
@@ -281,50 +281,47 @@ export function UserProfile({ isOpen, onClose, samuBalance, solBalance }: UserPr
           {/* 탭 메뉴 */}
           <Tabs defaultValue="upload" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="upload" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-                <Upload className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Upload Meme</span>
-                <span className="sm:hidden">Upload</span>
+              <TabsTrigger value="upload" className="flex items-center gap-2">
+                <Upload className="h-4 w-4" />
+                Upload Meme
               </TabsTrigger>
-              <TabsTrigger value="my-memes" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-                <Trophy className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">My Memes</span>
-                <span className="sm:hidden">Memes</span>
+              <TabsTrigger value="my-memes" className="flex items-center gap-2">
+                <Trophy className="h-4 w-4" />
+                My Memes
               </TabsTrigger>
-              <TabsTrigger value="voting-history" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-                <Vote className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Voting History</span>
-                <span className="sm:hidden">Votes</span>
+              <TabsTrigger value="voting-history" className="flex items-center gap-2">
+                <Vote className="h-4 w-4" />
+                Voting History
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="upload" className="mt-3 sm:mt-6">
+            <TabsContent value="upload" className="mt-6">
               <UploadForm onSuccess={onClose} />
             </TabsContent>
 
-            <TabsContent value="my-memes" className="mt-3 sm:mt-6">
-              <div className="space-y-3 sm:space-y-4">
+            <TabsContent value="my-memes" className="mt-6">
+              <div className="space-y-4">
                 {myMemes.length === 0 ? (
                   <Card>
-                    <CardContent className="p-4 sm:p-8 text-center">
-                      <p className="text-muted-foreground text-sm sm:text-base">You haven't created any memes yet.</p>
+                    <CardContent className="p-8 text-center">
+                      <p className="text-muted-foreground">You haven't created any memes yet.</p>
                     </CardContent>
                   </Card>
                 ) : (
                   myMemes.map((meme: any) => (
                     <Card key={meme.id} className="border-border bg-card">
-                      <CardContent className="p-3 sm:p-4">
-                        <div className="flex items-start gap-3 sm:gap-4">
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-4">
                           <img
                             src={meme.imageUrl}
                             alt={meme.title}
-                            className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg flex-shrink-0"
+                            className="w-20 h-20 object-cover rounded-lg"
                           />
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-bold text-foreground text-sm sm:text-base truncate">{meme.title}</h4>
-                            <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2">{meme.description}</p>
-                            <div className="flex items-center gap-2 sm:gap-4 mt-2">
-                              <Badge variant="secondary" className="text-xs">
+                          <div className="flex-1">
+                            <h4 className="font-bold text-foreground">{meme.title}</h4>
+                            <p className="text-sm text-muted-foreground mt-1">{meme.description}</p>
+                            <div className="flex items-center gap-4 mt-2">
+                              <Badge variant="secondary">
                                 <Zap className="h-3 w-3 mr-1" />
                                 {meme.votes} votes
                               </Badge>
@@ -341,11 +338,11 @@ export function UserProfile({ isOpen, onClose, samuBalance, solBalance }: UserPr
               </div>
             </TabsContent>
 
-            <TabsContent value="voting-history" className="mt-3 sm:mt-6">
+            <TabsContent value="voting-history" className="mt-6">
               <Card>
-                <CardContent className="p-4 sm:p-8 text-center">
-                  <p className="text-muted-foreground text-sm sm:text-base">Voting history feature coming soon!</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+                <CardContent className="p-8 text-center">
+                  <p className="text-muted-foreground">Voting history feature coming soon!</p>
+                  <p className="text-sm text-muted-foreground mt-2">
                     Track your voting activity and power usage here.
                   </p>
                 </CardContent>

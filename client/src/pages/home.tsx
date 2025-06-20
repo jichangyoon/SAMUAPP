@@ -560,7 +560,7 @@ export default function Home() {
       {/* Archive Meme Detail Modal */}
       {selectedArchiveMeme && (
         <Dialog open={!!selectedArchiveMeme} onOpenChange={() => setSelectedArchiveMeme(null)}>
-          <DialogContent className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto bg-card border-border m-2">
+          <DialogContent className="max-w-md mx-4 bg-card border-border">
             <DialogHeader>
               <DialogTitle className="text-foreground">{selectedArchiveMeme.title}</DialogTitle>
               <DialogDescription className="text-muted-foreground">
@@ -669,7 +669,7 @@ export default function Home() {
       {/* Grid View Meme Detail Modal */}
       {selectedMeme && (
         <Dialog open={!!selectedMeme} onOpenChange={() => setSelectedMeme(null)}>
-          <DialogContent className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto bg-card border-border m-2">
+          <DialogContent className="max-w-md mx-4 bg-card border-border">
             <DialogHeader>
               <DialogTitle className="text-foreground">{selectedMeme.title}</DialogTitle>
             </DialogHeader>

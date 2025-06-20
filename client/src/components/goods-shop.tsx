@@ -239,7 +239,7 @@ export function GoodsShop() {
 
       {/* 제품 상세 다이얼로그 */}
       <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
-        <DialogContent className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto bg-card border-border m-2">
+        <DialogContent className="max-w-md mx-4 bg-card border-border">
           <DialogHeader>
             <DialogTitle className="text-foreground">{selectedItem?.name}</DialogTitle>
           </DialogHeader>
