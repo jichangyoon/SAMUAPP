@@ -13,7 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send } from "lucide-react";
+import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { getSamuTokenBalance } from "@/lib/solana";
@@ -207,15 +207,11 @@ export default function Home() {
 
 
 
-      {/* Main Navigation */}
-      <nav className="max-w-md mx-auto px-4 py-3 bg-card border-b border-border">
+      {/* Main Content Container */}
+      <div className="max-w-md mx-auto px-4">
         <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-10">
-            <TabsTrigger value="contest" className="text-sm">Meme Contest</TabsTrigger>
-            <TabsTrigger value="goods" className="text-sm">Goods Shop</TabsTrigger>
-          </TabsList>
           
-          <TabsContent value="contest" className="mt-4">
+          <TabsContent value="contest" className="mt-4 space-y-4 pb-24">
             <Tabs defaultValue="contest-main" className="w-full">
               <TabsList className="grid w-full grid-cols-2 h-10">
                 <TabsTrigger value="contest-main" className="text-sm">Contest</TabsTrigger>
@@ -351,11 +347,41 @@ export default function Home() {
             </Tabs>
           </TabsContent>
           
-          <TabsContent value="goods" className="mt-4">
+          <TabsContent value="goods" className="mt-4 space-y-4 pb-24">
             <GoodsShop />
           </TabsContent>
         </Tabs>
-      </nav>
+      </div>
+
+      {/* Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50">
+        <div className="max-w-md mx-auto px-4 py-3">
+          <div className="flex justify-around items-center">
+            <button
+              onClick={() => setCurrentTab("contest")}
+              className={`flex flex-col items-center space-y-1 px-4 py-2 rounded-lg transition-colors ${
+                currentTab === "contest" 
+                  ? "bg-primary/20 text-primary" 
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Trophy className="h-5 w-5" />
+              <span className="text-xs font-medium">Meme Contest</span>
+            </button>
+            <button
+              onClick={() => setCurrentTab("goods")}
+              className={`flex flex-col items-center space-y-1 px-4 py-2 rounded-lg transition-colors ${
+                currentTab === "goods" 
+                  ? "bg-primary/20 text-primary" 
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <ShoppingBag className="h-5 w-5" />
+              <span className="text-xs font-medium">Goods Shop</span>
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* User Profile Modal */}
       <UserProfile 
