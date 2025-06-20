@@ -215,6 +215,7 @@ Changelog:
 - June 20, 2025. Added Archive tab to bottom navigation for storing completed meme contest results and Hall of Fame statistics
 - June 20, 2025. Simplified Archive tab by removing Hall of Fame section and future ready message per user request
 - June 20, 2025. Restructured Archive to show clean contest list with click-to-view detailed results modal
+- June 20, 2025. Redesigned contest detail modal with 3-column grid layout and compact medal icons for winners
 ```
 
 ## User Preferences

@@ -606,30 +606,33 @@ export default function Home() {
             </DialogHeader>
             
             <div className="space-y-4">
-              {/* Winner Section */}
-              <div className="space-y-2">
-                <div className="flex items-center space-x-3 p-3 bg-yellow-400/10 rounded-lg border border-yellow-400/20">
-                  <div className="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-bold text-black">🏆</span>
+              {/* Grid Layout with Winners */}
+              <div className="grid grid-cols-3 gap-2">
+                {/* 1st Place */}
+                <div className="text-center p-3 bg-yellow-400/10 rounded-lg border border-yellow-400/20">
+                  <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <span className="text-xs font-bold text-black">🏆</span>
                   </div>
-                  <div className="flex-1">
-                    <div className="font-semibold text-foreground">{selectedArchiveContest.winner.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      Winner • {selectedArchiveContest.winner.votes} votes • by {selectedArchiveContest.winner.author}
-                    </div>
-                  </div>
+                  <div className="text-xs font-semibold text-foreground">{selectedArchiveContest.winner.name}</div>
+                  <div className="text-xs text-muted-foreground">{selectedArchiveContest.winner.votes} votes</div>
                 </div>
                 
-                {/* 2nd and 3rd Place */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="text-center p-3 bg-accent/30 rounded-lg">
-                    <div className="text-sm font-semibold text-foreground">🥈 2nd Place</div>
-                    <div className="text-xs text-muted-foreground mt-1">{selectedArchiveContest.secondPlace}</div>
+                {/* 2nd Place */}
+                <div className="text-center p-3 bg-accent/20 rounded-lg">
+                  <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <span className="text-xs font-bold text-white">🥈</span>
                   </div>
-                  <div className="text-center p-3 bg-accent/30 rounded-lg">
-                    <div className="text-sm font-semibold text-foreground">🥉 3rd Place</div>
-                    <div className="text-xs text-muted-foreground mt-1">{selectedArchiveContest.thirdPlace}</div>
+                  <div className="text-xs font-semibold text-foreground">{selectedArchiveContest.secondPlace}</div>
+                  <div className="text-xs text-muted-foreground">2nd Place</div>
+                </div>
+                
+                {/* 3rd Place */}
+                <div className="text-center p-3 bg-accent/20 rounded-lg">
+                  <div className="w-8 h-8 bg-orange-400 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <span className="text-xs font-bold text-white">🥉</span>
                   </div>
+                  <div className="text-xs font-semibold text-foreground">{selectedArchiveContest.thirdPlace}</div>
+                  <div className="text-xs text-muted-foreground">3rd Place</div>
                 </div>
               </div>
 
