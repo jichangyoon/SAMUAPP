@@ -223,6 +223,8 @@ Changelog:
 - June 20, 2025. Restructured Archive navigation from modal-based to page-based navigation system
 - June 20, 2025. Added "Back to Archive" button and proper navigation flow for contest detail views
 - June 20, 2025. Implemented two-level archive navigation: contest list → contest detail page with grid view
+- June 20, 2025. Removed all modal dialogs from Archive section to prevent mixed navigation interfaces
+- June 20, 2025. Completed pure page-based navigation system for Archive contest browsing
 ```
 
 ## User Preferences
