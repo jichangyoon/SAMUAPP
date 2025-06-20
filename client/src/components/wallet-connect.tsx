@@ -54,28 +54,37 @@ export function WalletConnect() {
     const displayAddress = walletAddress 
       ? `${walletAddress.slice(0, 4)}...${walletAddress.slice(-3)}`
       : 'Connected';
+    
+    const chainType = selectedWalletAccount?.chainType || 'unknown';
 
     return (
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-2">
         {/* SAMU Balance Display */}
         {isSolana && (
-          <div className="text-right bg-accent px-2 py-1 rounded">
-            <div className="text-xs font-bold text-primary">
-              {balanceStatus === 'loading' ? '...' : samuBalance.toLocaleString()}
+          <div className="text-right bg-orange-100 dark:bg-orange-900/30 px-2 py-1 rounded border border-orange-300 dark:border-orange-700">
+            <div className="text-xs font-bold text-orange-800 dark:text-orange-200">
+              {balanceStatus === 'loading' ? 'Loading...' : `${samuBalance.toLocaleString()}`}
             </div>
-            <div className="text-xs text-muted-foreground">SAMU</div>
+            <div className="text-xs text-orange-600 dark:text-orange-400">SAMU</div>
           </div>
         )}
         
-        {/* Wallet Button */}
+        {/* Wallet Info Button */}
         <Button
           onClick={logout}
           variant="outline"
           size="sm"
-          className="h-8 px-2 text-xs"
+          className="bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 border-orange-300 dark:border-orange-700 hover:bg-orange-200 dark:hover:bg-orange-900/50 px-2 py-1 h-auto"
         >
-          <div className="w-2 h-2 bg-green-400 rounded-full mr-1"></div>
-          <span className="font-mono">{displayAddress}</span>
+          <div className="flex flex-col items-start">
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+              <span className="font-mono text-xs">{displayAddress}</span>
+            </div>
+            <span className="text-xs opacity-75">
+              {chainType === 'solana' ? 'Solana' : chainType === 'ethereum' ? 'Ethereum' : 'Wallet'}
+            </span>
+          </div>
           <LogOut className="h-3 w-3 ml-1" />
         </Button>
       </div>
