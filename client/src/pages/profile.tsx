@@ -27,8 +27,11 @@ export default function Profile() {
   const [samuBalance, setSamuBalance] = useState(0);
   const [solBalance, setSolBalance] = useState(0);
 
-  // 지갑 주소 가져오기
-  const walletAddress = user?.linkedAccounts?.find(account => account.type === 'wallet')?.address || '';
+  // 지갑 주소 가져오기 (홈과 동일한 로직)
+  const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
+  const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
+  const selectedWalletAccount = solanaWallet || walletAccounts[0];
+  const walletAddress = selectedWalletAccount?.address || '';
 
   // Balance fetching
   useEffect(() => {
