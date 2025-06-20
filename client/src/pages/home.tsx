@@ -35,21 +35,29 @@ export default function Home() {
   const walletAddress = selectedWalletAccount?.address || '';
   const isSolana = selectedWalletAccount?.chainType === 'solana';
 
-  // Get user profile data
-  const getStoredProfile = () => {
-    try {
-      const stored = localStorage.getItem(`privy_profile_${user?.id}`);
-      return stored ? JSON.parse(stored) : {};
-    } catch {
-      return {};
+  // Profile state management
+  const [profileData, setProfileData] = useState({ displayName: 'User', profileImage: '' });
+  
+  // Load profile data when user changes
+  useEffect(() => {
+    if (authenticated && user?.id) {
+      try {
+        const stored = localStorage.getItem(`privy_profile_${user.id}`);
+        const profile = stored ? JSON.parse(stored) : {};
+        setProfileData({
+          displayName: profile.displayName || 'User',
+          profileImage: profile.profileImage || ''
+        });
+      } catch {
+        setProfileData({ displayName: 'User', profileImage: '' });
+      }
+    } else {
+      setProfileData({ displayName: 'User', profileImage: '' });
     }
-  };
+  }, [authenticated, user?.id]);
 
-  const storedProfile = getStoredProfile();
-  const displayName = authenticated 
-    ? storedProfile.displayName || user?.email?.address?.split('@')[0] || 'User'
-    : 'SAMU';
-  const profileImage = storedProfile.profileImage || '';
+  const displayName = authenticated ? profileData.displayName : 'SAMU';
+  const profileImage = profileData.profileImage;
 
   // Fetch SAMU balance for Solana wallets
   useEffect(() => {
