@@ -154,7 +154,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
       </Card>
 
       <Dialog open={showVoteDialog} onOpenChange={setShowVoteDialog}>
-        <DialogContent className="max-w-sm mx-4 bg-card border-border">
+        <DialogContent className="w-[95vw] max-w-sm max-h-[90vh] overflow-y-auto bg-card border-border m-2">
           <DialogHeader>
             <DialogTitle className="text-foreground">Confirm Your Vote</DialogTitle>
             <DialogDescription className="text-muted-foreground">

@@ -143,7 +143,7 @@ export function UserProfile({ isOpen, onClose, samuBalance, solBalance }: UserPr
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] h-[95vh] max-w-4xl max-h-[95vh] overflow-y-auto bg-card border-border p-4 sm:p-6">
+      <DialogContent className="w-[98vw] h-[98vh] max-w-md sm:max-w-2xl md:max-w-4xl max-h-[98vh] overflow-y-auto bg-card border-border p-3 sm:p-4 md:p-6 m-1">
         <DialogHeader className="pb-2">
           <DialogTitle className="text-xl sm:text-2xl text-foreground flex items-center gap-2">
             <User className="h-5 w-5 sm:h-6 sm:w-6" />
