@@ -7,12 +7,12 @@ import { MemeCard } from "@/components/meme-card";
 import { Leaderboard } from "@/components/leaderboard";
 import { GoodsShop } from "@/components/goods-shop";
 import { UserProfile } from "@/components/user-profile";
-import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { usePrivy } from '@privy-io/react-auth';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getSamuTokenBalance, isSolanaAddress } from "@/lib/solana";
+import { getSamuTokenBalance } from "@/lib/solana";
 import type { Meme } from "@shared/schema";
 import samuLogoImg from "/assets/images/logos/samu-logo.jpg";
 
@@ -23,34 +23,49 @@ export default function Home() {
   const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [showUserProfile, setShowUserProfile] = useState(false);
   
-  // Privy wallet hooks
+  // Privy authentication
   const { authenticated, user } = usePrivy();
-  const { wallets } = useWallets();
   
-  // Get wallet using same logic as WalletConnect component
+  // Get wallet info from Privy
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
   
-  const isConnected = authenticated;
+  const isConnected = authenticated && !!selectedWalletAccount;
   const walletAddress = selectedWalletAccount?.address || '';
   const isSolana = selectedWalletAccount?.chainType === 'solana';
   
+  // Debug Privy state
+  useEffect(() => {
+    console.log('🔍 Privy State Debug:', {
+      authenticated,
+      userExists: !!user,
+      walletAccounts: walletAccounts.length,
+      hasSelectedWallet: !!selectedWalletAccount,
+      isConnected,
+      walletAddress: walletAddress || 'none',
+      chainType: selectedWalletAccount?.chainType || 'none'
+    });
+  }, [authenticated, user, isConnected, walletAddress]);
+
   // Fetch SAMU balance for Solana wallets
   useEffect(() => {
     if (isConnected && walletAddress && isSolana) {
+      console.log('💰 Fetching SAMU balance for:', walletAddress);
       setBalanceStatus('loading');
       getSamuTokenBalance(walletAddress)
         .then(balance => {
+          console.log('✅ SAMU balance fetched:', balance);
           setSamuBalance(balance);
           setBalanceStatus('success');
         })
         .catch(error => {
-          console.warn('Failed to fetch SAMU balance:', error);
+          console.warn('❌ Failed to fetch SAMU balance:', error);
           setSamuBalance(0);
           setBalanceStatus('error');
         });
     } else {
+      console.log('⏸️ Not fetching balance - isConnected:', isConnected, 'walletAddress:', walletAddress, 'isSolana:', isSolana);
       setSamuBalance(0);
       setBalanceStatus('idle');
     }
