@@ -201,6 +201,8 @@ Changelog:
 - June 20, 2025. Made both meme images and goods product images clickable to open detail modals, improving mobile touch interaction and user experience
 - June 20, 2025. Refined meme card interaction - removed title click functionality, keeping only image click to open detail modal for cleaner user experience
 - June 20, 2025. Applied same interaction pattern to goods shop - removed product name and card click functionality, keeping only image click for detail modal access
+- June 20, 2025. Added dual view modes for meme contest - users can switch between card view and Instagram-style grid view with toggle buttons
+- June 20, 2025. Implemented grid view with 3x3 layout showing only images, hover effects for vote counts, and click-to-view detail modal
 ```
 
 ## User Preferences

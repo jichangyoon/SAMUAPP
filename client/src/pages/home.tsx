@@ -11,8 +11,9 @@ import { usePrivy } from '@privy-io/react-auth';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User } from "lucide-react";
+import { User, Grid3X3, List } from "lucide-react";
 import { getSamuTokenBalance } from "@/lib/solana";
 import type { Meme } from "@shared/schema";
 import samuLogoImg from "/assets/images/logos/samu-logo.jpg";
@@ -20,6 +21,8 @@ import samuLogoImg from "/assets/images/logos/samu-logo.jpg";
 export default function Home() {
   const [sortBy, setSortBy] = useState("votes");
   const [currentTab, setCurrentTab] = useState("contest");
+  const [viewMode, setViewMode] = useState<'card' | 'grid'>('card');
+  const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
   const [samuBalance, setSamuBalance] = useState<number>(0);
   const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [showUserProfile, setShowUserProfile] = useState(false);
@@ -169,16 +172,32 @@ export default function Home() {
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <h2 className="text-lg font-semibold text-foreground">Contest Entries</h2>
-                      <Select value={sortBy} onValueChange={setSortBy}>
-                        <SelectTrigger className="w-32 h-8 text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="votes">Most Votes</SelectItem>
-                          <SelectItem value="latest">Latest</SelectItem>
-                          <SelectItem value="trending">Trending</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center space-x-2">
+                        <div className="flex bg-accent rounded-lg p-1">
+                          <button
+                            onClick={() => setViewMode('card')}
+                            className={`p-1.5 rounded ${viewMode === 'card' ? 'bg-background shadow-sm' : ''}`}
+                          >
+                            <List className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => setViewMode('grid')}
+                            className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-background shadow-sm' : ''}`}
+                          >
+                            <Grid3X3 className="h-4 w-4" />
+                          </button>
+                        </div>
+                        <Select value={sortBy} onValueChange={setSortBy}>
+                          <SelectTrigger className="w-32 h-8 text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="votes">Most Votes</SelectItem>
+                            <SelectItem value="latest">Latest</SelectItem>
+                            <SelectItem value="trending">Trending</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
 
                     {isLoading ? (
@@ -194,24 +213,67 @@ export default function Home() {
                         ))}
                       </div>
                     ) : (
-                      <div className="space-y-4">
-                        {sortedMemes.map((meme) => (
-                          <MemeCard 
-                            key={meme.id} 
-                            meme={meme} 
-                            onVote={() => refetch()}
-                            canVote={isConnected}
-                          />
-                        ))}
-                        
-                        {sortedMemes.length === 0 && (
-                          <Card>
-                            <CardContent className="p-8 text-center">
-                              <p className="text-muted-foreground">No memes submitted yet. Be the first!</p>
-                            </CardContent>
-                          </Card>
+                      <>
+                        {viewMode === 'card' ? (
+                          <div className="space-y-4">
+                            {sortedMemes.map((meme) => (
+                              <MemeCard 
+                                key={meme.id} 
+                                meme={meme} 
+                                onVote={() => refetch()}
+                                canVote={isConnected}
+                              />
+                            ))}
+                            
+                            {sortedMemes.length === 0 && (
+                              <Card>
+                                <CardContent className="p-8 text-center">
+                                  <p className="text-muted-foreground">No memes submitted yet. Be the first!</p>
+                                </CardContent>
+                              </Card>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-3 gap-1">
+                            {sortedMemes.map((meme) => (
+                              <button
+                                key={meme.id}
+                                onClick={() => {
+                                  // We'll create a grid detail view
+                                  setSelectedMeme(meme);
+                                }}
+                                className="aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-opacity relative group"
+                              >
+                                <img
+                                  src={meme.imageUrl}
+                                  alt={meme.title}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                  }}
+                                />
+                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                  <div className="text-white text-center">
+                                    <div className="text-sm font-semibold">{meme.votes}</div>
+                                    <div className="text-xs">votes</div>
+                                  </div>
+                                </div>
+                              </button>
+                            ))}
+                            
+                            {sortedMemes.length === 0 && (
+                              <div className="col-span-3">
+                                <Card>
+                                  <CardContent className="p-8 text-center">
+                                    <p className="text-muted-foreground">No memes submitted yet. Be the first!</p>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            )}
+                          </div>
                         )}
-                      </div>
+                      </>
                     )}
 
                     {sortedMemes.length > 0 && (
@@ -243,6 +305,79 @@ export default function Home() {
         onClose={() => setShowUserProfile(false)}
         samuBalance={samuBalance}
       />
+
+      {/* Grid View Meme Detail Modal */}
+      {selectedMeme && (
+        <Dialog open={!!selectedMeme} onOpenChange={() => setSelectedMeme(null)}>
+          <DialogContent className="max-w-md mx-4 bg-card border-border">
+            <DialogHeader>
+              <DialogTitle className="text-foreground">{selectedMeme.title}</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div className="aspect-square rounded-lg overflow-hidden">
+                <img
+                  src={selectedMeme.imageUrl}
+                  alt={selectedMeme.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-sm font-bold text-primary-foreground">
+                    {selectedMeme.authorUsername.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div>
+                  <div className="font-medium text-foreground">{selectedMeme.authorUsername}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {selectedMeme.votes.toLocaleString()} votes
+                  </div>
+                </div>
+              </div>
+              
+              {selectedMeme.description && (
+                <div>
+                  <h4 className="font-medium text-foreground mb-2">Description</h4>
+                  <p className="text-muted-foreground">{selectedMeme.description}</p>
+                </div>
+              )}
+              
+              <div className="flex space-x-2 pt-2">
+                <Button
+                  onClick={() => {
+                    setSelectedMeme(null);
+                    // Trigger vote logic here if needed
+                  }}
+                  disabled={!isConnected}
+                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+                >
+                  Vote
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({
+                        title: selectedMeme.title,
+                        text: selectedMeme.description ?? "",
+                        url: window.location.href,
+                      });
+                    } else {
+                      navigator.clipboard.writeText(window.location.href);
+                    }
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="px-4"
+                >
+                  Share
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
