@@ -252,30 +252,28 @@ export default function Profile() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="text-center bg-accent/30 rounded-lg p-3">
-                <div className="text-lg font-bold text-primary">{samuBalance.toLocaleString()}</div>
-                <div className="text-xs text-muted-foreground">SAMU Tokens</div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="text-center bg-accent/30 rounded-lg p-2">
+                <div className="text-sm font-bold text-primary">{samuBalance.toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground">SAMU</div>
               </div>
-              <div className="text-center bg-accent/30 rounded-lg p-3">
-                <div className="text-lg font-bold text-purple-400">{solBalance.toFixed(4)}</div>
-                <div className="text-xs text-muted-foreground">SOL Balance</div>
+              <div className="text-center bg-accent/30 rounded-lg p-2">
+                <div className="text-sm font-bold text-purple-400">{solBalance.toFixed(4)}</div>
+                <div className="text-xs text-muted-foreground">SOL</div>
               </div>
-              <div className="text-center bg-accent/30 rounded-lg p-3">
-                <div className="text-lg font-bold text-green-400">{votingPower.toLocaleString()}</div>
+              <div className="text-center bg-accent/30 rounded-lg p-2">
+                <div className="text-sm font-bold text-green-400">{votingPower.toLocaleString()}</div>
                 <div className="text-xs text-muted-foreground">Voting Power</div>
               </div>
-              <div className="text-center bg-accent/30 rounded-lg p-3">
-                <div className="text-lg font-bold text-blue-400">{myMemes.length}</div>
-                <div className="text-xs text-muted-foreground">Memes Created</div>
+              <div className="text-center bg-accent/30 rounded-lg p-2">
+                <div className="text-sm font-bold text-blue-400">{myMemes.length}</div>
+                <div className="text-xs text-muted-foreground">Memes</div>
               </div>
             </div>
             
-            <div className="grid grid-cols-1 gap-2 mt-3">
-              <div className="text-center bg-accent/30 rounded-lg p-3">
-                <div className="text-lg font-bold text-yellow-400">{totalVotesReceived}</div>
-                <div className="text-xs text-muted-foreground">Total Votes Received</div>
-              </div>
+            <div className="text-center bg-accent/30 rounded-lg p-2 mt-2">
+              <div className="text-sm font-bold text-yellow-400">{totalVotesReceived}</div>
+              <div className="text-xs text-muted-foreground">Total Votes Received</div>
             </div>
           </CardContent>
         </Card>
