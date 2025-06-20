@@ -10,10 +10,11 @@ import { UserProfile } from "@/components/user-profile";
 import { usePrivy } from '@privy-io/react-auth';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag } from "lucide-react";
+import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { getSamuTokenBalance } from "@/lib/solana";
@@ -347,6 +348,100 @@ export default function Home() {
             </Tabs>
           </TabsContent>
           
+          <TabsContent value="archive" className="mt-4 space-y-4 pb-24">
+            <div className="space-y-4">
+              {/* Archive Header */}
+              <Card className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-400/20">
+                <CardContent className="p-4 text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Archive className="h-5 w-5 text-purple-400" />
+                    <h2 className="text-lg font-bold text-purple-400">Contest Archive</h2>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Past contest winners and memorable memes
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Past Contests */}
+              <div className="space-y-4">
+                <h3 className="text-md font-semibold text-foreground">Previous Contests</h3>
+                
+                {/* Sample archived contest */}
+                <Card className="border-border/50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <h4 className="font-semibold text-foreground">Contest #1 - December 2024</h4>
+                        <p className="text-sm text-muted-foreground">50 participants • 1,247 votes</p>
+                      </div>
+                      <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-400/20">
+                        Completed
+                      </Badge>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-3 p-2 bg-accent/50 rounded-lg">
+                        <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
+                          <span className="text-xs font-bold text-black">🏆</span>
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-medium text-foreground">SAMU TO MARS</div>
+                          <div className="text-sm text-muted-foreground">Winner • 324 votes</div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2 mt-3">
+                        <div className="text-center p-2 bg-accent/30 rounded">
+                          <div className="text-sm font-semibold text-foreground">2nd Place</div>
+                          <div className="text-xs text-muted-foreground">DIAMOND PAWS</div>
+                        </div>
+                        <div className="text-center p-2 bg-accent/30 rounded">
+                          <div className="text-sm font-semibold text-foreground">3rd Place</div>
+                          <div className="text-xs text-muted-foreground">PACK LEADER</div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Hall of Fame Section */}
+                <Card className="border-yellow-400/20 bg-yellow-400/5">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Trophy className="h-4 w-4 text-yellow-400" />
+                      <h4 className="font-semibold text-yellow-400">Hall of Fame</h4>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between p-2 bg-yellow-400/10 rounded">
+                        <span className="text-sm text-foreground">Most Voted Meme</span>
+                        <span className="text-sm font-medium text-yellow-400">SAMU TO MARS (324 votes)</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 bg-yellow-400/10 rounded">
+                        <span className="text-sm text-foreground">Top Creator</span>
+                        <span className="text-sm font-medium text-yellow-400">crypto_legend (3 wins)</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 bg-yellow-400/10 rounded">
+                        <span className="text-sm text-foreground">Total Contests</span>
+                        <span className="text-sm font-medium text-yellow-400">1 completed</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Empty state for new users */}
+                <Card className="border-dashed border-border/50">
+                  <CardContent className="p-8 text-center">
+                    <Archive className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
+                    <p className="text-muted-foreground">
+                      More archived contests will appear here as competitions complete
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
           <TabsContent value="goods" className="mt-4 space-y-4 pb-24">
             <GoodsShop />
           </TabsContent>
@@ -366,6 +461,16 @@ export default function Home() {
               }`}
             >
               <Trophy className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setCurrentTab("archive")}
+              className={`flex items-center justify-center p-3 rounded-lg transition-colors ${
+                currentTab === "archive" 
+                  ? "bg-primary/20 text-primary" 
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Archive className="h-4 w-4" />
             </button>
             <button
               onClick={() => setCurrentTab("goods")}
