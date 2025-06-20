@@ -7,6 +7,9 @@ import { PrivyProvider } from '@privy-io/react-auth';
 import { useEffect } from 'react';
 import Home from "@/pages/home";
 import Profile from "@/pages/profile";
+import MemeDetail from "@/pages/meme-detail";
+import GoodsDetail from "@/pages/goods-detail";
+import ArchiveDetail from "@/pages/archive-detail";
 import NotFound from "@/pages/not-found";
 
 // Global error handler for Privy iframe issues
@@ -33,6 +36,9 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/connected" component={Home} />
       <Route path="/profile" component={Profile} />
+      <Route path="/meme/:id" component={MemeDetail} />
+      <Route path="/goods/:id" component={GoodsDetail} />
+      <Route path="/archive/:id" component={ArchiveDetail} />
       <Route component={NotFound} />
     </Switch>
   );
