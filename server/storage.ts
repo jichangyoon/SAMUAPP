@@ -57,8 +57,12 @@ export class MemStorage implements IStorage {
     sampleMemes.forEach(meme => {
       const id = this.currentMemeId++;
       const newMeme: Meme = {
-        ...meme,
         id,
+        title: meme.title,
+        description: meme.description ?? null,
+        imageUrl: meme.imageUrl,
+        authorWallet: meme.authorWallet,
+        authorUsername: meme.authorUsername,
         votes: Math.floor(Math.random() * 1500) + 100,
         createdAt: new Date()
       };
@@ -69,8 +73,12 @@ export class MemStorage implements IStorage {
   async createMeme(insertMeme: InsertMeme): Promise<Meme> {
     const id = this.currentMemeId++;
     const meme: Meme = {
-      ...insertMeme,
       id,
+      title: insertMeme.title,
+      description: insertMeme.description ?? null,
+      imageUrl: insertMeme.imageUrl,
+      authorWallet: insertMeme.authorWallet,
+      authorUsername: insertMeme.authorUsername,
       votes: 0,
       createdAt: new Date()
     };

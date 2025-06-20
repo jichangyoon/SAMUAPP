@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getSamuTokenBalance, isSolanaAddress } from "@/lib/solana";
 import type { Meme } from "@shared/schema";
-import samuLogo1 from "@assets/photo_2025-05-26_08-40-22_1750170004880.jpg";
+// SAMU logo will be rendered as SVG inline
 
 export default function Home() {
   const [sortBy, setSortBy] = useState("votes");
