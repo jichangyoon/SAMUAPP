@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Image, ExternalLink } from "lucide-react";
+import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -36,8 +36,6 @@ export default function Home() {
   const [archiveView, setArchiveView] = useState<'list' | 'contest'>('list');
   const [selectedArchiveContest, setSelectedArchiveContest] = useState<any>(null);
   const [selectedArchiveMeme, setSelectedArchiveMeme] = useState<any>(null);
-  const [selectedNft, setSelectedNft] = useState<any>(null);
-  const [nftCommentText, setNftCommentText] = useState("");
 
   // Privy authentication
   const { authenticated, user } = usePrivy();
@@ -621,50 +619,6 @@ export default function Home() {
             )}
           </TabsContent>
 
-          <TabsContent value="nfts" className="mt-4 space-y-4 pb-24">
-            <div className="text-center space-y-4 mb-6">
-              <h1 className="text-2xl font-bold text-primary">SAMU NFT Collection</h1>
-              <p className="text-muted-foreground text-sm">
-                164개의 독특한 SAMU NFT 컬렉션을 둘러보세요
-              </p>
-              <Button
-                className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold"
-                onClick={() => window.open('https://opensea.io', '_blank')}
-              >
-                <Share2 className="h-4 w-4 mr-2" />
-                거래소에서 구매하기
-              </Button>
-            </div>
-
-            {/* NFT Grid */}
-            <div className="grid grid-cols-3 gap-2">
-              {Array.from({ length: 164 }, (_, index) => {
-                const nftId = index + 1;
-                return (
-                  <div
-                    key={nftId}
-                    className="aspect-square bg-card rounded-lg overflow-hidden hover:scale-105 transition-transform cursor-pointer border border-border"
-                    onClick={() => {
-                      setSelectedNft({
-                        id: nftId,
-                        title: `SAMU NFT #${nftId.toString().padStart(3, '0')}`,
-                        description: `Unique SAMU collection NFT featuring digital art piece ${nftId}`,
-                        imageUrl: `https://via.placeholder.com/400x400/fbbf24/ffffff?text=NFT+%23${nftId.toString().padStart(3, '0')}`
-                      });
-                    }}
-                  >
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-yellow-400 to-orange-500">
-                      <div className="text-center">
-                        <div className="text-white font-bold text-lg">#{nftId.toString().padStart(3, '0')}</div>
-                        <div className="text-white text-xs">SAMU NFT</div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </TabsContent>
-
           <TabsContent value="goods" className="mt-4 space-y-4 pb-24">
             <GoodsShop />
           </TabsContent>
@@ -757,16 +711,6 @@ export default function Home() {
               }`}
             >
               <Archive className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setCurrentTab("nfts")}
-              className={`flex items-center justify-center p-3 rounded-lg transition-colors ${
-                currentTab === "nfts" 
-                  ? "bg-primary/20 text-primary" 
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Image className="h-4 w-4" />
             </button>
             <button
               onClick={() => setCurrentTab("goods")}
@@ -923,94 +867,8 @@ export default function Home() {
         </Dialog>
       )}
 
-      {/* NFT Detail Modal */}
-      {selectedNft && (
-        <Dialog open={!!selectedNft} onOpenChange={() => setSelectedNft(null)}>
-          <DialogContent className="max-w-md mx-4 bg-card border-border">
-            <DialogHeader>
-              <DialogTitle className="text-foreground">{selectedNft.title}</DialogTitle>
-              <DialogDescription className="text-muted-foreground">
-                SAMU NFT Collection
-              </DialogDescription>
-            </DialogHeader>
 
-            <div className="space-y-4">
-              <div className="aspect-square rounded-lg overflow-hidden">
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-yellow-400 to-orange-500">
-                  <div className="text-center">
-                    <div className="text-white font-bold text-3xl">#{selectedNft.id.toString().padStart(3, '0')}</div>
-                    <div className="text-white text-lg">SAMU NFT</div>
-                  </div>
-                </div>
-              </div>
 
-              {selectedNft.description && (
-                <div>
-                  <h4 className="font-medium text-foreground mb-2">Description</h4>
-                  <p className="text-muted-foreground">{selectedNft.description}</p>
-                </div>
-              )}
-
-              {/* Comment Section */}
-              <div className="space-y-3">
-                <h4 className="font-medium text-foreground flex items-center">
-                  <User className="h-4 w-4 mr-2" />
-                  댓글 (0)
-                </h4>
-                
-                {authenticated ? (
-                  <div className="space-y-2">
-                    <textarea
-                      placeholder="댓글을 입력하세요..."
-                      value={nftCommentText}
-                      onChange={(e) => setNftCommentText(e.target.value)}
-                      className="w-full p-2 rounded-lg bg-muted border border-border text-foreground text-sm min-h-[60px] resize-none"
-                    />
-                    <Button
-                      onClick={() => {
-                        if (nftCommentText.trim()) {
-                          toast({
-                            title: "댓글이 추가되었습니다",
-                            description: "NFT에 댓글을 성공적으로 추가했습니다.",
-                          });
-                          setNftCommentText("");
-                        }
-                      }}
-                      disabled={!nftCommentText.trim()}
-                      size="sm"
-                      className="w-full"
-                    >
-                      댓글 작성
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="text-center py-3 text-muted-foreground text-sm">
-                    댓글을 작성하려면 로그인이 필요합니다
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <DialogFooter className="flex space-x-3">
-              <Button
-                variant="outline"
-                onClick={() => window.open('https://opensea.io', '_blank')}
-                className="flex-1"
-              >
-                <Share2 className="h-4 w-4 mr-2" />
-                거래소에서 보기
-              </Button>
-              <Button
-                onClick={() => setSelectedNft(null)}
-                variant="outline"
-                className="flex-1"
-              >
-                닫기
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
 
     </div>
   );

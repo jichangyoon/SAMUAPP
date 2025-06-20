@@ -1,4 +1,4 @@
-import { memes, votes, nfts, comments, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type Comment, type InsertComment } from "@shared/schema";
+import { memes, votes, type Meme, type InsertMeme, type Vote, type InsertVote } from "@shared/schema";
 
 export interface IStorage {
   // Meme operations
@@ -11,40 +11,22 @@ export interface IStorage {
   getVotesByMemeId(memeId: number): Promise<Vote[]>;
   hasUserVoted(memeId: number, voterWallet: string): Promise<boolean>;
   updateMemeVoteCount(memeId: number): Promise<void>;
-  
-  // NFT operations
-  createNft(nft: InsertNft): Promise<Nft>;
-  getNfts(): Promise<Nft[]>;
-  getNftById(id: number): Promise<Nft | undefined>;
-  
-  // Comment operations
-  createComment(comment: InsertComment): Promise<Comment>;
-  getCommentsByNftId(nftId: number): Promise<Comment[]>;
 }
 
 export class MemStorage implements IStorage {
   private memes: Map<number, Meme>;
   private votes: Map<number, Vote>;
-  private nfts: Map<number, Nft>;
-  private comments: Map<number, Comment>;
   private currentMemeId: number;
   private currentVoteId: number;
-  private currentNftId: number;
-  private currentCommentId: number;
 
   constructor() {
     this.memes = new Map();
     this.votes = new Map();
-    this.nfts = new Map();
-    this.comments = new Map();
     this.currentMemeId = 1;
     this.currentVoteId = 1;
-    this.currentNftId = 1;
-    this.currentCommentId = 1;
     
     // Add some sample memes for the contest
     this.initializeSampleData();
-    this.initializeNftData();
   }
 
   private initializeSampleData() {
@@ -147,76 +129,6 @@ export class MemStorage implements IStorage {
       meme.votes = votes;
       this.memes.set(memeId, meme);
     }
-  }
-
-  // NFT operations
-  async createNft(insertNft: InsertNft): Promise<Nft> {
-    const nft: Nft = {
-      id: this.currentNftId++,
-      title: insertNft.title,
-      description: insertNft.description || null,
-      imageUrl: insertNft.imageUrl,
-      createdAt: new Date(),
-    };
-    
-    this.nfts.set(nft.id, nft);
-    return nft;
-  }
-
-  async getNfts(): Promise<Nft[]> {
-    return Array.from(this.nfts.values());
-  }
-
-  async getNftById(id: number): Promise<Nft | undefined> {
-    return this.nfts.get(id);
-  }
-
-  // Comment operations
-  async createComment(insertComment: InsertComment): Promise<Comment> {
-    const comment: Comment = {
-      id: this.currentCommentId++,
-      ...insertComment,
-      createdAt: new Date(),
-    };
-    
-    this.comments.set(comment.id, comment);
-    return comment;
-  }
-
-  async getCommentsByNftId(nftId: number): Promise<Comment[]> {
-    return Array.from(this.comments.values())
-      .filter(comment => comment.nftId === nftId)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }
-
-  private initializeNftData() {
-    // Generate 164 sample NFTs
-    for (let i = 1; i <= 164; i++) {
-      const nft: Nft = {
-        id: i,
-        title: `SAMU NFT #${i.toString().padStart(3, '0')}`,
-        description: `Unique SAMU collection NFT featuring digital art piece ${i}`,
-        imageUrl: `data:image/svg+xml;base64,${btoa(`
-          <svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="grad${i}" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#${Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')};stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#${Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')};stop-opacity:1" />
-              </linearGradient>
-            </defs>
-            <rect width="300" height="300" fill="url(#grad${i})" />
-            <circle cx="150" cy="120" r="40" fill="#FFD700" opacity="0.8"/>
-            <polygon points="150,160 130,200 170,200" fill="#FF6B35" opacity="0.9"/>
-            <text x="150" y="250" text-anchor="middle" fill="white" font-size="20" font-weight="bold">#${i.toString().padStart(3, '0')}</text>
-          </svg>
-        `)}`,
-        createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000), // Random date within last 30 days
-      };
-      
-      this.nfts.set(i, nft);
-    }
-    
-    this.currentNftId = 165;
   }
 }
 
