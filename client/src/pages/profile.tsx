@@ -163,37 +163,39 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-background border-b border-border py-1">
-        <div className="flex items-center justify-between px-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/')}
-            className="text-foreground hover:bg-accent"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <h1 className="text-lg font-bold text-foreground">My Profile</h1>
-          <div className="w-16" /> {/* Spacer for centering */}
+      <header className="sticky top-0 z-50 bg-card shadow-sm border-b border-border">
+        <div className="max-w-md mx-auto px-4 py-1">
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/')}
+              className="text-foreground hover:bg-accent"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+            <h1 className="text-lg font-bold text-foreground">My Profile</h1>
+            <div className="w-16" /> {/* Spacer for centering */}
+          </div>
         </div>
-      </div>
+      </header>
 
-      <div className="p-4 space-y-6">
+      <div className="max-w-md mx-auto p-4 space-y-4">
         {/* 사용자 기본 정보 */}
         <Card className="bg-gradient-to-r from-primary/20 to-primary/10 border-border">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4 mb-4">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3 mb-3">
               <div className="relative">
-                <Avatar className="h-16 w-16">
+                <Avatar className="h-12 w-12">
                   <AvatarImage src={imagePreview || profileImage} />
-                  <AvatarFallback className="bg-primary/20 text-primary text-lg">
+                  <AvatarFallback className="bg-primary/20 text-primary text-sm">
                     {displayName.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 {isEditing && (
-                  <label className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-1 cursor-pointer hover:bg-primary/80">
-                    <Camera className="h-3 w-3" />
+                  <label className="absolute -bottom-0.5 -right-0.5 bg-primary text-primary-foreground rounded-full p-1 cursor-pointer hover:bg-primary/80">
+                    <Camera className="h-2.5 w-2.5" />
                     <input
                       type="file"
                       accept="image/*"
@@ -216,8 +218,8 @@ export default function Profile() {
                   </div>
                 ) : (
                   <div>
-                    <h3 className="text-lg font-bold text-foreground">{displayName}</h3>
-                    <p className="text-sm text-muted-foreground">{user?.email?.address}</p>
+                    <h3 className="text-sm font-bold text-foreground">{displayName}</h3>
+                    <p className="text-xs text-muted-foreground">{user?.email?.address}</p>
                   </div>
                 )}
               </div>
@@ -227,12 +229,12 @@ export default function Profile() {
                     <Button
                       onClick={handleSaveProfile}
                       size="sm"
-                      className="bg-green-600 hover:bg-green-700"
+                      className="bg-green-600 hover:bg-green-700 text-xs"
                     >
-                      <Save className="h-4 w-4 mr-1" />
+                      <Save className="h-3 w-3 mr-1" />
                       Save
                     </Button>
-                    <Button onClick={handleCancelEdit} variant="outline" size="sm">
+                    <Button onClick={handleCancelEdit} variant="outline" size="sm" className="text-xs">
                       Cancel
                     </Button>
                   </>
@@ -241,9 +243,10 @@ export default function Profile() {
                     onClick={() => setIsEditing(true)}
                     variant="outline"
                     size="sm"
+                    className="text-xs"
                   >
-                    <Settings className="h-4 w-4 mr-1" />
-                    Edit Profile
+                    <Settings className="h-3 w-3 mr-1" />
+                    Edit
                   </Button>
                 )}
               </div>
