@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from "react";
+Removing Phantom wallet code and dependencies while updating wallet state logic to rely solely on Privy.
+```
+```replit_final_file
+import React, { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { WalletConnect } from "@/components/wallet-connect";
 import { ContestHeader } from "@/components/contest-header";
@@ -22,19 +25,19 @@ export default function Home() {
   const [samuBalance, setSamuBalance] = useState<number>(0);
   const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [showUserProfile, setShowUserProfile] = useState(false);
-  
+
   // Privy authentication
   const { authenticated, user } = usePrivy();
-  
+
   // Get wallet info from Privy
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
-  
+
   const isConnected = authenticated && !!selectedWalletAccount;
   const walletAddress = selectedWalletAccount?.address || '';
   const isSolana = selectedWalletAccount?.chainType === 'solana';
-  
+
   // Debug Privy state
   useEffect(() => {
     console.log('🔍 Privy State Debug:', {
@@ -82,6 +85,17 @@ export default function Home() {
     return b.votes - a.votes; // default to votes
   });
 
+  // Get wallet state from Privy
+  const walletState = useMemo(() => {
+    const address = selectedWalletAccount?.address || '';
+    return {
+      isConnected: authenticated && !!address,
+      walletAddress: address,
+      samuBalance,
+      balanceStatus
+    };
+  }, [authenticated, selectedWalletAccount?.address, samuBalance, balanceStatus]);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
@@ -106,8 +120,6 @@ export default function Home() {
         </div>
       </header>
 
-
-
       {/* Main Navigation */}
       <nav className="max-w-md mx-auto px-4 py-3 bg-card border-b border-border">
         <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
@@ -115,14 +127,14 @@ export default function Home() {
             <TabsTrigger value="contest" className="text-sm">Meme Contest</TabsTrigger>
             <TabsTrigger value="goods" className="text-sm">Goods Shop</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="contest" className="mt-4">
             <Tabs defaultValue="contest-main" className="w-full">
               <TabsList className="grid w-full grid-cols-2 h-10">
                 <TabsTrigger value="contest-main" className="text-sm">Contest</TabsTrigger>
                 <TabsTrigger value="leaderboard" className="text-sm">Leaderboard</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="contest-main" className="mt-0">
                 <main className="space-y-4 pb-20">
                   {/* Contest Header */}
@@ -166,7 +178,7 @@ export default function Home() {
                             canVote={isConnected}
                           />
                         ))}
-                        
+
                         {sortedMemes.length === 0 && (
                           <Card>
                             <CardContent className="p-8 text-center">
@@ -187,13 +199,13 @@ export default function Home() {
                   </div>
                 </main>
               </TabsContent>
-              
+
               <TabsContent value="leaderboard">
                 <Leaderboard />
               </TabsContent>
             </Tabs>
           </TabsContent>
-          
+
           <TabsContent value="goods" className="mt-4">
             <GoodsShop />
           </TabsContent>
