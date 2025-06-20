@@ -1,4 +1,4 @@
-import { memes, votes, type Meme, type InsertMeme, type Vote, type InsertVote } from "@shared/schema";
+import { memes, votes, nfts, nftComments, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type NftComment, type InsertNftComment } from "@shared/schema";
 
 export interface IStorage {
   // Meme operations
@@ -11,22 +11,40 @@ export interface IStorage {
   getVotesByMemeId(memeId: number): Promise<Vote[]>;
   hasUserVoted(memeId: number, voterWallet: string): Promise<boolean>;
   updateMemeVoteCount(memeId: number): Promise<void>;
+  
+  // NFT operations
+  getNfts(): Promise<Nft[]>;
+  getNftById(id: number): Promise<Nft | undefined>;
+  
+  // NFT Comment operations
+  createNftComment(comment: InsertNftComment): Promise<NftComment>;
+  getNftComments(nftId: number): Promise<NftComment[]>;
 }
 
 export class MemStorage implements IStorage {
   private memes: Map<number, Meme>;
   private votes: Map<number, Vote>;
+  private nfts: Map<number, Nft>;
+  private nftComments: Map<number, NftComment>;
   private currentMemeId: number;
   private currentVoteId: number;
+  private currentNftId: number;
+  private currentCommentId: number;
 
   constructor() {
     this.memes = new Map();
     this.votes = new Map();
+    this.nfts = new Map();
+    this.nftComments = new Map();
     this.currentMemeId = 1;
     this.currentVoteId = 1;
+    this.currentNftId = 1;
+    this.currentCommentId = 1;
     
     // Add some sample memes for the contest
     this.initializeSampleData();
+    // Initialize 164 NFTs
+    this.initializeNftData();
   }
 
   private initializeSampleData() {
@@ -129,6 +147,59 @@ export class MemStorage implements IStorage {
       meme.votes = votes;
       this.memes.set(memeId, meme);
     }
+  }
+
+  private initializeNftData() {
+    // Create 164 unique NFTs with varied designs
+    for (let i = 1; i <= 164; i++) {
+      const nft: Nft = {
+        id: i,
+        title: `SAMU Wolf #${String(i).padStart(3, '0')}`,
+        tokenId: i,
+        creator: `creator_${Math.floor(Math.random() * 20) + 1}`,
+        description: `Unique SAMU Wolf NFT with special traits. Part of the legendary 164 collection.`,
+        imageUrl: this.generateNftImage(i),
+        createdAt: new Date()
+      };
+      this.nfts.set(i, nft);
+    }
+  }
+
+  private generateNftImage(tokenId: number): string {
+    // Generate unique SVG for each NFT based on token ID
+    const colors = ['#F7DC6F', '#E74C3C', '#3498DB', '#2ECC71', '#9B59B6', '#F39C12', '#E67E22', '#1ABC9C'];
+    const bgColor = colors[tokenId % colors.length];
+    const accentColor = colors[(tokenId + 3) % colors.length];
+    const eyeColor = colors[(tokenId + 5) % colors.length];
+    
+    return `data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='${bgColor}'/%3E%3Ccircle cx='200' cy='180' r='80' fill='${accentColor}'/%3E%3Cpath d='M140 150 L160 130 L180 150 L200 130 L220 150 L240 130 L260 150 L240 170 L200 160 L160 170 Z' fill='%23654321'/%3E%3Ccircle cx='170' cy='160' r='8' fill='${eyeColor}'/%3E%3Ccircle cx='230' cy='160' r='8' fill='${eyeColor}'/%3E%3Cpath d='M180 180 L200 195 L220 180' stroke='%23654321' stroke-width='4' fill='none'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold' fill='white'%3E%23${String(tokenId).padStart(3, '0')}%3C/text%3E%3C/svg%3E`;
+  }
+
+  // NFT operations
+  async getNfts(): Promise<Nft[]> {
+    return Array.from(this.nfts.values()).sort((a, b) => a.tokenId - b.tokenId);
+  }
+
+  async getNftById(id: number): Promise<Nft | undefined> {
+    return this.nfts.get(id);
+  }
+
+  // NFT Comment operations
+  async createNftComment(insertComment: InsertNftComment): Promise<NftComment> {
+    const id = this.currentCommentId++;
+    const comment: NftComment = {
+      ...insertComment,
+      id,
+      createdAt: new Date()
+    };
+    this.nftComments.set(id, comment);
+    return comment;
+  }
+
+  async getNftComments(nftId: number): Promise<NftComment[]> {
+    return Array.from(this.nftComments.values())
+      .filter(comment => comment.nftId === nftId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 }
 

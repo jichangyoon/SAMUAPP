@@ -21,6 +21,25 @@ export const votes = pgTable("votes", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const nfts = pgTable("nfts", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  imageUrl: text("image_url").notNull(),
+  tokenId: integer("token_id").notNull().unique(),
+  creator: text("creator").notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const nftComments = pgTable("nft_comments", {
+  id: serial("id").primaryKey(),
+  nftId: integer("nft_id").notNull(),
+  userWallet: text("user_wallet").notNull(),
+  username: text("username").notNull(),
+  comment: text("comment").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertMemeSchema = createInsertSchema(memes).omit({
   id: true,
   votes: true,
@@ -32,7 +51,21 @@ export const insertVoteSchema = createInsertSchema(votes).omit({
   createdAt: true,
 });
 
+export const insertNftSchema = createInsertSchema(nfts).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertNftCommentSchema = createInsertSchema(nftComments).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertMeme = z.infer<typeof insertMemeSchema>;
 export type Meme = typeof memes.$inferSelect;
 export type InsertVote = z.infer<typeof insertVoteSchema>;
 export type Vote = typeof votes.$inferSelect;
+export type InsertNft = z.infer<typeof insertNftSchema>;
+export type Nft = typeof nfts.$inferSelect;
+export type InsertNftComment = z.infer<typeof insertNftCommentSchema>;
+export type NftComment = typeof nftComments.$inferSelect;
