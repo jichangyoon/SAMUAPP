@@ -186,16 +186,12 @@ export function GoodsShop() {
               {filteredGoods.map((item) => (
                 <Card 
                   key={item.id} 
-                  className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => setSelectedItem(item)}
+                  className="overflow-hidden"
                 >
                   <div className="flex p-3">
                     <button 
                       className="w-16 h-16 flex-shrink-0 hover:opacity-80 transition-opacity"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedItem(item);
-                      }}
+                      onClick={() => setSelectedItem(item)}
                     >
                       <img 
                         src={item.image} 
@@ -205,10 +201,7 @@ export function GoodsShop() {
                     </button>
                     <div className="flex-1 ml-3 min-w-0">
                       <div className="flex justify-between items-center">
-                        <button 
-                          className="flex-1 min-w-0 pr-2 text-left hover:opacity-80 transition-opacity"
-                          onClick={() => setSelectedItem(item)}
-                        >
+                        <div className="flex-1 min-w-0 pr-2">
                           <h3 className="font-semibold text-sm text-foreground truncate">
                             {item.name}
                           </h3>
@@ -217,7 +210,7 @@ export function GoodsShop() {
                               Limited
                             </Badge>
                           )}
-                        </button>
+                        </div>
                         <div className="text-right flex-shrink-0">
                           <div className="font-bold text-sm text-primary">
                             {item.price.toLocaleString()}

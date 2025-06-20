@@ -200,6 +200,7 @@ Changelog:
 - June 20, 2025. Enhanced goods shop product detail modal with comprehensive product information, creator details, and streamlined purchase flow
 - June 20, 2025. Made both meme images and goods product images clickable to open detail modals, improving mobile touch interaction and user experience
 - June 20, 2025. Refined meme card interaction - removed title click functionality, keeping only image click to open detail modal for cleaner user experience
+- June 20, 2025. Applied same interaction pattern to goods shop - removed product name and card click functionality, keeping only image click for detail modal access
 ```
 
 ## User Preferences
