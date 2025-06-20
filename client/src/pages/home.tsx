@@ -35,6 +35,22 @@ export default function Home() {
   const walletAddress = selectedWalletAccount?.address || '';
   const isSolana = selectedWalletAccount?.chainType === 'solana';
 
+  // Get user profile data
+  const getStoredProfile = () => {
+    try {
+      const stored = localStorage.getItem(`privy_profile_${user?.id}`);
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  };
+
+  const storedProfile = getStoredProfile();
+  const displayName = authenticated 
+    ? storedProfile.displayName || user?.email?.address?.split('@')[0] || 'User'
+    : 'SAMU';
+  const profileImage = storedProfile.profileImage || '';
+
   // Fetch SAMU balance for Solana wallets
   useEffect(() => {
     if (isConnected && walletAddress && isSolana) {
@@ -81,14 +97,35 @@ export default function Home() {
               onClick={() => setShowUserProfile(true)}
               className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
             >
-              <div className="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center samu-wolf-logo overflow-hidden">
-                <img 
-                  src={samuLogoImg} 
-                  alt="SAMU Wolf" 
-                  className="w-full h-full object-cover rounded-full"
-                />
-              </div>
-              <span className="text-lg font-bold text-primary">SAMU</span>
+              {authenticated ? (
+                <>
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
+                    {profileImage ? (
+                      <img 
+                        src={profileImage} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      <span className="text-primary font-bold text-lg">
+                        {displayName.slice(0, 2).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-lg font-bold text-primary">{displayName}</span>
+                </>
+              ) : (
+                <>
+                  <div className="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center samu-wolf-logo overflow-hidden">
+                    <img 
+                      src={samuLogoImg} 
+                      alt="SAMU Wolf" 
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  </div>
+                  <span className="text-lg font-bold text-primary">SAMU</span>
+                </>
+              )}
             </button>
             <WalletConnect />
           </div>
