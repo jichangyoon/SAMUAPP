@@ -388,13 +388,11 @@ export default function Home() {
               
               <div className="flex space-x-2 pt-2">
                 <Button
-                  onClick={() => {
-                    setSelectedMeme(null);
-                    // Trigger vote logic here if needed
-                  }}
+                  onClick={() => setShowVoteDialog(true)}
                   disabled={!isConnected}
                   className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
                 >
+                  <ArrowUp className="h-4 w-4 mr-2" />
                   Vote
                 </Button>
                 <Button
@@ -417,6 +415,47 @@ export default function Home() {
                 </Button>
               </div>
             </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Grid View Vote Confirmation Dialog */}
+      {selectedMeme && (
+        <Dialog open={showVoteDialog} onOpenChange={setShowVoteDialog}>
+          <DialogContent className="max-w-sm mx-4 bg-card border-border">
+            <DialogHeader>
+              <DialogTitle className="text-foreground">Confirm Your Vote</DialogTitle>
+              <DialogDescription className="text-muted-foreground">
+                You're about to vote for "{selectedMeme.title}" by {selectedMeme.authorUsername}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="bg-accent rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-muted-foreground">Your voting power:</span>
+                <span className="font-semibold text-primary">1</span>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Based on your SAMU token balance: {samuBalance.toLocaleString()}
+              </div>
+            </div>
+
+            <DialogFooter className="flex space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowVoteDialog(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => selectedMeme && handleGridVote(selectedMeme)}
+                disabled={isVoting}
+                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                {isVoting ? "Voting..." : "Confirm Vote"}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       )}
