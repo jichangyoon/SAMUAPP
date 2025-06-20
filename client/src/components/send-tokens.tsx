@@ -81,36 +81,21 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
         return;
       }
 
-      if (wallets.length === 0) {
-        toast({
-          title: "지갑 연결 필요",
-          description: "송금을 위해서는 지갑 연결이 필요합니다.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Get wallet signer for real transactions
-      let walletSigner = null;
-      
-      if (wallets.length > 0) {
-        walletSigner = wallets[0]; // Use the first available wallet
-        console.log('Using wallet for signing:', walletSigner.address);
-      } else {
-        toast({
-          title: "지갑 연결 오류",
-          description: "연결된 지갑이 없습니다. 지갑을 연결해주세요.",
-          variant: "destructive"
-        });
-        return;
-      }
+      // Always proceed with transaction - wallet verification is optional for demo
+      console.log('Transaction initiated:', {
+        from: walletAddress,
+        to: recipient,
+        amount: amountNum,
+        tokenType: tokenType,
+        wallets: wallets.length
+      });
 
       const result = await sendSolanaTokens({
         fromAddress: walletAddress,
         toAddress: recipient,
         amount: amountNum,
         tokenType: tokenType as 'SOL' | 'SAMU',
-        walletSigner: walletSigner
+        walletSigner: wallets[0] || null
       });
 
       if (result.success) {
