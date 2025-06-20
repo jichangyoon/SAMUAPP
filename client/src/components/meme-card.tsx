@@ -128,7 +128,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
             <Button
               onClick={() => setShowVoteDialog(true)}
               disabled={!canVote}
-              className="flex-1 bg-primary hover:bg-primary/90 active:bg-primary/80 active:scale-95 text-primary-foreground font-semibold transition-all duration-100"
+              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
             >
               <ArrowUp className="h-4 w-4 mr-2" />
               Vote
@@ -175,7 +175,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
             <Button
               onClick={handleVote}
               disabled={isVoting}
-              className="flex-1 bg-primary hover:bg-primary/90 active:bg-primary/80 active:scale-95 text-primary-foreground transition-all duration-100"
+              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {isVoting ? "Voting..." : "Confirm Vote"}
             </Button>
@@ -226,7 +226,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
                   setShowVoteDialog(true);
                 }}
                 disabled={!canVote}
-                className="flex-1 bg-primary hover:bg-primary/90 active:bg-primary/80 active:scale-95 text-primary-foreground font-semibold transition-all duration-100"
+                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
               >
                 <ArrowUp className="h-4 w-4 mr-2" />
                 Vote

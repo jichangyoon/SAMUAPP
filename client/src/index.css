@@ -2,15 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Remove focus outlines for better mobile UX */
-button:focus,
-select:focus,
-[role="button"]:focus,
-[role="combobox"]:focus {
-  outline: none !important;
-  box-shadow: none !important;
-}
-
 :root {
   /* Black theme as default */
   --background: hsl(0, 0%, 0%);
