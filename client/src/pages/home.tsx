@@ -33,6 +33,7 @@ export default function Home() {
   const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [selectedArchiveContest, setSelectedArchiveContest] = useState<any>(null);
+  const [selectedArchiveMeme, setSelectedArchiveMeme] = useState<any>(null);
   
   // Privy authentication
   const { authenticated, user } = usePrivy();
@@ -382,7 +383,63 @@ export default function Home() {
                       votes: 324
                     },
                     secondPlace: "DIAMOND PAWS",
-                    thirdPlace: "PACK LEADER"
+                    thirdPlace: "PACK LEADER",
+                    memes: [
+                      {
+                        id: 1,
+                        title: "SAMU TO MARS",
+                        author: "crypto_legend",
+                        votes: 324,
+                        rank: 1,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23F7DC6F'/%3E%3Ccircle cx='200' cy='200' r='100' fill='%23E74C3C'/%3E%3Ctext x='200' y='180' text-anchor='middle' font-family='Arial' font-size='24' font-weight='bold' fill='white'%3ESAMU%3C/text%3E%3Ctext x='200' y='220' text-anchor='middle' font-family='Arial' font-size='16' fill='white'%3ETO MARS%3C/text%3E%3C/svg%3E",
+                        description: "The ultimate SAMU moon mission meme"
+                      },
+                      {
+                        id: 2,
+                        title: "DIAMOND PAWS",
+                        author: "gem_hands",
+                        votes: 287,
+                        rank: 2,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23667BC6'/%3E%3Cpolygon points='200,100 250,150 200,200 150,150' fill='%2300BFFF'/%3E%3Ctext x='200' y='260' text-anchor='middle' font-family='Arial' font-size='20' font-weight='bold' fill='white'%3EDIAMOND%3C/text%3E%3Ctext x='200' y='290' text-anchor='middle' font-family='Arial' font-size='20' font-weight='bold' fill='white'%3EPAWS%3C/text%3E%3C/svg%3E",
+                        description: "Diamond hands, diamond paws"
+                      },
+                      {
+                        id: 3,
+                        title: "PACK LEADER",
+                        author: "wolf_alpha",
+                        votes: 245,
+                        rank: 3,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%238B4513'/%3E%3Ccircle cx='200' cy='180' r='60' fill='%23D2691E'/%3E%3Cpath d='M170 160 L200 140 L230 160 L220 180 L180 180 Z' fill='%23654321'/%3E%3Ctext x='200' y='280' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='white'%3EPACK LEADER%3C/text%3E%3C/svg%3E",
+                        description: "Leading the pack to victory"
+                      },
+                      {
+                        id: 4,
+                        title: "HODL STRONG",
+                        author: "diamond_wolf",
+                        votes: 198,
+                        rank: 4,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%232C3E50'/%3E%3Crect x='100' y='150' width='200' height='100' fill='%23F39C12'/%3E%3Ctext x='200' y='190' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold'%3EHODL%3C/text%3E%3Ctext x='200' y='220' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold'%3ESTRONG%3C/text%3E%3C/svg%3E",
+                        description: "Never selling, always holding"
+                      },
+                      {
+                        id: 5,
+                        title: "MOON WOLF",
+                        author: "lunar_pack",
+                        votes: 156,
+                        rank: 5,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%231a1a2e'/%3E%3Ccircle cx='150' cy='100' r='40' fill='%23f5f5f5'/%3E%3Ccircle cx='250' cy='200' r='50' fill='%23654321'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='%23f5f5f5'%3EMOON WOLF%3C/text%3E%3C/svg%3E",
+                        description: "Howling at the crypto moon"
+                      },
+                      {
+                        id: 6,
+                        title: "ALPHA GAINS",
+                        author: "profit_hunter",
+                        votes: 134,
+                        rank: 6,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%2327ae60'/%3E%3Cpath d='M200 100 L300 200 L250 250 L200 200 L150 250 L100 200 Z' fill='%23f1c40f'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='white'%3EALPHA GAINS%3C/text%3E%3C/svg%3E",
+                        description: "Always making alpha gains"
+                      }
+                    ]
                   })}
                   className="w-full"
                 >
@@ -606,33 +663,41 @@ export default function Home() {
             </DialogHeader>
             
             <div className="space-y-4">
-              {/* Grid Layout with Winners */}
-              <div className="grid grid-cols-3 gap-2">
-                {/* 1st Place */}
-                <div className="text-center p-3 bg-yellow-400/10 rounded-lg border border-yellow-400/20">
-                  <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <span className="text-xs font-bold text-black">🏆</span>
-                  </div>
-                  <div className="text-xs font-semibold text-foreground">{selectedArchiveContest.winner.name}</div>
-                  <div className="text-xs text-muted-foreground">{selectedArchiveContest.winner.votes} votes</div>
-                </div>
-                
-                {/* 2nd Place */}
-                <div className="text-center p-3 bg-accent/20 rounded-lg">
-                  <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <span className="text-xs font-bold text-white">🥈</span>
-                  </div>
-                  <div className="text-xs font-semibold text-foreground">{selectedArchiveContest.secondPlace}</div>
-                  <div className="text-xs text-muted-foreground">2nd Place</div>
-                </div>
-                
-                {/* 3rd Place */}
-                <div className="text-center p-3 bg-accent/20 rounded-lg">
-                  <div className="w-8 h-8 bg-orange-400 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <span className="text-xs font-bold text-white">🥉</span>
-                  </div>
-                  <div className="text-xs font-semibold text-foreground">{selectedArchiveContest.thirdPlace}</div>
-                  <div className="text-xs text-muted-foreground">3rd Place</div>
+              {/* Contest Entries Grid */}
+              <div>
+                <h4 className="font-medium text-foreground mb-3">Contest Entries</h4>
+                <div className="grid grid-cols-3 gap-1">
+                  {selectedArchiveContest.memes?.map((meme: any) => (
+                    <button
+                      key={meme.id}
+                      onClick={() => setSelectedArchiveMeme(meme)}
+                      className="aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-opacity relative group"
+                    >
+                      <img
+                        src={meme.imageUrl}
+                        alt={meme.title}
+                        className="w-full h-full object-cover"
+                      />
+                      {/* Ranking indicator */}
+                      {meme.rank <= 3 && (
+                        <div className="absolute top-1 left-1">
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                            meme.rank === 1 ? 'bg-yellow-400 text-black' :
+                            meme.rank === 2 ? 'bg-gray-400 text-white' :
+                            'bg-orange-400 text-white'
+                          }`}>
+                            {meme.rank === 1 ? '🏆' : meme.rank === 2 ? '🥈' : '🥉'}
+                          </div>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="text-white text-center">
+                          <div className="text-sm font-semibold">{meme.votes}</div>
+                          <div className="text-xs">votes</div>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -658,6 +723,70 @@ export default function Home() {
                 Close
               </Button>
             </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Archive Meme Detail Modal */}
+      {selectedArchiveMeme && (
+        <Dialog open={!!selectedArchiveMeme} onOpenChange={() => setSelectedArchiveMeme(null)}>
+          <DialogContent className="max-w-md mx-4 bg-card border-border">
+            <DialogHeader>
+              <DialogTitle className="text-foreground">{selectedArchiveMeme.title}</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div className="aspect-square rounded-lg overflow-hidden">
+                <img 
+                  src={selectedArchiveMeme.imageUrl} 
+                  alt={selectedArchiveMeme.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-sm font-bold text-primary-foreground">
+                    {selectedArchiveMeme.author.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium text-foreground">{selectedArchiveMeme.author}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {selectedArchiveMeme.votes.toLocaleString()} votes • #{selectedArchiveMeme.rank} place
+                  </div>
+                </div>
+                {selectedArchiveMeme.rank <= 3 && (
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                    selectedArchiveMeme.rank === 1 ? 'bg-yellow-400 text-black' :
+                    selectedArchiveMeme.rank === 2 ? 'bg-gray-400 text-white' :
+                    'bg-orange-400 text-white'
+                  }`}>
+                    {selectedArchiveMeme.rank === 1 ? '🏆' : selectedArchiveMeme.rank === 2 ? '🥈' : '🥉'}
+                  </div>
+                )}
+              </div>
+              
+              {selectedArchiveMeme.description && (
+                <div>
+                  <h4 className="font-medium text-foreground mb-2">Description</h4>
+                  <p className="text-muted-foreground">{selectedArchiveMeme.description}</p>
+                </div>
+              )}
+              
+              <div className="flex items-center justify-between pt-4 border-t">
+                <div className="text-sm text-muted-foreground">
+                  Contest: {selectedArchiveContest?.title}
+                </div>
+                <Button
+                  onClick={() => setSelectedArchiveMeme(null)}
+                  variant="outline"
+                  size="sm"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       )}
