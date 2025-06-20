@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { User } from "lucide-react";
 import { getSamuTokenBalance } from "@/lib/solana";
 import type { Meme } from "@shared/schema";
 import samuLogoImg from "/assets/images/logos/samu-logo.jpg";
@@ -115,9 +116,9 @@ export default function Home() {
                         className="w-full h-full object-cover rounded-full"
                       />
                     ) : (
-                      <span className="text-primary font-bold text-lg">
-                        {displayName.slice(0, 2).toUpperCase()}
-                      </span>
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/40 to-primary/60 flex items-center justify-center">
+                        <User className="h-5 w-5 text-primary-foreground" />
+                      </div>
                     )}
                   </div>
                   <span className="text-lg font-bold text-primary">{displayName}</span>
