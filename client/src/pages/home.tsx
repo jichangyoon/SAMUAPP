@@ -6,6 +6,7 @@ import { UploadForm } from "@/components/upload-form";
 import { MemeCard } from "@/components/meme-card";
 import { Leaderboard } from "@/components/leaderboard";
 import { GoodsShop } from "@/components/goods-shop";
+import { NftGallery } from "@/components/nft-gallery";
 
 import { usePrivy } from '@privy-io/react-auth';
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive } from "lucide-react";
+import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Image } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -622,6 +623,10 @@ export default function Home() {
           <TabsContent value="goods" className="mt-4 space-y-4 pb-24">
             <GoodsShop />
           </TabsContent>
+
+          <TabsContent value="nfts" className="mt-4 space-y-4 pb-24">
+            <NftGallery />
+          </TabsContent>
         </Tabs>
       </div>
 
@@ -701,6 +706,16 @@ export default function Home() {
               }`}
             >
               <Trophy className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setCurrentTab("nfts")}
+              className={`flex items-center justify-center p-3 rounded-lg transition-colors ${
+                currentTab === "nfts" 
+                  ? "bg-primary/20 text-primary" 
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Image className="h-4 w-4" />
             </button>
             <button
               onClick={() => setCurrentTab("archive")}

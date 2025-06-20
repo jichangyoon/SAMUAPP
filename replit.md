@@ -254,6 +254,11 @@ Changelog:
 - June 20, 2025. Eliminated pricing, shopping cart, purchase buttons, and payment references from goods section
 - June 20, 2025. Converted Goods Shop to collectibles showcase featuring Hall of Fame meme designs without sales functionality
 - June 20, 2025. Updated product descriptions and messaging to focus on art exhibition rather than merchandise sales
+- June 20, 2025. Added NFT gallery section with 164 unique SAMU Wolf NFTs in 4-column grid layout
+- June 20, 2025. Implemented NFT commenting system allowing users to discuss individual NFT pieces
+- June 20, 2025. Created NFT database schema with support for token IDs, creators, and user comments
+- June 20, 2025. Added marketplace integration button linking to external trading platforms
+- June 20, 2025. Expanded bottom navigation to include NFT section with Image icon for easy access
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
