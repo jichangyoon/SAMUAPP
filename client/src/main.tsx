@@ -17,4 +17,16 @@ window.addEventListener('error', (event) => {
   }
 });
 
+// Added privy config here based on the prompt instruction
+const privyConfig = {
+  embeddedWallets: {
+    createOnLogin: 'users-without-wallets' as const,
+  },
+  appearance: {
+    theme: 'dark' as const,
+    accentColor: '#16a34a',
+    logo: '/assets/images/logos/samu-logo.jpg',
+  },
+};
+
 createRoot(document.getElementById("root")!).render(<App />);
