@@ -166,13 +166,10 @@ export class MemStorage implements IStorage {
   }
 
   private generateNftImage(tokenId: number): string {
-    // Generate unique SVG for each NFT based on token ID
-    const colors = ['#F7DC6F', '#E74C3C', '#3498DB', '#2ECC71', '#9B59B6', '#F39C12', '#E67E22', '#1ABC9C'];
-    const bgColor = colors[tokenId % colors.length];
-    const accentColor = colors[(tokenId + 3) % colors.length];
-    const eyeColor = colors[(tokenId + 5) % colors.length];
-    
-    return `data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='${bgColor}'/%3E%3Ccircle cx='200' cy='180' r='80' fill='${accentColor}'/%3E%3Cpath d='M140 150 L160 130 L180 150 L200 130 L220 150 L240 130 L260 150 L240 170 L200 160 L160 170 Z' fill='%23654321'/%3E%3Ccircle cx='170' cy='160' r='8' fill='${eyeColor}'/%3E%3Ccircle cx='230' cy='160' r='8' fill='${eyeColor}'/%3E%3Cpath d='M180 180 L200 195 L220 180' stroke='%23654321' stroke-width='4' fill='none'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold' fill='white'%3E%23${String(tokenId).padStart(3, '0')}%3C/text%3E%3C/svg%3E`;
+    // Use static image files from attached_assets/nfts/
+    // Images should be named: 001.png, 002.png, 003.png, etc.
+    const imageNumber = String(tokenId).padStart(3, '0');
+    return `/assets/nfts/${imageNumber}.png`;
   }
 
   // NFT operations
