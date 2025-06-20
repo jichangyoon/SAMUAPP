@@ -241,6 +241,8 @@ Changelog:
 - June 20, 2025. Replaced useState balance fetching with React Query for stable caching and duplicate request prevention
 - June 20, 2025. Removed SAMU/SOL balance display from header for cleaner UI and improved stability
 - June 20, 2025. Optimized wallet connection component by eliminating unnecessary balance API calls in header
+- June 20, 2025. Adjusted modal positioning from left-[50%] to left-[40%] for better mobile-first visual alignment
+- June 20, 2025. Updated both Dialog and AlertDialog components to use consistent left-shifted positioning
 ```
 
 ## User Preferences
