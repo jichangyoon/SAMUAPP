@@ -262,6 +262,9 @@ Changelog:
 - June 20, 2025. Reordered bottom navigation: Contest → Archive → NFT → Goods for better user flow
 - June 20, 2025. Removed marketplace connection button from NFT section and unified UI styling with black background and yellow text
 - June 20, 2025. Implemented static file serving system for 164 NFT images via /assets/nfts/ route with simplified naming (1.png-164.png)
+- June 20, 2025. Optimized NFT gallery performance by converting to static data system - eliminated server requests for instant loading
+- June 20, 2025. Added lazy loading and error handling for NFT images to improve mobile performance
+- June 20, 2025. Created client-side NFT data structure for 164 SAMU Wolf collection with URL-based image references
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```

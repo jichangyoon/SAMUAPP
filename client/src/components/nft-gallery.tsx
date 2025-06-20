@@ -8,18 +8,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { MessageCircle, Send } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { Nft, NftComment } from "@shared/schema";
+import type { NftComment } from "@shared/schema";
+import { SAMU_NFTS, type StaticNft } from "@/data/nft-data";
 
 export function NftGallery() {
-  const [selectedNft, setSelectedNft] = useState<Nft | null>(null);
+  const [selectedNft, setSelectedNft] = useState<StaticNft | null>(null);
   const [newComment, setNewComment] = useState("");
   const { authenticated, user } = usePrivy();
   const { toast } = useToast();
 
-  // Fetch all NFTs
-  const { data: nfts = [], isLoading } = useQuery<Nft[]>({
-    queryKey: ['/api/nfts'],
-  });
+  // Use static NFT data for instant loading
+  const nfts = SAMU_NFTS;
+  const isLoading = false;
 
   // Fetch comments for selected NFT
   const { data: comments = [] } = useQuery<NftComment[]>({
