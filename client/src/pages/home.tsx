@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getSamuTokenBalance, isSolanaAddress } from "@/lib/solana";
 import type { Meme } from "@shared/schema";
-import samuLogoImg from "@assets/SAMU LOGO_1750378650880.jpg";
+import samuLogoImg from "/assets/images/logos/samu-logo.jpg";
 
 export default function Home() {
   const [sortBy, setSortBy] = useState("votes");
