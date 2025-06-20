@@ -59,7 +59,7 @@ export class MemStorage implements IStorage {
       const newMeme: Meme = {
         id,
         title: meme.title,
-        description: meme.description ?? null,
+        description: meme.description || null,
         imageUrl: meme.imageUrl,
         authorWallet: meme.authorWallet,
         authorUsername: meme.authorUsername,
@@ -75,7 +75,7 @@ export class MemStorage implements IStorage {
     const meme: Meme = {
       id,
       title: insertMeme.title,
-      description: insertMeme.description ?? null,
+      description: insertMeme.description || null,
       imageUrl: insertMeme.imageUrl,
       authorWallet: insertMeme.authorWallet,
       authorUsername: insertMeme.authorUsername,

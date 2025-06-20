@@ -78,11 +78,13 @@ export default function Home() {
               className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
             >
               <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center samu-wolf-logo">
-                <img 
-                  src={samuLogo1} 
-                  alt="SAMU Wolf" 
-                  className="w-8 h-8 rounded-full object-cover"
-                />
+                <svg viewBox="0 0 100 100" className="w-8 h-8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="50" cy="50" r="45" fill="#2C3E50"/>
+                  <path d="M25 35 L35 25 L45 35 L55 25 L65 35 L75 35 L65 45 L50 40 L35 45 Z" fill="#F7DC6F"/>
+                  <circle cx="40" cy="40" r="3" fill="#FF8C00"/>
+                  <circle cx="60" cy="40" r="3" fill="#FF8C00"/>
+                  <path d="M42 50 L50 58 L58 50" stroke="#F7DC6F" strokeWidth="2" fill="none"/>
+                </svg>
               </div>
               <span className="text-lg font-bold text-primary">SAMU</span>
             </button>
