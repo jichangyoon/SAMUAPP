@@ -60,28 +60,19 @@ export async function sendSolanaTokens(params: {
   toAddress: string;
   amount: number;
   tokenType: 'SOL' | 'SAMU';
-  walletSigner?: any; // Privy wallet signer for real transactions
+  walletSigner?: any;
 }): Promise<{ success: boolean; txHash?: string; error?: string; isSimulation?: boolean }> {
   try {
-    // Always attempt real transaction with wallet signer
-    if (params.walletSigner && typeof window !== 'undefined') {
-      return await executeRealTransaction({
-        fromAddress: params.fromAddress,
-        toAddress: params.toAddress,
-        amount: params.amount,
-        tokenType: params.tokenType,
-        walletSigner: params.walletSigner
-      });
-    }
-
-    // If no wallet signer available, return error
-    return { 
-      success: false, 
-      error: 'Wallet connection required for transactions. Please ensure your wallet is connected.',
-      isSimulation: false 
-    };
-  } catch (error) {
-    return { success: false, error: 'Network error occurred' };
+    // Execute real blockchain transaction directly
+    return await executeRealTransaction({
+      fromAddress: params.fromAddress,
+      toAddress: params.toAddress,
+      amount: params.amount,
+      tokenType: params.tokenType,
+      walletSigner: params.walletSigner
+    });
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Transaction failed' };
   }
 }
 
@@ -119,41 +110,31 @@ async function executeRealTransaction(params: {
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = fromPubkey;
 
-      // Try to sign with Privy wallet if available
-      if (params.walletSigner) {
-        try {
-          // Check if Privy wallet has signing capability
-          const provider = params.walletSigner.getProvider?.();
-          if (provider && provider.signTransaction) {
-            const signedTx = await provider.signTransaction(transaction);
-            const txHash = await connection.sendRawTransaction(signedTx.serialize());
-            await connection.confirmTransaction(txHash, 'confirmed');
-            return { success: true, txHash, isSimulation: false };
-          }
-        } catch (error) {
-          console.log('Privy signing failed, using simulation:', error);
-        }
+      // Execute real SOL transfer transaction
+      if (!params.walletSigner) {
+        throw new Error('지갑 연결이 필요합니다. 지갑을 연결한 후 다시 시도해주세요.');
       }
 
-      // Fallback to simulation with realistic transaction processing
-      console.log('실제 SOL 전송 처리:', {
+      const signedTx = await params.walletSigner.signTransaction(transaction);
+      const txHash = await connection.sendRawTransaction(signedTx.serialize(), {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed'
+      });
+      
+      await connection.confirmTransaction(txHash, 'confirmed');
+      
+      console.log('✅ SOL 전송 완료:', {
+        txHash,
         from: fromPubkey.toString(),
         to: toPubkey.toString(),
-        amount: lamports / 1000000000,
-        type: 'SOL'
+        amount: lamports / 1000000000
       });
-
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Generate realistic transaction hash
-      const txHash = `${Math.random().toString(36).substr(2, 11)}${Math.random().toString(36).substr(2, 11)}${Math.random().toString(36).substr(2, 11)}${Math.random().toString(36).substr(2, 11)}`;
       
       return { success: true, txHash, isSimulation: false };
       
     } else {
       // SAMU token transfer using GPT's method
-      const { getOrCreateAssociatedTokenAccount, createTransferInstruction } = await import('@solana/spl-token');
+      const { getAssociatedTokenAddress, createTransferInstruction } = await import('@solana/spl-token');
       
       const SAMU_MINT = new PublicKey('EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF');
       const decimals = 6;
@@ -163,43 +144,43 @@ async function executeRealTransaction(params: {
         throw new Error('Invalid amount: must be greater than 0');
       }
 
-      // Try real transaction with Privy wallet
-      if (params.walletSigner) {
-        try {
-          const provider = params.walletSigner.getProvider?.();
-          if (provider && provider.signTransaction) {
-            
-            // This would be the real implementation with proper keypair
-            // For now, simulate the getOrCreateAssociatedTokenAccount process
-            console.log('실제 SAMU 토큰 전송 처리:', {
-              from: fromPubkey.toString(),
-              to: toPubkey.toString(),
-              amount: amount / Math.pow(10, decimals),
-              type: 'SAMU'
-            });
-
-            // Simulate network delay for token account creation and transfer
-            await new Promise(resolve => setTimeout(resolve, 3000));
-
-            const txHash = `${Math.random().toString(36).substr(2, 11)}${Math.random().toString(36).substr(2, 11)}${Math.random().toString(36).substr(2, 11)}${Math.random().toString(36).substr(2, 11)}`;
-            
-            return { success: true, txHash, isSimulation: false };
-          }
-        } catch (error) {
-          console.log('SAMU signing failed, using simulation:', error);
-        }
+      if (!params.walletSigner) {
+        throw new Error('지갑 연결이 필요합니다. 지갑을 연결한 후 다시 시도해주세요.');
       }
 
-      // Fallback simulation
-      console.log('SAMU 토큰 전송 시뮬레이션:', {
+      // Get token accounts
+      const fromTokenAccount = await getAssociatedTokenAddress(SAMU_MINT, fromPubkey);
+      const toTokenAccount = await getAssociatedTokenAddress(SAMU_MINT, toPubkey);
+      
+      // Create transaction for SAMU token transfer
+      const transaction = new Transaction().add(
+        createTransferInstruction(
+          fromTokenAccount,
+          toTokenAccount,
+          fromPubkey,
+          amount,
+          []
+        )
+      );
+
+      const { blockhash } = await connection.getLatestBlockhash('confirmed');
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = fromPubkey;
+
+      const signedTx = await params.walletSigner.signTransaction(transaction);
+      const txHash = await connection.sendRawTransaction(signedTx.serialize(), {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed'
+      });
+      
+      await connection.confirmTransaction(txHash, 'confirmed');
+      
+      console.log('✅ SAMU 토큰 전송 완료:', {
+        txHash,
         from: fromPubkey.toString(),
         to: toPubkey.toString(),
-        amount: amount / Math.pow(10, decimals),
-        type: 'SAMU'
+        amount: amount / Math.pow(10, decimals)
       });
-
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      const txHash = `${Math.random().toString(36).substr(2, 11)}${Math.random().toString(36).substr(2, 11)}${Math.random().toString(36).substr(2, 11)}${Math.random().toString(36).substr(2, 11)}`;
       
       return { success: true, txHash, isSimulation: false };
     }
