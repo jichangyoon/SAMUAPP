@@ -24,48 +24,41 @@ export default function Profile() {
   const [displayName, setDisplayName] = useState("");
   const [profileImage, setProfileImage] = useState("");
   const [imagePreview, setImagePreview] = useState("");
-  const [samuBalance, setSamuBalance] = useState(0);
-  const [solBalance, setSolBalance] = useState(0);
-
   // 지갑 주소 가져오기 (홈과 동일한 로직)
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
   const walletAddress = selectedWalletAccount?.address || '';
 
-  // Balance fetching
-  useEffect(() => {
-    if (!walletAddress) return;
+  // Balance fetching with React Query - 중복 요청 방지
+  const { data: samuData } = useQuery({
+    queryKey: ['samu-balance', walletAddress],
+    queryFn: async () => {
+      if (!walletAddress) return { balance: 0 };
+      const res = await fetch(`/api/samu-balance/${walletAddress}`);
+      return res.json();
+    },
+    enabled: !!walletAddress,
+    staleTime: 30000, // 30초 동안 캐시 유지
+    refetchInterval: false, // 자동 갱신 비활성화
+    refetchOnWindowFocus: false, // 창 포커스 시 갱신 비활성화
+  });
 
-    console.log('🔍 Profile page using wallet address:', walletAddress);
-    console.log('🔍 Available wallet accounts:', walletAccounts);
-    console.log('🔍 Selected wallet account:', selectedWalletAccount);
+  const { data: solData } = useQuery({
+    queryKey: ['sol-balance', walletAddress],
+    queryFn: async () => {
+      if (!walletAddress) return { balance: 0 };
+      const res = await fetch(`/api/sol-balance/${walletAddress}`);
+      return res.json();
+    },
+    enabled: !!walletAddress,
+    staleTime: 30000, // 30초 동안 캐시 유지
+    refetchInterval: false, // 자동 갱신 비활성화
+    refetchOnWindowFocus: false, // 창 포커스 시 갱신 비활성화
+  });
 
-    const fetchBalances = async () => {
-      try {
-        const [samuRes, solRes] = await Promise.all([
-          fetch(`/api/samu-balance/${walletAddress}`),
-          fetch(`/api/sol-balance/${walletAddress}`)
-        ]);
-
-        if (samuRes.ok) {
-          const samuData = await samuRes.json();
-          console.log('📊 Profile SAMU balance:', samuData.balance);
-          setSamuBalance(samuData.balance);
-        }
-
-        if (solRes.ok) {
-          const solData = await solRes.json();
-          console.log('📊 Profile SOL balance:', solData.balance);
-          setSolBalance(solData.balance);
-        }
-      } catch (error) {
-        console.error('Error fetching balances:', error);
-      }
-    };
-
-    fetchBalances();
-  }, [walletAddress]);
+  const samuBalance = samuData?.balance || 0;
+  const solBalance = solData?.balance || 0;
 
   // 로컬 스토리지에서 프로필 정보 가져오기
   const getStoredProfile = () => {

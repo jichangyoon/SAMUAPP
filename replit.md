@@ -235,6 +235,12 @@ Changelog:
 - June 20, 2025. Optimized Profile page layout for mobile-first design with 2x2 grid stats display and compact card layouts
 - June 20, 2025. Enhanced Profile page tabs with vertical icon/text layout and smaller fonts for mobile screens
 - June 20, 2025. Minimized Profile page component sizes - reduced images, text sizes, and padding for mobile optimization
+- June 20, 2025. Fixed profile name synchronization between header and profile page using custom browser events
+- June 20, 2025. Unified localStorage keys for consistent profile data management across components
+- June 20, 2025. Resolved React useEffect infinite loop causing SAMU balance fluctuation between 0 and 1,000,000
+- June 20, 2025. Replaced useState balance fetching with React Query for stable caching and duplicate request prevention
+- June 20, 2025. Removed SAMU/SOL balance display from header for cleaner UI and improved stability
+- June 20, 2025. Optimized wallet connection component by eliminating unnecessary balance API calls in header
 ```
 
 ## User Preferences
