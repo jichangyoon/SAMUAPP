@@ -483,7 +483,7 @@ export default function Home() {
                   shareToTwitter(selectedMeme);
                   setShowShareDialog(false);
                 }}
-                className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-2"
+                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
               >
                 <Twitter className="h-4 w-4" />
                 Share on Twitter
@@ -493,7 +493,7 @@ export default function Home() {
                   shareToTelegram(selectedMeme);
                   setShowShareDialog(false);
                 }}
-                className="bg-blue-400 hover:bg-blue-500 text-white flex items-center gap-2"
+                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
               >
                 <Send className="h-4 w-4" />
                 Share on Telegram
