@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Image } from "lucide-react";
+import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Image, ExternalLink } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -617,6 +617,43 @@ export default function Home() {
                 )}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="nfts" className="mt-4 space-y-4 pb-24">
+            <div className="text-center space-y-4 mb-6">
+              <h1 className="text-2xl font-bold text-primary">SAMU NFT Collection</h1>
+              <p className="text-muted-foreground text-sm">
+                164개의 독특한 SAMU NFT 컬렉션을 둘러보세요
+              </p>
+              <Button
+                className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold"
+                onClick={() => window.open('https://opensea.io', '_blank')}
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                거래소에서 구매하기
+              </Button>
+            </div>
+
+            {/* NFT Grid */}
+            <div className="grid grid-cols-3 gap-2">
+              {Array.from({ length: 164 }, (_, index) => {
+                const nftId = index + 1;
+                return (
+                  <div
+                    key={nftId}
+                    className="aspect-square bg-card rounded-lg overflow-hidden hover:scale-105 transition-transform cursor-pointer border border-border"
+                    onClick={() => navigate(`/nft/${nftId}`)}
+                  >
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-yellow-400 to-orange-500">
+                      <div className="text-center">
+                        <div className="text-white font-bold text-lg">#{nftId.toString().padStart(3, '0')}</div>
+                        <div className="text-white text-xs">SAMU NFT</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </TabsContent>
 
           <TabsContent value="goods" className="mt-4 space-y-4 pb-24">

@@ -8,6 +8,8 @@ import { useEffect } from 'react';
 import * as React from 'react';
 import Home from "@/pages/home";
 import Profile from "@/pages/profile";
+import NFTs from "@/pages/nfts";
+import NFTDetail from "@/pages/nft-detail";
 import NotFound from "@/pages/not-found";
 
 // Global error handler for Privy iframe issues
@@ -34,6 +36,8 @@ const Router = React.memo(() => {
       <Route path="/" component={Home} />
       <Route path="/connected" component={Home} />
       <Route path="/profile" component={Profile} />
+      <Route path="/nfts" component={NFTs} />
+      <Route path="/nft/:id" component={NFTDetail} />
       <Route component={NotFound} />
     </Switch>
   );
