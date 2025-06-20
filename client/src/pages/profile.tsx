@@ -140,7 +140,7 @@ const Profile = React.memo(() => {
     setIsEditing(false);
   }, [getStoredProfile, user?.email?.address]);
 
-  
+
 
   // 사용자가 만든 밈들 가져오기
   const { data: allMemes = [] } = useQuery<any[]>({

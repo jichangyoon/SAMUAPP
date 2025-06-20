@@ -25,7 +25,7 @@ import samuLogoImg from "/assets/images/logos/samu-logo.jpg";
 export default function Home() {
   const [sortBy, setSortBy] = useState("votes");
   const [currentTab, setCurrentTab] = useState("contest");
-  const [viewMode, setViewMode] = useState<'card' | 'grid'>('card');
+  const [viewMode, setViewMode<'card' | 'grid'>('card');
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
   const [showVoteDialog, setShowVoteDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
@@ -197,11 +197,46 @@ export default function Home() {
     enabled: true,
   });
 
-  const sortedMemes = memes.sort((a, b) => {
-    if (sortBy === "votes") return b.votes - a.votes;
-    if (sortBy === "latest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    return b.votes - a.votes; // default to votes
-  });
+  // Memoized sorted memes with dependency optimization
+  const sortedMemes = useMemo(() => {
+    if (!memes?.length) return [];
+
+    switch (sortBy) {
+      case "votes":
+        return memes.slice().sort((a, b) => (b.votes || 0) - (a.votes || 0));
+      case "recent":
+        return memes.slice().sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+      case "author":
+        return memes.slice().sort((a, b) => (a.author || "").localeCompare(b.author || ""));
+      default:
+        return memes;
+    }
+  }, [memes, sortBy]);
+
+  // Optimized click handlers with minimal dependencies
+  const handleMemeClick = useCallback((meme: Meme) => {
+    setSelectedMeme(meme);
+    setShowVoteDialog(true);
+  }, []);
+
+  const handleVoteSuccess = useCallback(() => {
+    setShowVoteDialog(false);
+    setSelectedMeme(null);
+    // Selective cache invalidation
+    queryClient.invalidateQueries({ 
+      queryKey: ['/api/memes'],
+      exact: true 
+    });
+    queryClient.invalidateQueries({ 
+      queryKey: ['/api/votes'],
+      exact: true 
+    });
+  }, [queryClient]);
+
+  const handleShareClick = useCallback((meme: Meme) => {
+    setSelectedMeme(meme);
+    setShowShareDialog(true);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
