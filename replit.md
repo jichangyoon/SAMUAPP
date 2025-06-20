@@ -182,6 +182,7 @@ Changelog:
 - June 19, 2025. Removed unnecessary theme switching code and standardized color usage across components
 - June 20, 2025. Cleaned up attached_assets directory - removed all temporary screenshots, build logs, and development images
 - June 20, 2025. Implemented authentic SAMU wolf logo provided by user - replaced generic SVG with actual brand logo featuring spiky wolf head design
+- June 20, 2025. Applied Poppins font family across entire application - replaced default AI-feeling fonts with modern, professional typography
 ```
 
 ## User Preferences
