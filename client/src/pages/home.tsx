@@ -179,7 +179,7 @@ export default function Home() {
         <div className="max-w-md mx-auto px-4 py-1">
           <div className="flex items-center justify-between">
             <button 
-              onClick={() => setShowUserProfile(true)}
+              onClick={() => navigate('/profile')}
               className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
             >
               {authenticated ? (
