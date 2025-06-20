@@ -405,39 +405,7 @@ export default function Home() {
                   </CardContent>
                 </Card>
 
-                {/* Hall of Fame Section */}
-                <Card className="border-yellow-400/20 bg-yellow-400/5">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Trophy className="h-4 w-4 text-yellow-400" />
-                      <h4 className="font-semibold text-yellow-400">Hall of Fame</h4>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between p-2 bg-yellow-400/10 rounded">
-                        <span className="text-sm text-foreground">Most Voted Meme</span>
-                        <span className="text-sm font-medium text-yellow-400">SAMU TO MARS (324 votes)</span>
-                      </div>
-                      <div className="flex items-center justify-between p-2 bg-yellow-400/10 rounded">
-                        <span className="text-sm text-foreground">Top Creator</span>
-                        <span className="text-sm font-medium text-yellow-400">crypto_legend (3 wins)</span>
-                      </div>
-                      <div className="flex items-center justify-between p-2 bg-yellow-400/10 rounded">
-                        <span className="text-sm text-foreground">Total Contests</span>
-                        <span className="text-sm font-medium text-yellow-400">1 completed</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
 
-                {/* Empty state for new users */}
-                <Card className="border-dashed border-border/50">
-                  <CardContent className="p-8 text-center">
-                    <Archive className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
-                    <p className="text-muted-foreground">
-                      More archived contests will appear here as competitions complete
-                    </p>
-                  </CardContent>
-                </Card>
               </div>
             </div>
           </TabsContent>
