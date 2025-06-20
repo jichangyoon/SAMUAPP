@@ -63,7 +63,7 @@ export async function sendSolanaTokens(params: {
   walletSigner?: any; // Privy wallet signer for real transactions
 }): Promise<{ success: boolean; txHash?: string; error?: string; isSimulation?: boolean }> {
   try {
-    // If wallet signer is provided, attempt real transaction
+    // Always attempt real transaction with wallet signer
     if (params.walletSigner && typeof window !== 'undefined') {
       return await executeRealTransaction({
         fromAddress: params.fromAddress,
@@ -74,27 +74,12 @@ export async function sendSolanaTokens(params: {
       });
     }
 
-    // Otherwise, use simulation API
-    const response = await fetch('/api/send-tokens', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        fromAddress: params.fromAddress,
-        toAddress: params.toAddress,
-        amount: params.amount,
-        tokenType: params.tokenType
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      return { success: false, error: errorData.error || 'Transaction failed' };
-    }
-
-    const data = await response.json();
-    return { success: true, txHash: data.txHash, isSimulation: true };
+    // If no wallet signer available, return error
+    return { 
+      success: false, 
+      error: 'Wallet connection required for transactions. Please ensure your wallet is connected.',
+      isSimulation: false 
+    };
   } catch (error) {
     return { success: false, error: 'Network error occurred' };
   }
@@ -108,16 +93,40 @@ async function executeRealTransaction(params: {
   walletSigner?: any;
 }): Promise<{ success: boolean; txHash?: string; error?: string; isSimulation?: boolean }> {
   try {
-    const { Connection, PublicKey, Transaction, SystemProgram } = await import('@solana/web3.js');
+    const { Connection, PublicKey, Transaction, SystemProgram, sendAndConfirmTransaction } = await import('@solana/web3.js');
     
-    const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+    // Use reliable RPC endpoints
+    const RPC_ENDPOINTS = [
+      'https://api.mainnet-beta.solana.com',
+      'https://rpc.ankr.com/solana'
+    ];
+    
+    let connection: any = null;
+    for (const endpoint of RPC_ENDPOINTS) {
+      try {
+        connection = new Connection(endpoint, 'confirmed');
+        await connection.getLatestBlockhash(); // Test connection
+        break;
+      } catch (error) {
+        continue;
+      }
+    }
+    
+    if (!connection) {
+      throw new Error('Unable to connect to Solana network');
+    }
+
     const fromPubkey = new PublicKey(params.fromAddress);
     const toPubkey = new PublicKey(params.toAddress);
 
     if (params.tokenType === 'SOL') {
       // SOL transfer
-      const lamports = params.amount * 1000000000; // Convert SOL to lamports
+      const lamports = Math.floor(params.amount * 1000000000); // Convert SOL to lamports
       
+      if (lamports <= 0) {
+        throw new Error('Invalid amount: must be greater than 0');
+      }
+
       const transaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey,
@@ -126,25 +135,45 @@ async function executeRealTransaction(params: {
         })
       );
 
-      const { blockhash } = await connection.getLatestBlockhash();
+      const { blockhash } = await connection.getLatestBlockhash('confirmed');
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = fromPubkey;
 
-      // Sign and send transaction using Privy wallet
-      const signedTransaction = await params.walletSigner.signTransaction(transaction);
-      const txHash = await connection.sendRawTransaction(signedTransaction.serialize());
-      
-      return { success: true, txHash, isSimulation: false };
+      // Try to access Privy wallet for signing
+      if (params.walletSigner && typeof params.walletSigner.signTransaction === 'function') {
+        const signedTransaction = await params.walletSigner.signTransaction(transaction);
+        const txHash = await connection.sendRawTransaction(signedTransaction.serialize(), {
+          skipPreflight: false,
+          preflightCommitment: 'confirmed'
+        });
+        
+        // Wait for confirmation
+        await connection.confirmTransaction(txHash, 'confirmed');
+        
+        return { success: true, txHash, isSimulation: false };
+      } else {
+        throw new Error('Wallet signing not available');
+      }
     } else {
       // SAMU token transfer
-      const { TOKEN_PROGRAM_ID, getAssociatedTokenAddress, createTransferInstruction } = await import('@solana/spl-token');
+      const { getAssociatedTokenAddress, createTransferInstruction, TOKEN_PROGRAM_ID } = await import('@solana/spl-token');
       
       const SAMU_MINT = new PublicKey('EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF');
       const decimals = 6; // SAMU token decimals
-      const amount = params.amount * Math.pow(10, decimals);
+      const amount = Math.floor(params.amount * Math.pow(10, decimals));
+
+      if (amount <= 0) {
+        throw new Error('Invalid amount: must be greater than 0');
+      }
 
       const fromTokenAccount = await getAssociatedTokenAddress(SAMU_MINT, fromPubkey);
       const toTokenAccount = await getAssociatedTokenAddress(SAMU_MINT, toPubkey);
+
+      // Check if token accounts exist
+      const fromAccountInfo = await connection.getAccountInfo(fromTokenAccount);
+      if (!fromAccountInfo) {
+        throw new Error('Sender does not have a SAMU token account');
+      }
 
       const transaction = new Transaction().add(
         createTransferInstruction(
@@ -157,14 +186,24 @@ async function executeRealTransaction(params: {
         )
       );
 
-      const { blockhash } = await connection.getLatestBlockhash();
+      const { blockhash } = await connection.getLatestBlockhash('confirmed');
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = fromPubkey;
 
-      const signedTransaction = await params.walletSigner.signTransaction(transaction);
-      const txHash = await connection.sendRawTransaction(signedTransaction.serialize());
-      
-      return { success: true, txHash, isSimulation: false };
+      if (params.walletSigner && typeof params.walletSigner.signTransaction === 'function') {
+        const signedTransaction = await params.walletSigner.signTransaction(transaction);
+        const txHash = await connection.sendRawTransaction(signedTransaction.serialize(), {
+          skipPreflight: false,
+          preflightCommitment: 'confirmed'
+        });
+        
+        // Wait for confirmation
+        await connection.confirmTransaction(txHash, 'confirmed');
+        
+        return { success: true, txHash, isSimulation: false };
+      } else {
+        throw new Error('Wallet signing not available');
+      }
     }
   } catch (error: any) {
     console.error('Real transaction error:', error);

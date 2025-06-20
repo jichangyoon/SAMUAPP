@@ -22,7 +22,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [amount, setAmount] = useState("");
   const [tokenType, setTokenType] = useState("SAMU");
   const [isLoading, setIsLoading] = useState(false);
-  const [useRealTransaction, setUseRealTransaction] = useState(false);
+  const [useRealTransaction, setUseRealTransaction] = useState(true);
   const { toast } = useToast();
   const { user } = usePrivy();
   const { wallets } = useWallets();
@@ -87,17 +87,10 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       });
 
       if (result.success) {
-        if (result.isSimulation) {
-          toast({
-            title: "시뮬레이션 완료",
-            description: `${amount} ${tokenType} 송금 시뮬레이션이 성공했습니다. 실제 토큰은 이동하지 않았습니다.`,
-          });
-        } else {
-          toast({
-            title: "실제 송금 완료!",
-            description: `${amount} ${tokenType}이(가) 성공적으로 전송되었습니다! 트랜잭션: ${result.txHash?.slice(0, 8)}...`,
-          });
-        }
+        toast({
+          title: "송금 완료!",
+          description: `${amount} ${tokenType}이(가) 성공적으로 전송되었습니다! 트랜잭션: ${result.txHash?.slice(0, 8)}...`,
+        });
 
         setRecipient("");
         setAmount("");
@@ -141,33 +134,6 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
         </DialogHeader>
         
         <div className="space-y-4">
-          {/* 거래 모드 선택 */}
-          <div className="space-y-2">
-            <Label>거래 모드</Label>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant={!useRealTransaction ? "default" : "outline"}
-                size="sm"
-                onClick={() => setUseRealTransaction(false)}
-                className="flex-1"
-              >
-                <Zap className="h-4 w-4 mr-2" />
-                시뮬레이션
-              </Button>
-              <Button
-                type="button"
-                variant={useRealTransaction ? "default" : "outline"}
-                size="sm"
-                onClick={() => setUseRealTransaction(true)}
-                className="flex-1"
-              >
-                <Send className="h-4 w-4 mr-2" />
-                실제 송금
-              </Button>
-            </div>
-          </div>
-
           {/* 토큰 타입 선택 */}
           <div className="space-y-2">
             <Label htmlFor="tokenType">Token Type</Label>
@@ -226,9 +192,9 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
               onClick={handleSend}
               disabled={isLoading}
               className="flex-1"
-              variant={useRealTransaction ? "destructive" : "default"}
+              variant="destructive"
             >
-              {isLoading ? "처리중..." : (useRealTransaction ? "실제 송금 실행" : "시뮬레이션 실행")}
+              {isLoading ? "송금 처리중..." : "송금 실행"}
             </Button>
             <Button
               variant="outline"
@@ -240,26 +206,17 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
           </div>
 
           {/* 주의사항 */}
-          {!useRealTransaction ? (
-            <div className="text-xs text-muted-foreground bg-blue-900/20 border border-blue-600/30 rounded p-3">
-              <strong className="text-blue-400">시뮬레이션 모드</strong>
-              <div className="mt-1">
-                실제 토큰은 이동하지 않으며, 지갑 잔고도 변경되지 않습니다. 안전하게 테스트할 수 있습니다.
-              </div>
+          <div className="text-xs text-muted-foreground bg-red-900/20 border border-red-600/30 rounded p-3">
+            <strong className="text-red-400">⚠️ 실제 송금</strong>
+            <div className="mt-1">
+              <strong>실제 블록체인에 거래가 기록됩니다!</strong> 토큰이 실제로 이동하며, 되돌릴 수 없습니다.
             </div>
-          ) : (
-            <div className="text-xs text-muted-foreground bg-red-900/20 border border-red-600/30 rounded p-3">
-              <strong className="text-red-400">⚠️ 실제 송금 모드</strong>
-              <div className="mt-1">
-                <strong>실제 블록체인에 거래가 기록됩니다!</strong> 토큰이 실제로 이동하며, 되돌릴 수 없습니다.
-              </div>
-              <div className="mt-2 text-yellow-400">
-                • 수신자 주소를 정확히 확인하세요
-                <br />• 충분한 가스비(SOL)가 있는지 확인하세요
-                <br />• 지갑에서 거래 승인이 필요합니다
-              </div>
+            <div className="mt-2 text-yellow-400">
+              • 수신자 주소를 정확히 확인하세요
+              <br />• 충분한 가스비(SOL)가 있는지 확인하세요
+              <br />• 지갑에서 거래 승인이 필요합니다
             </div>
-          )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>
