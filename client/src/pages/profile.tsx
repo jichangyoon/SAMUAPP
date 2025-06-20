@@ -37,6 +37,10 @@ export default function Profile() {
   useEffect(() => {
     if (!walletAddress) return;
 
+    console.log('🔍 Profile page using wallet address:', walletAddress);
+    console.log('🔍 Available wallet accounts:', walletAccounts);
+    console.log('🔍 Selected wallet account:', selectedWalletAccount);
+
     const fetchBalances = async () => {
       try {
         const [samuRes, solRes] = await Promise.all([
@@ -46,11 +50,13 @@ export default function Profile() {
 
         if (samuRes.ok) {
           const samuData = await samuRes.json();
+          console.log('📊 Profile SAMU balance:', samuData.balance);
           setSamuBalance(samuData.balance);
         }
 
         if (solRes.ok) {
           const solData = await solRes.json();
+          console.log('📊 Profile SOL balance:', solData.balance);
           setSolBalance(solData.balance);
         }
       } catch (error) {
