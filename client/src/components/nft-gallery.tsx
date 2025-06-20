@@ -111,12 +111,12 @@ export function NftGallery() {
   return (
     <div className="space-y-4 pb-24">
       {/* Header */}
-      <Card className="bg-black text-yellow-400 border-yellow-400/20">
+      <Card className="bg-black border-0">
         <CardContent className="p-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <h2 className="text-xl font-bold text-yellow-400">SAMU Wolf Collection</h2>
+            <h2 className="text-xl font-bold text-[hsl(50,85%,75%)]">SAMU Wolf Collection</h2>
           </div>
-          <p className="text-sm text-yellow-300/80">
+          <p className="text-sm text-[hsl(50,85%,75%)]/90">
             164 unique SAMU Wolf NFTs with legendary traits
           </p>
         </CardContent>
