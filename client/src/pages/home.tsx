@@ -194,7 +194,7 @@ export default function Home() {
                           </button>
                         </div>
                         <Select value={sortBy} onValueChange={setSortBy}>
-                          <SelectTrigger className="w-32 h-8 text-sm">
+                          <SelectTrigger className="w-32 h-8 text-sm focus:outline-none focus:ring-0">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>

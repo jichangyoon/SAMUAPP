@@ -205,6 +205,7 @@ Changelog:
 - June 20, 2025. Implemented grid view with 3x3 layout showing only images, hover effects for vote counts, and click-to-view detail modal
 - June 20, 2025. Simplified sorting options by removing "Trending" option, keeping only "Most Votes" and "Latest" for cleaner user experience
 - June 20, 2025. Fixed button focus outline issue by adding blur() on click and focus:outline-none class for cleaner UI interaction
+- June 20, 2025. Added global CSS rules to remove all focus outlines and box-shadows from interactive elements for optimal mobile UX
 ```
 
 ## User Preferences
