@@ -21,7 +21,7 @@ export function ContestHeader() {
         </div>
         
         <p className="text-muted-foreground text-sm mb-3">
-          Submit your best SAMU memes and vote using your token holdings. The most voted meme wins!
+          Submit your best SAMU memes and vote with your voting power. The most voted meme wins!
         </p>
         
         <div className="grid grid-cols-3 gap-3 text-center">
