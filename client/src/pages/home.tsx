@@ -116,8 +116,10 @@ export default function Home() {
                         className="w-full h-full object-cover rounded-full"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/40 to-primary/60 flex items-center justify-center">
-                        <User className="h-5 w-5 text-primary-foreground" />
+                      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                        <span className="text-primary font-bold text-sm">
+                          {displayName.slice(0, 2).toUpperCase()}
+                        </span>
                       </div>
                     )}
                   </div>

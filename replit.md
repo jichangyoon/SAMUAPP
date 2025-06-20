@@ -192,6 +192,8 @@ Changelog:
 - June 20, 2025. Added comprehensive profile editing system allowing email users to update display name and profile picture with localStorage persistence
 - June 20, 2025. Enhanced user profile modal with avatar upload, real-time editing interface, and proper state management for profile customization
 - June 20, 2025. Maintained wallet address and SAMU token display in header while using email authentication for simplified user onboarding
+- June 20, 2025. Updated header to display user profile information: shows user initials and display name when logged in, matching profile modal design
+- June 20, 2025. Synchronized profile data display between header and user profile modal for consistent user experience
 ```
 
 ## User Preferences
