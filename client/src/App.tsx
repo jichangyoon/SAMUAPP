@@ -5,7 +5,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { PrivyProvider } from '@privy-io/react-auth';
 import { useEffect } from 'react';
+import { BottomNavigation } from "@/components/bottom-navigation";
 import Home from "@/pages/home";
+import Archive from "@/pages/archive";
+import NFTGallery from "@/pages/nft-gallery";
+import Goods from "@/pages/goods";
 import NotFound from "@/pages/not-found";
 
 // Global error handler for Privy iframe issues

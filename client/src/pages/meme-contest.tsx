@@ -53,7 +53,7 @@ export default function MemeContest() {
         setProfileData(JSON.parse(savedProfile));
       } else {
         // Set default display name from email
-        const emailName = user.email.split('@')[0];
+        const emailName = user.email?.toString().split('@')[0] || 'User';
         const defaultProfile = { displayName: emailName, profileImage: '' };
         setProfileData(defaultProfile);
         localStorage.setItem(`profile_${user.email}`, JSON.stringify(defaultProfile));
@@ -106,10 +106,13 @@ export default function MemeContest() {
     enabled: true,
   });
 
+  // Type assertion for memes data
+  const typedMemes = (memes as any[]) || [];
+
   // Sort memes
-  const sortedMemes = [...memes].sort((a, b) => {
+  const sortedMemes = [...typedMemes].sort((a: any, b: any) => {
     if (sortBy === "votes") {
-      return b.voteCount - a.voteCount;
+      return (b.votes || b.voteCount || 0) - (a.votes || a.voteCount || 0);
     } else {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     }
@@ -120,14 +123,16 @@ export default function MemeContest() {
     setShowVoteDialog(true);
   };
 
-  const shareToTwitter = (meme: Meme) => {
-    const text = `Check out this amazing meme: "${meme.title}" by ${meme.authorName} on SAMU Meme Contest! 🚀`;
+  const shareToTwitter = (meme: any) => {
+    const authorName = meme.authorName || meme.authorUsername || 'Anonymous';
+    const text = `Check out this amazing meme: "${meme.title}" by ${authorName} on SAMU Meme Contest! 🚀`;
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`;
     window.open(url, '_blank');
   };
 
-  const shareToTelegram = (meme: Meme) => {
-    const text = `Check out this amazing meme: "${meme.title}" by ${meme.authorName} on SAMU Meme Contest! 🚀\n${window.location.href}`;
+  const shareToTelegram = (meme: any) => {
+    const authorName = meme.authorName || meme.authorUsername || 'Anonymous';
+    const text = `Check out this amazing meme: "${meme.title}" by ${authorName} on SAMU Meme Contest! 🚀\n${window.location.href}`;
     const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   };
@@ -142,12 +147,9 @@ export default function MemeContest() {
 
     setIsVoting(true);
     try {
-      await apiRequest('/api/votes', {
-        method: 'POST',
-        body: JSON.stringify({
-          memeId: selectedMeme.id,
-          voterWallet: walletAddress,
-        }),
+      await apiRequest('POST', '/api/votes', {
+        memeId: selectedMeme.id,
+        voterWallet: walletAddress,
       });
 
       toast({
@@ -301,8 +303,8 @@ export default function MemeContest() {
               />
               
               <div className="flex items-center justify-between text-sm text-gray-300">
-                <span>by {selectedMeme.authorName}</span>
-                <span>{selectedMeme.voteCount} 투표</span>
+                <span>by {(selectedMeme as any).authorName || (selectedMeme as any).authorUsername || 'Anonymous'}</span>
+                <span>{(selectedMeme as any).voteCount || (selectedMeme as any).votes || 0} 투표</span>
               </div>
               
               {selectedMeme.description && (
