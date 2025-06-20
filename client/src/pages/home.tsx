@@ -486,42 +486,20 @@ export default function Home() {
                           <h2 className="text-lg font-bold text-purple-400 mb-2">
                             {selectedArchiveContest.title}
                           </h2>
-                          <div className="grid grid-cols-3 gap-4 text-sm">
+                          <div className="grid grid-cols-3 gap-4 text-sm items-center">
                             <div>
                               <div className="text-purple-300 font-semibold">{selectedArchiveContest.participants}</div>
                               <div className="text-muted-foreground">Participants</div>
                             </div>
                             <div>
-                              <div className="text-yellow-400 font-semibold">{selectedArchiveContest.totalVotes}</div>
+                              <div className="text-purple-300 font-semibold">{selectedArchiveContest.totalVotes}</div>
                               <div className="text-muted-foreground">Total Votes</div>
                             </div>
-                            <div>
+                            <div className="flex justify-center">
                               <Badge variant="secondary" className="bg-green-500/20 text-green-400">
                                 {selectedArchiveContest.status}
                               </Badge>
                             </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Winners */}
-                    <Card>
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold mb-3 text-foreground">🏆 Winners</h3>
-                        <div className="grid grid-cols-3 gap-2 text-center text-sm">
-                          <div className="bg-yellow-500/20 rounded-lg p-2">
-                            <div className="text-yellow-400 font-bold">🥇</div>
-                            <div className="text-foreground font-semibold">{selectedArchiveContest.winner.name}</div>
-                            <div className="text-muted-foreground">{selectedArchiveContest.winner.votes} votes</div>
-                          </div>
-                          <div className="bg-gray-500/20 rounded-lg p-2">
-                            <div className="text-gray-400 font-bold">🥈</div>
-                            <div className="text-foreground font-semibold">{selectedArchiveContest.secondPlace}</div>
-                          </div>
-                          <div className="bg-orange-500/20 rounded-lg p-2">
-                            <div className="text-orange-400 font-bold">🥉</div>
-                            <div className="text-foreground font-semibold">{selectedArchiveContest.thirdPlace}</div>
                           </div>
                         </div>
                       </CardContent>
@@ -542,6 +520,12 @@ export default function Home() {
                               alt={meme.title}
                               className="w-full h-full object-cover"
                             />
+                            {/* Medal icon for top 3 */}
+                            {meme.rank <= 3 && (
+                              <div className="absolute top-1 left-1 text-lg">
+                                {meme.rank === 1 ? '🥇' : meme.rank === 2 ? '🥈' : '🥉'}
+                              </div>
+                            )}
                             <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                               <div className="text-white text-center">
                                 <div className="text-sm font-semibold">#{meme.rank}</div>

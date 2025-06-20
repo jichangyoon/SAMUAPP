@@ -225,6 +225,8 @@ Changelog:
 - June 20, 2025. Implemented two-level archive navigation: contest list → contest detail page with grid view
 - June 20, 2025. Removed all modal dialogs from Archive section to prevent mixed navigation interfaces
 - June 20, 2025. Completed pure page-based navigation system for Archive contest browsing
+- June 20, 2025. Updated Archive contest header with purple-themed total votes display and centered completion badge
+- June 20, 2025. Removed Winners section and added medal icons (🥇🥈🥉) to top-left corner of grid items for ranking display
 ```
 
 ## User Preferences
