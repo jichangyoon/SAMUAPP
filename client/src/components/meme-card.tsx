@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { usePrivy } from '@privy-io/react-auth';
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowUp, Share2 } from "lucide-react";
+import { ArrowUp, Share2, Twitter, Send } from "lucide-react";
 import type { Meme } from "@shared/schema";
 
 interface MemeCardProps {
@@ -17,6 +17,7 @@ interface MemeCardProps {
 export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   const [showVoteDialog, setShowVoteDialog] = useState(false);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
   const { authenticated, user } = usePrivy();
   

@@ -13,7 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Grid3X3, List, ArrowUp, Share2 } from "lucide-react";
+import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { getSamuTokenBalance } from "@/lib/solana";
@@ -26,6 +26,7 @@ export default function Home() {
   const [viewMode, setViewMode] = useState<'card' | 'grid'>('card');
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
   const [showVoteDialog, setShowVoteDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
   const [samuBalance, setSamuBalance] = useState<number>(0);
   const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -104,6 +105,21 @@ export default function Home() {
     } finally {
       setIsVoting(false);
     }
+  };
+
+  // Share functions
+  const shareToTwitter = (meme: Meme) => {
+    const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername} 🔥`;
+    const url = window.location.href;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+    window.open(twitterUrl, '_blank');
+  };
+
+  const shareToTelegram = (meme: Meme) => {
+    const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername}`;
+    const url = window.location.href;
+    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+    window.open(telegramUrl, '_blank');
   };
 
   // Fetch SAMU balance for Solana wallets
@@ -396,17 +412,7 @@ export default function Home() {
                   Vote
                 </Button>
                 <Button
-                  onClick={() => {
-                    if (navigator.share) {
-                      navigator.share({
-                        title: selectedMeme.title,
-                        text: selectedMeme.description ?? "",
-                        url: window.location.href,
-                      });
-                    } else {
-                      navigator.clipboard.writeText(window.location.href);
-                    }
-                  }}
+                  onClick={() => setShowShareDialog(true)}
                   variant="outline"
                   size="sm"
                   className="px-4"
@@ -456,6 +462,43 @@ export default function Home() {
                 {isVoting ? "Voting..." : "Confirm Vote"}
               </Button>
             </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Share Dialog */}
+      {selectedMeme && (
+        <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+          <DialogContent className="max-w-sm mx-4 bg-card border-border">
+            <DialogHeader>
+              <DialogTitle className="text-foreground">Share Meme</DialogTitle>
+              <DialogDescription className="text-muted-foreground">
+                Share "{selectedMeme.title}" on social platforms
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="flex flex-col gap-3 py-4">
+              <Button
+                onClick={() => {
+                  shareToTwitter(selectedMeme);
+                  setShowShareDialog(false);
+                }}
+                className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-2"
+              >
+                <Twitter className="h-4 w-4" />
+                Share on Twitter
+              </Button>
+              <Button
+                onClick={() => {
+                  shareToTelegram(selectedMeme);
+                  setShowShareDialog(false);
+                }}
+                className="bg-blue-400 hover:bg-blue-500 text-white flex items-center gap-2"
+              >
+                <Send className="h-4 w-4" />
+                Share on Telegram
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       )}
