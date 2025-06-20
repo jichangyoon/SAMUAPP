@@ -189,7 +189,7 @@ export function GoodsShop() {
                   className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
                   onClick={() => setSelectedItem(item)}
                 >
-                  <div className="flex p-2">
+                  <div className="flex p-3">
                     <div className="w-16 h-16 flex-shrink-0">
                       <img 
                         src={item.image} 
@@ -198,42 +198,22 @@ export function GoodsShop() {
                       />
                     </div>
                     <div className="flex-1 ml-3 min-w-0">
-                      <div className="flex justify-between items-start">
+                      <div className="flex justify-between items-center">
                         <div className="flex-1 min-w-0 pr-2">
-                          <h3 className="font-semibold text-xs text-foreground truncate">
+                          <h3 className="font-semibold text-sm text-foreground truncate">
                             {item.name}
                           </h3>
-                          <div className="flex items-center gap-1 mt-1">
-                            <Badge variant="secondary" className="text-xs px-1 py-0 h-3 leading-none">
-                              <Trophy className="h-2 w-2 mr-0.5" />
-                              {item.originalMeme}
+                          {item.limited && (
+                            <Badge variant="destructive" className="text-xs px-1 py-0 h-4 leading-none mt-1">
+                              Limited
                             </Badge>
-                            {item.limited && (
-                              <Badge variant="destructive" className="text-xs px-1 py-0 h-3 leading-none">
-                                Limited
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-0.5">
-                            By {item.originalAuthor} • Stock: {item.stock}
-                          </div>
+                          )}
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <div className="font-bold text-xs text-primary">
+                          <div className="font-bold text-sm text-primary">
                             {item.price.toLocaleString()}
                           </div>
-                          <div className="text-xs text-muted-foreground leading-none">SAMU</div>
-                          <Button
-                            size="sm"
-                            className="mt-1 h-5 text-xs px-2 leading-none"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              addToCart(item.id);
-                            }}
-                            disabled={cart.includes(item.id)}
-                          >
-                            {cart.includes(item.id) ? "Added" : "Add"}
-                          </Button>
+                          <div className="text-xs text-muted-foreground">SAMU</div>
                         </div>
                       </div>
                     </div>
@@ -257,61 +237,75 @@ export function GoodsShop() {
 
       {/* 제품 상세 다이얼로그 */}
       <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-md mx-4 bg-card border-border">
           <DialogHeader>
-            <DialogTitle>{selectedItem?.name}</DialogTitle>
-            <DialogDescription>
-              Product details and purchase options
-            </DialogDescription>
+            <DialogTitle className="text-foreground">{selectedItem?.name}</DialogTitle>
           </DialogHeader>
           
           {selectedItem && (
             <div className="space-y-4">
-              <div className="w-full aspect-square">
+              <div className="aspect-square rounded-lg overflow-hidden">
                 <img 
                   src={selectedItem.image} 
                   alt={selectedItem.name}
-                  className="w-full h-full object-cover rounded-lg"
+                  className="w-full h-full object-cover"
                 />
               </div>
               
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  {selectedItem.description}
-                </p>
-                
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary" className="text-xs">
-                    <Trophy className="h-3 w-3 mr-1" />
-                    Based on: {selectedItem.originalMeme}
-                  </Badge>
-                  {selectedItem.limited && (
-                    <Badge variant="destructive" className="text-xs">
-                      Limited Edition
-                    </Badge>
-                  )}
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-sm font-bold text-primary-foreground">
+                    {selectedItem.originalAuthor.charAt(0).toUpperCase()}
+                  </span>
                 </div>
-                
-                <div className="text-sm text-muted-foreground">
-                  <div>Original Creator: {selectedItem.originalAuthor}</div>
-                  <div>Stock Available: {selectedItem.stock} units</div>
-                </div>
-                
-                <div className="flex items-center justify-between pt-2 border-t">
-                  <div>
-                    <div className="text-lg font-bold text-[hsl(35,70%,50%)]">
-                      {selectedItem.price.toLocaleString()} SAMU
-                    </div>
+                <div>
+                  <div className="font-medium text-foreground">{selectedItem.originalAuthor}</div>
+                  <div className="text-sm text-muted-foreground">
+                    Hall of Fame: {selectedItem.originalMeme}
                   </div>
+                </div>
+              </div>
+              
+              <div>
+                <h4 className="font-medium text-foreground mb-2">Description</h4>
+                <p className="text-muted-foreground">{selectedItem.description}</p>
+              </div>
+              
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="secondary" className="text-xs">
+                  <Trophy className="h-3 w-3 mr-1" />
+                  {selectedItem.originalMeme}
+                </Badge>
+                {selectedItem.limited && (
+                  <Badge variant="destructive" className="text-xs">
+                    Limited Edition
+                  </Badge>
+                )}
+                <Badge variant="outline" className="text-xs">
+                  Stock: {selectedItem.stock}
+                </Badge>
+              </div>
+              
+              <div className="flex items-center justify-between pt-4 border-t">
+                <div>
+                  <div className="text-lg font-bold text-primary">
+                    {selectedItem.price.toLocaleString()} SAMU
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Your balance: {samuBalance.toLocaleString()} SAMU
+                  </div>
+                </div>
+                <div className="flex space-x-2">
                   <Button
                     onClick={() => {
                       addToCart(selectedItem.id);
                       setSelectedItem(null);
                     }}
                     disabled={cart.includes(selectedItem.id)}
-                    className="bg-[hsl(50,85%,75%)] hover:bg-[hsl(50,75%,65%)] text-black"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   >
-                    {cart.includes(selectedItem.id) ? "Already Added" : "Add to Cart"}
+                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    {cart.includes(selectedItem.id) ? "Added" : "Add to Cart"}
                   </Button>
                 </div>
               </div>

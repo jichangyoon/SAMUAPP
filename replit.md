@@ -196,6 +196,8 @@ Changelog:
 - June 20, 2025. Synchronized profile data display between header and user profile modal for consistent user experience
 - June 20, 2025. Improved meme card UI by hiding descriptions in main feed and showing details only on click for cleaner mobile interface
 - June 20, 2025. Added detailed meme view modal with full image, author info, description, and voting capabilities for better content exploration
+- June 20, 2025. Applied same UI pattern to goods shop - simplified product cards showing only title and price, with click-to-view detailed product information modal
+- June 20, 2025. Enhanced goods shop product detail modal with comprehensive product information, creator details, and streamlined purchase flow
 ```
 
 ## User Preferences
