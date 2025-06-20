@@ -175,14 +175,20 @@ export default function Home() {
                       <div className="flex items-center space-x-2">
                         <div className="flex bg-accent rounded-lg p-1">
                           <button
-                            onClick={() => setViewMode('card')}
-                            className={`p-1.5 rounded ${viewMode === 'card' ? 'bg-background shadow-sm' : ''}`}
+                            onClick={(e) => {
+                              setViewMode('card');
+                              e.currentTarget.blur();
+                            }}
+                            className={`p-1.5 rounded focus:outline-none ${viewMode === 'card' ? 'bg-background shadow-sm' : ''}`}
                           >
                             <List className="h-4 w-4" />
                           </button>
                           <button
-                            onClick={() => setViewMode('grid')}
-                            className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-background shadow-sm' : ''}`}
+                            onClick={(e) => {
+                              setViewMode('grid');
+                              e.currentTarget.blur();
+                            }}
+                            className={`p-1.5 rounded focus:outline-none ${viewMode === 'grid' ? 'bg-background shadow-sm' : ''}`}
                           >
                             <Grid3X3 className="h-4 w-4" />
                           </button>
