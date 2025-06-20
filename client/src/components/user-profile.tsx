@@ -56,14 +56,16 @@ export function UserProfile({ isOpen, onClose, samuBalance }: UserProfileProps) 
       localStorage.setItem(`privy_profile_${user?.id}`, JSON.stringify(profileData));
       return profileData;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Profile Updated",
         description: "Your profile has been successfully updated.",
       });
       setIsEditing(false);
-      // Force a component re-render by updating the parent state
-      window.location.reload();
+      // Update local state to reflect changes immediately
+      setDisplayName(data.displayName);
+      setProfileImage(data.profileImage);
+      setImagePreview('');
     },
     onError: (error) => {
       console.error('Profile update error:', error);
@@ -101,8 +103,9 @@ export function UserProfile({ isOpen, onClose, samuBalance }: UserProfileProps) 
 
   // Reset form when editing is cancelled
   const handleCancelEdit = () => {
-    setDisplayName(user?.customMetadata?.displayName as string || user?.email?.address?.split('@')[0] || '');
-    setProfileImage(user?.customMetadata?.profileImage as string || '');
+    const storedProfile = getStoredProfile();
+    setDisplayName(storedProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
+    setProfileImage(storedProfile.profileImage || '');
     setImagePreview('');
     setIsEditing(false);
   };
