@@ -3,12 +3,13 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { PrivyProvider } from '@privy-io/react-auth';
+import { PrivyProvider, usePrivy } from '@privy-io/react-auth';
 import { useEffect } from 'react';
 import * as React from 'react';
 import Home from "@/pages/home";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
+import Login from "@/pages/login";
 
 // Global error handler for Privy iframe issues
 window.addEventListener('error', (event) => {
@@ -28,7 +29,7 @@ window.addEventListener('unhandledrejection', (event) => {
   }
 });
 
-const Router = React.memo(() => {
+const AuthenticatedApp = React.memo(() => {
   return (
     <Switch>
       <Route path="/" component={Home} />
@@ -37,6 +38,24 @@ const Router = React.memo(() => {
       <Route component={NotFound} />
     </Switch>
   );
+});
+
+const AppContent = React.memo(() => {
+  const { authenticated, ready } = usePrivy();
+  
+  if (!ready) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-yellow-400 font-['Poppins']">Loading...</div>
+      </div>
+    );
+  }
+  
+  if (!authenticated) {
+    return <Login />;
+  }
+  
+  return <AuthenticatedApp />;
 });
 
 function App() {
@@ -56,7 +75,6 @@ function App() {
         loginMethods: ['email'],
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
-          noPromptOnMfaRequired: false,
           solana: {
             createOnLogin: 'users-without-wallets',
           },
@@ -66,7 +84,7 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />
-          <Router />
+          <AppContent />
         </TooltipProvider>
       </QueryClientProvider>
     </PrivyProvider>
