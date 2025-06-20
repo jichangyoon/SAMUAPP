@@ -4,9 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Send, Wallet } from "lucide-react";
+import { Send, Wallet, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { isSolanaAddress, sendSolanaTokens } from "@/lib/solana";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
 
 interface SendTokensProps {
   walletAddress: string;
@@ -21,7 +22,10 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [amount, setAmount] = useState("");
   const [tokenType, setTokenType] = useState("SAMU");
   const [isLoading, setIsLoading] = useState(false);
+  const [useRealTransaction, setUseRealTransaction] = useState(false);
   const { toast } = useToast();
+  const { user } = usePrivy();
+  const { wallets } = useWallets();
 
   const handleSend = async () => {
     if (!recipient || !amount) {
@@ -67,18 +71,35 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     setIsLoading(true);
 
     try {
+      // Get Solana wallet signer if available for real transactions
+      let walletSigner = null;
+      if (useRealTransaction && wallets.length > 0) {
+        const solanaWallet = wallets.find(w => w.chainType === 'solana');
+        if (solanaWallet) {
+          walletSigner = solanaWallet;
+        }
+      }
+
       const result = await sendSolanaTokens({
         fromAddress: walletAddress,
         toAddress: recipient,
         amount: amountNum,
-        tokenType: tokenType as 'SOL' | 'SAMU'
+        tokenType: tokenType as 'SOL' | 'SAMU',
+        walletSigner: walletSigner
       });
 
       if (result.success) {
-        toast({
-          title: "송금 완료",
-          description: `${amount} ${tokenType}을(를) 성공적으로 전송했습니다!`,
-        });
+        if (result.isSimulation) {
+          toast({
+            title: "시뮬레이션 완료",
+            description: `${amount} ${tokenType} 송금 시뮬레이션이 성공했습니다. 실제 토큰은 이동하지 않았습니다.`,
+          });
+        } else {
+          toast({
+            title: "실제 송금 완료!",
+            description: `${amount} ${tokenType}이(가) 성공적으로 전송되었습니다! 트랜잭션: ${result.txHash?.slice(0, 8)}...`,
+          });
+        }
 
         setRecipient("");
         setAmount("");
@@ -193,8 +214,16 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
           </div>
 
           {/* 주의사항 */}
-          <div className="text-xs text-muted-foreground bg-accent/20 rounded p-2">
-            <strong>알림:</strong> 현재는 거래 시뮬레이션이 작동합니다. 실제 블록체인 거래를 위해서는 지갑 서명이 필요합니다.
+          <div className="text-xs text-muted-foreground bg-red-900/20 border border-red-600/30 rounded p-3">
+            <strong className="text-red-400">⚠️ 중요한 알림:</strong>
+            <div className="mt-1">
+              현재는 <strong>시뮬레이션 모드</strong>로 작동합니다. 실제 토큰은 이동하지 않으며, 지갑 잔고도 변경되지 않습니다.
+            </div>
+            <div className="mt-2 text-yellow-400">
+              <strong>실제 송금을 위해서는:</strong>
+              <br />• 지갑 연동 및 서명 기능 필요
+              <br />• Solana Web3.js 완전 구현 필요
+            </div>
           </div>
         </div>
       </DialogContent>
