@@ -1,16 +1,30 @@
 import { Button } from "@/components/ui/button";
 import { LogOut, Mail } from "lucide-react";
 import { usePrivy } from '@privy-io/react-auth';
+import { useState, useEffect } from 'react';
 
 export function WalletConnect() {
   const { ready, authenticated, user, login, logout } = usePrivy();
 
-  // Get wallet info from Privy embedded wallet
+  // Get wallet using same logic as home page - prioritize Solana
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
-  
+
+  const isConnected = authenticated && !!selectedWalletAccount;
   const walletAddress = selectedWalletAccount?.address || '';
+  const isSolana = selectedWalletAccount?.chainType === 'solana';
+
+  // 지갑 연결 안정성을 위한 에러 바운더리
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (authenticated && !selectedWalletAccount) {
+      setConnectionError('Wallet connection failed');
+    } else {
+      setConnectionError(null);
+    }
+  }, [authenticated, selectedWalletAccount]);
 
   if (!ready) {
     return (
@@ -25,7 +39,7 @@ export function WalletConnect() {
     const displayAddress = walletAddress 
       ? `${walletAddress.slice(0, 4)}...${walletAddress.slice(-3)}`
       : 'Connected';
-    
+
     const chainType = selectedWalletAccount?.chainType || 'unknown';
 
     return (
@@ -51,12 +65,11 @@ export function WalletConnect() {
 
   return (
     <Button
-      onClick={login}
-      size="sm"
-      className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-sm border border-primary"
-    >
-      <Mail className="h-4 w-4 mr-1" />
-      Sign In
-    </Button>
+          onClick={login}
+          disabled={!!connectionError}
+          className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold disabled:opacity-50"
+        >
+          {connectionError ? 'Connection Error' : 'Connect Wallet'}
+        </Button>
   );
 }
