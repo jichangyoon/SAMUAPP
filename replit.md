@@ -212,6 +212,7 @@ Changelog:
 - June 20, 2025. Updated SAMU Goods Shop header styling - swapped background and text colors (black background with yellow text) per user request
 - June 20, 2025. Converted top navigation to Instagram-style bottom navigation bar with Trophy and ShoppingBag icons for Contest and Shop tabs
 - June 20, 2025. Fixed header layout issues and implemented proper mobile-first bottom tab navigation system
+- June 20, 2025. Restored original header layout with profile button at user request - maintains both profile access and bottom navigation
 ```
 
 ## User Preferences
