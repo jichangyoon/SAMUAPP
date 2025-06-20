@@ -248,6 +248,12 @@ Changelog:
 - June 20, 2025. Implemented comprehensive token transfer interface with SAMU and SOL support
 - June 20, 2025. Created SendTokens component with address validation, balance checking, and transaction simulation
 - June 20, 2025. Enhanced profile page with integrated wallet management and token sending capabilities
+- June 20, 2025. Restricted profile editing features to logged-in users only - disabled Edit button, image upload, and token transfer for guests
+- June 20, 2025. Added "Guest User - Please login to edit profile" message for non-authenticated users
+- June 20, 2025. Removed all commerce features from Goods Shop for iOS app store compliance
+- June 20, 2025. Eliminated pricing, shopping cart, purchase buttons, and payment references from goods section
+- June 20, 2025. Converted Goods Shop to collectibles showcase featuring Hall of Fame meme designs without sales functionality
+- June 20, 2025. Updated product descriptions and messaging to focus on art exhibition rather than merchandise sales
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
