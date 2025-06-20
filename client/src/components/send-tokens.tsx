@@ -4,10 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Send, Wallet, Zap } from "lucide-react";
+import { Send, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { isSolanaAddress, sendSolanaTokens } from "@/lib/solana";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { isSolanaAddress } from "@/lib/solana";
 
 interface SendTokensProps {
   walletAddress: string;
@@ -22,10 +21,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [amount, setAmount] = useState("");
   const [tokenType, setTokenType] = useState("SAMU");
   const [isLoading, setIsLoading] = useState(false);
-  const [useRealTransaction, setUseRealTransaction] = useState(true);
   const { toast } = useToast();
-  const { user } = usePrivy();
-  const { wallets } = useWallets();
 
   const handleSend = async () => {
     if (!recipient || !amount) {
@@ -71,53 +67,22 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     setIsLoading(true);
 
     try {
-      // Check if user is authenticated and has wallets
-      if (!user) {
-        toast({
-          title: "로그인 필요",
-          description: "송금을 위해서는 먼저 로그인해주세요.",
-          variant: "destructive"
-        });
-        return;
-      }
+      // 실제 송금 구현은 향후 추가 (Solana Web3.js 사용)
+      // 현재는 UI만 구현
+      await new Promise(resolve => setTimeout(resolve, 2000)); // 시뮬레이션
 
-      // Always proceed with transaction - wallet verification is optional for demo
-      console.log('Transaction initiated:', {
-        from: walletAddress,
-        to: recipient,
-        amount: amountNum,
-        tokenType: tokenType,
-        wallets: wallets.length
+      toast({
+        title: "Transaction Simulated",
+        description: `Would send ${amount} ${tokenType} to ${recipient.slice(0, 8)}...`,
       });
 
-      const result = await sendSolanaTokens({
-        fromAddress: walletAddress,
-        toAddress: recipient,
-        amount: amountNum,
-        tokenType: tokenType as 'SOL' | 'SAMU',
-        walletSigner: wallets[0] || null
-      });
-
-      if (result.success) {
-        toast({
-          title: "송금 완료!",
-          description: `${amount} ${tokenType}이(가) 성공적으로 전송되었습니다! 트랜잭션: ${result.txHash?.slice(0, 8)}...`,
-        });
-
-        setRecipient("");
-        setAmount("");
-        setIsOpen(false);
-      } else {
-        toast({
-          title: "송금 실패",
-          description: result.error || "알 수 없는 오류가 발생했습니다.",
-          variant: "destructive"
-        });
-      }
+      setRecipient("");
+      setAmount("");
+      setIsOpen(false);
     } catch (error) {
       toast({
-        title: "송금 실패",
-        description: "네트워크 오류가 발생했습니다. 다시 시도해주세요.",
+        title: "Transaction Failed",
+        description: "Failed to send tokens. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -204,30 +169,21 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
               onClick={handleSend}
               disabled={isLoading}
               className="flex-1"
-              variant="destructive"
             >
-              {isLoading ? "송금 처리중..." : "송금 실행"}
+              {isLoading ? "Sending..." : "Send Tokens"}
             </Button>
             <Button
               variant="outline"
               onClick={() => setIsOpen(false)}
               disabled={isLoading}
             >
-              취소
+              Cancel
             </Button>
           </div>
 
           {/* 주의사항 */}
-          <div className="text-xs text-muted-foreground bg-red-900/20 border border-red-600/30 rounded p-3">
-            <strong className="text-red-400">⚠️ 실제 송금</strong>
-            <div className="mt-1">
-              <strong>실제 블록체인에 거래가 기록됩니다!</strong> 토큰이 실제로 이동하며, 되돌릴 수 없습니다.
-            </div>
-            <div className="mt-2 text-yellow-400">
-              • 수신자 주소를 정확히 확인하세요
-              <br />• 충분한 가스비(SOL)가 있는지 확인하세요
-              <br />• 지갑에서 거래 승인이 필요합니다
-            </div>
+          <div className="text-xs text-muted-foreground bg-accent/20 rounded p-2">
+            <strong>Note:</strong> This is currently a UI prototype. Actual token transfers will be implemented with Solana Web3.js integration.
           </div>
         </div>
       </DialogContent>

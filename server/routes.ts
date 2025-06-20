@@ -286,44 +286,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Token transfer endpoint
-  app.post('/api/send-tokens', async (req, res) => {
-    try {
-      const { fromAddress, toAddress, amount, tokenType } = req.body;
-
-      // Validate input
-      if (!fromAddress || !toAddress || !amount || !tokenType) {
-        return res.status(400).json({ error: 'Missing required parameters' });
-      }
-
-      if (amount <= 0) {
-        return res.status(400).json({ error: 'Amount must be greater than 0' });
-      }
-
-      // Validate Solana addresses
-      if (fromAddress.length < 32 || fromAddress.length > 44 || fromAddress.startsWith('0x')) {
-        return res.status(400).json({ error: 'Invalid sender address' });
-      }
-
-      if (toAddress.length < 32 || toAddress.length > 44 || toAddress.startsWith('0x')) {
-        return res.status(400).json({ error: 'Invalid recipient address' });
-      }
-
-      // Real transaction processing would happen here
-      // This endpoint now expects the client to handle wallet signing
-      
-      // For demonstration, we'll return an error since server-side signing
-      // requires private keys which should never be stored on the server
-      res.status(400).json({ 
-        error: 'Server-side transaction signing not supported. Transactions must be signed client-side with wallet.'
-      });
-
-    } catch (error) {
-      console.error('Token transfer error:', error);
-      res.status(500).json({ error: 'Internal server error during token transfer' });
-    }
-  });
-
   const httpServer = createServer(app);
   return httpServer;
 }
