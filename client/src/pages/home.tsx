@@ -486,7 +486,7 @@ export default function Home() {
                 className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
               >
                 <Twitter className="h-4 w-4" />
-                Share on Twitter
+                Share on X
               </Button>
               <Button
                 onClick={() => {
