@@ -13,7 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag } from "lucide-react";
+import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { getSamuTokenBalance } from "@/lib/solana";
@@ -98,8 +98,8 @@ export default function Home() {
       refetch(); // Refresh the memes list
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "Failed to submit vote. Please try again.",
+        title: "Voting Failed",
+        description: error.message || "Failed to submit vote. You may have already voted on this meme.",
         variant: "destructive",
       });
     } finally {
@@ -107,33 +107,36 @@ export default function Home() {
     }
   };
 
+  // Share functions
   const shareToTwitter = (meme: Meme) => {
-    const text = `Check out this amazing meme "${meme.title}" by ${meme.authorUsername} on SAMU Contest! 🚀`;
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`;
-    window.open(url, '_blank');
+    const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername} 🔥`;
+    const url = window.location.href;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+    window.open(twitterUrl, '_blank');
   };
 
   const shareToTelegram = (meme: Meme) => {
-    const text = `Check out this amazing meme "${meme.title}" by ${meme.authorUsername} on SAMU Contest! 🚀 ${window.location.href}`;
-    const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
+    const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername}`;
+    const url = window.location.href;
+    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+    window.open(telegramUrl, '_blank');
   };
 
-  // Fetch SAMU balance when wallet changes
+  // Fetch SAMU balance for Solana wallets
   useEffect(() => {
     if (isConnected && walletAddress && isSolana) {
       console.log('💰 Fetching SAMU balance for:', walletAddress);
       setBalanceStatus('loading');
       setSamuBalance(0);
-
+      
       getSamuTokenBalance(walletAddress)
-        .then((balance: any) => {
+        .then(balance => {
           console.log('✅ SAMU balance fetched:', balance);
           setSamuBalance(balance);
           setBalanceStatus('success');
         })
-        .catch((error: any) => {
-          console.error('❌ Error fetching SAMU balance:', error);
+        .catch(error => {
+          console.warn('❌ Failed to fetch SAMU balance:', error);
           setSamuBalance(0);
           setBalanceStatus('error');
         });
@@ -145,216 +148,213 @@ export default function Home() {
   }, [isConnected, walletAddress, isSolana]);
 
   const { data: memes = [], isLoading, refetch } = useQuery<Meme[]>({
-    queryKey: ['/api/memes'],
+    queryKey: ["/api/memes"],
+    enabled: true,
   });
 
-  const sortedMemes = [...memes].sort((a: any, b: any) => {
+  const sortedMemes = memes.sort((a, b) => {
     if (sortBy === "votes") return b.votes - a.votes;
     if (sortBy === "latest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    return 0;
+    return b.votes - a.votes; // default to votes
   });
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-background border-b border-border">
+      <header className="sticky top-0 z-50 bg-card shadow-sm border-b border-border">
         <div className="max-w-md mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img src={samuLogoImg} alt="SAMU Logo" className="w-8 h-8 rounded-full" />
-              <h1 className="text-lg font-bold text-foreground">SAMU</h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowUserProfile(true)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent hover:bg-accent/80 transition-colors"
-              >
-                {profileImage ? (
-                  <img 
-                    src={profileImage} 
-                    alt="Profile" 
-                    className="w-6 h-6 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                    <span className="text-xs font-bold text-primary-foreground">
-                      {displayName.charAt(0).toUpperCase()}
-                    </span>
+            <button 
+              onClick={() => setShowUserProfile(true)}
+              className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+            >
+              {authenticated ? (
+                <>
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
+                    {profileImage ? (
+                      <img 
+                        src={profileImage} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                        <span className="text-primary font-bold text-sm">
+                          {displayName.slice(0, 2).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                )}
-                <span className="text-sm font-medium text-foreground">{displayName}</span>
-                {authenticated && (
-                  <>
-                    <span className="text-xs text-muted-foreground">|</span>
-                    <span className="text-xs text-primary font-medium">
-                      {samuBalance > 0 ? `${samuBalance.toLocaleString()} SAMU` : 'No SAMU'}
-                    </span>
-                  </>
-                )}
-              </button>
-              <WalletConnect />
-            </div>
+                  <span className="text-lg font-bold text-primary">{displayName}</span>
+                </>
+              ) : (
+                <>
+                  <div className="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center samu-wolf-logo overflow-hidden">
+                    <img 
+                      src={samuLogoImg} 
+                      alt="SAMU Wolf" 
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  </div>
+                  <span className="text-lg font-bold text-primary">SAMU</span>
+                </>
+              )}
+            </button>
+            <WalletConnect />
           </div>
         </div>
       </header>
 
-      {/* Content Area */}
-      <div className="max-w-md mx-auto px-4 pb-20">
-        {currentTab === "contest" && (
-          <Tabs defaultValue="contest-main" className="w-full">
-            <div className="bg-card border-b border-border mb-4 mt-4">
+
+
+      {/* Main Navigation */}
+      <nav className="max-w-md mx-auto px-4 py-3 bg-card border-b border-border">
+        <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 h-10">
+            <TabsTrigger value="contest" className="text-sm">Meme Contest</TabsTrigger>
+            <TabsTrigger value="goods" className="text-sm">Goods Shop</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="contest" className="mt-4">
+            <Tabs defaultValue="contest-main" className="w-full">
               <TabsList className="grid w-full grid-cols-2 h-10">
                 <TabsTrigger value="contest-main" className="text-sm">Contest</TabsTrigger>
                 <TabsTrigger value="leaderboard" className="text-sm">Leaderboard</TabsTrigger>
               </TabsList>
-            </div>
-            
-            <TabsContent value="contest-main" className="mt-0">
-              <div className="space-y-4">
-                {/* Contest Header */}
-                <ContestHeader />
+              
+              <TabsContent value="contest-main" className="mt-0">
+                <main className="space-y-4 pb-20">
+                  {/* Contest Header */}
+                  <ContestHeader />
 
-                {/* Meme Gallery */}
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-lg font-semibold text-foreground">Contest Entries</h2>
-                    <div className="flex items-center space-x-2">
-                      <div className="flex bg-accent rounded-lg p-1">
-                        <button
-                          onClick={() => setViewMode('card')}
-                          className={`p-1.5 rounded ${viewMode === 'card' ? 'bg-background shadow-sm' : ''}`}
-                        >
-                          <List className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => setViewMode('grid')}
-                          className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-background shadow-sm' : ''}`}
-                        >
-                          <Grid3X3 className="h-4 w-4" />
-                        </button>
+                  {/* Meme Gallery */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h2 className="text-lg font-semibold text-foreground">Contest Entries</h2>
+                      <div className="flex items-center space-x-2">
+                        <div className="flex bg-accent rounded-lg p-1">
+                          <button
+                            onClick={() => setViewMode('card')}
+                            className={`p-1.5 rounded ${viewMode === 'card' ? 'bg-background shadow-sm' : ''}`}
+                          >
+                            <List className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => setViewMode('grid')}
+                            className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-background shadow-sm' : ''}`}
+                          >
+                            <Grid3X3 className="h-4 w-4" />
+                          </button>
+                        </div>
+                        <Select value={sortBy} onValueChange={setSortBy}>
+                          <SelectTrigger className="w-32 h-8 text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="votes">Most Votes</SelectItem>
+                            <SelectItem value="latest">Latest</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
-                      <Select value={sortBy} onValueChange={setSortBy}>
-                        <SelectTrigger className="w-32 h-8 text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="votes">Most Votes</SelectItem>
-                          <SelectItem value="latest">Latest</SelectItem>
-                        </SelectContent>
-                      </Select>
                     </div>
-                  </div>
 
-                  {isLoading ? (
-                    <div className="space-y-4">
-                      {[1, 2, 3].map((i) => (
-                        <Card key={i} className="animate-pulse">
-                          <div className="aspect-square bg-accent" />
-                          <CardContent className="p-4">
-                            <div className="h-4 bg-accent rounded mb-2" />
-                            <div className="h-3 bg-accent rounded w-3/4" />
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  ) : (
-                    <>
-                      {viewMode === 'card' ? (
-                        <div className="space-y-4">
-                          {sortedMemes.map((meme) => (
-                            <MemeCard 
-                              key={meme.id} 
-                              meme={meme} 
-                              onVote={() => refetch()}
-                              canVote={isConnected}
-                            />
-                          ))}
-                          
-                          {sortedMemes.length === 0 && (
-                            <Card>
-                              <CardContent className="p-8 text-center">
-                                <p className="text-muted-foreground">No memes submitted yet. Be the first!</p>
-                              </CardContent>
-                            </Card>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-3 gap-1">
-                          {sortedMemes.map((meme) => (
-                            <button
-                              key={meme.id}
-                              onClick={() => {
-                                setSelectedMeme(meme);
-                              }}
-                              className="relative aspect-square bg-accent hover:opacity-90 transition-opacity group overflow-hidden"
-                            >
-                              <img 
-                                src={meme.imageUrl} 
-                                alt={meme.title}
-                                className="w-full h-full object-cover"
+                    {isLoading ? (
+                      <div className="space-y-4">
+                        {[1, 2, 3].map((i) => (
+                          <Card key={i} className="animate-pulse">
+                            <div className="aspect-square bg-accent" />
+                            <CardContent className="p-4">
+                              <div className="h-4 bg-accent rounded mb-2" />
+                              <div className="h-3 bg-accent rounded w-3/4" />
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <>
+                        {viewMode === 'card' ? (
+                          <div className="space-y-4">
+                            {sortedMemes.map((meme) => (
+                              <MemeCard 
+                                key={meme.id} 
+                                meme={meme} 
+                                onVote={() => refetch()}
+                                canVote={isConnected}
                               />
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <div className="text-white text-xs font-medium text-center">
-                                  <div>{meme.votes} votes</div>
+                            ))}
+                            
+                            {sortedMemes.length === 0 && (
+                              <Card>
+                                <CardContent className="p-8 text-center">
+                                  <p className="text-muted-foreground">No memes submitted yet. Be the first!</p>
+                                </CardContent>
+                              </Card>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-3 gap-1">
+                            {sortedMemes.map((meme) => (
+                              <button
+                                key={meme.id}
+                                onClick={() => {
+                                  // We'll create a grid detail view
+                                  setSelectedMeme(meme);
+                                }}
+                                className="aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-opacity relative group"
+                              >
+                                <img
+                                  src={meme.imageUrl}
+                                  alt={meme.title}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                  }}
+                                />
+                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                  <div className="text-white text-center">
+                                    <div className="text-sm font-semibold">{meme.votes}</div>
+                                    <div className="text-xs">votes</div>
+                                  </div>
                                 </div>
+                              </button>
+                            ))}
+                            
+                            {sortedMemes.length === 0 && (
+                              <div className="col-span-3">
+                                <Card>
+                                  <CardContent className="p-8 text-center">
+                                    <p className="text-muted-foreground">No memes submitted yet. Be the first!</p>
+                                  </CardContent>
+                                </Card>
                               </div>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    )}
 
-                {/* Upload Section */}
-                {isConnected && (
-                  <div className="mt-6">
-                    <h3 className="text-lg font-semibold mb-3 text-foreground">Submit Your Meme</h3>
-                    <UploadForm onSuccess={() => refetch()} />
+                    {sortedMemes.length > 0 && (
+                      <div className="text-center mt-6">
+                        <Button variant="outline" className="bg-accent text-foreground hover:bg-accent/80 border-border">
+                          Load More Memes
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="leaderboard">
-              <Leaderboard />
-            </TabsContent>
-          </Tabs>
-        )}
-        
-        {currentTab === "goods" && (
-          <div className="mt-4">
+                </main>
+              </TabsContent>
+              
+              <TabsContent value="leaderboard">
+                <Leaderboard />
+              </TabsContent>
+            </Tabs>
+          </TabsContent>
+          
+          <TabsContent value="goods" className="mt-4">
             <GoodsShop />
-          </div>
-        )}
-      </div>
-
-      {/* Instagram-style Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border">
-        <div className="max-w-md mx-auto grid grid-cols-2 h-16">
-          <button
-            onClick={() => setCurrentTab("contest")}
-            className={`flex flex-col items-center justify-center space-y-1 transition-colors ${
-              currentTab === "contest" 
-                ? "text-primary" 
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Trophy className="h-5 w-5" />
-            <span className="text-xs font-medium">Contest</span>
-          </button>
-          <button
-            onClick={() => setCurrentTab("goods")}
-            className={`flex flex-col items-center justify-center space-y-1 transition-colors ${
-              currentTab === "goods" 
-                ? "text-primary" 
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <ShoppingBag className="h-5 w-5" />
-            <span className="text-xs font-medium">Shop</span>
-          </button>
-        </div>
+          </TabsContent>
+        </Tabs>
       </nav>
 
       {/* User Profile Modal */}
@@ -364,7 +364,7 @@ export default function Home() {
         samuBalance={samuBalance}
       />
 
-      {/* Grid View Detail Modal */}
+      {/* Grid View Meme Detail Modal */}
       {selectedMeme && (
         <Dialog open={!!selectedMeme} onOpenChange={() => setSelectedMeme(null)}>
           <DialogContent className="max-w-md mx-4 bg-card border-border">
@@ -374,8 +374,8 @@ export default function Home() {
             
             <div className="space-y-4">
               <div className="aspect-square rounded-lg overflow-hidden">
-                <img 
-                  src={selectedMeme.imageUrl} 
+                <img
+                  src={selectedMeme.imageUrl}
                   alt={selectedMeme.title}
                   className="w-full h-full object-cover"
                 />
@@ -455,10 +455,7 @@ export default function Home() {
                 Cancel
               </Button>
               <Button
-                onClick={() => {
-                  setShowVoteDialog(false);
-                  handleGridVote(selectedMeme);
-                }}
+                onClick={() => selectedMeme && handleGridVote(selectedMeme)}
                 disabled={isVoting}
                 className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
               >

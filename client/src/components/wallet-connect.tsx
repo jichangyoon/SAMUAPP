@@ -61,11 +61,11 @@ export function WalletConnect() {
       <div className="flex items-center gap-2">
         {/* SAMU Balance Display */}
         {isSolana && (
-          <div className="text-right bg-orange-100 dark:bg-orange-900/30 px-2 py-1 rounded border border-orange-300 dark:border-orange-700">
-            <div className="text-xs font-bold text-orange-800 dark:text-orange-200">
+          <div className="text-right">
+            <div className="text-xs font-bold text-[hsl(30,100%,50%)]">
               {balanceStatus === 'loading' ? 'Loading...' : `${samuBalance.toLocaleString()}`}
             </div>
-            <div className="text-xs text-orange-600 dark:text-orange-400">SAMU</div>
+            <div className="text-xs text-muted-foreground">SAMU</div>
           </div>
         )}
         
@@ -74,11 +74,11 @@ export function WalletConnect() {
           onClick={logout}
           variant="outline"
           size="sm"
-          className="bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 border-orange-300 dark:border-orange-700 hover:bg-orange-200 dark:hover:bg-orange-900/50 px-2 py-1 h-auto"
+          className="bg-green-950/20 text-green-400 border-green-800 hover:bg-green-950/30 px-2 py-1 h-auto"
         >
           <div className="flex flex-col items-start">
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
               <span className="font-mono text-xs">{displayAddress}</span>
             </div>
             <span className="text-xs opacity-75">
