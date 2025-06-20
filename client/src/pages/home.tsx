@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { WalletConnect } from "@/components/wallet-connect";
 import { ContestHeader } from "@/components/contest-header";
 import { UploadForm } from "@/components/upload-form";
 import { MemeCard } from "@/components/meme-card";
 import { Leaderboard } from "@/components/leaderboard";
+import { GoodsShop } from "@/components/goods-shop";
 
 import { usePrivy } from '@privy-io/react-auth';
 import { Button } from "@/components/ui/button";
@@ -21,38 +22,38 @@ import { getSamuTokenBalance, getSolBalance } from "@/lib/solana";
 import type { Meme } from "@shared/schema";
 import samuLogoImg from "/assets/images/logos/samu-logo.jpg";
 
-const Home = React.memo(() => {
+export default function Home() {
   const [sortBy, setSortBy] = useState("votes");
   const [currentTab, setCurrentTab] = useState("contest");
-  const [viewMode, setViewMode<'card' | 'grid'>('card');
+  const [viewMode, setViewMode] = useState<'card' | 'grid'>('card');
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
   const [showVoteDialog, setShowVoteDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
   const [samuBalance, setSamuBalance] = useState<number>(0);
   const [solBalance, setSolBalance] = useState<number>(0);
-  const [balanceStatus, setBalanceStatus<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [archiveView, setArchiveView<'list' | 'contest'>('list');
+  const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [archiveView, setArchiveView] = useState<'list' | 'contest'>('list');
   const [selectedArchiveContest, setSelectedArchiveContest] = useState<any>(null);
   const [selectedArchiveMeme, setSelectedArchiveMeme] = useState<any>(null);
-
+  
   // Privy authentication
   const { authenticated, user } = usePrivy();
   const { toast } = useToast();
   const [, navigate] = useLocation();
-
+  
   // Get wallet info from Privy embedded wallet
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
-
+  
   const isConnected = authenticated && !!selectedWalletAccount;
   const walletAddress = selectedWalletAccount?.address || '';
   const isSolana = selectedWalletAccount?.chainType === 'solana';
 
   // Profile state management
   const [profileData, setProfileData] = useState({ displayName: 'User', profileImage: '' });
-
+  
   // Load profile data when user changes
   useEffect(() => {
     if (authenticated && user?.id) {
@@ -103,7 +104,7 @@ const Home = React.memo(() => {
 
     const votingPower = 1; // Simplified for now
     setIsVoting(true);
-
+    
     try {
       await apiRequest("POST", `/api/memes/${meme.id}/vote`, {
         voterWallet: walletAddress,
@@ -114,7 +115,7 @@ const Home = React.memo(() => {
         title: "Vote Submitted!",
         description: `Your vote with ${votingPower} voting power has been recorded.`,
       });
-
+      
       setSelectedMeme(null);
       refetch(); // Refresh the memes list
     } catch (error: any) {
@@ -129,19 +130,19 @@ const Home = React.memo(() => {
   };
 
   // Share functions
-  const shareToTwitter = useCallback((meme: Meme) => {
-    const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername} #SAMUMemeContest`;
+  const shareToTwitter = (meme: Meme) => {
+    const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername} 🔥`;
     const url = window.location.href;
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
     window.open(twitterUrl, '_blank');
-  }, []);
+  };
 
-  const shareToTelegram = useCallback((meme: Meme) => {
+  const shareToTelegram = (meme: Meme) => {
     const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername}`;
     const url = window.location.href;
     const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
     window.open(telegramUrl, '_blank');
-  }, []);
+  };
 
   // Fetch SAMU and SOL balances for Solana wallets
   useEffect(() => {
@@ -150,7 +151,7 @@ const Home = React.memo(() => {
       setBalanceStatus('loading');
       setSamuBalance(0);
       setSolBalance(0);
-
+      
       // Fetch both balances concurrently
       Promise.all([
         getSamuTokenBalance(walletAddress),
@@ -181,15 +182,11 @@ const Home = React.memo(() => {
     enabled: true,
   });
 
-  const sortedMemes = useMemo(() => {
-    if (!memes) return [];
-
-    return [...memes].sort((a, b) => {
-      if (sortBy === "votes") return b.votes - a.votes;
-      if (sortBy === "latest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      return b.votes - a.votes; // default to votes
-    });
-  }, [memes, sortBy]);
+  const sortedMemes = memes.sort((a, b) => {
+    if (sortBy === "votes") return b.votes - a.votes;
+    if (sortBy === "latest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    return b.votes - a.votes; // default to votes
+  });
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -243,14 +240,14 @@ const Home = React.memo(() => {
       {/* Main Content Container */}
       <div className="max-w-md mx-auto px-4">
         <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-
+          
           <TabsContent value="contest" className="mt-4 space-y-4 pb-24">
             <Tabs defaultValue="contest-main" className="w-full">
               <TabsList className="grid w-full grid-cols-2 h-10">
                 <TabsTrigger value="contest-main" className="text-sm">Contest</TabsTrigger>
                 <TabsTrigger value="leaderboard" className="text-sm">Leaderboard</TabsTrigger>
               </TabsList>
-
+              
               <TabsContent value="contest-main" className="mt-0">
                 <main className="space-y-4 pb-20">
                   {/* Contest Header */}
@@ -311,7 +308,7 @@ const Home = React.memo(() => {
                                 canVote={isConnected}
                               />
                             ))}
-
+                            
                             {sortedMemes.length === 0 && (
                               <Card>
                                 <CardContent className="p-8 text-center">
@@ -348,7 +345,7 @@ const Home = React.memo(() => {
                                 </div>
                               </button>
                             ))}
-
+                            
                             {sortedMemes.length === 0 && (
                               <div className="col-span-3">
                                 <Card>
@@ -373,13 +370,13 @@ const Home = React.memo(() => {
                   </div>
                 </main>
               </TabsContent>
-
+              
               <TabsContent value="leaderboard">
                 <Leaderboard />
               </TabsContent>
             </Tabs>
           </TabsContent>
-
+          
           <TabsContent value="archive" className="mt-4 space-y-4 pb-24">
             {archiveView === 'list' ? (
               <div className="space-y-4">
@@ -399,7 +396,7 @@ const Home = React.memo(() => {
                 {/* Past Contests List */}
                 <div className="space-y-4">
                   <h3 className="text-md font-semibold text-foreground">Previous Contests</h3>
-
+                  
                   <button
                     onClick={() => {
                       setSelectedArchiveContest({
@@ -505,7 +502,7 @@ const Home = React.memo(() => {
                     ← Back to Archive
                   </Button>
                 </div>
-
+                
                 {selectedArchiveContest && (
                   <>
                     {/* Contest Header */}
@@ -587,7 +584,7 @@ const Home = React.memo(() => {
                 Contest Entry from {selectedArchiveContest?.title}
               </DialogDescription>
             </DialogHeader>
-
+            
             <div className="space-y-4">
               <div className="aspect-square rounded-lg overflow-hidden">
                 <img 
@@ -596,7 +593,7 @@ const Home = React.memo(() => {
                   className="w-full h-full object-cover"
                 />
               </div>
-
+              
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
                   <span className="text-sm font-bold text-primary-foreground">
@@ -615,14 +612,14 @@ const Home = React.memo(() => {
                   </div>
                 )}
               </div>
-
+              
               {selectedArchiveMeme.description && (
                 <div>
                   <h4 className="font-medium text-foreground mb-2">Description</h4>
                   <p className="text-muted-foreground">{selectedArchiveMeme.description}</p>
                 </div>
               )}
-
+              
               <div className="flex items-center justify-between pt-4 border-t border-border">
                 <div className="text-sm text-muted-foreground">
                   Final ranking: #{selectedArchiveMeme.rank}
@@ -687,7 +684,7 @@ const Home = React.memo(() => {
             <DialogHeader>
               <DialogTitle className="text-foreground">{selectedMeme.title}</DialogTitle>
             </DialogHeader>
-
+            
             <div className="space-y-4">
               <div className="aspect-square rounded-lg overflow-hidden">
                 <img
@@ -696,7 +693,7 @@ const Home = React.memo(() => {
                   className="w-full h-full object-cover"
                 />
               </div>
-
+              
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                   <span className="text-sm font-bold text-primary-foreground">
@@ -710,14 +707,14 @@ const Home = React.memo(() => {
                   </div>
                 </div>
               </div>
-
+              
               {selectedMeme.description && (
                 <div>
                   <h4 className="font-medium text-foreground mb-2">Description</h4>
                   <p className="text-muted-foreground">{selectedMeme.description}</p>
                 </div>
               )}
-
+              
               <div className="flex space-x-2 pt-2">
                 <Button
                   onClick={() => setShowVoteDialog(true)}
@@ -751,7 +748,7 @@ const Home = React.memo(() => {
                 You're about to vote for "{selectedMeme.title}" by {selectedMeme.authorUsername}
               </DialogDescription>
             </DialogHeader>
-
+            
             <div className="bg-accent rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-muted-foreground">Your voting power:</span>
@@ -792,7 +789,7 @@ const Home = React.memo(() => {
                 Share "{selectedMeme.title}" on social platforms
               </DialogDescription>
             </DialogHeader>
-
+            
             <div className="flex flex-col gap-3 py-4">
               <Button
                 onClick={() => {
@@ -824,6 +821,4 @@ const Home = React.memo(() => {
 
     </div>
   );
-});
-
-export default Home;
+}

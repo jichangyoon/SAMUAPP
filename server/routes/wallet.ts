@@ -53,8 +53,6 @@ router.get("/samu-balance/:wallet", async (req, res) => {
         const tokenAccount = tokenAccounts[0];
         const balance = tokenAccount?.account?.data?.parsed?.info?.tokenAmount?.uiAmount || 0;
         
-        // 30초 캐싱 추가
-        res.set('Cache-Control', 'public, max-age=30');
         return res.json({ balance });
       } catch (error) {
         continue;
@@ -106,8 +104,6 @@ router.get('/sol-balance/:walletAddress', async (req, res) => {
         const lamports = data.result?.value || 0;
         const solBalance = lamports / 1000000000;
         
-        // 30초 캐싱 추가
-        res.set('Cache-Control', 'public, max-age=30');
         return res.json({ balance: solBalance });
       } catch (error) {
         continue;
