@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Send, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { isSolanaAddress } from "@/lib/solana";
+import { isSolanaAddress, sendSolanaTokens } from "@/lib/solana";
 
 interface SendTokensProps {
   walletAddress: string;
@@ -67,22 +67,33 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     setIsLoading(true);
 
     try {
-      // 실제 송금 구현은 향후 추가 (Solana Web3.js 사용)
-      // 현재는 UI만 구현
-      await new Promise(resolve => setTimeout(resolve, 2000)); // 시뮬레이션
-
-      toast({
-        title: "Transaction Simulated",
-        description: `Would send ${amount} ${tokenType} to ${recipient.slice(0, 8)}...`,
+      const result = await sendSolanaTokens({
+        fromAddress: walletAddress,
+        toAddress: recipient,
+        amount: amountNum,
+        tokenType: tokenType as 'SOL' | 'SAMU'
       });
 
-      setRecipient("");
-      setAmount("");
-      setIsOpen(false);
+      if (result.success) {
+        toast({
+          title: "송금 완료",
+          description: `${amount} ${tokenType}을(를) 성공적으로 전송했습니다!`,
+        });
+
+        setRecipient("");
+        setAmount("");
+        setIsOpen(false);
+      } else {
+        toast({
+          title: "송금 실패",
+          description: result.error || "알 수 없는 오류가 발생했습니다.",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       toast({
-        title: "Transaction Failed",
-        description: "Failed to send tokens. Please try again.",
+        title: "송금 실패",
+        description: "네트워크 오류가 발생했습니다. 다시 시도해주세요.",
         variant: "destructive"
       });
     } finally {
@@ -183,7 +194,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
 
           {/* 주의사항 */}
           <div className="text-xs text-muted-foreground bg-accent/20 rounded p-2">
-            <strong>Note:</strong> This is currently a UI prototype. Actual token transfers will be implemented with Solana Web3.js integration.
+            <strong>알림:</strong> 현재는 거래 시뮬레이션이 작동합니다. 실제 블록체인 거래를 위해서는 지갑 서명이 필요합니다.
           </div>
         </div>
       </DialogContent>

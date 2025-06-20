@@ -286,6 +286,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Token transfer endpoint
+  app.post('/api/send-tokens', async (req, res) => {
+    try {
+      const { fromAddress, toAddress, amount, tokenType } = req.body;
+
+      // Validate input
+      if (!fromAddress || !toAddress || !amount || !tokenType) {
+        return res.status(400).json({ error: 'Missing required parameters' });
+      }
+
+      if (amount <= 0) {
+        return res.status(400).json({ error: 'Amount must be greater than 0' });
+      }
+
+      // Validate Solana addresses
+      if (fromAddress.length < 32 || fromAddress.length > 44 || fromAddress.startsWith('0x')) {
+        return res.status(400).json({ error: 'Invalid sender address' });
+      }
+
+      if (toAddress.length < 32 || toAddress.length > 44 || toAddress.startsWith('0x')) {
+        return res.status(400).json({ error: 'Invalid recipient address' });
+      }
+
+      // For now, we'll simulate the transaction since we don't have private keys
+      // In a real implementation, this would require the user to sign the transaction
+      // using their wallet (Phantom, Solflare, etc.)
+      
+      // Simulate transaction delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Generate a mock transaction hash for demonstration
+      const mockTxHash = `tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      // Log the transaction attempt
+      console.log(`[SIMULATED] Token transfer: ${amount} ${tokenType} from ${fromAddress.slice(0, 8)}... to ${toAddress.slice(0, 8)}...`);
+
+      res.json({ 
+        success: true, 
+        txHash: mockTxHash,
+        message: `Successfully simulated ${amount} ${tokenType} transfer`,
+        note: 'This is a simulation. Real transactions require wallet signatures.'
+      });
+
+    } catch (error) {
+      console.error('Token transfer error:', error);
+      res.status(500).json({ error: 'Internal server error during token transfer' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
