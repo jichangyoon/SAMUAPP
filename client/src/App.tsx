@@ -5,11 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { PrivyProvider } from '@privy-io/react-auth';
 import { useEffect } from 'react';
-import { BottomNavigation } from "@/components/bottom-navigation";
 import Home from "@/pages/home";
-import Archive from "@/pages/archive";
-import NFTGallery from "@/pages/nft-gallery";
-import Goods from "@/pages/goods";
 import NotFound from "@/pages/not-found";
 
 // Global error handler for Privy iframe issues
@@ -32,16 +28,11 @@ window.addEventListener('unhandledrejection', (event) => {
 
 function Router() {
   return (
-    <div className="min-h-screen bg-black">
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/archive" component={Archive} />
-        <Route path="/nft-gallery" component={NFTGallery} />
-        <Route path="/goods" component={Goods} />
-        <Route component={NotFound} />
-      </Switch>
-      <BottomNavigation />
-    </div>
+    <Switch>
+      <Route path="/" component={Home} />
+      <Route path="/connected" component={Home} />
+      <Route component={NotFound} />
+    </Switch>
   );
 }
 
