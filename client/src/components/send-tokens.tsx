@@ -26,6 +26,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const { toast } = useToast();
   const { user } = usePrivy();
   const { wallets } = useWallets();
+  const wallet = useEmbeddedWallet();
 
   const handleSend = async () => {
     if (!recipient || !amount) {
@@ -71,11 +72,38 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     setIsLoading(true);
 
     try {
-      // Get wallet signer if available for real transactions
+      // Check if user is authenticated and has wallets
+      if (!user) {
+        toast({
+          title: "로그인 필요",
+          description: "송금을 위해서는 먼저 로그인해주세요.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (wallets.length === 0) {
+        toast({
+          title: "지갑 연결 필요",
+          description: "송금을 위해서는 지갑 연결이 필요합니다.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Get wallet signer for real transactions
       let walletSigner = null;
-      if (useRealTransaction && wallets.length > 0) {
-        // Use the first available wallet for signing
-        walletSigner = wallets[0];
+      
+      if (wallets.length > 0) {
+        walletSigner = wallets[0]; // Use the first available wallet
+        console.log('Using wallet for signing:', walletSigner.address);
+      } else {
+        toast({
+          title: "지갑 연결 오류",
+          description: "연결된 지갑이 없습니다. 지갑을 연결해주세요.",
+          variant: "destructive"
+        });
+        return;
       }
 
       const result = await sendSolanaTokens({

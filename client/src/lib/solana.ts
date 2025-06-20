@@ -139,20 +139,31 @@ async function executeRealTransaction(params: {
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = fromPubkey;
 
-      // Try to access Privy wallet for signing
-      if (params.walletSigner && typeof params.walletSigner.signTransaction === 'function') {
-        const signedTransaction = await params.walletSigner.signTransaction(transaction);
-        const txHash = await connection.sendRawTransaction(signedTransaction.serialize(), {
-          skipPreflight: false,
-          preflightCommitment: 'confirmed'
-        });
-        
-        // Wait for confirmation
-        await connection.confirmTransaction(txHash, 'confirmed');
-        
-        return { success: true, txHash, isSimulation: false };
+      // Sign transaction using Privy embedded wallet
+      if (params.walletSigner) {
+        try {
+          // For Privy embedded wallets, we need to use the wallet provider directly
+          const provider = (params.walletSigner as any).getProvider?.();
+          
+          if (provider && provider.signTransaction) {
+            const signedTransaction = await provider.signTransaction(transaction);
+            const txHash = await connection.sendRawTransaction(signedTransaction.serialize(), {
+              skipPreflight: false,
+              preflightCommitment: 'confirmed'
+            });
+            
+            // Wait for confirmation
+            await connection.confirmTransaction(txHash, 'confirmed');
+            
+            return { success: true, txHash, isSimulation: false };
+          } else {
+            throw new Error('Wallet provider does not support transaction signing');
+          }
+        } catch (error: any) {
+          throw new Error(`Transaction signing failed: ${error.message}`);
+        }
       } else {
-        throw new Error('Wallet signing not available');
+        throw new Error('No wallet signer provided');
       }
     } else {
       // SAMU token transfer
@@ -190,19 +201,30 @@ async function executeRealTransaction(params: {
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = fromPubkey;
 
-      if (params.walletSigner && typeof params.walletSigner.signTransaction === 'function') {
-        const signedTransaction = await params.walletSigner.signTransaction(transaction);
-        const txHash = await connection.sendRawTransaction(signedTransaction.serialize(), {
-          skipPreflight: false,
-          preflightCommitment: 'confirmed'
-        });
-        
-        // Wait for confirmation
-        await connection.confirmTransaction(txHash, 'confirmed');
-        
-        return { success: true, txHash, isSimulation: false };
+      if (params.walletSigner) {
+        try {
+          // For Privy embedded wallets, we need to use the wallet provider directly
+          const provider = (params.walletSigner as any).getProvider?.();
+          
+          if (provider && provider.signTransaction) {
+            const signedTransaction = await provider.signTransaction(transaction);
+            const txHash = await connection.sendRawTransaction(signedTransaction.serialize(), {
+              skipPreflight: false,
+              preflightCommitment: 'confirmed'
+            });
+            
+            // Wait for confirmation
+            await connection.confirmTransaction(txHash, 'confirmed');
+            
+            return { success: true, txHash, isSimulation: false };
+          } else {
+            throw new Error('Wallet provider does not support transaction signing');
+          }
+        } catch (error: any) {
+          throw new Error(`SAMU Token signing failed: ${error.message}`);
+        }
       } else {
-        throw new Error('Wallet signing not available');
+        throw new Error('No wallet signer provided for SAMU token transfer');
       }
     }
   } catch (error: any) {
