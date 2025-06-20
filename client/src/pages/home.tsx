@@ -13,7 +13,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Grid3X3, List } from "lucide-react";
+import { User, Grid3X3, List, ArrowUp, Share2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { getSamuTokenBalance } from "@/lib/solana";
 import type { Meme } from "@shared/schema";
 import samuLogoImg from "/assets/images/logos/samu-logo.jpg";
@@ -23,12 +25,15 @@ export default function Home() {
   const [currentTab, setCurrentTab] = useState("contest");
   const [viewMode, setViewMode] = useState<'card' | 'grid'>('card');
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
+  const [showVoteDialog, setShowVoteDialog] = useState(false);
+  const [isVoting, setIsVoting] = useState(false);
   const [samuBalance, setSamuBalance] = useState<number>(0);
   const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [showUserProfile, setShowUserProfile] = useState(false);
   
   // Privy authentication
   const { authenticated, user } = usePrivy();
+  const { toast } = useToast();
   
   // Get wallet info from Privy embedded wallet
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
@@ -62,6 +67,44 @@ export default function Home() {
 
   const displayName = authenticated ? profileData.displayName : 'SAMU';
   const profileImage = profileData.profileImage;
+
+  // Grid view voting function
+  const handleGridVote = async (meme: Meme) => {
+    if (!isConnected || !walletAddress) {
+      toast({
+        title: "Wallet Required",
+        description: "Please connect your wallet to vote.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const votingPower = 1; // Simplified for now
+    setIsVoting(true);
+    
+    try {
+      await apiRequest("POST", `/api/memes/${meme.id}/vote`, {
+        voterWallet: walletAddress,
+        votingPower,
+      });
+
+      toast({
+        title: "Vote Submitted!",
+        description: `Your vote with ${votingPower} voting power has been recorded.`,
+      });
+      
+      setSelectedMeme(null);
+      refetch(); // Refresh the memes list
+    } catch (error: any) {
+      toast({
+        title: "Voting Failed",
+        description: error.message || "Failed to submit vote. You may have already voted on this meme.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsVoting(false);
+    }
+  };
 
   // Fetch SAMU balance for Solana wallets
   useEffect(() => {
