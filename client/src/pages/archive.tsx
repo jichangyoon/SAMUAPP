@@ -119,7 +119,7 @@ export default function Archive() {
           {pastContests.length === 0 && (
             <Card className="bg-gray-900 border-gray-800">
               <CardContent className="text-center py-12">
-                <Archive size={48} className="text-gray-500 mx-auto mb-4" />
+                <Archive className="w-12 h-12 text-gray-500 mx-auto mb-4" />
                 <p className="text-gray-400">아직 완료된 콘테스트가 없습니다</p>
               </CardContent>
             </Card>
