@@ -54,37 +54,28 @@ export function WalletConnect() {
     const displayAddress = walletAddress 
       ? `${walletAddress.slice(0, 4)}...${walletAddress.slice(-3)}`
       : 'Connected';
-    
-    const chainType = selectedWalletAccount?.chainType || 'unknown';
 
     return (
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
         {/* SAMU Balance Display */}
         {isSolana && (
-          <div className="text-right">
-            <div className="text-xs font-bold text-[hsl(30,100%,50%)]">
-              {balanceStatus === 'loading' ? 'Loading...' : `${samuBalance.toLocaleString()}`}
+          <div className="text-right bg-accent px-2 py-1 rounded">
+            <div className="text-xs font-bold text-primary">
+              {balanceStatus === 'loading' ? '...' : samuBalance.toLocaleString()}
             </div>
             <div className="text-xs text-muted-foreground">SAMU</div>
           </div>
         )}
         
-        {/* Wallet Info Button */}
+        {/* Wallet Button */}
         <Button
           onClick={logout}
           variant="outline"
           size="sm"
-          className="bg-green-950/20 text-green-400 border-green-800 hover:bg-green-950/30 px-2 py-1 h-auto"
+          className="h-8 px-2 text-xs"
         >
-          <div className="flex flex-col items-start">
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <span className="font-mono text-xs">{displayAddress}</span>
-            </div>
-            <span className="text-xs opacity-75">
-              {chainType === 'solana' ? 'Solana' : chainType === 'ethereum' ? 'Ethereum' : 'Wallet'}
-            </span>
-          </div>
+          <div className="w-2 h-2 bg-green-400 rounded-full mr-1"></div>
+          <span className="font-mono">{displayAddress}</span>
           <LogOut className="h-3 w-3 ml-1" />
         </Button>
       </div>
