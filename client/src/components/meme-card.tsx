@@ -66,20 +66,19 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
     }
   };
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: meme.title,
-        text: meme.description ?? "",
-        url: window.location.href,
-      });
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      toast({
-        title: "Link Copied",
-        description: "Meme link has been copied to clipboard.",
-      });
-    }
+  // Share functions
+  const shareToTwitter = () => {
+    const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername} 🔥`;
+    const url = window.location.href;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+    window.open(twitterUrl, '_blank');
+  };
+
+  const shareToTelegram = () => {
+    const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername}`;
+    const url = window.location.href;
+    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+    window.open(telegramUrl, '_blank');
   };
 
   return (
@@ -135,7 +134,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
               Vote
             </Button>
             <Button
-              onClick={handleShare}
+              onClick={() => setShowShareDialog(true)}
               variant="outline"
               size="sm"
               className="px-4"
@@ -233,7 +232,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
                 Vote
               </Button>
               <Button
-                onClick={handleShare}
+                onClick={() => setShowShareDialog(true)}
                 variant="outline"
                 size="sm"
                 className="px-4"
@@ -241,6 +240,41 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
                 <Share2 className="h-4 w-4" />
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Share Dialog */}
+      <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+        <DialogContent className="max-w-sm mx-4 bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Share Meme</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Share "{meme.title}" on social platforms
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex flex-col gap-3 py-4">
+            <Button
+              onClick={() => {
+                shareToTwitter();
+                setShowShareDialog(false);
+              }}
+              className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-2"
+            >
+              <Twitter className="h-4 w-4" />
+              Share on Twitter
+            </Button>
+            <Button
+              onClick={() => {
+                shareToTelegram();
+                setShowShareDialog(false);
+              }}
+              className="bg-blue-400 hover:bg-blue-500 text-white flex items-center gap-2"
+            >
+              <Send className="h-4 w-4" />
+              Share on Telegram
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
