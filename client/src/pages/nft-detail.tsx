@@ -189,12 +189,12 @@ export default function NFTDetail() {
                   <div key={comment.id} className="flex space-x-3 p-3 rounded-lg bg-muted/50">
                     <Avatar className="h-8 w-8">
                       <AvatarFallback className="text-xs">
-                        {comment.authorUsername.slice(0, 2).toUpperCase()}
+                        {(comment.authorUsername || 'Anonymous').slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 space-y-1">
                       <div className="flex items-center space-x-2">
-                        <span className="font-medium text-sm">{comment.authorUsername}</span>
+                        <span className="font-medium text-sm">{comment.authorUsername || 'Anonymous'}</span>
                         <span className="text-xs text-muted-foreground">
                           {new Date(comment.createdAt).toLocaleDateString('ko-KR')}
                         </span>
