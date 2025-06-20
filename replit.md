@@ -210,6 +210,8 @@ Changelog:
 - June 20, 2025. Added share dialog with platform-specific buttons replacing generic share functionality across all meme components
 - June 20, 2025. Enhanced sharing system with custom text including meme title, author, and app URL for each social platform
 - June 20, 2025. Updated SAMU Goods Shop header styling - swapped background and text colors (black background with yellow text) per user request
+- June 20, 2025. Moved Meme Contest/Goods Shop navigation from top to bottom with icon design using Trophy and ShoppingBag icons
+- June 20, 2025. Refined bottom navigation - removed text labels and reduced icon size for cleaner minimal design
 ```
 
 ## User Preferences

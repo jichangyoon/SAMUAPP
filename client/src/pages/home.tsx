@@ -355,29 +355,27 @@ export default function Home() {
 
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50">
-        <div className="max-w-md mx-auto px-4 py-3">
+        <div className="max-w-md mx-auto px-4 py-2">
           <div className="flex justify-around items-center">
             <button
               onClick={() => setCurrentTab("contest")}
-              className={`flex flex-col items-center space-y-1 px-4 py-2 rounded-lg transition-colors ${
+              className={`flex items-center justify-center p-3 rounded-lg transition-colors ${
                 currentTab === "contest" 
                   ? "bg-primary/20 text-primary" 
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <Trophy className="h-5 w-5" />
-              <span className="text-xs font-medium">Meme Contest</span>
+              <Trophy className="h-4 w-4" />
             </button>
             <button
               onClick={() => setCurrentTab("goods")}
-              className={`flex flex-col items-center space-y-1 px-4 py-2 rounded-lg transition-colors ${
+              className={`flex items-center justify-center p-3 rounded-lg transition-colors ${
                 currentTab === "goods" 
                   ? "bg-primary/20 text-primary" 
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <ShoppingBag className="h-5 w-5" />
-              <span className="text-xs font-medium">Goods Shop</span>
+              <ShoppingBag className="h-4 w-4" />
             </button>
           </div>
         </div>
