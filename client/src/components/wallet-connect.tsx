@@ -20,28 +20,51 @@ export function WalletConnect() {
   const walletAddress = selectedWalletAccount?.address || '';
   const isSolana = selectedWalletAccount?.chainType === 'solana';
 
+  // Complete cleanup function
+  const clearAllWalletData = () => {
+    console.log('🧹 Clearing all wallet data and cache');
+    setSamuBalance(0);
+    setBalanceStatus('idle');
+    // Clear localStorage cache
+    try {
+      Object.keys(localStorage).forEach(key => {
+        if (key.includes('phantom') || key.includes('wallet') || key.includes('samu') || key.includes('privy')) {
+          localStorage.removeItem(key);
+        }
+      });
+    } catch (error) {
+      console.warn('Failed to clear localStorage:', error);
+    }
+  };
+
+  // Enhanced logout function
+  const handleLogout = async () => {
+    clearAllWalletData();
+    await logout();
+  };
+
   // Fetch SAMU balance for Solana wallets
   useEffect(() => {
     if (authenticated && walletAddress && isSolana) {
-      console.log('Fetching SAMU balance for wallet:', walletAddress);
+      console.log('💰 Fetching SAMU balance for wallet:', walletAddress);
       setBalanceStatus('loading');
-      setSamuBalance(0); // 캐시 초기화
+      // Clear previous balance immediately
+      setSamuBalance(0);
+      
       getSamuTokenBalance(walletAddress)
         .then(balance => {
-          console.log('SAMU balance received:', balance);
+          console.log('✅ SAMU balance received:', balance);
           setSamuBalance(balance);
           setBalanceStatus('success');
         })
         .catch(error => {
-          console.warn('Failed to fetch SAMU balance:', error);
+          console.warn('❌ Failed to fetch SAMU balance:', error);
           setSamuBalance(0);
           setBalanceStatus('error');
         });
     } else if (!authenticated) {
-      // 지갑 연결 해제 시 완전 초기화
-      console.log('Wallet disconnected - clearing all data');
-      setSamuBalance(0);
-      setBalanceStatus('idle');
+      // Complete cleanup when not authenticated
+      clearAllWalletData();
     }
   }, [authenticated, walletAddress, isSolana]);
 
@@ -86,7 +109,7 @@ export function WalletConnect() {
             {isCreatingWallet ? 'Creating...' : 'Create Wallet'}
           </Button>
           <Button
-            onClick={logout}
+            onClick={handleLogout}
             variant="outline"
             size="sm"
             className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200"
@@ -111,7 +134,7 @@ export function WalletConnect() {
         
         {/* Wallet Info Button */}
         <Button
-          onClick={logout}
+          onClick={handleLogout}
           variant="outline"
           size="sm"
           className="bg-green-950/20 text-green-400 border-green-800 hover:bg-green-950/30 px-2 py-1 h-auto"

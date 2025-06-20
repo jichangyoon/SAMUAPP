@@ -48,11 +48,33 @@ export default function Home() {
     });
   }, [authenticated, user, isConnected, walletAddress]);
 
+  // Complete data cleanup on wallet change
+  useEffect(() => {
+    if (!authenticated) {
+      console.log('🧹 User not authenticated - clearing all data');
+      setSamuBalance(0);
+      setBalanceStatus('idle');
+      // Clear any cached wallet data
+      try {
+        Object.keys(localStorage).forEach(key => {
+          if (key.includes('phantom') || key.includes('wallet') || key.includes('samu')) {
+            localStorage.removeItem(key);
+          }
+        });
+      } catch (error) {
+        console.warn('Failed to clear localStorage:', error);
+      }
+    }
+  }, [authenticated]);
+
   // Fetch SAMU balance for Solana wallets
   useEffect(() => {
     if (isConnected && walletAddress && isSolana) {
       console.log('💰 Fetching SAMU balance for:', walletAddress);
       setBalanceStatus('loading');
+      // Clear previous balance immediately
+      setSamuBalance(0);
+      
       getSamuTokenBalance(walletAddress)
         .then(balance => {
           console.log('✅ SAMU balance fetched:', balance);
@@ -64,8 +86,8 @@ export default function Home() {
           setSamuBalance(0);
           setBalanceStatus('error');
         });
-    } else {
-      console.log('⏸️ Not fetching balance - isConnected:', isConnected, 'walletAddress:', walletAddress, 'isSolana:', isSolana);
+    } else if (!isConnected) {
+      console.log('⏸️ Wallet not connected - clearing balance data');
       setSamuBalance(0);
       setBalanceStatus('idle');
     }

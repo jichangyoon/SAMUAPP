@@ -8,6 +8,23 @@ import { useEffect } from 'react';
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 
+// Global error handler for Privy iframe issues
+window.addEventListener('error', (event) => {
+  if (event.message?.includes('Privy iframe') || (event.target as HTMLElement)?.tagName === 'IFRAME') {
+    console.warn('Privy iframe error handled:', event.message);
+    event.preventDefault();
+    return false;
+  }
+});
+
+// Handle unhandled promise rejections
+window.addEventListener('unhandledrejection', (event) => {
+  if (event.reason?.message?.includes('Privy') || event.reason?.message?.includes('iframe')) {
+    console.warn('Privy promise rejection handled:', event.reason);
+    event.preventDefault();
+  }
+});
+
 function Router() {
   return (
     <Switch>
@@ -30,7 +47,8 @@ function App() {
       config={{
         appearance: {
           theme: 'dark',
-          accentColor: '#fbbf24'
+          accentColor: '#fbbf24',
+          showWalletLoginFirst: false
         },
         loginMethods: ['wallet', 'email'],
         embeddedWallets: {
@@ -39,7 +57,6 @@ function App() {
             createOnLogin: 'users-without-wallets',
           },
         },
-
         mfa: {
           noPromptOnMfaRequired: false
         }
