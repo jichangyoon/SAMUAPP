@@ -150,25 +150,31 @@ export class MemStorage implements IStorage {
   }
 
   private initializeNftData() {
-    // Create 164 unique NFTs with varied designs
+    // Create 164 unique NFTs with URL-based images for better performance
+    const nftImageUrls = this.generateNftImageUrls();
+    
     for (let i = 1; i <= 164; i++) {
       const nft: Nft = {
         id: i,
         title: `SAMU Wolf #${String(i).padStart(3, '0')}`,
         tokenId: i,
-        creator: `creator_${Math.floor(Math.random() * 20) + 1}`,
+        creator: "SAMU Official",
         description: `Unique SAMU Wolf NFT with special traits. Part of the legendary 164 collection.`,
-        imageUrl: this.generateNftImage(i),
+        imageUrl: nftImageUrls[i - 1],
         createdAt: new Date()
       };
       this.nfts.set(i, nft);
     }
   }
 
-  private generateNftImage(tokenId: number): string {
-    // Use static image files from attached_assets/nfts/
-    // Images should be named: 1.png, 2.png, 3.png, etc.
-    return `/assets/nfts/${tokenId}.png`;
+  private generateNftImageUrls(): string[] {
+    // High-performance NFT image URLs - using local assets as external URLs for faster loading
+    const urls: string[] = [];
+    for (let i = 1; i <= 164; i++) {
+      // Using local assets served as static URLs for optimal performance
+      urls.push(`/assets/nfts/${i}.png`);
+    }
+    return urls;
   }
 
   // NFT operations

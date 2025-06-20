@@ -133,7 +133,14 @@ export function NftGallery() {
             <img
               src={nft.imageUrl}
               alt={nft.title}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+              onError={(e) => {
+                // Fallback for missing images
+                const target = e.target as HTMLImageElement;
+                target.src = `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23333"/><text x="50" y="55" text-anchor="middle" fill="%23F7DC6F" font-size="10" font-family="Arial">SAMU %23${nft.tokenId}</text></svg>`;
+              }}
             />
           </button>
         ))}
