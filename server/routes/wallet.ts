@@ -7,9 +7,6 @@ const router = Router();
 // Get SAMU token balance for a wallet
 router.get("/samu-balance/:wallet", async (req, res) => {
   try {
-    // 캐시 헤더 설정 (30초)
-    res.set('Cache-Control', 'public, max-age=30');
-    
     const walletAddress = req.params.wallet;
     
     // Return 0 for non-Solana addresses
@@ -72,9 +69,6 @@ router.get("/samu-balance/:wallet", async (req, res) => {
 // SOL balance endpoint
 router.get('/sol-balance/:walletAddress', async (req, res) => {
   try {
-    // 캐시 헤더 설정 (30초)
-    res.set('Cache-Control', 'public, max-age=30');
-    
     const { walletAddress } = req.params;
     
     if (!walletAddress || walletAddress.startsWith('0x')) {

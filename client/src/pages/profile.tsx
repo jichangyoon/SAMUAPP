@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import * as React from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +15,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { SendTokens } from "@/components/send-tokens";
 
-const Profile = React.memo(() => {
+export default function Profile() {
   const { user } = usePrivy();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -78,11 +77,11 @@ const Profile = React.memo(() => {
   }, [user?.id]);
 
   // 컴포넌트 마운트 시 저장된 프로필 정보 로드
-  useEffect(() => {
+  useState(() => {
     const storedProfile = getStoredProfile;
-    setDisplayName(storedProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
-    setProfileImage(storedProfile.profileImage || '');
-  }, [getStoredProfile, user?.email?.address]);
+    setDisplayName(storedProfile.displayName);
+    setProfileImage(storedProfile.profileImage);
+  });
 
   // 프로필 이미지 변경 - useCallback으로 최적화
   const handleImageChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -140,7 +139,62 @@ const Profile = React.memo(() => {
     setIsEditing(false);
   }, [getStoredProfile, user?.email?.address]);
 
+  // 이미지 업로드 핸들러
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setImagePreview(result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
+  // 프로필 저장
+  const handleSaveProfile2 = () => {
+    const profileData = {
+      displayName,
+      profileImage: imagePreview || profileImage
+    };
+
+    localStorage.setItem(`profile_${user?.id}`, JSON.stringify(profileData));
+
+    if (imagePreview) {
+      setProfileImage(imagePreview);
+      setImagePreview('');
+    }
+
+    setIsEditing(false);
+
+    toast({
+      title: "Profile Updated",
+      description: "Your profile has been saved successfully.",
+    });
+
+    // 쿼리 캐시 무효화
+    queryClient.invalidateQueries({
+      queryKey: ['profile', user?.id]
+    });
+
+    // 홈 페이지의 헤더 데이터도 업데이트 - 브라우저 이벤트로 알림
+    window.dispatchEvent(new CustomEvent('profileUpdated', {
+      detail: {
+        displayName,
+        profileImage: imagePreview || profileImage
+      }
+    }));
+  };
+
+  // 편집 취소
+  const handleCancelEdit2 = () => {
+    const storedProfile = getStoredProfile;
+    setDisplayName(storedProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
+    setProfileImage(storedProfile.profileImage || '');
+    setImagePreview('');
+    setIsEditing(false);
+  };
 
   // 사용자가 만든 밈들 가져오기
   const { data: allMemes = [] } = useQuery<any[]>({
@@ -209,7 +263,7 @@ const Profile = React.memo(() => {
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={handleImageChange}
+                      onChange={handleImageUpload}
                       className="hidden"
                     />
                   </label>
@@ -490,8 +544,4 @@ const Profile = React.memo(() => {
       </div>
     </div>
   );
-});
-
-Profile.displayName = 'Profile';
-
-export default Profile;
+}

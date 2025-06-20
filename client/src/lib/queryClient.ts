@@ -47,13 +47,11 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5분 후 stale
-      gcTime: 10 * 60 * 1000, // 10분 후 가비지 컬렉션
+      staleTime: Infinity,
       retry: false,
     },
     mutations: {
       retry: false,
-      gcTime: 5 * 60 * 1000, // 5분 후 가비지 컬렉션
     },
   },
 });
