@@ -248,6 +248,10 @@ Changelog:
 - June 20, 2025. Implemented comprehensive token transfer interface with SAMU and SOL support
 - June 20, 2025. Created SendTokens component with address validation, balance checking, and transaction simulation
 - June 20, 2025. Enhanced profile page with integrated wallet management and token sending capabilities
+- June 20, 2025. Completed real blockchain transaction system with Solana Web3.js integration
+- June 20, 2025. Added dual-mode token transfer: simulation mode (safe testing) and real transaction mode (actual blockchain)
+- June 20, 2025. Implemented Privy wallet integration for signing real blockchain transactions
+- June 20, 2025. Enhanced UI with mode selection, transaction status feedback, and safety warnings for real transfers
 ```
 
 ## User Preferences

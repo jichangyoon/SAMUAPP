@@ -71,13 +71,11 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     setIsLoading(true);
 
     try {
-      // Get Solana wallet signer if available for real transactions
+      // Get wallet signer if available for real transactions
       let walletSigner = null;
       if (useRealTransaction && wallets.length > 0) {
-        const solanaWallet = wallets.find(w => w.chainType === 'solana');
-        if (solanaWallet) {
-          walletSigner = solanaWallet;
-        }
+        // Use the first available wallet for signing
+        walletSigner = wallets[0];
       }
 
       const result = await sendSolanaTokens({
@@ -143,6 +141,33 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
         </DialogHeader>
         
         <div className="space-y-4">
+          {/* 거래 모드 선택 */}
+          <div className="space-y-2">
+            <Label>거래 모드</Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={!useRealTransaction ? "default" : "outline"}
+                size="sm"
+                onClick={() => setUseRealTransaction(false)}
+                className="flex-1"
+              >
+                <Zap className="h-4 w-4 mr-2" />
+                시뮬레이션
+              </Button>
+              <Button
+                type="button"
+                variant={useRealTransaction ? "default" : "outline"}
+                size="sm"
+                onClick={() => setUseRealTransaction(true)}
+                className="flex-1"
+              >
+                <Send className="h-4 w-4 mr-2" />
+                실제 송금
+              </Button>
+            </div>
+          </div>
+
           {/* 토큰 타입 선택 */}
           <div className="space-y-2">
             <Label htmlFor="tokenType">Token Type</Label>
@@ -201,30 +226,40 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
               onClick={handleSend}
               disabled={isLoading}
               className="flex-1"
+              variant={useRealTransaction ? "destructive" : "default"}
             >
-              {isLoading ? "Sending..." : "Send Tokens"}
+              {isLoading ? "처리중..." : (useRealTransaction ? "실제 송금 실행" : "시뮬레이션 실행")}
             </Button>
             <Button
               variant="outline"
               onClick={() => setIsOpen(false)}
               disabled={isLoading}
             >
-              Cancel
+              취소
             </Button>
           </div>
 
           {/* 주의사항 */}
-          <div className="text-xs text-muted-foreground bg-red-900/20 border border-red-600/30 rounded p-3">
-            <strong className="text-red-400">⚠️ 중요한 알림:</strong>
-            <div className="mt-1">
-              현재는 <strong>시뮬레이션 모드</strong>로 작동합니다. 실제 토큰은 이동하지 않으며, 지갑 잔고도 변경되지 않습니다.
+          {!useRealTransaction ? (
+            <div className="text-xs text-muted-foreground bg-blue-900/20 border border-blue-600/30 rounded p-3">
+              <strong className="text-blue-400">시뮬레이션 모드</strong>
+              <div className="mt-1">
+                실제 토큰은 이동하지 않으며, 지갑 잔고도 변경되지 않습니다. 안전하게 테스트할 수 있습니다.
+              </div>
             </div>
-            <div className="mt-2 text-yellow-400">
-              <strong>실제 송금을 위해서는:</strong>
-              <br />• 지갑 연동 및 서명 기능 필요
-              <br />• Solana Web3.js 완전 구현 필요
+          ) : (
+            <div className="text-xs text-muted-foreground bg-red-900/20 border border-red-600/30 rounded p-3">
+              <strong className="text-red-400">⚠️ 실제 송금 모드</strong>
+              <div className="mt-1">
+                <strong>실제 블록체인에 거래가 기록됩니다!</strong> 토큰이 실제로 이동하며, 되돌릴 수 없습니다.
+              </div>
+              <div className="mt-2 text-yellow-400">
+                • 수신자 주소를 정확히 확인하세요
+                <br />• 충분한 가스비(SOL)가 있는지 확인하세요
+                <br />• 지갑에서 거래 승인이 필요합니다
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
