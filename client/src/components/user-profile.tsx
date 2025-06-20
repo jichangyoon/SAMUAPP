@@ -281,47 +281,50 @@ export function UserProfile({ isOpen, onClose, samuBalance, solBalance }: UserPr
           {/* 탭 메뉴 */}
           <Tabs defaultValue="upload" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="upload" className="flex items-center gap-2">
-                <Upload className="h-4 w-4" />
-                Upload Meme
+              <TabsTrigger value="upload" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <Upload className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Upload Meme</span>
+                <span className="sm:hidden">Upload</span>
               </TabsTrigger>
-              <TabsTrigger value="my-memes" className="flex items-center gap-2">
-                <Trophy className="h-4 w-4" />
-                My Memes
+              <TabsTrigger value="my-memes" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <Trophy className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">My Memes</span>
+                <span className="sm:hidden">Memes</span>
               </TabsTrigger>
-              <TabsTrigger value="voting-history" className="flex items-center gap-2">
-                <Vote className="h-4 w-4" />
-                Voting History
+              <TabsTrigger value="voting-history" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <Vote className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Voting History</span>
+                <span className="sm:hidden">Votes</span>
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="upload" className="mt-6">
+            <TabsContent value="upload" className="mt-3 sm:mt-6">
               <UploadForm onSuccess={onClose} />
             </TabsContent>
 
-            <TabsContent value="my-memes" className="mt-6">
-              <div className="space-y-4">
+            <TabsContent value="my-memes" className="mt-3 sm:mt-6">
+              <div className="space-y-3 sm:space-y-4">
                 {myMemes.length === 0 ? (
                   <Card>
-                    <CardContent className="p-8 text-center">
-                      <p className="text-muted-foreground">You haven't created any memes yet.</p>
+                    <CardContent className="p-4 sm:p-8 text-center">
+                      <p className="text-muted-foreground text-sm sm:text-base">You haven't created any memes yet.</p>
                     </CardContent>
                   </Card>
                 ) : (
                   myMemes.map((meme: any) => (
                     <Card key={meme.id} className="border-border bg-card">
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-4">
+                      <CardContent className="p-3 sm:p-4">
+                        <div className="flex items-start gap-3 sm:gap-4">
                           <img
                             src={meme.imageUrl}
                             alt={meme.title}
-                            className="w-20 h-20 object-cover rounded-lg"
+                            className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg flex-shrink-0"
                           />
-                          <div className="flex-1">
-                            <h4 className="font-bold text-foreground">{meme.title}</h4>
-                            <p className="text-sm text-muted-foreground mt-1">{meme.description}</p>
-                            <div className="flex items-center gap-4 mt-2">
-                              <Badge variant="secondary">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-bold text-foreground text-sm sm:text-base truncate">{meme.title}</h4>
+                            <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2">{meme.description}</p>
+                            <div className="flex items-center gap-2 sm:gap-4 mt-2">
+                              <Badge variant="secondary" className="text-xs">
                                 <Zap className="h-3 w-3 mr-1" />
                                 {meme.votes} votes
                               </Badge>
@@ -338,11 +341,11 @@ export function UserProfile({ isOpen, onClose, samuBalance, solBalance }: UserPr
               </div>
             </TabsContent>
 
-            <TabsContent value="voting-history" className="mt-6">
+            <TabsContent value="voting-history" className="mt-3 sm:mt-6">
               <Card>
-                <CardContent className="p-8 text-center">
-                  <p className="text-muted-foreground">Voting history feature coming soon!</p>
-                  <p className="text-sm text-muted-foreground mt-2">
+                <CardContent className="p-4 sm:p-8 text-center">
+                  <p className="text-muted-foreground text-sm sm:text-base">Voting history feature coming soon!</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-2">
                     Track your voting activity and power usage here.
                   </p>
                 </CardContent>

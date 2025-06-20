@@ -231,6 +231,10 @@ Changelog:
 - June 20, 2025. Implemented SOL balance display alongside SAMU token balance in wallet header
 - June 20, 2025. Added SOL balance API endpoint and concurrent balance fetching for improved wallet information display
 - June 20, 2025. Changed balance display layout from vertical to horizontal alignment to maintain compact header design
+- June 20, 2025. Implemented complete SOL balance display in user profile modal alongside SAMU tokens with purple color styling
+- June 20, 2025. Added comprehensive mobile responsive design for user profile modal - automatic size adjustment for all devices
+- June 20, 2025. Optimized user profile modal with mobile-first responsive layout: font sizes, spacing, grid columns, and tab navigation
+- June 20, 2025. Updated profile grid from 4 to 5 columns (2/3/5 responsive breakpoints) to accommodate both SAMU and SOL balance display
 ```
 
 ## User Preferences
