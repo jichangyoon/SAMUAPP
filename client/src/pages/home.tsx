@@ -548,6 +548,69 @@ export default function Home() {
         </Tabs>
       </div>
 
+      {/* Archive Meme Detail Modal */}
+      {selectedArchiveMeme && (
+        <Dialog open={!!selectedArchiveMeme} onOpenChange={() => setSelectedArchiveMeme(null)}>
+          <DialogContent className="max-w-md mx-4 bg-card border-border">
+            <DialogHeader>
+              <DialogTitle className="text-foreground">{selectedArchiveMeme.title}</DialogTitle>
+              <DialogDescription className="text-muted-foreground">
+                Contest Entry from {selectedArchiveContest?.title}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div className="aspect-square rounded-lg overflow-hidden">
+                <img 
+                  src={selectedArchiveMeme.imageUrl} 
+                  alt={selectedArchiveMeme.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-sm font-bold text-primary-foreground">
+                    {selectedArchiveMeme.author.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium text-foreground">{selectedArchiveMeme.author}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {selectedArchiveMeme.votes.toLocaleString()} votes • #{selectedArchiveMeme.rank} place
+                  </div>
+                </div>
+                {selectedArchiveMeme.rank <= 3 && (
+                  <div className="text-2xl">
+                    {selectedArchiveMeme.rank === 1 ? '🥇' : selectedArchiveMeme.rank === 2 ? '🥈' : '🥉'}
+                  </div>
+                )}
+              </div>
+              
+              {selectedArchiveMeme.description && (
+                <div>
+                  <h4 className="font-medium text-foreground mb-2">Description</h4>
+                  <p className="text-muted-foreground">{selectedArchiveMeme.description}</p>
+                </div>
+              )}
+              
+              <div className="flex items-center justify-between pt-4 border-t border-border">
+                <div className="text-sm text-muted-foreground">
+                  Final ranking: #{selectedArchiveMeme.rank}
+                </div>
+                <Button
+                  onClick={() => setSelectedArchiveMeme(null)}
+                  variant="outline"
+                  size="sm"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50">
         <div className="max-w-md mx-auto px-4 py-1">
