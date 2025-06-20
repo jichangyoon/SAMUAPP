@@ -184,6 +184,10 @@ Changelog:
 - June 20, 2025. Implemented authentic SAMU wolf logo provided by user - replaced generic SVG with actual brand logo featuring spiky wolf head design
 - June 20, 2025. Applied Poppins font family across entire application - replaced default AI-feeling fonts with modern, professional typography
 - June 20, 2025. Cleaned up duplicate text in Goods Shop header - removed redundant "Purchase with SAMU tokens" text for better readability
+- June 20, 2025. Fixed Privy wallet data persistence issues - resolved phantom wallet cache conflicts after user logout/login cycles
+- June 20, 2025. Implemented comprehensive wallet data cleanup system with localStorage clearing on authentication state changes
+- June 20, 2025. Added enhanced error handling for Privy iframe loading failures and WalletConnect initialization conflicts
+- June 20, 2025. Verified complete wallet state management - confirmed proper display of new Privy wallet address and SAMU token balance after data cleanup
 ```
 
 ## User Preferences
