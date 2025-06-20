@@ -203,7 +203,7 @@ const Profile = React.memo(() => {
                     {displayName.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                {isEditing && (
+                {isEditing && user && (
                   <label className="absolute -bottom-0.5 -right-0.5 bg-primary text-primary-foreground rounded-full p-1 cursor-pointer hover:bg-primary/80">
                     <Camera className="h-2.5 w-2.5" />
                     <input
@@ -229,7 +229,9 @@ const Profile = React.memo(() => {
                 ) : (
                   <div>
                     <h3 className="text-sm font-bold text-foreground">{displayName}</h3>
-                    <p className="text-xs text-muted-foreground">{user?.email?.address}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {user?.email?.address || "Guest User - Please login to edit profile"}
+                    </p>
                   </div>
                 )}
               </div>
@@ -254,6 +256,7 @@ const Profile = React.memo(() => {
                     variant="outline"
                     size="sm"
                     className="text-xs"
+                    disabled={!user}
                   >
                     <Settings className="h-3 w-3 mr-1" />
                     Edit
@@ -313,7 +316,7 @@ const Profile = React.memo(() => {
             )}
 
             {/* 송금 기능 */}
-            {walletAddress && (
+            {walletAddress && user && (
               <div className="mt-3">
                 <SendTokens 
                   walletAddress={walletAddress}
