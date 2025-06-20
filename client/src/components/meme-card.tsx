@@ -223,7 +223,10 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
               <Button
                 onClick={() => {
                   setShowDetailDialog(false);
-                  setShowVoteDialog(true);
+                  // Add a small delay to ensure proper dialog transition
+                  setTimeout(() => {
+                    setShowVoteDialog(true);
+                  }, 100);
                 }}
                 disabled={!canVote}
                 className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
