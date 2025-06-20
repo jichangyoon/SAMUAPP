@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { WalletConnect } from "@/components/wallet-connect";
 import { ContestHeader } from "@/components/contest-header";
@@ -22,7 +22,7 @@ import { getSamuTokenBalance, getSolBalance } from "@/lib/solana";
 import type { Meme } from "@shared/schema";
 import samuLogoImg from "/assets/images/logos/samu-logo.jpg";
 
-export default function Home() {
+function Home() {
   const [sortBy, setSortBy] = useState("votes");
   const [currentTab, setCurrentTab] = useState("contest");
   const [viewMode, setViewMode] = useState<'card' | 'grid'>('card');
@@ -94,8 +94,8 @@ export default function Home() {
   const displayName = authenticated ? profileData.displayName : 'SAMU';
   const profileImage = profileData.profileImage;
 
-  // Grid view voting function
-  const handleGridVote = async (meme: Meme) => {
+  // 메모화된 핸들러들 - 불필요한 리렌더링 방지
+  const handleGridVote = useCallback(async (meme: Meme) => {
     if (!isConnected || !walletAddress) {
       toast({
         title: "Wallet Required",
@@ -130,22 +130,22 @@ export default function Home() {
     } finally {
       setIsVoting(false);
     }
-  };
+  }, [isConnected, walletAddress, toast, refetch]);
 
-  // Share functions
-  const shareToTwitter = (meme: Meme) => {
+  // 메모화된 공유 함수들
+  const shareToTwitter = useCallback((meme: Meme) => {
     const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername} 🔥`;
     const url = window.location.href;
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
     window.open(twitterUrl, '_blank');
-  };
+  }, []);
 
-  const shareToTelegram = (meme: Meme) => {
+  const shareToTelegram = useCallback((meme: Meme) => {
     const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername}`;
     const url = window.location.href;
     const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
     window.open(telegramUrl, '_blank');
-  };
+  }, []);
 
   // Fetch SAMU and SOL balances for Solana wallets
   // Phantom 지갑 자동 연결 방지
@@ -197,11 +197,14 @@ export default function Home() {
     enabled: true,
   });
 
-  const sortedMemes = memes.sort((a, b) => {
-    if (sortBy === "votes") return b.votes - a.votes;
-    if (sortBy === "latest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    return b.votes - a.votes; // default to votes
-  });
+  // 메모화된 정렬 - sortBy가 변경될 때만 재계산
+  const sortedMemes = useMemo(() => {
+    return [...memes].sort((a, b) => {
+      if (sortBy === "votes") return b.votes - a.votes;
+      if (sortBy === "latest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      return b.votes - a.votes; // default to votes
+    });
+  }, [memes, sortBy]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -837,3 +840,6 @@ export default function Home() {
     </div>
   );
 }
+
+// 메모화된 컴포넌트로 export - props가 변경되지 않으면 리렌더링 방지
+export default memo(Home);
