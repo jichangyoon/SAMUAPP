@@ -181,6 +181,7 @@ Changelog:
 - June 19, 2025. Set black theme as default application theme and cleaned up legacy light theme code
 - June 19, 2025. Removed unnecessary theme switching code and standardized color usage across components
 - June 20, 2025. Cleaned up attached_assets directory - removed all temporary screenshots, build logs, and development images
+- June 20, 2025. Redesigned SAMU wolf logo with proper wolf silhouette, brand colors, and professional appearance
 ```
 
 ## User Preferences

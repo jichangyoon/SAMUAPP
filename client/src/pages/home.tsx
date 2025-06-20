@@ -77,13 +77,22 @@ export default function Home() {
               onClick={() => setShowUserProfile(true)}
               className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
             >
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center samu-wolf-logo">
-                <svg viewBox="0 0 100 100" className="w-8 h-8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="50" cy="50" r="45" fill="#2C3E50"/>
-                  <path d="M25 35 L35 25 L45 35 L55 25 L65 35 L75 35 L65 45 L50 40 L35 45 Z" fill="#F7DC6F"/>
-                  <circle cx="40" cy="40" r="3" fill="#FF8C00"/>
-                  <circle cx="60" cy="40" r="3" fill="#FF8C00"/>
-                  <path d="M42 50 L50 58 L58 50" stroke="#F7DC6F" strokeWidth="2" fill="none"/>
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center samu-wolf-logo">
+                <svg viewBox="0 0 100 100" className="w-7 h-7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  {/* Wolf head silhouette */}
+                  <path d="M50 15 L35 25 L30 35 L25 45 L20 55 L25 65 L35 70 L50 75 L65 70 L75 65 L80 55 L75 45 L70 35 L65 25 Z" fill="#2C3E50"/>
+                  {/* Wolf ears */}
+                  <path d="M35 25 L30 15 L40 20 Z" fill="#2C3E50"/>
+                  <path d="M65 25 L70 15 L60 20 Z" fill="#2C3E50"/>
+                  {/* Wolf eyes */}
+                  <circle cx="42" cy="40" r="2.5" fill="#F7DC6F"/>
+                  <circle cx="58" cy="40" r="2.5" fill="#F7DC6F"/>
+                  {/* Wolf snout */}
+                  <ellipse cx="50" cy="55" rx="8" ry="12" fill="#34495E"/>
+                  {/* Wolf nose */}
+                  <ellipse cx="50" cy="50" rx="2" ry="3" fill="#F7DC6F"/>
+                  {/* SAMU text integrated */}
+                  <text x="50" y="85" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#F7DC6F">SAMU</text>
                 </svg>
               </div>
               <span className="text-lg font-bold text-primary">SAMU</span>
