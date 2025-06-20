@@ -32,6 +32,7 @@ export default function Home() {
   const [samuBalance, setSamuBalance] = useState<number>(0);
   const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [showUserProfile, setShowUserProfile] = useState(false);
+  const [selectedArchiveContest, setSelectedArchiveContest] = useState<any>(null);
   
   // Privy authentication
   const { authenticated, user } = usePrivy();
@@ -363,49 +364,42 @@ export default function Home() {
                 </CardContent>
               </Card>
 
-              {/* Past Contests */}
+              {/* Past Contests List */}
               <div className="space-y-4">
                 <h3 className="text-md font-semibold text-foreground">Previous Contests</h3>
                 
-                {/* Sample archived contest */}
-                <Card className="border-border/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <h4 className="font-semibold text-foreground">Contest #1 - December 2024</h4>
-                        <p className="text-sm text-muted-foreground">50 participants • 1,247 votes</p>
+                {/* Contest list items - clickable */}
+                <button
+                  onClick={() => setSelectedArchiveContest({
+                    id: 1,
+                    title: "Contest #1 - December 2024",
+                    participants: 50,
+                    totalVotes: 1247,
+                    status: "Completed",
+                    winner: {
+                      name: "SAMU TO MARS",
+                      author: "crypto_legend",
+                      votes: 324
+                    },
+                    secondPlace: "DIAMOND PAWS",
+                    thirdPlace: "PACK LEADER"
+                  })}
+                  className="w-full"
+                >
+                  <Card className="border-border/50 hover:border-primary/30 transition-colors">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="text-left">
+                          <h4 className="font-semibold text-foreground">Contest #1 - December 2024</h4>
+                          <p className="text-sm text-muted-foreground">50 participants • 1,247 votes</p>
+                        </div>
+                        <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-400/20">
+                          Completed
+                        </Badge>
                       </div>
-                      <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-400/20">
-                        Completed
-                      </Badge>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-3 p-2 bg-accent/50 rounded-lg">
-                        <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
-                          <span className="text-xs font-bold text-black">🏆</span>
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-medium text-foreground">SAMU TO MARS</div>
-                          <div className="text-sm text-muted-foreground">Winner • 324 votes</div>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-2 mt-3">
-                        <div className="text-center p-2 bg-accent/30 rounded">
-                          <div className="text-sm font-semibold text-foreground">2nd Place</div>
-                          <div className="text-xs text-muted-foreground">DIAMOND PAWS</div>
-                        </div>
-                        <div className="text-center p-2 bg-accent/30 rounded">
-                          <div className="text-sm font-semibold text-foreground">3rd Place</div>
-                          <div className="text-xs text-muted-foreground">PACK LEADER</div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-
+                    </CardContent>
+                  </Card>
+                </button>
               </div>
             </div>
           </TabsContent>
@@ -596,6 +590,71 @@ export default function Home() {
                 Share on Telegram
               </Button>
             </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Archive Contest Detail Dialog */}
+      {selectedArchiveContest && (
+        <Dialog open={!!selectedArchiveContest} onOpenChange={() => setSelectedArchiveContest(null)}>
+          <DialogContent className="max-w-md mx-4 bg-card border-border">
+            <DialogHeader>
+              <DialogTitle className="text-foreground">{selectedArchiveContest.title}</DialogTitle>
+              <DialogDescription className="text-muted-foreground">
+                {selectedArchiveContest.participants} participants • {selectedArchiveContest.totalVotes.toLocaleString()} votes
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {/* Winner Section */}
+              <div className="space-y-2">
+                <div className="flex items-center space-x-3 p-3 bg-yellow-400/10 rounded-lg border border-yellow-400/20">
+                  <div className="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-bold text-black">🏆</span>
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-foreground">{selectedArchiveContest.winner.name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      Winner • {selectedArchiveContest.winner.votes} votes • by {selectedArchiveContest.winner.author}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* 2nd and 3rd Place */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="text-center p-3 bg-accent/30 rounded-lg">
+                    <div className="text-sm font-semibold text-foreground">🥈 2nd Place</div>
+                    <div className="text-xs text-muted-foreground mt-1">{selectedArchiveContest.secondPlace}</div>
+                  </div>
+                  <div className="text-center p-3 bg-accent/30 rounded-lg">
+                    <div className="text-sm font-semibold text-foreground">🥉 3rd Place</div>
+                    <div className="text-xs text-muted-foreground mt-1">{selectedArchiveContest.thirdPlace}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contest Stats */}
+              <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-primary">{selectedArchiveContest.participants}</div>
+                  <div className="text-xs text-muted-foreground">Participants</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-primary">{selectedArchiveContest.totalVotes.toLocaleString()}</div>
+                  <div className="text-xs text-muted-foreground">Total Votes</div>
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                onClick={() => setSelectedArchiveContest(null)}
+                variant="outline"
+                className="w-full"
+              >
+                Close
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       )}
