@@ -25,6 +25,7 @@ export function WalletConnect() {
     if (authenticated && walletAddress && isSolana) {
       console.log('Fetching SAMU balance for wallet:', walletAddress);
       setBalanceStatus('loading');
+      setSamuBalance(0); // 캐시 초기화
       getSamuTokenBalance(walletAddress)
         .then(balance => {
           console.log('SAMU balance received:', balance);
@@ -36,9 +37,10 @@ export function WalletConnect() {
           setSamuBalance(0);
           setBalanceStatus('error');
         });
-    } else if (!authenticated && samuBalance === 0) {
-      // Only reset balance if we don't have a cached balance
-      console.log('Not fetching SAMU balance - authenticated:', authenticated, 'walletAddress:', walletAddress, 'isSolana:', isSolana);
+    } else if (!authenticated) {
+      // 지갑 연결 해제 시 완전 초기화
+      console.log('Wallet disconnected - clearing all data');
+      setSamuBalance(0);
       setBalanceStatus('idle');
     }
   }, [authenticated, walletAddress, isSolana]);
