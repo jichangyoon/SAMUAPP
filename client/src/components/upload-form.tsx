@@ -204,7 +204,7 @@ export function UploadForm({ onSuccess }: UploadFormProps) {
             <Button
               type="submit"
               disabled={isUploading}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3"
             >
               {isUploading ? "Submitting..." : "Submit Meme"}
             </Button>
