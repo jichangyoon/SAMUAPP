@@ -17,8 +17,20 @@ export function WalletConnect() {
 
   if (authenticated && user) {
     const displayEmail = user.email?.address || 'User';
-    const displayName = user.customMetadata?.displayName as string || displayEmail.split('@')[0];
-    const profileImage = user.customMetadata?.profileImage as string || '';
+    
+    // Load profile data from localStorage
+    const getStoredProfile = () => {
+      try {
+        const stored = localStorage.getItem(`privy_profile_${user.id}`);
+        return stored ? JSON.parse(stored) : {};
+      } catch {
+        return {};
+      }
+    };
+
+    const storedProfile = getStoredProfile();
+    const displayName = storedProfile.displayName || displayEmail.split('@')[0];
+    const profileImage = storedProfile.profileImage || '';
 
     return (
       <div className="flex items-center gap-2">

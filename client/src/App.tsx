@@ -51,6 +51,12 @@ function App() {
           accentColor: '#fbbf24',
         },
         loginMethods: ['email'],
+        embeddedWallets: {
+          createOnLogin: 'users-without-wallets',
+          solana: {
+            createOnLogin: 'users-without-wallets',
+          },
+        },
         mfa: {
           noPromptOnMfaRequired: false
         }

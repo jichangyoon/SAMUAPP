@@ -12,18 +12,53 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getSamuTokenBalance } from "@/lib/solana";
 import type { Meme } from "@shared/schema";
 import samuLogoImg from "/assets/images/logos/samu-logo.jpg";
 
 export default function Home() {
   const [sortBy, setSortBy] = useState("votes");
   const [currentTab, setCurrentTab] = useState("contest");
+  const [samuBalance, setSamuBalance] = useState<number>(0);
+  const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [showUserProfile, setShowUserProfile] = useState(false);
   
   // Privy authentication
   const { authenticated, user } = usePrivy();
   
-  const isConnected = authenticated && !!user;
+  // Get wallet info from Privy embedded wallet
+  const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
+  const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
+  const selectedWalletAccount = solanaWallet || walletAccounts[0];
+  
+  const isConnected = authenticated && !!selectedWalletAccount;
+  const walletAddress = selectedWalletAccount?.address || '';
+  const isSolana = selectedWalletAccount?.chainType === 'solana';
+
+  // Fetch SAMU balance for Solana wallets
+  useEffect(() => {
+    if (isConnected && walletAddress && isSolana) {
+      console.log('💰 Fetching SAMU balance for:', walletAddress);
+      setBalanceStatus('loading');
+      setSamuBalance(0);
+      
+      getSamuTokenBalance(walletAddress)
+        .then(balance => {
+          console.log('✅ SAMU balance fetched:', balance);
+          setSamuBalance(balance);
+          setBalanceStatus('success');
+        })
+        .catch(error => {
+          console.warn('❌ Failed to fetch SAMU balance:', error);
+          setSamuBalance(0);
+          setBalanceStatus('error');
+        });
+    } else if (!isConnected) {
+      console.log('⏸️ Wallet not connected - clearing balance data');
+      setSamuBalance(0);
+      setBalanceStatus('idle');
+    }
+  }, [isConnected, walletAddress, isSolana]);
 
   const { data: memes = [], isLoading, refetch } = useQuery<Meme[]>({
     queryKey: ["/api/memes"],

@@ -22,9 +22,90 @@ interface UserProfileProps {
 
 export function UserProfile({ isOpen, onClose, samuBalance }: UserProfileProps) {
   const { user } = usePrivy();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  // Load profile data from localStorage or use defaults
+  const getStoredProfile = () => {
+    try {
+      const stored = localStorage.getItem(`privy_profile_${user?.id}`);
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  };
+
+  const storedProfile = getStoredProfile();
+  
+  // Profile editing states
+  const [isEditing, setIsEditing] = useState(false);
+  const [displayName, setDisplayName] = useState(
+    storedProfile.displayName || user?.email?.address?.split('@')[0] || 'User'
+  );
+  const [profileImage, setProfileImage] = useState(storedProfile.profileImage || '');
+  const [imagePreview, setImagePreview] = useState<string>('');
   
   const walletAddress = user?.wallet?.address || user?.linkedAccounts?.find(account => account.type === 'wallet')?.address || '';
   const displayAddress = walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : '';
+
+  // Update profile mutation - using API call since Privy doesn't expose updateUser directly
+  const updateProfileMutation = useMutation({
+    mutationFn: async ({ name, image }: { name: string; image: string }) => {
+      // Store profile data in localStorage as a fallback since Privy's updateUser isn't available
+      const profileData = { displayName: name, profileImage: image };
+      localStorage.setItem(`privy_profile_${user?.id}`, JSON.stringify(profileData));
+      return profileData;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been successfully updated.",
+      });
+      setIsEditing(false);
+      // Force a component re-render by updating the parent state
+      window.location.reload();
+    },
+    onError: (error) => {
+      console.error('Profile update error:', error);
+      toast({
+        title: "Update Failed",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Handle image upload
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setImagePreview(base64String);
+        setProfileImage(base64String);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Save profile changes
+  const handleSaveProfile = () => {
+    if (displayName.trim()) {
+      updateProfileMutation.mutate({
+        name: displayName.trim(),
+        image: profileImage
+      });
+    }
+  };
+
+  // Reset form when editing is cancelled
+  const handleCancelEdit = () => {
+    setDisplayName(user?.customMetadata?.displayName as string || user?.email?.address?.split('@')[0] || '');
+    setProfileImage(user?.customMetadata?.profileImage as string || '');
+    setImagePreview('');
+    setIsEditing(false);
+  };
 
   // 사용자가 만든 밈들 가져오기
   const { data: allMemes = [] } = useQuery<any[]>({
@@ -68,6 +149,77 @@ export function UserProfile({ isOpen, onClose, samuBalance }: UserProfileProps) 
           {/* 사용자 기본 정보 */}
           <Card className="bg-gradient-to-r from-primary/20 to-primary/10 border-border">
             <CardContent className="p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="relative">
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={imagePreview || profileImage} />
+                    <AvatarFallback className="bg-primary/20 text-primary text-lg">
+                      {displayName.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  {isEditing && (
+                    <label className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-1 cursor-pointer hover:bg-primary/80">
+                      <Camera className="h-3 w-3" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+                <div className="flex-1">
+                  {isEditing ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="displayName">Display Name</Label>
+                      <Input
+                        id="displayName"
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        placeholder="Enter your display name"
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <h3 className="text-lg font-bold text-foreground">{displayName}</h3>
+                      <p className="text-sm text-muted-foreground">{user?.email?.address}</p>
+                    </div>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  {isEditing ? (
+                    <>
+                      <Button
+                        onClick={handleSaveProfile}
+                        disabled={updateProfileMutation.isPending}
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        <Save className="h-4 w-4 mr-1" />
+                        {updateProfileMutation.isPending ? 'Saving...' : 'Save'}
+                      </Button>
+                      <Button
+                        onClick={handleCancelEdit}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Cancel
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      onClick={() => setIsEditing(true)}
+                      variant="outline"
+                      size="sm"
+                    >
+                      <Settings className="h-4 w-4 mr-1" />
+                      Edit Profile
+                    </Button>
+                  )}
+                </div>
+              </div>
+              
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">{samuBalance.toLocaleString()}</div>
