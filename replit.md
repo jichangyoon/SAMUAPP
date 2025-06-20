@@ -198,6 +198,7 @@ Changelog:
 - June 20, 2025. Added detailed meme view modal with full image, author info, description, and voting capabilities for better content exploration
 - June 20, 2025. Applied same UI pattern to goods shop - simplified product cards showing only title and price, with click-to-view detailed product information modal
 - June 20, 2025. Enhanced goods shop product detail modal with comprehensive product information, creator details, and streamlined purchase flow
+- June 20, 2025. Made both meme images and goods product images clickable to open detail modals, improving mobile touch interaction and user experience
 ```
 
 ## User Preferences

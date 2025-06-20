@@ -84,7 +84,10 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   return (
     <>
       <Card className="overflow-hidden border-border bg-card">
-        <div className="aspect-square bg-accent flex items-center justify-center">
+        <button 
+          onClick={() => setShowDetailDialog(true)}
+          className="w-full aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-opacity"
+        >
           <img
             src={meme.imageUrl}
             alt={meme.title}
@@ -99,7 +102,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
             <div className="text-4xl mb-2">🖼️</div>
             <p className="text-muted-foreground">Image failed to load</p>
           </div>
-        </div>
+        </button>
 
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-3">
