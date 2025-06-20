@@ -70,15 +70,19 @@ export function WalletConnect() {
       <div className="flex items-center gap-2">
         {/* Balance Display */}
         {isSolana && (
-          <div className="text-right">
-            <div className="text-xs font-bold text-[hsl(30,100%,50%)]">
-              {balanceStatus === 'loading' ? 'Loading...' : `${samuBalance.toLocaleString()}`}
+          <div className="text-right flex items-center gap-3">
+            <div className="text-center">
+              <div className="text-xs font-bold text-[hsl(30,100%,50%)]">
+                {balanceStatus === 'loading' ? 'Loading...' : `${samuBalance.toLocaleString()}`}
+              </div>
+              <div className="text-xs text-muted-foreground">SAMU</div>
             </div>
-            <div className="text-xs text-muted-foreground">SAMU</div>
-            <div className="text-xs font-bold text-purple-400">
-              {balanceStatus === 'loading' ? '...' : `${solBalance.toFixed(3)}`}
+            <div className="text-center">
+              <div className="text-xs font-bold text-purple-400">
+                {balanceStatus === 'loading' ? '...' : `${solBalance.toFixed(3)}`}
+              </div>
+              <div className="text-xs text-muted-foreground">SOL</div>
             </div>
-            <div className="text-xs text-muted-foreground">SOL</div>
           </div>
         )}
         

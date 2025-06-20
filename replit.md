@@ -230,6 +230,7 @@ Changelog:
 - June 20, 2025. Added clickable meme detail modal for Archive contest entries with author info, vote counts, rankings, and descriptions
 - June 20, 2025. Implemented SOL balance display alongside SAMU token balance in wallet header
 - June 20, 2025. Added SOL balance API endpoint and concurrent balance fetching for improved wallet information display
+- June 20, 2025. Changed balance display layout from vertical to horizontal alignment to maintain compact header design
 ```
 
 ## User Preferences
