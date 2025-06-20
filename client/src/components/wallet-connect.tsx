@@ -1,10 +1,45 @@
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, LogOut, Mail } from "lucide-react";
+import { Wallet, LogOut, Mail } from "lucide-react";
 import { usePrivy } from '@privy-io/react-auth';
+import { useState, useEffect } from 'react';
+import { getSamuTokenBalance } from "@/lib/solana";
 
 export function WalletConnect() {
   const { ready, authenticated, user, login, logout } = usePrivy();
+  const [samuBalance, setSamuBalance] = useState<number>(0);
+  const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  // Get wallet info from Privy embedded wallet
+  const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
+  const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
+  const selectedWalletAccount = solanaWallet || walletAccounts[0];
+  
+  const walletAddress = selectedWalletAccount?.address || '';
+  const isSolana = selectedWalletAccount?.chainType === 'solana';
+
+  // Fetch SAMU balance for Solana wallets
+  useEffect(() => {
+    if (authenticated && walletAddress && isSolana) {
+      console.log('💰 Fetching SAMU balance for wallet:', walletAddress);
+      setBalanceStatus('loading');
+      setSamuBalance(0);
+      
+      getSamuTokenBalance(walletAddress)
+        .then(balance => {
+          console.log('✅ SAMU balance received:', balance);
+          setSamuBalance(balance);
+          setBalanceStatus('success');
+        })
+        .catch(error => {
+          console.warn('❌ Failed to fetch SAMU balance:', error);
+          setSamuBalance(0);
+          setBalanceStatus('error');
+        });
+    } else if (!authenticated) {
+      setSamuBalance(0);
+      setBalanceStatus('idle');
+    }
+  }, [authenticated, walletAddress, isSolana]);
 
   if (!ready) {
     return (
@@ -15,32 +50,26 @@ export function WalletConnect() {
     );
   }
 
-  if (authenticated && user) {
-    const displayEmail = user.email?.address || 'User';
+  if (authenticated && user && selectedWalletAccount) {
+    const displayAddress = walletAddress 
+      ? `${walletAddress.slice(0, 4)}...${walletAddress.slice(-3)}`
+      : 'Connected';
     
-    // Load profile data from localStorage
-    const getStoredProfile = () => {
-      try {
-        const stored = localStorage.getItem(`privy_profile_${user.id}`);
-        return stored ? JSON.parse(stored) : {};
-      } catch {
-        return {};
-      }
-    };
-
-    const storedProfile = getStoredProfile();
-    const displayName = storedProfile.displayName || displayEmail.split('@')[0];
-    const profileImage = storedProfile.profileImage || '';
+    const chainType = selectedWalletAccount?.chainType || 'unknown';
 
     return (
       <div className="flex items-center gap-2">
-        <Avatar className="h-8 w-8">
-          <AvatarImage src={profileImage} />
-          <AvatarFallback className="bg-primary/20 text-primary text-xs">
-            {displayName.slice(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        {/* SAMU Balance Display */}
+        {isSolana && (
+          <div className="text-right">
+            <div className="text-xs font-bold text-[hsl(30,100%,50%)]">
+              {balanceStatus === 'loading' ? 'Loading...' : `${samuBalance.toLocaleString()}`}
+            </div>
+            <div className="text-xs text-muted-foreground">SAMU</div>
+          </div>
+        )}
         
+        {/* Wallet Info Button */}
         <Button
           onClick={logout}
           variant="outline"
@@ -50,10 +79,10 @@ export function WalletConnect() {
           <div className="flex flex-col items-start">
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <span className="text-xs">{displayName}</span>
+              <span className="font-mono text-xs">{displayAddress}</span>
             </div>
             <span className="text-xs opacity-75">
-              {displayEmail}
+              {chainType === 'solana' ? 'Solana' : chainType === 'ethereum' ? 'Ethereum' : 'Wallet'}
             </span>
           </div>
           <LogOut className="h-3 w-3 ml-1" />

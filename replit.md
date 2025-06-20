@@ -188,6 +188,10 @@ Changelog:
 - June 20, 2025. Implemented comprehensive wallet data cleanup system with localStorage clearing on authentication state changes
 - June 20, 2025. Added enhanced error handling for Privy iframe loading failures and WalletConnect initialization conflicts
 - June 20, 2025. Verified complete wallet state management - confirmed proper display of new Privy wallet address and SAMU token balance after data cleanup
+- June 20, 2025. Simplified authentication to email-only login while maintaining embedded wallet functionality for SAMU token balance display
+- June 20, 2025. Added comprehensive profile editing system allowing email users to update display name and profile picture with localStorage persistence
+- June 20, 2025. Enhanced user profile modal with avatar upload, real-time editing interface, and proper state management for profile customization
+- June 20, 2025. Maintained wallet address and SAMU token display in header while using email authentication for simplified user onboarding
 ```
 
 ## User Preferences
