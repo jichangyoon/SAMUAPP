@@ -69,12 +69,12 @@ export function GoodsShop() {
   const [cart, setCart] = useState<number[]>([]);
   const [selectedItem, setSelectedItem] = useState<typeof goodsData[0] | null>(null);
   const { authenticated, user } = usePrivy();
-  
+
   // Get wallet using same logic as WalletConnect component - prioritize Solana
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
-  
+
   const isConnected = authenticated;
   const walletAddress = selectedWalletAccount?.address || '';
   const samuBalance = 1000; // Simplified for now
@@ -131,18 +131,35 @@ export function GoodsShop() {
 
   return (
     <div className="space-y-6 pb-20">
-      {/* 굿즈샵 헤더 */}
-      <Card className="bg-[hsl(50,85%,75%)] border-0">
-        <CardHeader className="text-center py-3">
-          <CardTitle className="text-lg font-bold text-black flex items-center justify-center gap-2">
-            <Trophy className="h-4 w-4" />
-            SAMU Goods Shop
-          </CardTitle>
-          <CardDescription className="text-xs text-black/90 mt-1 whitespace-nowrap">
+      {/* Header */}
+      <div className="relative bg-gradient-to-br from-yellow-400 via-yellow-500 to-orange-500 rounded-xl p-6 mb-6 text-center overflow-hidden shadow-lg">
+        {/* Background pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-full h-full" style={{
+            backgroundImage: `radial-gradient(circle at 20% 20%, rgba(255,255,255,0.3) 1px, transparent 1px),
+                             radial-gradient(circle at 80% 80%, rgba(255,255,255,0.3) 1px, transparent 1px)`,
+            backgroundSize: '40px 40px'
+          }} />
+        </div>
+
+        <div className="relative z-10">
+          <div className="flex items-center justify-center mb-3">
+            <div className="bg-yellow-800/20 rounded-full p-2 mr-3">
+              <Trophy className="h-7 w-7 text-yellow-900 drop-shadow-sm" />
+            </div>
+            <h1 className="text-2xl font-bold text-yellow-900 tracking-tight drop-shadow-sm">
+              SAMU Goods Shop
+            </h1>
+          </div>
+          <p className="text-yellow-800 font-medium text-base tracking-wide drop-shadow-sm">
             Hall of Fame memes turned into goods!
-          </CardDescription>
-        </CardHeader>
-      </Card>
+          </p>
+        </div>
+
+        {/* Decorative elements */}
+        <div className="absolute top-2 right-2 w-12 h-12 rounded-full bg-white/10" />
+        <div className="absolute bottom-2 left-2 w-8 h-8 rounded-full bg-white/10" />
+      </div>
 
       {/* 장바구니 요약 */}
       {cart.length > 0 && (
@@ -243,7 +260,7 @@ export function GoodsShop() {
           <DialogHeader>
             <DialogTitle className="text-foreground">{selectedItem?.name}</DialogTitle>
           </DialogHeader>
-          
+
           {selectedItem && (
             <div className="space-y-4">
               <div className="aspect-square rounded-lg overflow-hidden">
@@ -253,7 +270,7 @@ export function GoodsShop() {
                   className="w-full h-full object-cover"
                 />
               </div>
-              
+
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                   <span className="text-sm font-bold text-primary-foreground">
@@ -267,12 +284,12 @@ export function GoodsShop() {
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <h4 className="font-medium text-foreground mb-2">Description</h4>
                 <p className="text-muted-foreground">{selectedItem.description}</p>
               </div>
-              
+
               <div className="flex flex-wrap gap-2">
                 <Badge variant="secondary" className="text-xs">
                   <Trophy className="h-3 w-3 mr-1" />
@@ -287,7 +304,7 @@ export function GoodsShop() {
                   Stock: {selectedItem.stock}
                 </Badge>
               </div>
-              
+
               <div className="flex items-center justify-between pt-4 border-t">
                 <div>
                   <div className="text-lg font-bold text-primary">
