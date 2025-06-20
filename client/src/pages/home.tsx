@@ -370,93 +370,84 @@ export default function Home() {
                 <h3 className="text-md font-semibold text-foreground">Previous Contests</h3>
                 
                 {/* Contest list items - clickable */}
-                <button
-                  onClick={() => setSelectedArchiveContest({
-                    id: 1,
-                    title: "Contest #1 - December 2024",
-                    participants: 50,
-                    totalVotes: 1247,
-                    status: "Completed",
-                    winner: {
-                      name: "SAMU TO MARS",
-                      author: "crypto_legend",
-                      votes: 324
-                    },
-                    secondPlace: "DIAMOND PAWS",
-                    thirdPlace: "PACK LEADER",
-                    memes: [
-                      {
-                        id: 1,
-                        title: "SAMU TO MARS",
-                        author: "crypto_legend",
-                        votes: 324,
-                        rank: 1,
-                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23F7DC6F'/%3E%3Ccircle cx='200' cy='200' r='100' fill='%23E74C3C'/%3E%3Ctext x='200' y='180' text-anchor='middle' font-family='Arial' font-size='24' font-weight='bold' fill='white'%3ESAMU%3C/text%3E%3Ctext x='200' y='220' text-anchor='middle' font-family='Arial' font-size='16' fill='white'%3ETO MARS%3C/text%3E%3C/svg%3E",
-                        description: "The ultimate SAMU moon mission meme"
-                      },
-                      {
-                        id: 2,
-                        title: "DIAMOND PAWS",
-                        author: "gem_hands",
-                        votes: 287,
-                        rank: 2,
-                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23667BC6'/%3E%3Cpolygon points='200,100 250,150 200,200 150,150' fill='%2300BFFF'/%3E%3Ctext x='200' y='260' text-anchor='middle' font-family='Arial' font-size='20' font-weight='bold' fill='white'%3EDIAMOND%3C/text%3E%3Ctext x='200' y='290' text-anchor='middle' font-family='Arial' font-size='20' font-weight='bold' fill='white'%3EPAWS%3C/text%3E%3C/svg%3E",
-                        description: "Diamond hands, diamond paws"
-                      },
-                      {
-                        id: 3,
-                        title: "PACK LEADER",
-                        author: "wolf_alpha",
-                        votes: 245,
-                        rank: 3,
-                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%238B4513'/%3E%3Ccircle cx='200' cy='180' r='60' fill='%23D2691E'/%3E%3Cpath d='M170 160 L200 140 L230 160 L220 180 L180 180 Z' fill='%23654321'/%3E%3Ctext x='200' y='280' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='white'%3EPACK LEADER%3C/text%3E%3C/svg%3E",
-                        description: "Leading the pack to victory"
-                      },
-                      {
-                        id: 4,
-                        title: "HODL STRONG",
-                        author: "diamond_wolf",
-                        votes: 198,
-                        rank: 4,
-                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%232C3E50'/%3E%3Crect x='100' y='150' width='200' height='100' fill='%23F39C12'/%3E%3Ctext x='200' y='190' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold'%3EHODL%3C/text%3E%3Ctext x='200' y='220' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold'%3ESTRONG%3C/text%3E%3C/svg%3E",
-                        description: "Never selling, always holding"
-                      },
-                      {
-                        id: 5,
-                        title: "MOON WOLF",
-                        author: "lunar_pack",
-                        votes: 156,
-                        rank: 5,
-                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%231a1a2e'/%3E%3Ccircle cx='150' cy='100' r='40' fill='%23f5f5f5'/%3E%3Ccircle cx='250' cy='200' r='50' fill='%23654321'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='%23f5f5f5'%3EMOON WOLF%3C/text%3E%3C/svg%3E",
-                        description: "Howling at the crypto moon"
-                      },
-                      {
-                        id: 6,
-                        title: "ALPHA GAINS",
-                        author: "profit_hunter",
-                        votes: 134,
-                        rank: 6,
-                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%2327ae60'/%3E%3Cpath d='M200 100 L300 200 L250 250 L200 200 L150 250 L100 200 Z' fill='%23f1c40f'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='white'%3EALPHA GAINS%3C/text%3E%3C/svg%3E",
-                        description: "Always making alpha gains"
-                      }
-                    ]
-                  })}
-                  className="w-full"
-                >
-                  <Card className="border-border/50 hover:border-primary/30 transition-colors">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="text-left">
-                          <h4 className="font-semibold text-foreground">Contest #1 - December 2024</h4>
-                          <p className="text-sm text-muted-foreground">50 participants • 1,247 votes</p>
-                        </div>
-                        <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-400/20">
-                          Completed
-                        </Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </button>
+                {Array.from({ length: 30 }, (_, index) => {
+                  const contestNumber = index + 1;
+                  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                  const years = ['2024', '2023', '2022'];
+                  const month = months[index % months.length];
+                  const year = years[Math.floor(index / 12) % years.length];
+                  const participants = Math.floor(Math.random() * 100) + 20;
+                  const totalVotes = Math.floor(Math.random() * 2000) + 500;
+                  
+                  // Generate fake memes for each contest
+                  const memeData = Array.from({ length: Math.floor(Math.random() * 20) + 15 }, (_, memeIndex) => {
+                    const memeTitles = [
+                      'SAMU TO THE MOON', 'DIAMOND HANDS', 'LAMBO SOON', 'HODL STRONG', 'MOON WOLF',
+                      'ALPHA GAINS', 'ROCKET FUEL', 'BULL RUN', 'STONKS UP', 'APE TOGETHER',
+                      'DIAMOND PAWS', 'CRYPTO KING', 'MOON MISSION', 'HODL GANG', 'SAMU ARMY',
+                      'WOLF PACK', 'TO THE STARS', 'NEVER SELL', 'DIAMOND WOLF', 'MOON BOUND',
+                      'CRYPTO DREAMS', 'SAMU STRONG', 'HODL FOREVER', 'DIAMOND LIFE', 'MOON RIDE',
+                      'ALPHA WOLF', 'BULL MARKET', 'DIAMOND GRIP', 'MOON WALKER', 'CRYPTO WOLF',
+                      'SAMU KING', 'DIAMOND ALPHA', 'MOON PACK', 'HODL ARMY', 'CRYPTO MOON',
+                      'WOLF STRONG', 'DIAMOND MOON', 'SAMU LEGEND', 'HODL LEGEND', 'MOON LEGEND'
+                    ];
+                    const authors = [
+                      'crypto_wolf', 'hodl_master', 'diamond_hands', 'moon_rider', 'samu_fan',
+                      'wolf_alpha', 'crypto_king', 'diamond_wolf', 'lunar_pack', 'profit_hunter',
+                      'moon_walker', 'samu_army', 'crypto_lord', 'hodl_strong', 'diamond_paws',
+                      'wolf_moon', 'crypto_ace', 'samu_hero', 'diamond_king', 'moon_king',
+                      'crypto_star', 'hodl_life', 'diamond_soul', 'crypto_gem', 'samu_legend',
+                      'wolf_legend', 'moon_legend', 'crypto_alpha', 'diamond_alpha', 'samu_alpha'
+                    ];
+                    const colors = ['f4a261', 'e76f51', '264653', 'e9c46a', '2C3E50', 'F39C12', '1a1a2e', '27ae60', 'f1c40f', 'E74C3C', '667BC6', '8B4513'];
+                    
+                    return {
+                      id: memeIndex + 1,
+                      title: memeTitles[memeIndex % memeTitles.length],
+                      author: authors[memeIndex % authors.length],
+                      votes: Math.floor(Math.random() * 500) + 50,
+                      rank: memeIndex + 1,
+                      imageUrl: `data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23${colors[memeIndex % colors.length]}'/%3E%3Ccircle cx='200' cy='150' r='60' fill='%23${colors[(memeIndex + 1) % colors.length]}'/%3E%3Ctext x='200' y='280' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='white'%3E${memeTitles[memeIndex % memeTitles.length].split(' ')[0]}%3C/text%3E%3C/svg%3E`,
+                      description: `Epic meme from ${authors[memeIndex % authors.length]}`
+                    };
+                  });
+                  
+                  return (
+                    <button
+                      key={contestNumber}
+                      onClick={() => setSelectedArchiveContest({
+                        id: contestNumber,
+                        title: `Contest #${contestNumber} - ${month} ${year}`,
+                        participants,
+                        totalVotes,
+                        status: "Completed",
+                        winner: {
+                          name: memeData[0]?.title || "SAMU KING",
+                          author: memeData[0]?.author || "crypto_legend",
+                          votes: memeData[0]?.votes || 324
+                        },
+                        secondPlace: memeData[1]?.title || "DIAMOND PAWS",
+                        thirdPlace: memeData[2]?.title || "PACK LEADER",
+                        memes: memeData
+                      })}
+                      className="w-full"
+                    >
+                      <Card className="border-border/50 hover:border-primary/30 transition-colors">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="text-left">
+                              <h4 className="font-semibold text-foreground">Contest #{contestNumber} - {month} {year}</h4>
+                              <p className="text-sm text-muted-foreground">{participants} participants • {totalVotes.toLocaleString()} votes</p>
+                            </div>
+                            <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-400/20">
+                              Completed
+                            </Badge>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </TabsContent>
