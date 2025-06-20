@@ -32,6 +32,7 @@ export default function Home() {
   const [samuBalance, setSamuBalance] = useState<number>(0);
   const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [showUserProfile, setShowUserProfile] = useState(false);
+  const [archiveView, setArchiveView] = useState<'list' | 'contest'>('list');
   const [selectedArchiveContest, setSelectedArchiveContest] = useState<any>(null);
   const [selectedArchiveMeme, setSelectedArchiveMeme] = useState<any>(null);
   
@@ -351,114 +352,210 @@ export default function Home() {
           </TabsContent>
           
           <TabsContent value="archive" className="mt-4 space-y-4 pb-24">
-            <div className="space-y-4">
-              {/* Archive Header */}
-              <Card className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-400/20">
-                <CardContent className="p-4 text-center">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <Archive className="h-5 w-5 text-purple-400" />
-                    <h2 className="text-lg font-bold text-purple-400">Contest Archive</h2>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Past contest winners and memorable memes
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* Past Contests List */}
+            {archiveView === 'list' ? (
               <div className="space-y-4">
-                <h3 className="text-md font-semibold text-foreground">Previous Contests</h3>
-                
-                {/* Contest list items - clickable */}
-                <button
-                  onClick={() => setSelectedArchiveContest({
-                    id: 1,
-                    title: "Contest #1 - December 2024",
-                    participants: 50,
-                    totalVotes: 1247,
-                    status: "Completed",
-                    winner: {
-                      name: "SAMU TO MARS",
-                      author: "crypto_legend",
-                      votes: 324
-                    },
-                    secondPlace: "DIAMOND PAWS",
-                    thirdPlace: "PACK LEADER",
-                    memes: [
-                      {
+                {/* Archive Header */}
+                <Card className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-400/20">
+                  <CardContent className="p-4 text-center">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <Archive className="h-5 w-5 text-purple-400" />
+                      <h2 className="text-lg font-bold text-purple-400">Contest Archive</h2>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Past contest winners and memorable memes
+                    </p>
+                  </CardContent>
+                </Card>
+
+                {/* Past Contests List */}
+                <div className="space-y-4">
+                  <h3 className="text-md font-semibold text-foreground">Previous Contests</h3>
+                  
+                  <button
+                    onClick={() => {
+                      setSelectedArchiveContest({
                         id: 1,
-                        title: "SAMU TO MARS",
-                        author: "crypto_legend",
-                        votes: 324,
-                        rank: 1,
-                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23F7DC6F'/%3E%3Ccircle cx='200' cy='200' r='100' fill='%23E74C3C'/%3E%3Ctext x='200' y='180' text-anchor='middle' font-family='Arial' font-size='24' font-weight='bold' fill='white'%3ESAMU%3C/text%3E%3Ctext x='200' y='220' text-anchor='middle' font-family='Arial' font-size='16' fill='white'%3ETO MARS%3C/text%3E%3C/svg%3E",
-                        description: "The ultimate SAMU moon mission meme"
-                      },
-                      {
-                        id: 2,
-                        title: "DIAMOND PAWS",
-                        author: "gem_hands",
-                        votes: 287,
-                        rank: 2,
-                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23667BC6'/%3E%3Cpolygon points='200,100 250,150 200,200 150,150' fill='%2300BFFF'/%3E%3Ctext x='200' y='260' text-anchor='middle' font-family='Arial' font-size='20' font-weight='bold' fill='white'%3EDIAMOND%3C/text%3E%3Ctext x='200' y='290' text-anchor='middle' font-family='Arial' font-size='20' font-weight='bold' fill='white'%3EPAWS%3C/text%3E%3C/svg%3E",
-                        description: "Diamond hands, diamond paws"
-                      },
-                      {
-                        id: 3,
-                        title: "PACK LEADER",
-                        author: "wolf_alpha",
-                        votes: 245,
-                        rank: 3,
-                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%238B4513'/%3E%3Ccircle cx='200' cy='180' r='60' fill='%23D2691E'/%3E%3Cpath d='M170 160 L200 140 L230 160 L220 180 L180 180 Z' fill='%23654321'/%3E%3Ctext x='200' y='280' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='white'%3EPACK LEADER%3C/text%3E%3C/svg%3E",
-                        description: "Leading the pack to victory"
-                      },
-                      {
-                        id: 4,
-                        title: "HODL STRONG",
-                        author: "diamond_wolf",
-                        votes: 198,
-                        rank: 4,
-                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%232C3E50'/%3E%3Crect x='100' y='150' width='200' height='100' fill='%23F39C12'/%3E%3Ctext x='200' y='190' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold'%3EHODL%3C/text%3E%3Ctext x='200' y='220' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold'%3ESTRONG%3C/text%3E%3C/svg%3E",
-                        description: "Never selling, always holding"
-                      },
-                      {
-                        id: 5,
-                        title: "MOON WOLF",
-                        author: "lunar_pack",
-                        votes: 156,
-                        rank: 5,
-                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%231a1a2e'/%3E%3Ccircle cx='150' cy='100' r='40' fill='%23f5f5f5'/%3E%3Ccircle cx='250' cy='200' r='50' fill='%23654321'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='%23f5f5f5'%3EMOON WOLF%3C/text%3E%3C/svg%3E",
-                        description: "Howling at the crypto moon"
-                      },
-                      {
-                        id: 6,
-                        title: "ALPHA GAINS",
-                        author: "profit_hunter",
-                        votes: 134,
-                        rank: 6,
-                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%2327ae60'/%3E%3Cpath d='M200 100 L300 200 L250 250 L200 200 L150 250 L100 200 Z' fill='%23f1c40f'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='white'%3EALPHA GAINS%3C/text%3E%3C/svg%3E",
-                        description: "Always making alpha gains"
-                      }
-                    ]
-                  })}
-                  className="w-full"
-                >
-                  <Card className="border-border/50 hover:border-primary/30 transition-colors">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="text-left">
-                          <h4 className="font-semibold text-foreground">Contest #1 - December 2024</h4>
-                          <p className="text-sm text-muted-foreground">50 participants • 1,247 votes</p>
+                        title: "Contest #1 - December 2024",
+                        participants: 50,
+                        totalVotes: 1247,
+                        status: "Completed",
+                        winner: {
+                          name: "SAMU TO MARS",
+                          author: "crypto_legend",
+                          votes: 324
+                        },
+                        secondPlace: "DIAMOND PAWS",
+                        thirdPlace: "PACK LEADER",
+                        memes: [
+                          {
+                            id: 1,
+                            title: "SAMU TO MARS",
+                            author: "crypto_legend",
+                            votes: 324,
+                            rank: 1,
+                            imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23F7DC6F'/%3E%3Ccircle cx='200' cy='200' r='100' fill='%23E74C3C'/%3E%3Ctext x='200' y='180' text-anchor='middle' font-family='Arial' font-size='24' font-weight='bold' fill='white'%3ESAMU%3C/text%3E%3Ctext x='200' y='220' text-anchor='middle' font-family='Arial' font-size='16' fill='white'%3ETO MARS%3C/text%3E%3C/svg%3E",
+                            description: "The ultimate SAMU moon mission meme"
+                          },
+                          {
+                            id: 2,
+                            title: "DIAMOND PAWS",
+                            author: "gem_hands",
+                            votes: 287,
+                            rank: 2,
+                            imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23667BC6'/%3E%3Cpolygon points='200,100 250,150 200,200 150,150' fill='%2300BFFF'/%3E%3Ctext x='200' y='260' text-anchor='middle' font-family='Arial' font-size='20' font-weight='bold' fill='white'%3EDIAMOND%3C/text%3E%3Ctext x='200' y='290' text-anchor='middle' font-family='Arial' font-size='20' font-weight='bold' fill='white'%3EPAWS%3C/text%3E%3C/svg%3E",
+                            description: "Diamond hands, diamond paws"
+                          },
+                          {
+                            id: 3,
+                            title: "PACK LEADER",
+                            author: "wolf_alpha",
+                            votes: 245,
+                            rank: 3,
+                            imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%238B4513'/%3E%3Ccircle cx='200' cy='180' r='60' fill='%23D2691E'/%3E%3Cpath d='M170 160 L200 140 L230 160 L220 180 L180 180 Z' fill='%23654321'/%3E%3Ctext x='200' y='280' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='white'%3EPACK LEADER%3C/text%3E%3C/svg%3E",
+                            description: "Leading the pack to victory"
+                          },
+                          {
+                            id: 4,
+                            title: "HODL STRONG",
+                            author: "diamond_wolf",
+                            votes: 198,
+                            rank: 4,
+                            imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%232C3E50'/%3E%3Crect x='100' y='150' width='200' height='100' fill='%23F39C12'/%3E%3Ctext x='200' y='190' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold'%3EHODL%3C/text%3E%3Ctext x='200' y='220' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold'%3ESTRONG%3C/text%3E%3C/svg%3E",
+                            description: "Never selling, always holding"
+                          },
+                          {
+                            id: 5,
+                            title: "MOON WOLF",
+                            author: "lunar_pack",
+                            votes: 156,
+                            rank: 5,
+                            imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%231a1a2e'/%3E%3Ccircle cx='150' cy='100' r='40' fill='%23f5f5f5'/%3E%3Ccircle cx='250' cy='200' r='50' fill='%23654321'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='%23f5f5f5'%3EMOON WOLF%3C/text%3E%3C/svg%3E",
+                            description: "Howling at the crypto moon"
+                          },
+                          {
+                            id: 6,
+                            title: "ALPHA GAINS",
+                            author: "profit_hunter",
+                            votes: 134,
+                            rank: 6,
+                            imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%2327ae60'/%3E%3Cpath d='M200 100 L300 200 L250 250 L200 200 L150 250 L100 200 Z' fill='%23f1c40f'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='white'%3EALPHA GAINS%3C/text%3E%3C/svg%3E",
+                            description: "Always making alpha gains"
+                          }
+                        ]
+                      });
+                      setArchiveView('contest');
+                    }}
+                    className="w-full"
+                  >
+                    <Card className="border-border/50 hover:border-primary/30 transition-colors">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="text-left">
+                            <h4 className="font-semibold text-foreground">Contest #1 - December 2024</h4>
+                            <p className="text-sm text-muted-foreground">50 participants • 1,247 votes</p>
+                          </div>
+                          <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-400/20">
+                            Completed
+                          </Badge>
                         </div>
-                        <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-400/20">
-                          Completed
-                        </Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </button>
+                      </CardContent>
+                    </Card>
+                  </button>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Contest Detail View */}
+                <div className="flex items-center gap-2 mb-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setArchiveView('list')}
+                    className="text-foreground hover:text-primary"
+                  >
+                    ← Back to Archive
+                  </Button>
+                </div>
+                
+                {selectedArchiveContest && (
+                  <>
+                    {/* Contest Header */}
+                    <Card className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-400/20">
+                      <CardContent className="p-4">
+                        <div className="text-center">
+                          <h2 className="text-lg font-bold text-purple-400 mb-2">
+                            {selectedArchiveContest.title}
+                          </h2>
+                          <div className="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                              <div className="text-purple-300 font-semibold">{selectedArchiveContest.participants}</div>
+                              <div className="text-muted-foreground">Participants</div>
+                            </div>
+                            <div>
+                              <div className="text-yellow-400 font-semibold">{selectedArchiveContest.totalVotes}</div>
+                              <div className="text-muted-foreground">Total Votes</div>
+                            </div>
+                            <div>
+                              <Badge variant="secondary" className="bg-green-500/20 text-green-400">
+                                {selectedArchiveContest.status}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Winners */}
+                    <Card>
+                      <CardContent className="p-4">
+                        <h3 className="font-semibold mb-3 text-foreground">🏆 Winners</h3>
+                        <div className="grid grid-cols-3 gap-2 text-center text-sm">
+                          <div className="bg-yellow-500/20 rounded-lg p-2">
+                            <div className="text-yellow-400 font-bold">🥇</div>
+                            <div className="text-foreground font-semibold">{selectedArchiveContest.winner.name}</div>
+                            <div className="text-muted-foreground">{selectedArchiveContest.winner.votes} votes</div>
+                          </div>
+                          <div className="bg-gray-500/20 rounded-lg p-2">
+                            <div className="text-gray-400 font-bold">🥈</div>
+                            <div className="text-foreground font-semibold">{selectedArchiveContest.secondPlace}</div>
+                          </div>
+                          <div className="bg-orange-500/20 rounded-lg p-2">
+                            <div className="text-orange-400 font-bold">🥉</div>
+                            <div className="text-foreground font-semibold">{selectedArchiveContest.thirdPlace}</div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* All Memes Grid */}
+                    <div className="space-y-4">
+                      <h3 className="font-semibold text-foreground">All Contest Entries</h3>
+                      <div className="grid grid-cols-3 gap-2">
+                        {selectedArchiveContest.memes.map((meme: any) => (
+                          <button
+                            key={meme.id}
+                            onClick={() => setSelectedArchiveMeme(meme)}
+                            className="aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-opacity relative group"
+                          >
+                            <img
+                              src={meme.imageUrl}
+                              alt={meme.title}
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <div className="text-white text-center">
+                                <div className="text-sm font-semibold">#{meme.rank}</div>
+                                <div className="text-xs">{meme.votes} votes</div>
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="goods" className="mt-4 space-y-4 pb-24">
