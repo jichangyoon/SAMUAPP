@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,12 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 
-interface ProfileProps {
-  samuBalance: number;
-  solBalance: number;
-}
-
-export default function Profile({ samuBalance, solBalance }: ProfileProps) {
+export default function Profile() {
   const { user } = usePrivy();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -29,9 +24,39 @@ export default function Profile({ samuBalance, solBalance }: ProfileProps) {
   const [displayName, setDisplayName] = useState("");
   const [profileImage, setProfileImage] = useState("");
   const [imagePreview, setImagePreview] = useState("");
+  const [samuBalance, setSamuBalance] = useState(0);
+  const [solBalance, setSolBalance] = useState(0);
 
   // 지갑 주소 가져오기
   const walletAddress = user?.linkedAccounts?.find(account => account.type === 'wallet')?.address || '';
+
+  // Balance fetching
+  useEffect(() => {
+    if (!walletAddress) return;
+
+    const fetchBalances = async () => {
+      try {
+        const [samuRes, solRes] = await Promise.all([
+          fetch(`/api/samu-balance/${walletAddress}`),
+          fetch(`/api/sol-balance/${walletAddress}`)
+        ]);
+
+        if (samuRes.ok) {
+          const samuData = await samuRes.json();
+          setSamuBalance(samuData.balance);
+        }
+
+        if (solRes.ok) {
+          const solData = await solRes.json();
+          setSolBalance(solData.balance);
+        }
+      } catch (error) {
+        console.error('Error fetching balances:', error);
+      }
+    };
+
+    fetchBalances();
+  }, [walletAddress]);
 
   // 로컬 스토리지에서 프로필 정보 가져오기
   const getStoredProfile = () => {

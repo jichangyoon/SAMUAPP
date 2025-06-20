@@ -6,7 +6,7 @@ import { UploadForm } from "@/components/upload-form";
 import { MemeCard } from "@/components/meme-card";
 import { Leaderboard } from "@/components/leaderboard";
 import { GoodsShop } from "@/components/goods-shop";
-import { UserProfile } from "@/components/user-profile";
+
 import { usePrivy } from '@privy-io/react-auth';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive } from "lucide-react";
+import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { getSamuTokenBalance, getSolBalance } from "@/lib/solana";
@@ -32,7 +33,6 @@ export default function Home() {
   const [samuBalance, setSamuBalance] = useState<number>(0);
   const [solBalance, setSolBalance] = useState<number>(0);
   const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [showUserProfile, setShowUserProfile] = useState(false);
   const [archiveView, setArchiveView] = useState<'list' | 'contest'>('list');
   const [selectedArchiveContest, setSelectedArchiveContest] = useState<any>(null);
   const [selectedArchiveMeme, setSelectedArchiveMeme] = useState<any>(null);
@@ -40,6 +40,7 @@ export default function Home() {
   // Privy authentication
   const { authenticated, user } = usePrivy();
   const { toast } = useToast();
+  const [, navigate] = useLocation();
   
   // Get wallet info from Privy embedded wallet
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
@@ -658,13 +659,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* User Profile Modal */}
-      <UserProfile 
-        isOpen={showUserProfile}
-        onClose={() => setShowUserProfile(false)}
-        samuBalance={samuBalance}
-        solBalance={solBalance}
-      />
+
 
       {/* Grid View Meme Detail Modal */}
       {selectedMeme && (

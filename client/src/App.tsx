@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { PrivyProvider } from '@privy-io/react-auth';
 import { useEffect } from 'react';
 import Home from "@/pages/home";
+import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 
 // Global error handler for Privy iframe issues
@@ -31,6 +32,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/connected" component={Home} />
+      <Route path="/profile" component={Profile} />
       <Route component={NotFound} />
     </Switch>
   );
