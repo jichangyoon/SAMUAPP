@@ -167,9 +167,8 @@ export class MemStorage implements IStorage {
 
   private generateNftImage(tokenId: number): string {
     // Use static image files from attached_assets/nfts/
-    // Images should be named: 001.png, 002.png, 003.png, etc.
-    const imageNumber = String(tokenId).padStart(3, '0');
-    return `/assets/nfts/${imageNumber}.png`;
+    // Images should be named: 1.png, 2.png, 3.png, etc.
+    return `/assets/nfts/${tokenId}.png`;
   }
 
   // NFT operations

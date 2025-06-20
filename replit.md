@@ -261,7 +261,7 @@ Changelog:
 - June 20, 2025. Expanded bottom navigation to include NFT section with Image icon for easy access
 - June 20, 2025. Reordered bottom navigation: Contest → Archive → NFT → Goods for better user flow
 - June 20, 2025. Removed marketplace connection button from NFT section and unified UI styling with black background and yellow text
-- June 20, 2025. Implemented static file serving system for 164 NFT images via /assets/nfts/ route with standardized naming (001.png-164.png)
+- June 20, 2025. Implemented static file serving system for 164 NFT images via /assets/nfts/ route with simplified naming (1.png-164.png)
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
