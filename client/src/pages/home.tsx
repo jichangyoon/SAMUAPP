@@ -34,6 +34,7 @@ export default function Home() {
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [selectedArchiveContest, setSelectedArchiveContest] = useState<any>(null);
   const [selectedArchiveMeme, setSelectedArchiveMeme] = useState<any>(null);
+  const [archiveView, setArchiveView] = useState<'list' | 'contest' | 'meme'>('list');
   
   // Privy authentication
   const { authenticated, user } = usePrivy();
@@ -352,27 +353,30 @@ export default function Home() {
           
           <TabsContent value="archive" className="mt-4 space-y-4 pb-24">
             <div className="space-y-4">
-              {/* Archive Header */}
-              <Card className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-400/20">
-                <CardContent className="p-4 text-center">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <Archive className="h-5 w-5 text-purple-400" />
-                    <h2 className="text-lg font-bold text-purple-400">Contest Archive</h2>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Past contest winners and memorable memes
-                  </p>
-                </CardContent>
-              </Card>
+              {archiveView === 'list' && (
+                <>
+                  {/* Archive Header */}
+                  <Card className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-400/20">
+                    <CardContent className="p-4 text-center">
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <Archive className="h-5 w-5 text-purple-400" />
+                        <h2 className="text-lg font-bold text-purple-400">Contest Archive</h2>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Past contest winners and memorable memes
+                      </p>
+                    </CardContent>
+                  </Card>
 
-              {/* Past Contests List */}
-              <div className="space-y-4">
-                <h3 className="text-md font-semibold text-foreground">Previous Contests</h3>
-                
-                {/* Contest list items - clickable */}
-                <button
-                  onClick={() => setSelectedArchiveContest({
-                    id: 1,
+                  {/* Past Contests List */}
+                  <div className="space-y-4">
+                    <h3 className="text-md font-semibold text-foreground">Previous Contests</h3>
+                    
+                    {/* Contest list items - clickable */}
+                    <button
+                      onClick={() => {
+                        setSelectedArchiveContest({
+                          id: 1,
                     title: "Contest #1 - December 2024",
                     participants: 50,
                     totalVotes: 1247,
