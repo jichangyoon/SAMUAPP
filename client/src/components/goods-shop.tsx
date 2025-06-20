@@ -132,17 +132,24 @@ export function GoodsShop() {
   return (
     <div className="space-y-6 pb-20">
       {/* 굿즈샵 헤더 */}
-      <Card className="bg-[hsl(50,85%,75%)] border-0">
-        <CardHeader className="text-center py-3">
-          <CardTitle className="text-lg font-bold text-black flex items-center justify-center gap-2">
-            <Trophy className="h-4 w-4" />
-            SAMU Goods Shop
-          </CardTitle>
-          <CardDescription className="text-xs text-black/90 mt-1 whitespace-nowrap">
-            Hall of Fame memes turned into goods!
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <div className="goods-header-container relative">
+        {/* Background cards for stacked effect */}
+        <div className="absolute inset-0 bg-gray-800 border border-gray-600 rounded-lg transform translate-x-2 translate-y-2"></div>
+        <div className="absolute inset-0 bg-gray-700 border border-gray-500 rounded-lg transform translate-x-1 translate-y-1"></div>
+        
+        {/* Main card */}
+        <Card className="relative bg-black border-yellow-400 shadow-lg">
+          <CardHeader className="text-center py-3">
+            <CardTitle className="text-lg font-bold text-yellow-500 flex items-center justify-center gap-2">
+              <Trophy className="h-4 w-4" />
+              SAMU Goods Shop
+            </CardTitle>
+            <CardDescription className="text-xs text-yellow-400 mt-1 whitespace-nowrap">
+              Hall of Fame memes turned into goods!
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
 
       {/* 장바구니 요약 */}
       {cart.length > 0 && (
