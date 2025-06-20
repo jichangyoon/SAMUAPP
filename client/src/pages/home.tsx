@@ -165,7 +165,7 @@ export default function Home() {
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card shadow-sm border-b border-border">
-        <div className="max-w-md mx-auto px-4 py-1.5">
+        <div className="max-w-md mx-auto px-4 py-1">
           <div className="flex items-center justify-between">
             <button 
               onClick={() => setShowUserProfile(true)}
@@ -469,7 +469,7 @@ export default function Home() {
 
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50">
-        <div className="max-w-md mx-auto px-4 py-1.5">
+        <div className="max-w-md mx-auto px-4 py-1">
           <div className="flex justify-around items-center">
             <button
               onClick={() => setCurrentTab("contest")}
