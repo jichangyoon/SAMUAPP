@@ -32,11 +32,16 @@ window.addEventListener('unhandledrejection', (event) => {
 
 function Router() {
   return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/connected" component={Home} />
-      <Route component={NotFound} />
-    </Switch>
+    <div className="min-h-screen bg-black">
+      <Switch>
+        <Route path="/" component={Home} />
+        <Route path="/archive" component={Archive} />
+        <Route path="/nft-gallery" component={NFTGallery} />
+        <Route path="/goods" component={Goods} />
+        <Route component={NotFound} />
+      </Switch>
+      <BottomNavigation />
+    </div>
   );
 }
 
