@@ -49,15 +49,8 @@ function App() {
         appearance: {
           theme: 'dark',
           accentColor: '#fbbf24',
-          showWalletLoginFirst: false
         },
-        loginMethods: ['wallet', 'email'],
-        embeddedWallets: {
-          createOnLogin: 'users-without-wallets',
-          solana: {
-            createOnLogin: 'users-without-wallets',
-          },
-        },
+        loginMethods: ['email'],
         mfa: {
           noPromptOnMfaRequired: false
         }

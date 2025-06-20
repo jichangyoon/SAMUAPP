@@ -12,86 +12,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getSamuTokenBalance } from "@/lib/solana";
 import type { Meme } from "@shared/schema";
 import samuLogoImg from "/assets/images/logos/samu-logo.jpg";
 
 export default function Home() {
   const [sortBy, setSortBy] = useState("votes");
   const [currentTab, setCurrentTab] = useState("contest");
-  const [samuBalance, setSamuBalance] = useState<number>(0);
-  const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [showUserProfile, setShowUserProfile] = useState(false);
   
   // Privy authentication
   const { authenticated, user } = usePrivy();
   
-  // Get wallet info from Privy
-  const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
-  const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
-  const selectedWalletAccount = solanaWallet || walletAccounts[0];
-  
-  const isConnected = authenticated && !!selectedWalletAccount;
-  const walletAddress = selectedWalletAccount?.address || '';
-  const isSolana = selectedWalletAccount?.chainType === 'solana';
-  
-  // Debug Privy state
-  useEffect(() => {
-    console.log('🔍 Privy State Debug:', {
-      authenticated,
-      userExists: !!user,
-      walletAccounts: walletAccounts.length,
-      hasSelectedWallet: !!selectedWalletAccount,
-      isConnected,
-      walletAddress: walletAddress || 'none',
-      chainType: selectedWalletAccount?.chainType || 'none'
-    });
-  }, [authenticated, user, isConnected, walletAddress]);
-
-  // Complete data cleanup on wallet change
-  useEffect(() => {
-    if (!authenticated) {
-      console.log('🧹 User not authenticated - clearing all data');
-      setSamuBalance(0);
-      setBalanceStatus('idle');
-      // Clear any cached wallet data
-      try {
-        Object.keys(localStorage).forEach(key => {
-          if (key.includes('phantom') || key.includes('wallet') || key.includes('samu')) {
-            localStorage.removeItem(key);
-          }
-        });
-      } catch (error) {
-        console.warn('Failed to clear localStorage:', error);
-      }
-    }
-  }, [authenticated]);
-
-  // Fetch SAMU balance for Solana wallets
-  useEffect(() => {
-    if (isConnected && walletAddress && isSolana) {
-      console.log('💰 Fetching SAMU balance for:', walletAddress);
-      setBalanceStatus('loading');
-      // Clear previous balance immediately
-      setSamuBalance(0);
-      
-      getSamuTokenBalance(walletAddress)
-        .then(balance => {
-          console.log('✅ SAMU balance fetched:', balance);
-          setSamuBalance(balance);
-          setBalanceStatus('success');
-        })
-        .catch(error => {
-          console.warn('❌ Failed to fetch SAMU balance:', error);
-          setSamuBalance(0);
-          setBalanceStatus('error');
-        });
-    } else if (!isConnected) {
-      console.log('⏸️ Wallet not connected - clearing balance data');
-      setSamuBalance(0);
-      setBalanceStatus('idle');
-    }
-  }, [isConnected, walletAddress, isSolana]);
+  const isConnected = authenticated && !!user;
 
   const { data: memes = [], isLoading, refetch } = useQuery<Meme[]>({
     queryKey: ["/api/memes"],

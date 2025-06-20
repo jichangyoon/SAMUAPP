@@ -1,140 +1,36 @@
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Wallet, LogOut, Plus } from "lucide-react";
-import { usePrivy, useWallets } from '@privy-io/react-auth';
-import { useState, useEffect } from 'react';
-import { getSamuTokenBalance } from "@/lib/solana";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { User, LogOut, Mail } from "lucide-react";
+import { usePrivy } from '@privy-io/react-auth';
 
 export function WalletConnect() {
-  const { ready, authenticated, user, login, logout, createWallet } = usePrivy();
-  const { wallets } = useWallets();
-  const [isCreatingWallet, setIsCreatingWallet] = useState(false);
-  const [samuBalance, setSamuBalance] = useState<number>(0);
-  const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-
-  // Get wallet using same logic as Home component
-  const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
-  const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
-  const selectedWalletAccount = solanaWallet || walletAccounts[0];
-  
-  const walletAddress = selectedWalletAccount?.address || '';
-  const isSolana = selectedWalletAccount?.chainType === 'solana';
-
-  // Complete cleanup function
-  const clearAllWalletData = () => {
-    console.log('🧹 Clearing all wallet data and cache');
-    setSamuBalance(0);
-    setBalanceStatus('idle');
-    // Clear localStorage cache
-    try {
-      Object.keys(localStorage).forEach(key => {
-        if (key.includes('phantom') || key.includes('wallet') || key.includes('samu') || key.includes('privy')) {
-          localStorage.removeItem(key);
-        }
-      });
-    } catch (error) {
-      console.warn('Failed to clear localStorage:', error);
-    }
-  };
-
-  // Enhanced logout function
-  const handleLogout = async () => {
-    clearAllWalletData();
-    await logout();
-  };
-
-  // Fetch SAMU balance for Solana wallets
-  useEffect(() => {
-    if (authenticated && walletAddress && isSolana) {
-      console.log('💰 Fetching SAMU balance for wallet:', walletAddress);
-      setBalanceStatus('loading');
-      // Clear previous balance immediately
-      setSamuBalance(0);
-      
-      getSamuTokenBalance(walletAddress)
-        .then(balance => {
-          console.log('✅ SAMU balance received:', balance);
-          setSamuBalance(balance);
-          setBalanceStatus('success');
-        })
-        .catch(error => {
-          console.warn('❌ Failed to fetch SAMU balance:', error);
-          setSamuBalance(0);
-          setBalanceStatus('error');
-        });
-    } else if (!authenticated) {
-      // Complete cleanup when not authenticated
-      clearAllWalletData();
-    }
-  }, [authenticated, walletAddress, isSolana]);
+  const { ready, authenticated, user, login, logout } = usePrivy();
 
   if (!ready) {
     return (
       <Button disabled size="sm" className="bg-muted text-muted-foreground">
-        <Wallet className="h-4 w-4 mr-1" />
+        <Mail className="h-4 w-4 mr-1" />
         Loading...
       </Button>
     );
   }
 
   if (authenticated && user) {
-    const displayAddress = walletAddress 
-      ? `${walletAddress.slice(0, 4)}...${walletAddress.slice(-3)}`
-      : 'Connected';
-    
-    const chainType = selectedWalletAccount?.chainType || 'unknown';
-
-    // If user is authenticated but has no wallet, offer to create Solana wallet
-    if (!selectedWalletAccount && user.email) {
-      const handleCreateWallet = async () => {
-        setIsCreatingWallet(true);
-        try {
-          await createWallet();
-        } catch (error) {
-          console.error('Failed to create wallet:', error);
-        } finally {
-          setIsCreatingWallet(false);
-        }
-      };
-
-      return (
-        <div className="flex gap-2">
-          <Button
-            onClick={handleCreateWallet}
-            disabled={isCreatingWallet}
-            size="sm"
-            className="bg-amber-500 text-white hover:bg-amber-600"
-          >
-            <Plus className="h-3 w-3 mr-1" />
-            {isCreatingWallet ? 'Creating...' : 'Create Wallet'}
-          </Button>
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            size="sm"
-            className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200"
-          >
-            <LogOut className="h-3 w-3" />
-          </Button>
-        </div>
-      );
-    }
+    const displayEmail = user.email?.address || 'User';
+    const displayName = user.customMetadata?.displayName as string || displayEmail.split('@')[0];
+    const profileImage = user.customMetadata?.profileImage as string || '';
 
     return (
       <div className="flex items-center gap-2">
-        {/* SAMU Balance Display */}
-        {isSolana && (
-          <div className="text-right">
-            <div className="text-xs font-bold text-[hsl(30,100%,50%)]">
-              {balanceStatus === 'loading' ? 'Loading...' : `${samuBalance.toLocaleString()}`}
-            </div>
-            <div className="text-xs text-muted-foreground">SAMU</div>
-          </div>
-        )}
+        <Avatar className="h-8 w-8">
+          <AvatarImage src={profileImage} />
+          <AvatarFallback className="bg-primary/20 text-primary text-xs">
+            {displayName.slice(0, 2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
         
-        {/* Wallet Info Button */}
         <Button
-          onClick={handleLogout}
+          onClick={logout}
           variant="outline"
           size="sm"
           className="bg-green-950/20 text-green-400 border-green-800 hover:bg-green-950/30 px-2 py-1 h-auto"
@@ -142,10 +38,10 @@ export function WalletConnect() {
           <div className="flex flex-col items-start">
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <span className="font-mono text-xs">{displayAddress}</span>
+              <span className="text-xs">{displayName}</span>
             </div>
             <span className="text-xs opacity-75">
-              {chainType === 'solana' ? 'Solana' : chainType === 'ethereum' ? 'Ethereum' : 'Wallet'}
+              {displayEmail}
             </span>
           </div>
           <LogOut className="h-3 w-3 ml-1" />
@@ -160,8 +56,8 @@ export function WalletConnect() {
       size="sm"
       className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-sm border border-primary"
     >
-      <Wallet className="h-4 w-4 mr-1" />
-      Connect
+      <Mail className="h-4 w-4 mr-1" />
+      Sign In
     </Button>
   );
 }
