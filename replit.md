@@ -243,6 +243,11 @@ Changelog:
 - June 20, 2025. Optimized wallet connection component by eliminating unnecessary balance API calls in header
 - June 20, 2025. Adjusted modal positioning from left-[50%] to left-[40%] for better mobile-first visual alignment
 - June 20, 2025. Updated both Dialog and AlertDialog components to use consistent left-shifted positioning
+- June 20, 2025. Fine-tuned modal positioning to left-[46%] for optimal mobile viewing experience
+- June 20, 2025. Added wallet address display section to profile page with copy-to-clipboard functionality
+- June 20, 2025. Implemented comprehensive token transfer interface with SAMU and SOL support
+- June 20, 2025. Created SendTokens component with address validation, balance checking, and transaction simulation
+- June 20, 2025. Enhanced profile page with integrated wallet management and token sending capabilities
 ```
 
 ## User Preferences

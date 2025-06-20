@@ -9,10 +9,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft } from "lucide-react";
+import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
+import { SendTokens } from "@/components/send-tokens";
 
 export default function Profile() {
   const { user } = usePrivy();
@@ -279,6 +280,44 @@ export default function Profile() {
               <div className="text-sm font-bold text-yellow-400">{totalVotesReceived}</div>
               <div className="text-xs text-muted-foreground">Total Votes Received</div>
             </div>
+
+            {/* 지갑 주소 섹션 */}
+            {walletAddress && (
+              <div className="mt-3 bg-accent/20 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-foreground">Wallet Address</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(walletAddress);
+                      toast({ title: "Copied!", description: "Wallet address copied to clipboard" });
+                    }}
+                    className="h-6 px-2 text-xs hover:bg-accent"
+                  >
+                    <Copy className="h-3 w-3" />
+                  </Button>
+                </div>
+                <div className="text-xs font-mono text-foreground break-all bg-background/50 rounded p-2">
+                  {walletAddress}
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  {selectedWalletAccount?.chainType === 'solana' ? 'Solana Network' : 'Ethereum Network'}
+                </div>
+              </div>
+            )}
+
+            {/* 송금 기능 */}
+            {walletAddress && (
+              <div className="mt-3">
+                <SendTokens 
+                  walletAddress={walletAddress}
+                  samuBalance={samuBalance}
+                  solBalance={solBalance}
+                  chainType={selectedWalletAccount?.chainType || 'solana'}
+                />
+              </div>
+            )}
           </CardContent>
         </Card>
 
