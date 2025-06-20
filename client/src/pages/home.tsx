@@ -164,34 +164,36 @@ export default function Home() {
               <img src={samuLogoImg} alt="SAMU Logo" className="w-8 h-8 rounded-full" />
               <h1 className="text-lg font-bold text-foreground">SAMU</h1>
             </div>
-            <button
-              onClick={() => setShowUserProfile(true)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent hover:bg-accent/80 transition-colors"
-            >
-              {profileImage ? (
-                <img 
-                  src={profileImage} 
-                  alt="Profile" 
-                  className="w-6 h-6 rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-xs font-bold text-primary-foreground">
-                    {displayName.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
-              <span className="text-sm font-medium text-foreground">{displayName}</span>
-              {authenticated && (
-                <>
-                  <span className="text-xs text-muted-foreground">|</span>
-                  <span className="text-xs text-primary font-medium">
-                    {samuBalance > 0 ? `${samuBalance.toLocaleString()} SAMU` : 'No SAMU'}
-                  </span>
-                </>
-              )}
-            </button>
-            <WalletConnect />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowUserProfile(true)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent hover:bg-accent/80 transition-colors"
+              >
+                {profileImage ? (
+                  <img 
+                    src={profileImage} 
+                    alt="Profile" 
+                    className="w-6 h-6 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                    <span className="text-xs font-bold text-primary-foreground">
+                      {displayName.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+                <span className="text-sm font-medium text-foreground">{displayName}</span>
+                {authenticated && (
+                  <>
+                    <span className="text-xs text-muted-foreground">|</span>
+                    <span className="text-xs text-primary font-medium">
+                      {samuBalance > 0 ? `${samuBalance.toLocaleString()} SAMU` : 'No SAMU'}
+                    </span>
+                  </>
+                )}
+              </button>
+              <WalletConnect />
+            </div>
           </div>
         </div>
       </header>
