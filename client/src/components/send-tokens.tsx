@@ -26,7 +26,6 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const { toast } = useToast();
   const { user } = usePrivy();
   const { wallets } = useWallets();
-  const wallet = useEmbeddedWallet();
 
   const handleSend = async () => {
     if (!recipient || !amount) {
