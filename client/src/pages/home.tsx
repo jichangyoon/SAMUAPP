@@ -42,16 +42,17 @@ export default function Home() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   
-  // Get wallet info from Privy embedded wallet only - ignore external wallets like Phantom
+  // Solana 지갑만 사용 - 간단하고 깔끔한 로직
   const walletAccounts = user?.linkedAccounts?.filter(account => 
-    account.type === 'wallet' && account.connectorType !== 'injected'
+    account.type === 'wallet' && 
+    account.connectorType !== 'injected' && 
+    account.chainType === 'solana'
   ) || [];
-  const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
-  const selectedWalletAccount = solanaWallet || walletAccounts[0];
+  const selectedWalletAccount = walletAccounts[0]; // 유일한 Solana 지갑
   
   const isConnected = authenticated && !!selectedWalletAccount;
   const walletAddress = selectedWalletAccount?.address || '';
-  const isSolana = selectedWalletAccount?.chainType === 'solana';
+  const isSolana = true; // 항상 Solana
 
   // Profile state management
   const [profileData, setProfileData] = useState({ displayName: 'User', profileImage: '' });

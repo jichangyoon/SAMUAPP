@@ -46,7 +46,11 @@ export function UserProfile({ isOpen, onClose, samuBalance, solBalance }: UserPr
   const [profileImage, setProfileImage] = useState(storedProfile.profileImage || '');
   const [imagePreview, setImagePreview] = useState<string>('');
 
-  const walletAddress = user?.wallet?.address || user?.linkedAccounts?.find(account => account.type === 'wallet')?.address || '';
+  // Solana 지갑 주소만 가져오기
+  const solanaWallet = user?.linkedAccounts?.find(account => 
+    account.type === 'wallet' && account.chainType === 'solana'
+  );
+  const walletAddress = solanaWallet?.address || '';
   const displayAddress = walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : '';
 
   // Update profile mutation - using API call since Privy doesn't expose updateUser directly

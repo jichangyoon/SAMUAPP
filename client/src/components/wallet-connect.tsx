@@ -6,16 +6,17 @@ import { useState, useEffect } from 'react';
 export function WalletConnect() {
   const { ready, authenticated, user, login, logout } = usePrivy();
 
-  // Get wallet using same logic as home page - prioritize Solana, ignore external wallets
+  // Solana 지갑만 사용 - Ethereum 지갑 무시
   const walletAccounts = user?.linkedAccounts?.filter(account => 
-    account.type === 'wallet' && account.connectorType !== 'injected'
+    account.type === 'wallet' && 
+    account.connectorType !== 'injected' && 
+    account.chainType === 'solana'
   ) || [];
-  const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
-  const selectedWalletAccount = solanaWallet || walletAccounts[0];
+  const selectedWalletAccount = walletAccounts[0]; // 첫 번째 (그리고 유일한) Solana 지갑
 
   const isConnected = authenticated && !!selectedWalletAccount;
   const walletAddress = selectedWalletAccount?.address || '';
-  const isSolana = selectedWalletAccount?.chainType === 'solana';
+  const isSolana = true; // 항상 Solana
 
   // 지갑 연결 안정성을 위한 에러 바운더리
   const [connectionError, setConnectionError] = useState<string | null>(null);
@@ -42,8 +43,6 @@ export function WalletConnect() {
       ? `${walletAddress.slice(0, 4)}...${walletAddress.slice(-3)}`
       : 'Connected';
 
-    const chainType = selectedWalletAccount?.chainType || 'unknown';
-
     return (
       <Button
         onClick={logout}
@@ -56,9 +55,7 @@ export function WalletConnect() {
             <div className="w-2 h-2 bg-green-400 rounded-full"></div>
             <span className="font-mono text-xs">{displayAddress}</span>
           </div>
-          <span className="text-xs opacity-75">
-            {chainType === 'solana' ? 'Solana' : chainType === 'ethereum' ? 'Ethereum' : 'Wallet'}
-          </span>
+          <span className="text-xs opacity-75">Solana</span>
         </div>
         <LogOut className="h-3 w-3 ml-1" />
       </Button>
