@@ -139,7 +139,7 @@ export function GoodsShop() {
             SAMU Goods Shop
           </CardTitle>
           <CardDescription className="text-xs text-black/90 mt-1 whitespace-nowrap">
-            Hall of Fame memes turned into goods! Purchase with SAMU tokens
+            Hall of Fame memes turned into goods!
           </CardDescription>
         </CardHeader>
       </Card>
