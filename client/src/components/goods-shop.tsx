@@ -8,16 +8,14 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useToast } from "@/hooks/use-toast";
 import { ShoppingCart, Trophy, Shirt, Coffee, Sticker, X } from "lucide-react";
 
-// Hall of Fame meme-based goods data
+// Hall of Fame meme collectibles showcase data
 const goodsData = [
   {
     id: 1,
-    name: "SAMU TO MARS T-Shirt",
-    description: "Premium cotton t-shirt featuring the #1 Hall of Fame meme",
-    price: 2500,
-    currency: "SAMU",
+    name: "SAMU TO MARS Collection",
+    description: "Hall of Fame meme design featuring the legendary space journey theme",
     category: "clothing",
-    image: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23F7DC6F'/%3E%3Crect x='50' y='100' width='300' height='200' rx='20' fill='%23ffffff'/%3E%3Ctext x='200' y='180' text-anchor='middle' font-family='Arial' font-size='24' font-weight='bold' fill='%232C3E50'%3ESAMU TO MARS%3C/text%3E%3Ctext x='200' y='220' text-anchor='middle' font-family='Arial' font-size='14' fill='%238B4513'%3EPremium Cotton T-Shirt%3C/text%3E%3Ccircle cx='100' cy='130' r='15' fill='%23FF8C00'/%3E%3Ccircle cx='300' cy='130' r='15' fill='%23FF8C00'/%3E%3C/svg%3E",
+    image: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23F7DC6F'/%3E%3Crect x='50' y='100' width='300' height='200' rx='20' fill='%23ffffff'/%3E%3Ctext x='200' y='180' text-anchor='middle' font-family='Arial' font-size='24' font-weight='bold' fill='%232C3E50'%3ESAMU TO MARS%3C/text%3E%3Ctext x='200' y='220' text-anchor='middle' font-family='Arial' font-size='14' fill='%238B4513'%3EHall of Fame Design%3C/text%3E%3Ccircle cx='100' cy='130' r='15' fill='%23FF8C00'/%3E%3Ccircle cx='300' cy='130' r='15' fill='%23FF8C00'/%3E%3C/svg%3E",
     originalMeme: "SAMU TO MARS",
     originalAuthor: "crypto_legend",
     limited: true,
@@ -25,12 +23,10 @@ const goodsData = [
   },
   {
     id: 2,
-    name: "PACK LEADER Mug",
-    description: "Start your morning like the alpha of the pack",
-    price: 1200,
-    currency: "SAMU",
+    name: "PACK LEADER Showcase",
+    description: "Alpha wolf design from the Hall of Fame collection",
     category: "lifestyle",
-    image: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%238B4513'/%3E%3Cellipse cx='200' cy='250' rx='120' ry='80' fill='%23ffffff'/%3E%3Crect x='320' y='200' width='30' height='60' rx='15' fill='%23ffffff'/%3E%3Ctext x='200' y='230' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='%232C3E50'%3EPACK LEADER%3C/text%3E%3Ctext x='200' y='280' text-anchor='middle' font-family='Arial' font-size='12' fill='%238B4513'%3ECeramic Mug%3C/text%3E%3C/svg%3E",
+    image: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%238B4513'/%3E%3Cellipse cx='200' cy='250' rx='120' ry='80' fill='%23ffffff'/%3E%3Crect x='320' y='200' width='30' height='60' rx='15' fill='%23ffffff'/%3E%3Ctext x='200' y='230' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='%232C3E50'%3EPACK LEADER%3C/text%3E%3Ctext x='200' y='280' text-anchor='middle' font-family='Arial' font-size='12' fill='%238B4513'%3ECollectible Design%3C/text%3E%3C/svg%3E",
     originalMeme: "PACK LEADER",
     originalAuthor: "wolf_alpha",
     limited: false,
@@ -38,12 +34,10 @@ const goodsData = [
   },
   {
     id: 3,
-    name: "DIAMOND HODLER Sticker Pack",
-    description: "Hologram sticker set (5 pieces) - prove your diamond hands",
-    price: 800,
-    currency: "SAMU",
+    name: "DIAMOND HODLER Archive",
+    description: "Holographic design celebrating diamond hands mentality",
     category: "accessories",
-    image: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23F7DC6F'/%3E%3Cpolygon points='200,80 260,160 200,240 140,160' fill='%2300BFFF' stroke='%232C3E50' stroke-width='3'/%3E%3Cpolygon points='200,120 230,160 200,200 170,160' fill='%23ffffff' opacity='0.7'/%3E%3Ctext x='200' y='280' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='%232C3E50'%3EDIAMOND HODLER%3C/text%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='12' fill='%238B4513'%3EHologram Sticker Pack%3C/text%3E%3C/svg%3E",
+    image: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23F7DC6F'/%3E%3Cpolygon points='200,80 260,160 200,240 140,160' fill='%2300BFFF' stroke='%232C3E50' stroke-width='3'/%3E%3Cpolygon points='200,120 230,160 200,200 170,160' fill='%23ffffff' opacity='0.7'/%3E%3Ctext x='200' y='280' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='%232C3E50'%3EDIAMOND HODLER%3C/text%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='12' fill='%238B4513'%3EArt Collection%3C/text%3E%3C/svg%3E",
     originalMeme: "DIAMOND HODLER",
     originalAuthor: "gem_hands",
     limited: true,
@@ -51,12 +45,10 @@ const goodsData = [
   },
   {
     id: 4,
-    name: "SAMU Wolf Hoodie",
-    description: "Premium hoodie featuring SAMU logo and wolf graphics",
-    price: 4500,
-    currency: "SAMU",
+    name: "SAMU Wolf Heritage",
+    description: "Official SAMU community logo and wolf graphics showcase",
     category: "clothing",
-    image: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%232C3E50'/%3E%3Crect x='60' y='120' width='280' height='200' rx='30' fill='%23F7DC6F'/%3E%3Ccircle cx='200' cy='180' r='40' fill='%232C3E50'/%3E%3Cpath d='M160 160 L180 140 L200 160 L220 140 L240 160 L220 180 L180 180 Z' fill='%23F7DC6F'/%3E%3Ctext x='200' y='280' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold' fill='%232C3E50'%3ESAMU WOLF HOODIE%3C/text%3E%3C/svg%3E",
+    image: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%232C3E50'/%3E%3Crect x='60' y='120' width='280' height='200' rx='30' fill='%23F7DC6F'/%3E%3Ccircle cx='200' cy='180' r='40' fill='%232C3E50'/%3E%3Cpath d='M160 160 L180 140 L200 160 L220 140 L240 160 L220 180 L180 180 Z' fill='%23F7DC6F'/%3E%3Ctext x='200' y='280' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold' fill='%232C3E50'%3ESAMU WOLF HERITAGE%3C/text%3E%3C/svg%3E",
     originalMeme: "Community Design",
     originalAuthor: "SAMU Team",
     limited: false,
@@ -66,19 +58,8 @@ const goodsData = [
 
 export function GoodsShop() {
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [cart, setCart] = useState<number[]>([]);
   const [selectedItem, setSelectedItem] = useState<typeof goodsData[0] | null>(null);
-  const { authenticated, user } = usePrivy();
-  
-  // Get wallet using same logic as WalletConnect component - prioritize Solana
-  const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
-  const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
-  const selectedWalletAccount = solanaWallet || walletAccounts[0];
-  
-  const isConnected = authenticated;
-  const walletAddress = selectedWalletAccount?.address || '';
-  const samuBalance = 1000; // Simplified for now
-  const { toast } = useToast();
+  const { authenticated } = usePrivy();
 
   const categories = [
     { id: "all", name: "All", icon: ShoppingCart },
@@ -91,44 +72,6 @@ export function GoodsShop() {
     ? goodsData 
     : goodsData.filter(item => item.category === selectedCategory);
 
-  const addToCart = (goodsId: number) => {
-    if (!isConnected) {
-      toast({
-        title: "Wallet Connection Required",
-        description: "Please connect your wallet to purchase goods.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const item = goodsData.find(g => g.id === goodsId);
-    if (item && samuBalance < item.price) {
-      toast({
-        title: "Insufficient SAMU Balance",
-        description: `${item.price.toLocaleString()} SAMU required.`,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setCart(prev => [...prev, goodsId]);
-    toast({
-      title: "Added to Cart",
-      description: `${item?.name} has been added to your cart.`,
-    });
-  };
-
-  const removeFromCart = (goodsId: number) => {
-    setCart(prev => prev.filter(id => id !== goodsId));
-  };
-
-  const getTotalPrice = () => {
-    return cart.reduce((total, itemId) => {
-      const item = goodsData.find(g => g.id === itemId);
-      return total + (item?.price || 0);
-    }, 0);
-  };
-
   return (
     <div className="space-y-6 pb-20">
       {/* 굿즈샵 헤더 */}
@@ -139,28 +82,12 @@ export function GoodsShop() {
             SAMU Goods Shop
           </CardTitle>
           <CardDescription className="text-xs text-[hsl(50,85%,75%)]/90 mt-1 whitespace-nowrap">
-            Hall of Fame memes turned into goods!
+            Hall of Fame meme collectibles showcase
           </CardDescription>
         </CardHeader>
       </Card>
 
-      {/* 장바구니 요약 */}
-      {cart.length > 0 && (
-        <Card className="bg-green-950/20 border-green-800">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ShoppingCart className="h-4 w-4 text-green-400" />
-                <span className="font-medium text-sm text-foreground">Cart: {cart.length} items</span>
-              </div>
-              <div className="text-right">
-                <div className="font-bold text-sm text-green-400">{getTotalPrice().toLocaleString()} SAMU</div>
-                <Button size="sm" className="mt-1 h-6 text-xs">Checkout</Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+
 
       {/* 카테고리 탭 */}
       <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
@@ -200,24 +127,14 @@ export function GoodsShop() {
                       />
                     </button>
                     <div className="flex-1 ml-3 min-w-0">
-                      <div className="flex justify-between items-center">
-                        <div className="flex-1 min-w-0 pr-2">
-                          <h3 className="font-semibold text-sm text-foreground truncate">
-                            {item.name}
-                          </h3>
-                          {item.limited && (
-                            <Badge variant="destructive" className="text-xs px-1 py-0 h-4 leading-none mt-1">
-                              Limited
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <div className="font-bold text-sm text-primary">
-                            {item.price.toLocaleString()}
-                          </div>
-                          <div className="text-xs text-muted-foreground">SAMU</div>
-                        </div>
-                      </div>
+                      <h3 className="font-semibold text-sm text-foreground truncate">
+                        {item.name}
+                      </h3>
+                      {item.limited && (
+                        <Badge variant="destructive" className="text-xs px-1 py-0 h-4 leading-none mt-1">
+                          Limited
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </Card>
@@ -231,8 +148,8 @@ export function GoodsShop() {
       <Card className="bg-blue-950/20 border-blue-800">
         <CardContent className="p-3 text-center">
           <p className="text-xs text-blue-400">
-            💡 Hall of Fame memes are turned into physical goods.<br />
-            Purchase with SAMU tokens and receive real merchandise!
+            💡 Hall of Fame memes transformed into collectible designs.<br />
+            Explore and appreciate the community's greatest creations!
           </p>
         </CardContent>
       </Card>
@@ -288,28 +205,10 @@ export function GoodsShop() {
                 </Badge>
               </div>
               
-              <div className="flex items-center justify-between pt-4 border-t">
-                <div>
-                  <div className="text-lg font-bold text-primary">
-                    {selectedItem.price.toLocaleString()} SAMU
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    Your balance: {samuBalance.toLocaleString()} SAMU
-                  </div>
-                </div>
-                <div className="flex space-x-2">
-                  <Button
-                    onClick={() => {
-                      addToCart(selectedItem.id);
-                      setSelectedItem(null);
-                    }}
-                    disabled={cart.includes(selectedItem.id)}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                  >
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    {cart.includes(selectedItem.id) ? "Added" : "Add to Cart"}
-                  </Button>
-                </div>
+              <div className="pt-4 border-t">
+                <p className="text-sm text-muted-foreground text-center">
+                  Collectible merchandise inspired by Hall of Fame memes
+                </p>
               </div>
             </div>
           )}
