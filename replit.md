@@ -231,6 +231,10 @@ Changelog:
 - June 20, 2025. Implemented SOL balance display alongside SAMU token balance in wallet header
 - June 20, 2025. Added SOL balance API endpoint and concurrent balance fetching for improved wallet information display
 - June 20, 2025. Changed balance display layout from vertical to horizontal alignment to maintain compact header design
+- June 20, 2025. Converted UserProfile modal to standalone Profile page for better mobile experience
+- June 20, 2025. Optimized Profile page layout for mobile-first design with 2x2 grid stats display and compact card layouts
+- June 20, 2025. Enhanced Profile page tabs with vertical icon/text layout and smaller fonts for mobile screens
+- June 20, 2025. Minimized Profile page component sizes - reduced images, text sizes, and padding for mobile optimization
 ```
 
 ## User Preferences
