@@ -59,8 +59,7 @@ function App() {
           solana: {
             createOnLogin: 'users-without-wallets',
           },
-        },
-        supportedChains: [], // Ethereum 체인 제거
+        }
       }}
     >
       <QueryClientProvider client={queryClient}>
