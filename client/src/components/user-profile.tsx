@@ -143,21 +143,21 @@ export function UserProfile({ isOpen, onClose, samuBalance, solBalance }: UserPr
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card border-border">
-        <DialogHeader>
-          <DialogTitle className="text-2xl text-foreground flex items-center gap-2">
-            <User className="h-6 w-6" />
+      <DialogContent className="w-[95vw] h-[95vh] max-w-4xl max-h-[95vh] overflow-y-auto bg-card border-border p-4 sm:p-6">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-xl sm:text-2xl text-foreground flex items-center gap-2">
+            <User className="h-5 w-5 sm:h-6 sm:w-6" />
             My SAMU Profile
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-3 sm:space-y-6">
           {/* 사용자 기본 정보 */}
           <Card className="bg-gradient-to-r from-primary/20 to-primary/10 border-border">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4 mb-4">
+            <CardContent className="p-3 sm:p-6">
+              <div className="flex items-center gap-3 sm:gap-4 mb-4">
                 <div className="relative">
-                  <Avatar className="h-16 w-16">
+                  <Avatar className="h-12 w-12 sm:h-16 sm:w-16">
                     <AvatarImage src={imagePreview || profileImage} />
                     <AvatarFallback className="bg-primary/20 text-primary text-lg">
                       {displayName.slice(0, 2).toUpperCase()}
@@ -226,26 +226,26 @@ export function UserProfile({ isOpen, onClose, samuBalance, solBalance }: UserPr
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{samuBalance.toLocaleString()}</div>
-                  <div className="text-sm text-muted-foreground">SAMU Tokens</div>
+                  <div className="text-lg sm:text-2xl font-bold text-primary">{samuBalance.toLocaleString()}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">SAMU Tokens</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-400">{solBalance.toFixed(4)}</div>
-                  <div className="text-sm text-muted-foreground">SOL Balance</div>
+                  <div className="text-lg sm:text-2xl font-bold text-purple-400">{solBalance.toFixed(4)}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">SOL Balance</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-400">{votingPower.toLocaleString()}</div>
-                  <div className="text-sm text-muted-foreground">Voting Power</div>
+                  <div className="text-lg sm:text-2xl font-bold text-green-400">{votingPower.toLocaleString()}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Voting Power</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-400">{myMemes.length}</div>
-                  <div className="text-sm text-muted-foreground">Memes Created</div>
+                  <div className="text-lg sm:text-2xl font-bold text-blue-400">{myMemes.length}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Memes Created</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-yellow-400">{totalVotesReceived}</div>
-                  <div className="text-sm text-muted-foreground">Votes Received</div>
+                  <div className="text-lg sm:text-2xl font-bold text-yellow-400">{totalVotesReceived}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Votes Received</div>
                 </div>
               </div>
             </CardContent>
