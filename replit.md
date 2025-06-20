@@ -259,6 +259,7 @@ Changelog:
 - June 20, 2025. Created NFT database schema with support for token IDs, creators, and user comments
 - June 20, 2025. Added marketplace integration button linking to external trading platforms
 - June 20, 2025. Expanded bottom navigation to include NFT section with Image icon for easy access
+- June 20, 2025. Reordered bottom navigation: Contest → Archive → NFT → Goods for better user flow
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```

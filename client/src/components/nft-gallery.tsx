@@ -76,7 +76,10 @@ export function NftGallery() {
     ) || [];
     const selectedWalletAccount = walletAccounts[0];
 
-    if (!selectedWalletAccount?.address) {
+    // Type assertion for wallet address
+    const walletAddress = (selectedWalletAccount as any)?.address;
+
+    if (!walletAddress) {
       toast({
         title: "Wallet Required",
         description: "Please connect your Solana wallet to post comments.",
@@ -87,8 +90,8 @@ export function NftGallery() {
 
     createCommentMutation.mutate({
       comment: newComment.trim(),
-      userWallet: selectedWalletAccount.address,
-      username: user?.email?.address || 'Anonymous'
+      userWallet: walletAddress,
+      username: user?.email?.address || 'Anonymous User'
     });
   };
 
@@ -223,10 +226,10 @@ export function NftGallery() {
                         <div className="flex items-center gap-2 mb-1">
                           <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
                             <span className="text-xs font-bold text-primary-foreground">
-                              {comment.username.charAt(0).toUpperCase()}
+                              {(comment.username || 'U').charAt(0).toUpperCase()}
                             </span>
                           </div>
-                          <span className="text-sm font-medium text-foreground">{comment.username}</span>
+                          <span className="text-sm font-medium text-foreground">{comment.username || 'Anonymous'}</span>
                           <span className="text-xs text-muted-foreground">
                             {new Date(comment.createdAt).toLocaleDateString()}
                           </span>

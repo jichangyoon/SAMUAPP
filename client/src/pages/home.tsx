@@ -708,16 +708,6 @@ export default function Home() {
               <Trophy className="h-4 w-4" />
             </button>
             <button
-              onClick={() => setCurrentTab("nfts")}
-              className={`flex items-center justify-center p-3 rounded-lg transition-colors ${
-                currentTab === "nfts" 
-                  ? "bg-primary/20 text-primary" 
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Image className="h-4 w-4" />
-            </button>
-            <button
               onClick={() => setCurrentTab("archive")}
               className={`flex items-center justify-center p-3 rounded-lg transition-colors ${
                 currentTab === "archive" 
@@ -726,6 +716,16 @@ export default function Home() {
               }`}
             >
               <Archive className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setCurrentTab("nfts")}
+              className={`flex items-center justify-center p-3 rounded-lg transition-colors ${
+                currentTab === "nfts" 
+                  ? "bg-primary/20 text-primary" 
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Image className="h-4 w-4" />
             </button>
             <button
               onClick={() => setCurrentTab("goods")}
