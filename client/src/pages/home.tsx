@@ -411,7 +411,7 @@ export default function Home() {
                   size="sm"
                   className="px-4"
                 >
-                  Share
+                  <Share2 className="h-4 w-4" />
                 </Button>
               </div>
             </div>
