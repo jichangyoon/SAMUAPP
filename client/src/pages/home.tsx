@@ -42,8 +42,10 @@ export default function Home() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   
-  // Get wallet info from Privy embedded wallet
-  const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
+  // Get wallet info from Privy embedded wallet only - ignore external wallets like Phantom
+  const walletAccounts = user?.linkedAccounts?.filter(account => 
+    account.type === 'wallet' && account.connectorType !== 'injected'
+  ) || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
   
@@ -145,6 +147,18 @@ export default function Home() {
   };
 
   // Fetch SAMU and SOL balances for Solana wallets
+  // Phantom 지갑 자동 연결 방지
+  useEffect(() => {
+    if (window.phantom?.solana?.isConnected && !authenticated) {
+      try {
+        window.phantom.solana.disconnect();
+        console.log('🚫 Phantom auto-connection prevented');
+      } catch (error) {
+        console.log('⚠️ Could not disconnect Phantom:', error);
+      }
+    }
+  }, [authenticated]);
+
   useEffect(() => {
     if (isConnected && walletAddress && isSolana) {
       console.log('💰 Fetching balances for:', walletAddress);

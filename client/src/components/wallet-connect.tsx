@@ -6,8 +6,10 @@ import { useState, useEffect } from 'react';
 export function WalletConnect() {
   const { ready, authenticated, user, login, logout } = usePrivy();
 
-  // Get wallet using same logic as home page - prioritize Solana
-  const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
+  // Get wallet using same logic as home page - prioritize Solana, ignore external wallets
+  const walletAccounts = user?.linkedAccounts?.filter(account => 
+    account.type === 'wallet' && account.connectorType !== 'injected'
+  ) || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
 
