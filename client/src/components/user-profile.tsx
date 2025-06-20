@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { usePrivy } from '@privy-io/react-auth';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UploadForm } from "@/components/upload-form";
-import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save } from "lucide-react";
+import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -24,7 +24,7 @@ export function UserProfile({ isOpen, onClose, samuBalance }: UserProfileProps) 
   const { user } = usePrivy();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   // Load profile data from localStorage or use defaults
   const getStoredProfile = () => {
     try {
@@ -36,7 +36,7 @@ export function UserProfile({ isOpen, onClose, samuBalance }: UserProfileProps) 
   };
 
   const storedProfile = getStoredProfile();
-  
+
   // Profile editing states
   const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState(
@@ -44,7 +44,7 @@ export function UserProfile({ isOpen, onClose, samuBalance }: UserProfileProps) 
   );
   const [profileImage, setProfileImage] = useState(storedProfile.profileImage || '');
   const [imagePreview, setImagePreview] = useState<string>('');
-  
+
   const walletAddress = user?.wallet?.address || user?.linkedAccounts?.find(account => account.type === 'wallet')?.address || '';
   const displayAddress = walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : '';
 
@@ -126,17 +126,22 @@ export function UserProfile({ isOpen, onClose, samuBalance }: UserProfileProps) 
     queryKey: ['/api/voting-power', walletAddress],
     enabled: !!walletAddress,
   });
-  
+
   // 필터링된 사용자 밈들
   const myMemes = allMemes.filter((meme: any) => meme.authorWallet === walletAddress);
-  
+
   const totalVotesReceived = myMemes.reduce((sum: number, meme: any) => sum + meme.votes, 0);
   const contestProgress = 75; // 임시 값, 실제로는 콘테스트 기간 계산
-  
+
   // 투표력 계산
   const votingPower = votingPowerData?.remainingPower ?? Math.floor(samuBalance * 0.8);
   const totalVotingPower = votingPowerData?.totalPower ?? samuBalance;
   const usedVotingPower = votingPowerData?.usedPower ?? 0;
+
+  const handleShare = (platform: string) => {
+    // Implement your sharing logic here
+    console.log(`Sharing on ${platform}`);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -222,7 +227,7 @@ export function UserProfile({ isOpen, onClose, samuBalance }: UserProfileProps) 
                   )}
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">{samuBalance.toLocaleString()}</div>
@@ -343,6 +348,23 @@ export function UserProfile({ isOpen, onClose, samuBalance }: UserProfileProps) 
             </TabsContent>
           </Tabs>
         </div>
+                      <div className="flex justify-center gap-4">
+              {/* Share buttons */}
+              <Button
+                onClick={() => handleShare('twitter')}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-twitter h-4 w-4 mr-2"><path d="M22 4.01c-1 .49-1.98.86-2.93 1.16 1.35-.86 2.38-2.24 2.83-3.88-.97.59-2.04 1-3.13 1.24-1.07-1-2.62-1.69-4.22-1.69-3.62 0-6.56 2.93-6.56 6.56 0 .52.06 1.04.18 1.53C6.87 8.35 5.14 7.38 3.43 6.32c-.53.89-.83 1.92-.83 2.96 0 2.27 1.16 4.24 2.93 5.43-.8-.03-1.56-.25-2.27-.62v.08c0 3.16 2.26 5.81 5.26 6.43-.55.15-1.13.23-1.74.23-.41 0-.81-.04-1.21-.12 0 2.25 1.46 4.13 3.43 4.58-1.05.41-2.14.64-3.28.64-.6 0-1.18-.03-1.76-.05 2.24 1.43 4.92 2.27 7.71 2.27 9.25 0 14.3-7.65 14.3-14.3 0-.22-.01-.45-.03-.67.98-.71 1.88-1.59 2.59-2.54z"/></svg>
+                Share on X
+              </Button>
+              <Button
+                onClick={() => handleShare('telegram')}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Send className="h-4 w-4 mr-2" />
+                Share on Telegram
+              </Button>
+            </div>
       </DialogContent>
     </Dialog>
   );

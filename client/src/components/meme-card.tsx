@@ -20,7 +20,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
   const { authenticated, user } = usePrivy();
-  
+
   // Get wallet using same logic as WalletConnect component - prioritize Solana
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
@@ -52,7 +52,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
         title: "Vote Submitted!",
         description: `Your vote with ${votingPower} voting power has been recorded.`,
       });
-      
+
       setShowVoteDialog(false);
       onVote();
     } catch (error: any) {
@@ -79,6 +79,14 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
     const url = window.location.href;
     const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
     window.open(telegramUrl, '_blank');
+  };
+
+  const handleShare = (platform: string) => {
+    if (platform === 'twitter') {
+      shareToTwitter();
+    } else if (platform === 'telegram') {
+      shareToTelegram();
+    }
   };
 
   return (
@@ -153,7 +161,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
               You're about to vote for "{meme.title}" by {meme.authorUsername}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="bg-accent rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-muted-foreground">Your voting power:</span>
@@ -188,7 +196,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
           <DialogHeader>
             <DialogTitle className="text-foreground">{meme.title}</DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div className="aspect-square rounded-lg overflow-hidden">
               <img
@@ -197,7 +205,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
                 className="w-full h-full object-cover"
               />
             </div>
-            
+
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                 <span className="text-sm font-bold text-primary-foreground">
@@ -211,14 +219,14 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
                 </div>
               </div>
             </div>
-            
+
             {meme.description && (
               <div>
                 <h4 className="font-medium text-foreground mb-2">Description</h4>
                 <p className="text-muted-foreground">{meme.description}</p>
               </div>
             )}
-            
+
             <div className="flex space-x-2 pt-2">
               <Button
                 onClick={() => {
@@ -253,24 +261,24 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
               Share "{meme.title}" on social platforms
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="flex flex-col gap-3 py-4">
             <Button
               onClick={() => {
                 shareToTwitter();
                 setShowShareDialog(false);
               }}
-              className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-2"
+              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
             >
               <Twitter className="h-4 w-4" />
-              Share on Twitter
+              Share on X
             </Button>
             <Button
               onClick={() => {
                 shareToTelegram();
                 setShowShareDialog(false);
               }}
-              className="bg-blue-400 hover:bg-blue-500 text-white flex items-center gap-2"
+              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
             >
               <Send className="h-4 w-4" />
               Share on Telegram
