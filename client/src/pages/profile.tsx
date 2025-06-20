@@ -119,11 +119,13 @@ export default function Profile() {
       queryKey: ['profile', user?.id]
     });
 
-    // 홈 페이지의 헤더 데이터도 업데이트
-    queryClient.setQueryData(['userProfile'], {
-      displayName,
-      image: imagePreview || profileImage
-    });
+    // 홈 페이지의 헤더 데이터도 업데이트 - 브라우저 이벤트로 알림
+    window.dispatchEvent(new CustomEvent('profileUpdated', {
+      detail: {
+        displayName,
+        profileImage: imagePreview || profileImage
+      }
+    }));
   };
 
   // 편집 취소

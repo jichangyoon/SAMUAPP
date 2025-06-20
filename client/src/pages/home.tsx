@@ -58,7 +58,7 @@ export default function Home() {
   useEffect(() => {
     if (authenticated && user?.id) {
       try {
-        const stored = localStorage.getItem(`privy_profile_${user.id}`);
+        const stored = localStorage.getItem(`profile_${user.id}`);
         const profile = stored ? JSON.parse(stored) : {};
         setProfileData({
           displayName: profile.displayName || 'User',
@@ -71,6 +71,22 @@ export default function Home() {
       setProfileData({ displayName: 'User', profileImage: '' });
     }
   }, [authenticated, user?.id]);
+
+  // Listen for profile updates from profile page
+  useEffect(() => {
+    const handleProfileUpdate = (event: CustomEvent) => {
+      setProfileData({
+        displayName: event.detail.displayName,
+        profileImage: event.detail.profileImage
+      });
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate as EventListener);
+
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate as EventListener);
+    };
+  }, []);
 
   const displayName = authenticated ? profileData.displayName : 'SAMU';
   const profileImage = profileData.profileImage;
