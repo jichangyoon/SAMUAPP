@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { ExternalLink, MessageCircle, Send } from "lucide-react";
+import { MessageCircle, Send } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Nft, NftComment } from "@shared/schema";
@@ -95,9 +95,7 @@ export function NftGallery() {
     });
   };
 
-  const openMarketplace = () => {
-    window.open('https://magiceden.io', '_blank');
-  };
+
 
   if (isLoading) {
     return (
@@ -113,22 +111,14 @@ export function NftGallery() {
   return (
     <div className="space-y-4 pb-24">
       {/* Header */}
-      <Card className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-blue-400/20">
+      <Card className="bg-black text-yellow-400 border-yellow-400/20">
         <CardContent className="p-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <h2 className="text-xl font-bold text-blue-400">SAMU Wolf Collection</h2>
+            <h2 className="text-xl font-bold text-yellow-400">SAMU Wolf Collection</h2>
           </div>
-          <p className="text-sm text-muted-foreground mb-3">
+          <p className="text-sm text-yellow-300/80">
             164 unique SAMU Wolf NFTs with legendary traits
           </p>
-          <Button 
-            onClick={openMarketplace}
-            className="bg-primary hover:bg-primary/80 text-primary-foreground"
-            size="sm"
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Trade on Marketplace
-          </Button>
         </CardContent>
       </Card>
 

@@ -260,6 +260,7 @@ Changelog:
 - June 20, 2025. Added marketplace integration button linking to external trading platforms
 - June 20, 2025. Expanded bottom navigation to include NFT section with Image icon for easy access
 - June 20, 2025. Reordered bottom navigation: Contest → Archive → NFT → Goods for better user flow
+- June 20, 2025. Removed marketplace connection button from NFT section and unified UI styling with black background and yellow text
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
