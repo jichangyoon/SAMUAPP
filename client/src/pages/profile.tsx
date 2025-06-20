@@ -78,11 +78,11 @@ const Profile = React.memo(() => {
   }, [user?.id]);
 
   // 컴포넌트 마운트 시 저장된 프로필 정보 로드
-  useState(() => {
+  useEffect(() => {
     const storedProfile = getStoredProfile;
-    setDisplayName(storedProfile.displayName);
-    setProfileImage(storedProfile.profileImage);
-  });
+    setDisplayName(storedProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
+    setProfileImage(storedProfile.profileImage || '');
+  }, [getStoredProfile, user?.email?.address]);
 
   // 프로필 이미지 변경 - useCallback으로 최적화
   const handleImageChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -140,7 +140,7 @@ const Profile = React.memo(() => {
     setIsEditing(false);
   }, [getStoredProfile, user?.email?.address]);
 
-  
+
 
   // 사용자가 만든 밈들 가져오기
   const { data: allMemes = [] } = useQuery<any[]>({

@@ -2,19 +2,26 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-// 전역 오류 핸들러 - 모든 unhandled promise rejection 차단
-window.addEventListener('unhandledrejection', (event) => {
-  console.log('Promise rejection 차단됨');
-  event.preventDefault();
-});
+// 메모리 효율적인 전역 오류 핸들러
+const IGNORED_PATTERNS = ['Privy', 'iframe', 'wallet', 'fetch', 'Failed to fetch'];
 
-// 전역 오류 핸들러
-window.addEventListener('error', (event) => {
-  if (event.error?.message?.includes('fetch') || 
-      event.error?.message?.includes('Failed to fetch')) {
-    console.log('네트워크 오류 차단됨');
+const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+  const reason = event.reason?.message || '';
+  if (IGNORED_PATTERNS.some(pattern => reason.includes(pattern))) {
+    console.warn('지갑 관련 Promise rejection 차단됨');
     event.preventDefault();
   }
-});
+};
+
+const handleError = (event: ErrorEvent) => {
+  const message = event.error?.message || '';
+  if (IGNORED_PATTERNS.some(pattern => message.includes(pattern))) {
+    console.warn('네트워크/지갑 오류 차단됨');
+    event.preventDefault();
+  }
+};
+
+window.addEventListener('unhandledrejection', handleUnhandledRejection, { passive: true });
+window.addEventListener('error', handleError, { passive: true });
 
 createRoot(document.getElementById("root")!).render(<App />);

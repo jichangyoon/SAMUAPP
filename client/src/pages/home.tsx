@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { getSamuTokenBalance, getSolBalance } from "@/lib/solana";
 import type { Meme } from "@shared/schema";
 import samuLogoImg from "/assets/images/logos/samu-logo.jpg";
@@ -147,7 +147,6 @@ export default function Home() {
     window.open(telegramUrl, '_blank');
   };
 
-  // Fetch SAMU and SOL balances for Solana wallets
   // Phantom 지갑 자동 연결 방지
   useEffect(() => {
     if (window.phantom?.solana?.isConnected && !authenticated) {
@@ -160,48 +159,85 @@ export default function Home() {
     }
   }, [authenticated]);
 
-  useEffect(() => {
-    if (isConnected && walletAddress && isSolana) {
-      console.log('💰 Fetching balances for:', walletAddress);
-      setBalanceStatus('loading');
-      setSamuBalance(0);
-      setSolBalance(0);
-
-      // Fetch both balances concurrently
-      Promise.all([
+  // React Query로 잔액 조회 최적화
+  const { data: balanceData } = useQuery({
+    queryKey: ['balances', walletAddress],
+    queryFn: async () => {
+      if (!walletAddress || !isSolana) return { samu: 0, sol: 0 };
+      
+      const [samuBal, solBal] = await Promise.all([
         getSamuTokenBalance(walletAddress),
         getSolBalance(walletAddress)
-      ])
-        .then(([samuBal, solBal]) => {
-          console.log('✅ Balances fetched - SAMU:', samuBal, 'SOL:', solBal);
-          setSamuBalance(samuBal);
-          setSolBalance(solBal);
-          setBalanceStatus('success');
-        })
-        .catch(error => {
-          console.warn('❌ Failed to fetch balances:', error);
-          setSamuBalance(0);
-          setSolBalance(0);
-          setBalanceStatus('error');
-        });
+      ]);
+      
+      return { samu: samuBal, sol: solBal };
+    },
+    enabled: isConnected && !!walletAddress && isSolana,
+    staleTime: 30 * 1000, // 30초간 캐시 유지
+    refetchInterval: 60 * 1000, // 1분마다 자동 갱신
+  });
+
+  // 잔액 상태 업데이트
+  useEffect(() => {
+    if (balanceData) {
+      setSamuBalance(balanceData.samu);
+      setSolBalance(balanceData.sol);
+      setBalanceStatus('success');
     } else if (!isConnected) {
-      console.log('⏸️ Wallet not connected - clearing balance data');
       setSamuBalance(0);
       setSolBalance(0);
       setBalanceStatus('idle');
     }
-  }, [isConnected, walletAddress, isSolana]);
+  }, [balanceData, isConnected]);
 
   const { data: memes = [], isLoading, refetch } = useQuery<Meme[]>({
     queryKey: ["/api/memes"],
     enabled: true,
+    staleTime: 10 * 1000, // 10초간 캐시 유지
+    refetchInterval: 30 * 1000, // 30초마다 자동 갱신
   });
 
-  const sortedMemes = memes.sort((a, b) => {
-    if (sortBy === "votes") return b.votes - a.votes;
-    if (sortBy === "latest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    return b.votes - a.votes; // default to votes
-  });
+  // Memoized sorted memes with dependency optimization
+  const sortedMemes = useMemo(() => {
+    if (!memes?.length) return [];
+
+    switch (sortBy) {
+      case "votes":
+        return memes.slice().sort((a, b) => (b.votes || 0) - (a.votes || 0));
+      case "recent":
+        return memes.slice().sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+      case "author":
+        return memes.slice().sort((a, b) => (a.author || "").localeCompare(b.author || ""));
+      default:
+        return memes;
+    }
+  }, [memes, sortBy]);
+
+  // Optimized click handlers with minimal dependencies
+  const handleMemeClick = useCallback((meme: Meme) => {
+    setSelectedMeme(meme);
+    setShowVoteDialog(true);
+  }, []);
+
+  const handleVoteSuccess = useCallback(() => {
+    setShowVoteDialog(false);
+    setSelectedMeme(null);
+    // 선택적 캐시 무효화 - 꼭 필요한 것만
+    queryClient.invalidateQueries({ 
+      queryKey: ['/api/memes'],
+      exact: true 
+    });
+    // 투표 파워 캐시도 무효화 (투표 후 변경됨)
+    queryClient.invalidateQueries({
+      queryKey: ['balances', walletAddress],
+      exact: true
+    });
+  }, [queryClient, walletAddress]);
+
+  const handleShareClick = useCallback((meme: Meme) => {
+    setSelectedMeme(meme);
+    setShowShareDialog(true);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
