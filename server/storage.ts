@@ -153,7 +153,9 @@ export class MemStorage implements IStorage {
   async createNft(insertNft: InsertNft): Promise<Nft> {
     const nft: Nft = {
       id: this.currentNftId++,
-      ...insertNft,
+      title: insertNft.title,
+      description: insertNft.description || null,
+      imageUrl: insertNft.imageUrl,
       createdAt: new Date(),
     };
     
