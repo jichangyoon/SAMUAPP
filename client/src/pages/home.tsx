@@ -165,7 +165,7 @@ export default function Home() {
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card shadow-sm border-b border-border">
-        <div className="max-w-md mx-auto px-4 py-3">
+        <div className="max-w-md mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
             <button 
               onClick={() => setShowUserProfile(true)}
