@@ -10,7 +10,8 @@ import NotFound from "@/pages/not-found";
 
 // Global error handler for Privy iframe issues
 window.addEventListener('error', (event) => {
-  if (event.message?.includes('Privy iframe') || (event.target as HTMLElement)?.tagName === 'IFRAME') {
+  const target = event.target as HTMLElement;
+  if (event.message?.includes('Privy iframe') || target?.tagName === 'IFRAME') {
     console.warn('Privy iframe error handled:', event.message);
     event.preventDefault();
     return false;
