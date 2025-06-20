@@ -121,12 +121,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
           </div>
 
           <div className="mb-3">
-            <button 
-              onClick={() => setShowDetailDialog(true)}
-              className="text-left w-full hover:opacity-80 transition-opacity"
-            >
-              <h3 className="font-semibold text-foreground mb-1">{meme.title}</h3>
-            </button>
+            <h3 className="font-semibold text-foreground mb-1">{meme.title}</h3>
           </div>
 
           <div className="flex space-x-2">
