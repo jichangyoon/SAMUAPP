@@ -249,26 +249,29 @@ export default function Profile() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{samuBalance.toLocaleString()}</div>
-                <div className="text-sm text-muted-foreground">SAMU Tokens</div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="text-center bg-accent/30 rounded-lg p-3">
+                <div className="text-lg font-bold text-primary">{samuBalance.toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground">SAMU Tokens</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-400">{solBalance.toFixed(4)}</div>
-                <div className="text-sm text-muted-foreground">SOL Balance</div>
+              <div className="text-center bg-accent/30 rounded-lg p-3">
+                <div className="text-lg font-bold text-purple-400">{solBalance.toFixed(4)}</div>
+                <div className="text-xs text-muted-foreground">SOL Balance</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-400">{votingPower.toLocaleString()}</div>
-                <div className="text-sm text-muted-foreground">Voting Power</div>
+              <div className="text-center bg-accent/30 rounded-lg p-3">
+                <div className="text-lg font-bold text-green-400">{votingPower.toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground">Voting Power</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-400">{myMemes.length}</div>
-                <div className="text-sm text-muted-foreground">Memes Created</div>
+              <div className="text-center bg-accent/30 rounded-lg p-3">
+                <div className="text-lg font-bold text-blue-400">{myMemes.length}</div>
+                <div className="text-xs text-muted-foreground">Memes Created</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-400">{totalVotesReceived}</div>
-                <div className="text-sm text-muted-foreground">Votes Received</div>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-2 mt-3">
+              <div className="text-center bg-accent/30 rounded-lg p-3">
+                <div className="text-lg font-bold text-yellow-400">{totalVotesReceived}</div>
+                <div className="text-xs text-muted-foreground">Total Votes Received</div>
               </div>
             </div>
           </CardContent>
@@ -303,18 +306,18 @@ export default function Profile() {
 
         {/* 탭 메뉴 */}
         <Tabs defaultValue="memes" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="memes" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-3 h-auto">
+            <TabsTrigger value="memes" className="flex flex-col items-center gap-1 p-3 text-xs">
               <Trophy className="h-4 w-4" />
-              My Memes
+              <span>My Memes</span>
             </TabsTrigger>
-            <TabsTrigger value="votes" className="flex items-center gap-2">
+            <TabsTrigger value="votes" className="flex flex-col items-center gap-1 p-3 text-xs">
               <Vote className="h-4 w-4" />
-              My Votes
+              <span>My Votes</span>
             </TabsTrigger>
-            <TabsTrigger value="power" className="flex items-center gap-2">
+            <TabsTrigger value="power" className="flex flex-col items-center gap-1 p-3 text-xs">
               <Zap className="h-4 w-4" />
-              Voting Power
+              <span>Power</span>
             </TabsTrigger>
           </TabsList>
 
@@ -325,29 +328,29 @@ export default function Profile() {
               </CardHeader>
               <CardContent>
                 {myMemes.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     {myMemes.map((meme: any) => (
-                      <div key={meme.id} className="flex items-center gap-3 p-3 bg-accent/50 rounded-lg">
+                      <div key={meme.id} className="flex items-center gap-3 p-2 bg-accent/50 rounded-lg">
                         <img 
                           src={meme.imageUrl} 
                           alt={meme.title}
-                          className="w-12 h-12 object-cover rounded"
+                          className="w-10 h-10 object-cover rounded"
                         />
-                        <div className="flex-1">
-                          <h4 className="font-medium text-foreground">{meme.title}</h4>
-                          <p className="text-sm text-muted-foreground">{meme.description}</p>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-foreground text-sm truncate">{meme.title}</h4>
+                          <p className="text-xs text-muted-foreground truncate">{meme.description}</p>
                         </div>
-                        <Badge variant="secondary" className="text-primary">
-                          {meme.votes} votes
+                        <Badge variant="secondary" className="text-primary text-xs">
+                          {meme.votes}
                         </Badge>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Upload className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No memes uploaded yet</p>
-                    <p className="text-sm">Start creating to see your memes here!</p>
+                  <div className="text-center py-6 text-muted-foreground">
+                    <Upload className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No memes uploaded yet</p>
+                    <p className="text-xs">Start creating to see your memes here!</p>
                   </div>
                 )}
               </CardContent>
@@ -361,32 +364,32 @@ export default function Profile() {
               </CardHeader>
               <CardContent>
                 {userVotes.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     {userVotes.map((vote: any) => {
                       const meme = allMemes.find((m: any) => m.id === vote.memeId);
                       return meme ? (
-                        <div key={vote.id} className="flex items-center gap-3 p-3 bg-accent/50 rounded-lg">
+                        <div key={vote.id} className="flex items-center gap-3 p-2 bg-accent/50 rounded-lg">
                           <img 
                             src={meme.imageUrl} 
                             alt={meme.title}
-                            className="w-12 h-12 object-cover rounded"
+                            className="w-10 h-10 object-cover rounded"
                           />
-                          <div className="flex-1">
-                            <h4 className="font-medium text-foreground">{meme.title}</h4>
-                            <p className="text-sm text-muted-foreground">by {meme.authorName}</p>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-foreground text-sm truncate">{meme.title}</h4>
+                            <p className="text-xs text-muted-foreground truncate">by {meme.authorName}</p>
                           </div>
-                          <Badge variant="secondary" className="text-green-400">
-                            +{vote.votingPower} power
+                          <Badge variant="secondary" className="text-green-400 text-xs">
+                            +{vote.votingPower}
                           </Badge>
                         </div>
                       ) : null;
                     })}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Vote className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No votes cast yet</p>
-                    <p className="text-sm">Start voting to see your activity here!</p>
+                  <div className="text-center py-6 text-muted-foreground">
+                    <Vote className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No votes cast yet</p>
+                    <p className="text-xs">Start voting to see your activity here!</p>
                   </div>
                 )}
               </CardContent>
@@ -401,15 +404,15 @@ export default function Profile() {
                   Voting Power Details
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-400">{totalVotingPower.toLocaleString()}</div>
-                    <div className="text-sm text-muted-foreground">Total Power</div>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="text-center bg-accent/30 rounded-lg p-3">
+                    <div className="text-lg font-bold text-green-400">{totalVotingPower.toLocaleString()}</div>
+                    <div className="text-xs text-muted-foreground">Total Power</div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-red-400">{usedVotingPower.toLocaleString()}</div>
-                    <div className="text-sm text-muted-foreground">Used Power</div>
+                  <div className="text-center bg-accent/30 rounded-lg p-3">
+                    <div className="text-lg font-bold text-red-400">{usedVotingPower.toLocaleString()}</div>
+                    <div className="text-xs text-muted-foreground">Used Power</div>
                   </div>
                 </div>
                 
@@ -426,7 +429,7 @@ export default function Profile() {
                   />
                 </div>
                 
-                <div className="text-sm text-muted-foreground bg-accent/50 p-3 rounded-lg">
+                <div className="text-xs text-muted-foreground bg-accent/50 p-3 rounded-lg space-y-1">
                   <p>• Voting power is based on your SAMU token balance</p>
                   <p>• Each vote consumes voting power</p>
                   <p>• Power resets when the contest ends</p>
