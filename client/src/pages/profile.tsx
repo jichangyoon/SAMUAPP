@@ -20,7 +20,7 @@ export default function Profile() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [profileImage, setProfileImage] = useState("");
@@ -61,24 +61,83 @@ export default function Profile() {
   const samuBalance = samuData?.balance || 0;
   const solBalance = solData?.balance || 0;
 
-  // 로컬 스토리지에서 프로필 정보 가져오기
-  const getStoredProfile = () => {
+  // 저장된 프로필 가져오기 - useMemo로 최적화
+  const getStoredProfile = React.useMemo(() => {
+    if (!user?.id) return { displayName: '', profileImage: '' };
+
     const stored = localStorage.getItem(`profile_${user?.id}`);
     if (stored) {
-      return JSON.parse(stored);
+      try {
+        return JSON.parse(stored);
+      } catch (error) {
+        console.error('Failed to parse stored profile:', error);
+      }
     }
-    return {
-      displayName: user?.email?.address?.split('@')[0] || 'User',
-      profileImage: ''
-    };
-  };
+    return { displayName: '', profileImage: '' };
+  }, [user?.id]);
 
   // 컴포넌트 마운트 시 저장된 프로필 정보 로드
   useState(() => {
-    const storedProfile = getStoredProfile();
+    const storedProfile = getStoredProfile;
     setDisplayName(storedProfile.displayName);
     setProfileImage(storedProfile.profileImage);
   });
+
+  // 프로필 이미지 변경 - useCallback으로 최적화
+  const handleImageChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setImagePreview(result);
+      };
+      reader.readAsDataURL(file);
+    }
+  }, []);
+
+  // 프로필 저장 - useCallback으로 최적화
+  const handleSaveProfile = React.useCallback(() => {
+    const profileData = {
+      displayName,
+      profileImage: imagePreview || profileImage
+    };
+
+    localStorage.setItem(`profile_${user?.id}`, JSON.stringify(profileData));
+
+    if (imagePreview) {
+      setProfileImage(imagePreview);
+      setImagePreview('');
+    }
+
+    setIsEditing(false);
+
+    toast({
+      title: "Profile Updated",
+      description: "Your profile has been saved successfully.",
+    });
+
+    // 쿼리 캐시 무효화
+    queryClient.invalidateQueries({
+      queryKey: ['profile', user?.id]
+    });
+
+    // 홈 페이지의 헤더 데이터도 업데이트 - 브라우저 이벤트로 알림
+    window.dispatchEvent(new CustomEvent('profileUpdated', {
+      detail: {
+        displayName,
+        profileImage: imagePreview || profileImage
+      }
+    }));
+  }, [displayName, imagePreview, profileImage, user?.id, toast, queryClient]);
+
+  // 편집 취소 - useCallback으로 최적화
+  const handleCancelEdit = React.useCallback(() => {
+    setDisplayName(getStoredProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
+    setProfileImage(getStoredProfile.profileImage || '');
+    setImagePreview('');
+    setIsEditing(false);
+  }, [getStoredProfile, user?.email?.address]);
 
   // 이미지 업로드 핸들러
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,21 +153,21 @@ export default function Profile() {
   };
 
   // 프로필 저장
-  const handleSaveProfile = () => {
+  const handleSaveProfile2 = () => {
     const profileData = {
       displayName,
       profileImage: imagePreview || profileImage
     };
-    
+
     localStorage.setItem(`profile_${user?.id}`, JSON.stringify(profileData));
-    
+
     if (imagePreview) {
       setProfileImage(imagePreview);
       setImagePreview('');
     }
-    
+
     setIsEditing(false);
-    
+
     toast({
       title: "Profile Updated",
       description: "Your profile has been saved successfully.",
@@ -129,8 +188,8 @@ export default function Profile() {
   };
 
   // 편집 취소
-  const handleCancelEdit = () => {
-    const storedProfile = getStoredProfile();
+  const handleCancelEdit2 = () => {
+    const storedProfile = getStoredProfile;
     setDisplayName(storedProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
     setProfileImage(storedProfile.profileImage || '');
     setImagePreview('');
@@ -275,7 +334,7 @@ export default function Profile() {
                 <div className="text-xs text-muted-foreground">Memes</div>
               </div>
             </div>
-            
+
             <div className="text-center bg-accent/30 rounded-lg p-2 mt-2">
               <div className="text-sm font-bold text-yellow-400">{totalVotesReceived}</div>
               <div className="text-xs text-muted-foreground">Total Votes Received</div>
@@ -459,7 +518,7 @@ export default function Profile() {
                     <div className="text-xs text-muted-foreground">Used Power</div>
                   </div>
                 </div>
-                
+
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-muted-foreground">Remaining Power</span>
@@ -472,7 +531,7 @@ export default function Profile() {
                     className="h-2"
                   />
                 </div>
-                
+
                 <div className="text-xs text-muted-foreground bg-accent/50 p-3 rounded-lg space-y-1">
                   <p>• Voting power is based on your SAMU token balance</p>
                   <p>• Each vote consumes voting power</p>
