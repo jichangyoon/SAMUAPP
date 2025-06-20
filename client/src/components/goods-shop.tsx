@@ -132,13 +132,13 @@ export function GoodsShop() {
   return (
     <div className="space-y-6 pb-20">
       {/* 굿즈샵 헤더 */}
-      <Card className="bg-[hsl(50,85%,75%)] border-0">
+      <Card className="bg-black border-0">
         <CardHeader className="text-center py-3">
-          <CardTitle className="text-lg font-bold text-black flex items-center justify-center gap-2">
+          <CardTitle className="text-lg font-bold text-[hsl(50,85%,75%)] flex items-center justify-center gap-2">
             <Trophy className="h-4 w-4" />
             SAMU Goods Shop
           </CardTitle>
-          <CardDescription className="text-xs text-black/90 mt-1 whitespace-nowrap">
+          <CardDescription className="text-xs text-[hsl(50,85%,75%)]/90 mt-1 whitespace-nowrap">
             Hall of Fame memes turned into goods!
           </CardDescription>
         </CardHeader>
