@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ interface UserProfileProps {
   solBalance: number;
 }
 
-export function UserProfile({ isOpen, onClose, samuBalance, solBalance }: UserProfileProps) {
+export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalance }: UserProfileProps) => {
   const { user } = usePrivy();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -51,7 +51,7 @@ export function UserProfile({ isOpen, onClose, samuBalance, solBalance }: UserPr
     account.type === 'wallet' && account.chainType === 'solana'
   );
   const walletAddress = solanaWallet?.address || '';
-  const displayAddress = walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : '';
+  const displayAddress = useMemo(() => walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : '', [walletAddress]);
 
   // Update profile mutation - using API call since Privy doesn't expose updateUser directly
   const updateProfileMutation = useMutation({
@@ -143,7 +143,7 @@ export function UserProfile({ isOpen, onClose, samuBalance, solBalance }: UserPr
   const totalVotingPower = votingPowerData?.totalPower ?? samuBalance;
   const usedVotingPower = votingPowerData?.usedPower ?? 0;
 
-  
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -354,8 +354,8 @@ export function UserProfile({ isOpen, onClose, samuBalance, solBalance }: UserPr
             </TabsContent>
           </Tabs>
         </div>
-                      
+
       </DialogContent>
     </Dialog>
   );
-}
+});

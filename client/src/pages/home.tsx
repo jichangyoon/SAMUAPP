@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { WalletConnect } from "@/components/wallet-connect";
 import { ContestHeader } from "@/components/contest-header";
@@ -25,7 +25,7 @@ import samuLogoImg from "/assets/images/logos/samu-logo.jpg";
 export default function Home() {
   const [sortBy, setSortBy] = useState("votes");
   const [currentTab, setCurrentTab] = useState("contest");
-  const [viewMode, setViewMode] = useState<'card' | 'grid'>('card');
+  const [viewMode, setViewMode<'card' | 'grid'>('card');
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
   const [showVoteDialog, setShowVoteDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
@@ -36,12 +36,12 @@ export default function Home() {
   const [archiveView, setArchiveView] = useState<'list' | 'contest'>('list');
   const [selectedArchiveContest, setSelectedArchiveContest] = useState<any>(null);
   const [selectedArchiveMeme, setSelectedArchiveMeme] = useState<any>(null);
-  
+
   // Privy authentication
   const { authenticated, user } = usePrivy();
   const { toast } = useToast();
   const [, navigate] = useLocation();
-  
+
   // Solana 지갑만 사용 - 간단하고 깔끔한 로직
   const walletAccounts = user?.linkedAccounts?.filter(account => 
     account.type === 'wallet' && 
@@ -49,14 +49,14 @@ export default function Home() {
     account.chainType === 'solana'
   ) || [];
   const selectedWalletAccount = walletAccounts[0]; // 유일한 Solana 지갑
-  
+
   const isConnected = authenticated && !!selectedWalletAccount;
   const walletAddress = selectedWalletAccount?.address || '';
   const isSolana = true; // 항상 Solana
 
   // Profile state management
   const [profileData, setProfileData] = useState({ displayName: 'User', profileImage: '' });
-  
+
   // Load profile data when user changes
   useEffect(() => {
     if (authenticated && user?.id) {
@@ -107,7 +107,7 @@ export default function Home() {
 
     const votingPower = 1; // Simplified for now
     setIsVoting(true);
-    
+
     try {
       await apiRequest("POST", `/api/memes/${meme.id}/vote`, {
         voterWallet: walletAddress,
@@ -118,7 +118,7 @@ export default function Home() {
         title: "Vote Submitted!",
         description: `Your vote with ${votingPower} voting power has been recorded.`,
       });
-      
+
       setSelectedMeme(null);
       refetch(); // Refresh the memes list
     } catch (error: any) {
@@ -166,7 +166,7 @@ export default function Home() {
       setBalanceStatus('loading');
       setSamuBalance(0);
       setSolBalance(0);
-      
+
       // Fetch both balances concurrently
       Promise.all([
         getSamuTokenBalance(walletAddress),
@@ -255,14 +255,14 @@ export default function Home() {
       {/* Main Content Container */}
       <div className="max-w-md mx-auto px-4">
         <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-          
+
           <TabsContent value="contest" className="mt-4 space-y-4 pb-24">
             <Tabs defaultValue="contest-main" className="w-full">
               <TabsList className="grid w-full grid-cols-2 h-10">
                 <TabsTrigger value="contest-main" className="text-sm">Contest</TabsTrigger>
                 <TabsTrigger value="leaderboard" className="text-sm">Leaderboard</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="contest-main" className="mt-0">
                 <main className="space-y-4 pb-20">
                   {/* Contest Header */}
@@ -323,7 +323,7 @@ export default function Home() {
                                 canVote={isConnected}
                               />
                             ))}
-                            
+
                             {sortedMemes.length === 0 && (
                               <Card>
                                 <CardContent className="p-8 text-center">
@@ -360,7 +360,7 @@ export default function Home() {
                                 </div>
                               </button>
                             ))}
-                            
+
                             {sortedMemes.length === 0 && (
                               <div className="col-span-3">
                                 <Card>
@@ -385,13 +385,13 @@ export default function Home() {
                   </div>
                 </main>
               </TabsContent>
-              
+
               <TabsContent value="leaderboard">
                 <Leaderboard />
               </TabsContent>
             </Tabs>
           </TabsContent>
-          
+
           <TabsContent value="archive" className="mt-4 space-y-4 pb-24">
             {archiveView === 'list' ? (
               <div className="space-y-4">
@@ -411,7 +411,7 @@ export default function Home() {
                 {/* Past Contests List */}
                 <div className="space-y-4">
                   <h3 className="text-md font-semibold text-foreground">Previous Contests</h3>
-                  
+
                   <button
                     onClick={() => {
                       setSelectedArchiveContest({
@@ -517,7 +517,7 @@ export default function Home() {
                     ← Back to Archive
                   </Button>
                 </div>
-                
+
                 {selectedArchiveContest && (
                   <>
                     {/* Contest Header */}
@@ -599,7 +599,7 @@ export default function Home() {
                 Contest Entry from {selectedArchiveContest?.title}
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               <div className="aspect-square rounded-lg overflow-hidden">
                 <img 
@@ -608,7 +608,7 @@ export default function Home() {
                   className="w-full h-full object-cover"
                 />
               </div>
-              
+
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
                   <span className="text-sm font-bold text-primary-foreground">
@@ -627,14 +627,14 @@ export default function Home() {
                   </div>
                 )}
               </div>
-              
+
               {selectedArchiveMeme.description && (
                 <div>
                   <h4 className="font-medium text-foreground mb-2">Description</h4>
                   <p className="text-muted-foreground">{selectedArchiveMeme.description}</p>
                 </div>
               )}
-              
+
               <div className="flex items-center justify-between pt-4 border-t border-border">
                 <div className="text-sm text-muted-foreground">
                   Final ranking: #{selectedArchiveMeme.rank}
@@ -699,7 +699,7 @@ export default function Home() {
             <DialogHeader>
               <DialogTitle className="text-foreground">{selectedMeme.title}</DialogTitle>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               <div className="aspect-square rounded-lg overflow-hidden">
                 <img
@@ -708,7 +708,7 @@ export default function Home() {
                   className="w-full h-full object-cover"
                 />
               </div>
-              
+
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                   <span className="text-sm font-bold text-primary-foreground">
@@ -722,14 +722,14 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              
+
               {selectedMeme.description && (
                 <div>
                   <h4 className="font-medium text-foreground mb-2">Description</h4>
                   <p className="text-muted-foreground">{selectedMeme.description}</p>
                 </div>
               )}
-              
+
               <div className="flex space-x-2 pt-2">
                 <Button
                   onClick={() => setShowVoteDialog(true)}
@@ -763,7 +763,7 @@ export default function Home() {
                 You're about to vote for "{selectedMeme.title}" by {selectedMeme.authorUsername}
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="bg-accent rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-muted-foreground">Your voting power:</span>
@@ -804,7 +804,7 @@ export default function Home() {
                 Share "{selectedMeme.title}" on social platforms
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="flex flex-col gap-3 py-4">
               <Button
                 onClick={() => {

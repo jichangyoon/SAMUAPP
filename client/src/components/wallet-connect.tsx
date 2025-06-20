@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { LogOut, Mail } from "lucide-react";
 import { usePrivy } from '@privy-io/react-auth';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 
-export function WalletConnect() {
+export const WalletConnect = memo(function WalletConnect() {
   const { ready, authenticated, user, login, logout } = usePrivy();
 
   // Solana 지갑만 사용 - Ethereum 지갑 무시
@@ -71,4 +71,4 @@ export function WalletConnect() {
           {connectionError ? 'Connection Error' : 'Connect Wallet'}
         </Button>
   );
-}
+});
