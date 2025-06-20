@@ -663,6 +663,7 @@ export default function Home() {
         isOpen={showUserProfile}
         onClose={() => setShowUserProfile(false)}
         samuBalance={samuBalance}
+        solBalance={solBalance}
       />
 
       {/* Grid View Meme Detail Modal */}

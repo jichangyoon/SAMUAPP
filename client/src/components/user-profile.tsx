@@ -18,9 +18,10 @@ interface UserProfileProps {
   isOpen: boolean;
   onClose: () => void;
   samuBalance: number;
+  solBalance: number;
 }
 
-export function UserProfile({ isOpen, onClose, samuBalance }: UserProfileProps) {
+export function UserProfile({ isOpen, onClose, samuBalance, solBalance }: UserProfileProps) {
   const { user } = usePrivy();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -225,10 +226,14 @@ export function UserProfile({ isOpen, onClose, samuBalance }: UserProfileProps) 
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">{samuBalance.toLocaleString()}</div>
                   <div className="text-sm text-muted-foreground">SAMU Tokens</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-400">{solBalance.toFixed(4)}</div>
+                  <div className="text-sm text-muted-foreground">SOL Balance</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-400">{votingPower.toLocaleString()}</div>
