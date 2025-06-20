@@ -2,11 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Wallet, LogOut, Mail } from "lucide-react";
 import { usePrivy } from '@privy-io/react-auth';
 import { useState, useEffect } from 'react';
-import { getSamuTokenBalance } from "@/lib/solana";
+import { getSamuTokenBalance, getSolBalance } from "@/lib/solana";
 
 export function WalletConnect() {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const [samuBalance, setSamuBalance] = useState<number>(0);
+  const [solBalance, setSolBalance] = useState<number>(0);
   const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   // Get wallet info from Privy embedded wallet

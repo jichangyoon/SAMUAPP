@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { getSamuTokenBalance } from "@/lib/solana";
+import { getSamuTokenBalance, getSolBalance } from "@/lib/solana";
 import type { Meme } from "@shared/schema";
 import samuLogoImg from "/assets/images/logos/samu-logo.jpg";
 
@@ -30,6 +30,7 @@ export default function Home() {
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
   const [samuBalance, setSamuBalance] = useState<number>(0);
+  const [solBalance, setSolBalance] = useState<number>(0);
   const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [archiveView, setArchiveView] = useState<'list' | 'contest'>('list');
@@ -126,27 +127,35 @@ export default function Home() {
     window.open(telegramUrl, '_blank');
   };
 
-  // Fetch SAMU balance for Solana wallets
+  // Fetch SAMU and SOL balances for Solana wallets
   useEffect(() => {
     if (isConnected && walletAddress && isSolana) {
-      console.log('💰 Fetching SAMU balance for:', walletAddress);
+      console.log('💰 Fetching balances for:', walletAddress);
       setBalanceStatus('loading');
       setSamuBalance(0);
+      setSolBalance(0);
       
-      getSamuTokenBalance(walletAddress)
-        .then(balance => {
-          console.log('✅ SAMU balance fetched:', balance);
-          setSamuBalance(balance);
+      // Fetch both balances concurrently
+      Promise.all([
+        getSamuTokenBalance(walletAddress),
+        getSolBalance(walletAddress)
+      ])
+        .then(([samuBal, solBal]) => {
+          console.log('✅ Balances fetched - SAMU:', samuBal, 'SOL:', solBal);
+          setSamuBalance(samuBal);
+          setSolBalance(solBal);
           setBalanceStatus('success');
         })
         .catch(error => {
-          console.warn('❌ Failed to fetch SAMU balance:', error);
+          console.warn('❌ Failed to fetch balances:', error);
           setSamuBalance(0);
+          setSolBalance(0);
           setBalanceStatus('error');
         });
     } else if (!isConnected) {
       console.log('⏸️ Wallet not connected - clearing balance data');
       setSamuBalance(0);
+      setSolBalance(0);
       setBalanceStatus('idle');
     }
   }, [isConnected, walletAddress, isSolana]);

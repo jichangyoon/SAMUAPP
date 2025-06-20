@@ -160,6 +160,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // SOL balance endpoint
+  app.get('/api/sol-balance/:walletAddress', async (req, res) => {
+    try {
+      const { walletAddress } = req.params;
+      
+      if (!walletAddress || walletAddress.startsWith('0x')) {
+        return res.json({ balance: 0 });
+      }
+
+      const RPC_ENDPOINTS = [
+        'https://api.mainnet-beta.solana.com',
+        'https://rpc.ankr.com/solana'
+      ];
+
+      for (const endpoint of RPC_ENDPOINTS) {
+        try {
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              id: Math.floor(Math.random() * 1000),
+              method: 'getBalance',
+              params: [walletAddress],
+            }),
+          });
+
+          if (!response.ok) continue;
+
+          const data = await response.json();
+          if (data.error) continue;
+
+          // Convert lamports to SOL (1 SOL = 1,000,000,000 lamports)
+          const lamports = data.result?.value || 0;
+          const solBalance = lamports / 1000000000;
+          
+          return res.json({ balance: solBalance });
+        } catch (error) {
+          continue;
+        }
+      }
+      
+      // If all endpoints fail, return 0
+      res.json({ balance: 0 });
+    } catch (error) {
+      res.status(500).json({ balance: 0 });
+    }
+  });
+
   // Voting power API routes
   app.get('/api/voting-power/:walletAddress', async (req, res) => {
     try {
