@@ -18,26 +18,34 @@ export function WalletConnect() {
   const walletAddress = selectedWalletAccount?.address || '';
   const isSolana = selectedWalletAccount?.chainType === 'solana';
 
-  // Fetch SAMU balance for Solana wallets
+  // Fetch SAMU and SOL balances for Solana wallets
   useEffect(() => {
     if (authenticated && walletAddress && isSolana) {
-      console.log('💰 Fetching SAMU balance for wallet:', walletAddress);
+      console.log('💰 Fetching balances for wallet:', walletAddress);
       setBalanceStatus('loading');
       setSamuBalance(0);
+      setSolBalance(0);
       
-      getSamuTokenBalance(walletAddress)
-        .then(balance => {
-          console.log('✅ SAMU balance received:', balance);
-          setSamuBalance(balance);
+      // Fetch both balances concurrently
+      Promise.all([
+        getSamuTokenBalance(walletAddress),
+        getSolBalance(walletAddress)
+      ])
+        .then(([samuBal, solBal]) => {
+          console.log('✅ Balances received - SAMU:', samuBal, 'SOL:', solBal);
+          setSamuBalance(samuBal);
+          setSolBalance(solBal);
           setBalanceStatus('success');
         })
         .catch(error => {
-          console.warn('❌ Failed to fetch SAMU balance:', error);
+          console.warn('❌ Failed to fetch balances:', error);
           setSamuBalance(0);
+          setSolBalance(0);
           setBalanceStatus('error');
         });
     } else if (!authenticated) {
       setSamuBalance(0);
+      setSolBalance(0);
       setBalanceStatus('idle');
     }
   }, [authenticated, walletAddress, isSolana]);
@@ -60,13 +68,17 @@ export function WalletConnect() {
 
     return (
       <div className="flex items-center gap-2">
-        {/* SAMU Balance Display */}
+        {/* Balance Display */}
         {isSolana && (
           <div className="text-right">
             <div className="text-xs font-bold text-[hsl(30,100%,50%)]">
               {balanceStatus === 'loading' ? 'Loading...' : `${samuBalance.toLocaleString()}`}
             </div>
             <div className="text-xs text-muted-foreground">SAMU</div>
+            <div className="text-xs font-bold text-purple-400">
+              {balanceStatus === 'loading' ? '...' : `${solBalance.toFixed(3)}`}
+            </div>
+            <div className="text-xs text-muted-foreground">SOL</div>
           </div>
         )}
         

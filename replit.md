@@ -228,6 +228,8 @@ Changelog:
 - June 20, 2025. Updated Archive contest header with purple-themed total votes display and centered completion badge
 - June 20, 2025. Removed Winners section and added medal icons (🥇🥈🥉) to top-left corner of grid items for ranking display
 - June 20, 2025. Added clickable meme detail modal for Archive contest entries with author info, vote counts, rankings, and descriptions
+- June 20, 2025. Implemented SOL balance display alongside SAMU token balance in wallet header
+- June 20, 2025. Added SOL balance API endpoint and concurrent balance fetching for improved wallet information display
 ```
 
 ## User Preferences
