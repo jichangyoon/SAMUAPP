@@ -661,7 +661,66 @@ export default function Home() {
 
 
 
-
+      {/* Grid View Meme Detail Modal */}
+      {selectedMeme && (
+        <Dialog open={!!selectedMeme} onOpenChange={() => setSelectedMeme(null)}>
+          <DialogContent className="max-w-md mx-4 bg-card border-border">
+            <DialogHeader>
+              <DialogTitle className="text-foreground">{selectedMeme.title}</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div className="aspect-square rounded-lg overflow-hidden">
+                <img
+                  src={selectedMeme.imageUrl}
+                  alt={selectedMeme.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-sm font-bold text-primary-foreground">
+                    {selectedMeme.authorUsername.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div>
+                  <div className="font-medium text-foreground">{selectedMeme.authorUsername}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {selectedMeme.votes.toLocaleString()} votes
+                  </div>
+                </div>
+              </div>
+              
+              {selectedMeme.description && (
+                <div>
+                  <h4 className="font-medium text-foreground mb-2">Description</h4>
+                  <p className="text-muted-foreground">{selectedMeme.description}</p>
+                </div>
+              )}
+              
+              <div className="flex space-x-2 pt-2">
+                <Button
+                  onClick={() => setShowVoteDialog(true)}
+                  disabled={!isConnected}
+                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+                >
+                  <ArrowUp className="h-4 w-4 mr-2" />
+                  Vote
+                </Button>
+                <Button
+                  onClick={() => setShowShareDialog(true)}
+                  variant="outline"
+                  size="sm"
+                  className="px-4"
+                >
+                  <Share2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Grid View Vote Confirmation Dialog */}
       {selectedMeme && (
