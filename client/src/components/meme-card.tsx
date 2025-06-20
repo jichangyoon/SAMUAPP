@@ -16,6 +16,7 @@ interface MemeCardProps {
 
 export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   const [showVoteDialog, setShowVoteDialog] = useState(false);
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
   const { authenticated, user } = usePrivy();
   
@@ -117,10 +118,12 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
           </div>
 
           <div className="mb-3">
-            <h3 className="font-semibold text-foreground mb-1">{meme.title}</h3>
-            {meme.description && (
-              <p className="text-sm text-muted-foreground">{meme.description}</p>
-            )}
+            <button 
+              onClick={() => setShowDetailDialog(true)}
+              className="text-left w-full hover:opacity-80 transition-opacity"
+            >
+              <h3 className="font-semibold text-foreground mb-1">{meme.title}</h3>
+            </button>
           </div>
 
           <div className="flex space-x-2">
@@ -179,6 +182,67 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
               {isVoting ? "Voting..." : "Confirm Vote"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
+        <DialogContent className="max-w-md mx-4 bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">{meme.title}</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="aspect-square rounded-lg overflow-hidden">
+              <img
+                src={meme.imageUrl}
+                alt={meme.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                <span className="text-sm font-bold text-primary-foreground">
+                  {meme.authorUsername.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div>
+                <div className="font-medium text-foreground">{meme.authorUsername}</div>
+                <div className="text-sm text-muted-foreground">
+                  {meme.votes.toLocaleString()} votes
+                </div>
+              </div>
+            </div>
+            
+            {meme.description && (
+              <div>
+                <h4 className="font-medium text-foreground mb-2">Description</h4>
+                <p className="text-muted-foreground">{meme.description}</p>
+              </div>
+            )}
+            
+            <div className="flex space-x-2 pt-2">
+              <Button
+                onClick={() => {
+                  setShowDetailDialog(false);
+                  setShowVoteDialog(true);
+                }}
+                disabled={!canVote}
+                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+              >
+                <ArrowUp className="h-4 w-4 mr-2" />
+                Vote
+              </Button>
+              <Button
+                onClick={handleShare}
+                variant="outline"
+                size="sm"
+                className="px-4"
+              >
+                <Share2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </>
