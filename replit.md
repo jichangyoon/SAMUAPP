@@ -203,6 +203,7 @@ Changelog:
 - June 20, 2025. Applied same interaction pattern to goods shop - removed product name and card click functionality, keeping only image click for detail modal access
 - June 20, 2025. Added dual view modes for meme contest - users can switch between card view and Instagram-style grid view with toggle buttons
 - June 20, 2025. Implemented grid view with 3x3 layout showing only images, hover effects for vote counts, and click-to-view detail modal
+- June 20, 2025. Simplified sorting options by removing "Trending" option, keeping only "Most Votes" and "Latest" for cleaner user experience
 ```
 
 ## User Preferences

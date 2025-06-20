@@ -194,7 +194,6 @@ export default function Home() {
                           <SelectContent>
                             <SelectItem value="votes">Most Votes</SelectItem>
                             <SelectItem value="latest">Latest</SelectItem>
-                            <SelectItem value="trending">Trending</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
