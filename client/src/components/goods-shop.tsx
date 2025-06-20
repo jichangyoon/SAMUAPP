@@ -69,12 +69,12 @@ export function GoodsShop() {
   const [cart, setCart] = useState<number[]>([]);
   const [selectedItem, setSelectedItem] = useState<typeof goodsData[0] | null>(null);
   const { authenticated, user } = usePrivy();
-  
+
   // Get wallet using same logic as WalletConnect component - prioritize Solana
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
-  
+
   const isConnected = authenticated;
   const walletAddress = selectedWalletAccount?.address || '';
   const samuBalance = 1000; // Simplified for now
@@ -132,17 +132,15 @@ export function GoodsShop() {
   return (
     <div className="space-y-6 pb-20">
       {/* 굿즈샵 헤더 */}
-      <Card className="bg-[hsl(50,85%,75%)] border-0">
-        <CardHeader className="text-center py-3">
-          <CardTitle className="text-lg font-bold text-black flex items-center justify-center gap-2">
-            <Trophy className="h-4 w-4" />
-            SAMU Goods Shop
-          </CardTitle>
-          <CardDescription className="text-xs text-black/90 mt-1 whitespace-nowrap">
-            Hall of Fame memes turned into goods!
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <div className="mb-8">
+        <div className="bg-black text-yellow-400 p-4 rounded-lg flex items-center gap-3 shadow-lg border border-yellow-400">
+          <Trophy className="h-6 w-6" />
+          <div>
+            <h2 className="text-xl font-bold">🏆 SAMU Goods Shop</h2>
+            <p className="text-sm opacity-90">Hall of Fame memes turned into goods!</p>
+          </div>
+        </div>
+      </div>
 
       {/* 장바구니 요약 */}
       {cart.length > 0 && (
@@ -243,7 +241,7 @@ export function GoodsShop() {
           <DialogHeader>
             <DialogTitle className="text-foreground">{selectedItem?.name}</DialogTitle>
           </DialogHeader>
-          
+
           {selectedItem && (
             <div className="space-y-4">
               <div className="aspect-square rounded-lg overflow-hidden">
@@ -253,7 +251,7 @@ export function GoodsShop() {
                   className="w-full h-full object-cover"
                 />
               </div>
-              
+
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                   <span className="text-sm font-bold text-primary-foreground">
@@ -267,12 +265,12 @@ export function GoodsShop() {
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <h4 className="font-medium text-foreground mb-2">Description</h4>
                 <p className="text-muted-foreground">{selectedItem.description}</p>
               </div>
-              
+
               <div className="flex flex-wrap gap-2">
                 <Badge variant="secondary" className="text-xs">
                   <Trophy className="h-3 w-3 mr-1" />
@@ -287,7 +285,7 @@ export function GoodsShop() {
                   Stock: {selectedItem.stock}
                 </Badge>
               </div>
-              
+
               <div className="flex items-center justify-between pt-4 border-t">
                 <div>
                   <div className="text-lg font-bold text-primary">
@@ -318,3 +316,4 @@ export function GoodsShop() {
     </div>
   );
 }
+```This code modifies the SAMU Goods Shop component to change the header's background to black and text to yellow.
