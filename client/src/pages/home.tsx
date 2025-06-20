@@ -438,6 +438,222 @@ export default function Home() {
                         rank: 6,
                         imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%2327ae60'/%3E%3Cpath d='M200 100 L300 200 L250 250 L200 200 L150 250 L100 200 Z' fill='%23f1c40f'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='white'%3EALPHA GAINS%3C/text%3E%3C/svg%3E",
                         description: "Always making alpha gains"
+                      },
+                      {
+                        id: 7,
+                        title: "ROCKET WOLF",
+                        author: "space_dog",
+                        votes: 128,
+                        rank: 7,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23FF6B6B'/%3E%3Cpolygon points='200,50 250,200 200,300 150,200' fill='%23FFE66D'/%3E%3Ccircle cx='200' cy='150' r='30' fill='%234ECDC4'/%3E%3Ctext x='200' y='350' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold' fill='white'%3EROCKET WOLF%3C/text%3E%3C/svg%3E",
+                        description: "Ready for takeoff to the moon"
+                      },
+                      {
+                        id: 8,
+                        title: "DIAMOND HANDS",
+                        author: "hodl_master",
+                        votes: 115,
+                        rank: 8,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%234A90E2'/%3E%3Cpolygon points='200,100 250,150 200,200 150,150' fill='%2300BFFF'/%3E%3Cpath d='M150 220 L200 170 L250 220 L200 270 Z' fill='%2300CED1'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold' fill='white'%3EDIAMOND HANDS%3C/text%3E%3C/svg%3E",
+                        description: "Never selling, always holding"
+                      },
+                      {
+                        id: 9,
+                        title: "WOLF SQUAD",
+                        author: "pack_unity",
+                        votes: 108,
+                        rank: 9,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%237B68EE'/%3E%3Ccircle cx='150' cy='150' r='30' fill='%23FFA500'/%3E%3Ccircle cx='250' cy='150' r='30' fill='%23FFA500'/%3E%3Ccircle cx='200' cy='250' r='30' fill='%23FFA500'/%3E%3Ctext x='200' y='340' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='white'%3EWOLF SQUAD%3C/text%3E%3C/svg%3E",
+                        description: "Stronger together as a pack"
+                      },
+                      {
+                        id: 10,
+                        title: "SAMU VIBES",
+                        author: "vibe_check",
+                        votes: 97,
+                        rank: 10,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23FF8A80'/%3E%3Ccircle cx='200' cy='200' r='80' fill='%23FFD740'/%3E%3Cpath d='M160 180 Q200 160 240 180' stroke='%23333' stroke-width='3' fill='none'/%3E%3Ccircle cx='180' cy='190' r='8' fill='%23333'/%3E%3Ccircle cx='220' cy='190' r='8' fill='%23333'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold' fill='white'%3ESAMU VIBES%3C/text%3E%3C/svg%3E",
+                        description: "Good vibes only in the SAMU community"
+                      },
+                      {
+                        id: 11,
+                        title: "MOON MISSION",
+                        author: "astronaut_wolf",
+                        votes: 89,
+                        rank: 11,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23000080'/%3E%3Ccircle cx='320' cy='80' r='40' fill='%23F5F5DC'/%3E%3Cpolygon points='200,200 250,300 150,300' fill='%23FF4500'/%3E%3Ctext x='200' y='350' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='white'%3EMOON MISSION%3C/text%3E%3C/svg%3E",
+                        description: "Next stop: the moon"
+                      },
+                      {
+                        id: 12,
+                        title: "PACK POWER",
+                        author: "unity_strength",
+                        votes: 82,
+                        rank: 12,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23DC143C'/%3E%3Cpath d='M200 50 L250 150 L350 150 L275 225 L300 325 L200 275 L100 325 L125 225 L50 150 L150 150 Z' fill='%23FFD700'/%3E%3Ctext x='200' y='360' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold' fill='white'%3EPACK POWER%3C/text%3E%3C/svg%3E",
+                        description: "United we stand, divided we fall"
+                      },
+                      {
+                        id: 13,
+                        title: "CRYPTO WOLF",
+                        author: "blockchain_beast",
+                        votes: 76,
+                        rank: 13,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23FF69B4'/%3E%3Crect x='100' y='100' width='50' height='50' fill='%23000' opacity='0.7'/%3E%3Crect x='175' y='100' width='50' height='50' fill='%23000' opacity='0.5'/%3E%3Crect x='250' y='100' width='50' height='50' fill='%23000' opacity='0.7'/%3E%3Ctext x='200' y='280' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='white'%3ECRYPTO WOLF%3C/text%3E%3C/svg%3E",
+                        description: "Blockchain-powered wolf power"
+                      },
+                      {
+                        id: 14,
+                        title: "SAMU FIRE",
+                        author: "flame_keeper",
+                        votes: 71,
+                        rank: 14,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23FF4500'/%3E%3Cpath d='M200 100 Q250 150 200 250 Q150 150 200 100' fill='%23FFD700'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold' fill='white'%3ESAMU FIRE%3C/text%3E%3C/svg%3E",
+                        description: "Burning bright with SAMU passion"
+                      },
+                      {
+                        id: 15,
+                        title: "LUNAR PACK",
+                        author: "moon_howler",
+                        votes: 65,
+                        rank: 15,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23191970'/%3E%3Ccircle cx='200' cy='120' r='50' fill='%23F0F8FF'/%3E%3Ccircle cx='200' cy='280' r='60' fill='%236B4226'/%3E%3Ctext x='200' y='360' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold' fill='white'%3ELUNAR PACK%3C/text%3E%3C/svg%3E",
+                        description: "Howling at the moon together"
+                      },
+                      {
+                        id: 16,
+                        title: "GOLDEN WOLF",
+                        author: "gold_rush",
+                        votes: 59,
+                        rank: 16,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23DAA520'/%3E%3Ccircle cx='200' cy='200' r='80' fill='%23FFD700'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='%238B4513'%3EGOLDEN WOLF%3C/text%3E%3C/svg%3E",
+                        description: "Worth its weight in gold"
+                      },
+                      {
+                        id: 17,
+                        title: "SAMU STORM",
+                        author: "storm_chaser",
+                        votes: 54,
+                        rank: 17,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%234169E1'/%3E%3Cpath d='M100 100 L300 100 L200 200 L300 300 L100 300 L200 200 Z' fill='%23FFFF00'/%3E%3Ctext x='200' y='360' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold' fill='white'%3ESAMU STORM%3C/text%3E%3C/svg%3E",
+                        description: "Storm's coming, SAMU's rising"
+                      },
+                      {
+                        id: 18,
+                        title: "WILD WOLF",
+                        author: "wilderness_spirit",
+                        votes: 48,
+                        rank: 18,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%2322665D'/%3E%3Cpath d='M100 300 Q200 100 300 300' stroke='%2390EE90' stroke-width='20' fill='none'/%3E%3Ccircle cx='200' cy='200' r='40' fill='%23A0522D'/%3E%3Ctext x='200' y='360' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold' fill='white'%3EWILD WOLF%3C/text%3E%3C/svg%3E",
+                        description: "Free and wild like nature intended"
+                      },
+                      {
+                        id: 19,
+                        title: "SAMU SPIRIT",
+                        author: "soul_keeper",
+                        votes: 43,
+                        rank: 19,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23E6E6FA'/%3E%3Ccircle cx='200' cy='200' r='100' fill='%239370DB'/%3E%3Cpath d='M200 120 Q240 200 200 280 Q160 200 200 120' fill='%23FFB6C1'/%3E%3Ctext x='200' y='340' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='%234B0082'%3ESAMU SPIRIT%3C/text%3E%3C/svg%3E",
+                        description: "The spirit lives on"
+                      },
+                      {
+                        id: 20,
+                        title: "PACK UNITY",
+                        author: "together_strong",
+                        votes: 39,
+                        rank: 20,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23FF1493'/%3E%3Ccircle cx='150' cy='200' r='30' fill='%23FFFF00'/%3E%3Ccircle cx='200' cy='150' r='30' fill='%23FFFF00'/%3E%3Ccircle cx='250' cy='200' r='30' fill='%23FFFF00'/%3E%3Ccircle cx='200' cy='250' r='30' fill='%23FFFF00'/%3E%3Ctext x='200' y='340' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold' fill='white'%3EPACK UNITY%3C/text%3E%3C/svg%3E",
+                        description: "United we rise together"
+                      },
+                      {
+                        id: 21,
+                        title: "WOLF MAGIC",
+                        author: "mystic_wolf",
+                        votes: 35,
+                        rank: 21,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%234B0082'/%3E%3Cpath d='M200 50 L250 150 L350 150 L275 225 L300 325 L200 275 L100 325 L125 225 L50 150 L150 150 Z' fill='%23FFD700'/%3E%3Cpath d='M150 150 L200 100 L250 150 L200 200 Z' fill='%23FF69B4'/%3E%3Ctext x='200' y='360' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold' fill='white'%3EWOLF MAGIC%3C/text%3E%3C/svg%3E",
+                        description: "Magic happens when wolves unite"
+                      },
+                      {
+                        id: 22,
+                        title: "SAMU DREAM",
+                        author: "dream_weaver",
+                        votes: 32,
+                        rank: 22,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%2387CEEB'/%3E%3Ccircle cx='200' cy='200' r='80' fill='%23FFC0CB' opacity='0.7'/%3E%3Ccircle cx='200' cy='200' r='60' fill='%23FFB6C1' opacity='0.7'/%3E%3Ccircle cx='200' cy='200' r='40' fill='%23FF69B4' opacity='0.7'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold' fill='white'%3ESAMU DREAM%3C/text%3E%3C/svg%3E",
+                        description: "Dreams do come true"
+                      },
+                      {
+                        id: 23,
+                        title: "ALPHA WOLF",
+                        author: "leader_born",
+                        votes: 29,
+                        rank: 23,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23B22222'/%3E%3Cpolygon points='200,80 250,200 200,320 150,200' fill='%23FFD700'/%3E%3Ccircle cx='200' cy='200' r='30' fill='%23000'/%3E%3Ctext x='200' y='360' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold' fill='white'%3EALPHA WOLF%3C/text%3E%3C/svg%3E",
+                        description: "Born to lead the pack"
+                      },
+                      {
+                        id: 24,
+                        title: "COSMIC WOLF",
+                        author: "space_traveler",
+                        votes: 26,
+                        rank: 24,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23000'/%3E%3Ccircle cx='100' cy='100' r='3' fill='%23FFF'/%3E%3Ccircle cx='300' cy='150' r='2' fill='%23FFF'/%3E%3Ccircle cx='150' cy='300' r='4' fill='%23FFF'/%3E%3Ccircle cx='250' cy='80' r='2' fill='%23FFF'/%3E%3Ccircle cx='200' cy='200' r='60' fill='%239370DB'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='white'%3ECOSMIC WOLF%3C/text%3E%3C/svg%3E",
+                        description: "Traveling through the cosmos"
+                      },
+                      {
+                        id: 25,
+                        title: "SAMU HERO",
+                        author: "hero_maker",
+                        votes: 23,
+                        rank: 25,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23FF6347'/%3E%3Cpath d='M200 50 L250 150 L350 150 L275 225 L300 325 L200 275 L100 325 L125 225 L50 150 L150 150 Z' fill='%23FFD700'/%3E%3Ctext x='200' y='360' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold' fill='white'%3ESAMU HERO%3C/text%3E%3C/svg%3E",
+                        description: "Every pack needs a hero"
+                      },
+                      {
+                        id: 26,
+                        title: "WOLF WISDOM",
+                        author: "wise_elder",
+                        votes: 20,
+                        rank: 26,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23708090'/%3E%3Ccircle cx='200' cy='150' r='60' fill='%23F5F5DC'/%3E%3Cpath d='M170 130 L200 110 L230 130 L220 150 L180 150 Z' fill='%238B4513'/%3E%3Ccircle cx='185' cy='140' r='5' fill='%23000'/%3E%3Ccircle cx='215' cy='140' r='5' fill='%23000'/%3E%3Ctext x='200' y='280' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='white'%3EWOLF WISDOM%3C/text%3E%3C/svg%3E",
+                        description: "Wisdom passed down through generations"
+                      },
+                      {
+                        id: 27,
+                        title: "SAMU LEGEND",
+                        author: "legend_keeper",
+                        votes: 17,
+                        rank: 27,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23800000'/%3E%3Crect x='100' y='100' width='200' height='200' fill='%23FFD700' transform='rotate(45 200 200)'/%3E%3Ccircle cx='200' cy='200' r='50' fill='%23FF4500'/%3E%3Ctext x='200' y='340' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='white'%3ESAMU LEGEND%3C/text%3E%3C/svg%3E",
+                        description: "Legends never die"
+                      },
+                      {
+                        id: 28,
+                        title: "CYBER WOLF",
+                        author: "digital_hunter",
+                        votes: 14,
+                        rank: 28,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23000'/%3E%3Crect x='100' y='100' width='200' height='20' fill='%2300FF00'/%3E%3Crect x='100' y='150' width='150' height='20' fill='%2300FF00'/%3E%3Crect x='100' y='200' width='180' height='20' fill='%2300FF00'/%3E%3Ccircle cx='200' cy='280' r='40' fill='%2300FFFF'/%3E%3Ctext x='200' y='360' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='%2300FF00'%3ECYBER WOLF%3C/text%3E%3C/svg%3E",
+                        description: "Digital hunter in the matrix"
+                      },
+                      {
+                        id: 29,
+                        title: "ETERNAL WOLF",
+                        author: "forever_wild",
+                        votes: 11,
+                        rank: 29,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%232F4F4F'/%3E%3Ccircle cx='200' cy='200' r='100' fill='%2366CDAA' opacity='0.6'/%3E%3Ccircle cx='200' cy='200' r='70' fill='%2320B2AA' opacity='0.7'/%3E%3Ccircle cx='200' cy='200' r='40' fill='%2348D1CC' opacity='0.8'/%3E%3Ctext x='200' y='330' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='white'%3EETERNAL WOLF%3C/text%3E%3C/svg%3E",
+                        description: "Forever running wild and free"
+                      },
+                      {
+                        id: 30,
+                        title: "SAMU FINALE",
+                        author: "grand_finale",
+                        votes: 8,
+                        rank: 30,
+                        imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23800080'/%3E%3Ccircle cx='200' cy='200' r='80' fill='%23FFD700'/%3E%3Cpath d='M200 120 L240 160 L280 200 L240 240 L200 280 L160 240 L120 200 L160 160 Z' fill='%23FF1493'/%3E%3Ctext x='200' y='340' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='white'%3ESAMU FINALE%3C/text%3E%3C/svg%3E",
+                        description: "The grand finale of Contest #1"
                       }
                     ]
                   })}
