@@ -878,8 +878,8 @@ export default function Home() {
                 Share on Telegram
               </Button>
             </div>
-          </DialogContent>
-        </Dialog>
+          </DrawerContent>
+        </Drawer>
       )}
 
 

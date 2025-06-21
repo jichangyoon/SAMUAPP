@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { usePrivy } from '@privy-io/react-auth';
 import { useToast } from "@/hooks/use-toast";
 import { ShoppingCart, Trophy, Shirt, Coffee, Sticker, X } from "lucide-react";
@@ -154,12 +154,12 @@ export function GoodsShop() {
         </CardContent>
       </Card>
 
-      {/* 제품 상세 다이얼로그 */}
-      <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
-        <DialogContent className="max-w-md mx-4 bg-card border-border">
-          <DialogHeader>
-            <DialogTitle className="text-foreground">{selectedItem?.name}</DialogTitle>
-          </DialogHeader>
+      {/* Product Detail Drawer */}
+      <Drawer open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
+        <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+          <DrawerHeader>
+            <DrawerTitle className="text-foreground">{selectedItem?.name}</DrawerTitle>
+          </DrawerHeader>
           
           {selectedItem && (
             <div className="space-y-4">
@@ -212,8 +212,8 @@ export function GoodsShop() {
               </div>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
