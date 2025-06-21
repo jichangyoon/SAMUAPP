@@ -149,7 +149,7 @@ export function NftGallery() {
       {/* NFT Detail Drawer - Swipe to dismiss */}
       {selectedNft && (
         <Drawer open={!!selectedNft} onOpenChange={() => setSelectedNft(null)}>
-          <DrawerContent className="bg-card border-border max-h-[85vh]">
+          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
             <DrawerHeader>
               <DrawerTitle className="text-foreground">{selectedNft.title}</DrawerTitle>
               <DrawerDescription className="text-muted-foreground">

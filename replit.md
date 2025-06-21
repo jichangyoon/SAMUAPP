@@ -271,6 +271,8 @@ Changelog:
 - June 20, 2025. Configured multiple IPFS gateways (ipfs.io, pinata.cloud, cloudflare-ipfs.com, dweb.link) for reliable decentralized image delivery
 - June 20, 2025. Reverted to local image storage for optimal app performance - prioritized instant loading over decentralized hosting
 - June 20, 2025. Simplified NFT gallery error handling and removed IPFS-specific optimizations for faster local file serving
+- June 20, 2025. Implemented mobile-friendly swipe gestures for NFT modals using Vaul drawer component
+- June 20, 2025. Enhanced modal height to 92vh for better mobile coverage and reduced background visibility
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
