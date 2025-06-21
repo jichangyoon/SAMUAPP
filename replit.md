@@ -269,6 +269,8 @@ Changelog:
 - June 20, 2025. Implemented load balancing across multiple image CDN services (Picsum, Unsplash) for optimal loading speed
 - June 20, 2025. Integrated real SAMU Wolf NFT collection from IPFS (CID: bafybeigbexzsefsou3jainsx3kn7sgcc64t246ilh5fz4qdyru73s2khai)
 - June 20, 2025. Configured multiple IPFS gateways (ipfs.io, pinata.cloud, cloudflare-ipfs.com, dweb.link) for reliable decentralized image delivery
+- June 20, 2025. Reverted to local image storage for optimal app performance - prioritized instant loading over decentralized hosting
+- June 20, 2025. Simplified NFT gallery error handling and removed IPFS-specific optimizations for faster local file serving
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
