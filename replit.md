@@ -273,6 +273,10 @@ Changelog:
 - June 20, 2025. Simplified NFT gallery error handling and removed IPFS-specific optimizations for faster local file serving
 - June 20, 2025. Implemented mobile-friendly swipe gestures for NFT modals using Vaul drawer component
 - June 20, 2025. Enhanced modal height to 92vh for better mobile coverage and reduced background visibility
+- June 21, 2025. Extended mobile-friendly swipe gestures to ALL app modals (meme contest, archive, goods shop)
+- June 21, 2025. Replaced all Dialog components with Drawer components for consistent mobile UX
+- June 21, 2025. Fixed modal content display with proper padding and scrolling for detailed descriptions
+- June 21, 2025. Completed comprehensive mobile-first modal system with swipe-to-close functionality
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
