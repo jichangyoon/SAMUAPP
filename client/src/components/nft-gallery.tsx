@@ -110,6 +110,11 @@ export function NftGallery() {
 
   return (
     <div className="space-y-4 pb-24">
+      {/* IPFS 이미지 사전 로딩을 위한 DNS 프리페치 */}
+      <link rel="dns-prefetch" href="https://gateway.pinata.cloud" />
+      <link rel="dns-prefetch" href="https://ipfs.io" />
+      <link rel="dns-prefetch" href="https://cloudflare-ipfs.com" />
+      
       {/* Header */}
       <Card className="bg-black border-0">
         <CardContent className="p-4 text-center">
@@ -117,7 +122,7 @@ export function NftGallery() {
             <h2 className="text-xl font-bold text-[hsl(50,85%,75%)]">SAMU Wolf Collection</h2>
           </div>
           <p className="text-sm text-[hsl(50,85%,75%)]/90">
-            164 unique SAMU Wolf NFTs with legendary traits
+            164 unique SAMU Wolf NFTs from IPFS - Loading from decentralized network
           </p>
         </CardContent>
       </Card>
@@ -137,9 +142,21 @@ export function NftGallery() {
               decoding="async"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
               onError={(e) => {
-                // Fallback for missing images
+                // IPFS 폴백 시스템 - 다른 게이트웨이들 시도
                 const target = e.target as HTMLImageElement;
-                target.src = `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23333"/><text x="50" y="55" text-anchor="middle" fill="%23F7DC6F" font-size="10" font-family="Arial">SAMU %23${nft.tokenId}</text></svg>`;
+                const currentSrc = target.src;
+                const ipfsCid = 'bafybeigbexzsefsou3jainsx3kn7sgcc64t246ilh5fz4qdyru73s2khai';
+                
+                if (currentSrc.includes('gateway.pinata.cloud')) {
+                  target.src = `https://ipfs.io/ipfs/${ipfsCid}/${nft.tokenId}.png`;
+                } else if (currentSrc.includes('ipfs.io')) {
+                  target.src = `https://cloudflare-ipfs.com/ipfs/${ipfsCid}/${nft.tokenId}.png`;
+                } else if (currentSrc.includes('cloudflare-ipfs.com')) {
+                  target.src = `https://dweb.link/ipfs/${ipfsCid}/${nft.tokenId}.png`;
+                } else {
+                  // 최종 폴백 - SVG 플레이스홀더
+                  target.src = `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23333"/><text x="50" y="55" text-anchor="middle" fill="%23F7DC6F" font-size="10" font-family="Arial">SAMU %23${nft.tokenId}</text></svg>`;
+                }
               }}
             />
           </button>

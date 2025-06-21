@@ -16,16 +16,8 @@ const generateImageUrl = (tokenId: number): string => {
   // PINATA에 업로드된 실제 SAMU Wolf NFT 컬렉션 사용
   const ipfsCid = 'bafybeigbexzsefsou3jainsx3kn7sgcc64t246ilh5fz4qdyru73s2khai';
   
-  // 여러 IPFS 게이트웨이를 사용한 로드 밸런싱
-  const ipfsGateways = [
-    'https://ipfs.io/ipfs/',
-    'https://gateway.pinata.cloud/ipfs/',
-    'https://cloudflare-ipfs.com/ipfs/',
-    'https://dweb.link/ipfs/'
-  ];
-  
-  const selectedGateway = ipfsGateways[tokenId % ipfsGateways.length];
-  return `${selectedGateway}${ipfsCid}/${tokenId}.png`;
+  // 가장 안정적인 IPFS 게이트웨이 사용 (Pinata 우선)
+  return `https://gateway.pinata.cloud/ipfs/${ipfsCid}/${tokenId}.png`;
 };
 
 // Generate 164 SAMU Wolf NFT data with external URLs
