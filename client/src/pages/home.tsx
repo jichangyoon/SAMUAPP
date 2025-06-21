@@ -751,7 +751,7 @@ export default function Home() {
               <DrawerTitle className="text-foreground">{selectedMeme.title}</DrawerTitle>
             </DrawerHeader>
 
-            <div className="space-y-4">
+            <div className="px-4 pb-4 overflow-y-auto flex-1 space-y-4">
               <div className="aspect-square rounded-lg overflow-hidden">
                 <img
                   src={selectedMeme.imageUrl}
@@ -815,17 +815,19 @@ export default function Home() {
               </DrawerDescription>
             </DrawerHeader>
 
-            <div className="bg-accent rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Your voting power:</span>
-                <span className="font-semibold text-primary">1</span>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Based on your SAMU token balance: {samuBalance.toLocaleString()}
+            <div className="px-4 pb-4 overflow-y-auto flex-1">
+              <div className="bg-accent rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">Your voting power:</span>
+                  <span className="font-semibold text-primary">1</span>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Based on your SAMU token balance: {samuBalance.toLocaleString()}
+                </div>
               </div>
             </div>
 
-            <DrawerFooter className="flex space-x-3">
+          <DrawerFooter className="flex space-x-3">
               <Button
                 variant="outline"
                 onClick={() => setShowVoteDialog(false)}
@@ -856,7 +858,7 @@ export default function Home() {
               </DrawerDescription>
             </DrawerHeader>
 
-            <div className="flex flex-col gap-3 py-4">
+            <div className="px-4 pb-4 overflow-y-auto flex-1 flex flex-col gap-3">
               <Button
                 onClick={() => {
                   shareToTwitter(selectedMeme);
