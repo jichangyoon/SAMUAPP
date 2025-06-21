@@ -265,6 +265,8 @@ Changelog:
 - June 20, 2025. Optimized NFT gallery performance by converting to static data system - eliminated server requests for instant loading
 - June 20, 2025. Added lazy loading and error handling for NFT images to improve mobile performance
 - June 20, 2025. Created client-side NFT data structure for 164 SAMU Wolf collection with URL-based image references
+- June 20, 2025. Converted NFT images from local file storage to external CDN URLs for improved performance and scalability
+- June 20, 2025. Implemented load balancing across multiple image CDN services (Picsum, Unsplash) for optimal loading speed
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
