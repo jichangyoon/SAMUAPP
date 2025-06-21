@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { usePrivy } from '@privy-io/react-auth';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { Textarea } from "@/components/ui/textarea";
 import { MessageCircle, Send } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -146,18 +146,18 @@ export function NftGallery() {
         ))}
       </div>
 
-      {/* NFT Detail Modal */}
+      {/* NFT Detail Drawer - Swipe to dismiss */}
       {selectedNft && (
-        <Dialog open={!!selectedNft} onOpenChange={() => setSelectedNft(null)}>
-          <DialogContent className="max-w-md mx-4 bg-card border-border max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-foreground">{selectedNft.title}</DialogTitle>
-              <DialogDescription className="text-muted-foreground">
+        <Drawer open={!!selectedNft} onOpenChange={() => setSelectedNft(null)}>
+          <DrawerContent className="bg-card border-border max-h-[85vh]">
+            <DrawerHeader>
+              <DrawerTitle className="text-foreground">{selectedNft.title}</DrawerTitle>
+              <DrawerDescription className="text-muted-foreground">
                 Created by {selectedNft.creator}
-              </DialogDescription>
-            </DialogHeader>
+              </DrawerDescription>
+            </DrawerHeader>
 
-            <div className="space-y-4">
+            <div className="px-4 pb-4 space-y-4 overflow-y-auto">
               {/* NFT Image */}
               <div className="aspect-square rounded-lg overflow-hidden">
                 <img
@@ -242,8 +242,8 @@ export function NftGallery() {
                 </div>
               </div>
             </div>
-          </DialogContent>
-        </Dialog>
+          </DrawerContent>
+        </Drawer>
       )}
     </div>
   );
