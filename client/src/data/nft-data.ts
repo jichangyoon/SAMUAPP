@@ -11,17 +11,21 @@ export interface StaticNft {
   createdAt: string;
 }
 
-// URL 기반 이미지 생성 함수
+// IPFS 기반 SAMU Wolf NFT 이미지 URL 생성
 const generateImageUrl = (tokenId: number): string => {
-  // 여러 CDN 서비스를 순환 사용하여 로드 분산
-  const cdnServices = [
-    'https://picsum.photos/400/400?random=',
-    'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=400&fit=crop&crop=entropy&seed=',
-    'https://source.unsplash.com/400x400/?wolf,art&sig='
+  // PINATA에 업로드된 실제 SAMU Wolf NFT 컬렉션 사용
+  const ipfsCid = 'bafybeigbexzsefsou3jainsx3kn7sgcc64t246ilh5fz4qdyru73s2khai';
+  
+  // 여러 IPFS 게이트웨이를 사용한 로드 밸런싱
+  const ipfsGateways = [
+    'https://ipfs.io/ipfs/',
+    'https://gateway.pinata.cloud/ipfs/',
+    'https://cloudflare-ipfs.com/ipfs/',
+    'https://dweb.link/ipfs/'
   ];
   
-  const selectedCdn = cdnServices[tokenId % cdnServices.length];
-  return `${selectedCdn}${tokenId}`;
+  const selectedGateway = ipfsGateways[tokenId % ipfsGateways.length];
+  return `${selectedGateway}${ipfsCid}/${tokenId}.png`;
 };
 
 // Generate 164 SAMU Wolf NFT data with external URLs

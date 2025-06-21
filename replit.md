@@ -267,6 +267,8 @@ Changelog:
 - June 20, 2025. Created client-side NFT data structure for 164 SAMU Wolf collection with URL-based image references
 - June 20, 2025. Converted NFT images from local file storage to external CDN URLs for improved performance and scalability
 - June 20, 2025. Implemented load balancing across multiple image CDN services (Picsum, Unsplash) for optimal loading speed
+- June 20, 2025. Integrated real SAMU Wolf NFT collection from IPFS (CID: bafybeigbexzsefsou3jainsx3kn7sgcc64t246ilh5fz4qdyru73s2khai)
+- June 20, 2025. Configured multiple IPFS gateways (ipfs.io, pinata.cloud, cloudflare-ipfs.com, dweb.link) for reliable decentralized image delivery
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
