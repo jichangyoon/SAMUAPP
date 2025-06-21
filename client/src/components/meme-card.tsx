@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { usePrivy } from '@privy-io/react-auth';
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -153,14 +153,14 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
         </CardContent>
       </Card>
 
-      <Dialog open={showVoteDialog} onOpenChange={setShowVoteDialog}>
-        <DialogContent className="max-w-sm mx-4 bg-card border-border">
-          <DialogHeader>
-            <DialogTitle className="text-foreground">Confirm Your Vote</DialogTitle>
-            <DialogDescription className="text-muted-foreground">
+      <Drawer open={showVoteDialog} onOpenChange={setShowVoteDialog}>
+        <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+          <DrawerHeader>
+            <DrawerTitle className="text-foreground">Confirm Your Vote</DrawerTitle>
+            <DrawerDescription className="text-muted-foreground">
               You're about to vote for "{meme.title}" by {meme.authorUsername}
-            </DialogDescription>
-          </DialogHeader>
+            </DrawerDescription>
+          </DrawerHeader>
 
           <div className="bg-accent rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
@@ -172,7 +172,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
             </div>
           </div>
 
-          <DialogFooter className="flex space-x-3">
+          <DrawerFooter className="flex space-x-3">
             <Button
               variant="outline"
               onClick={() => setShowVoteDialog(false)}
@@ -187,15 +187,15 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
             >
               {isVoting ? "Voting..." : "Confirm Vote"}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
 
-      <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
-        <DialogContent className="max-w-md mx-4 bg-card border-border">
-          <DialogHeader>
-            <DialogTitle className="text-foreground">{meme.title}</DialogTitle>
-          </DialogHeader>
+      <Drawer open={showDetailDialog} onOpenChange={setShowDetailDialog}>
+        <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+          <DrawerHeader>
+            <DrawerTitle className="text-foreground">{meme.title}</DrawerTitle>
+          </DrawerHeader>
 
           <div className="space-y-4">
             <div className="aspect-square rounded-lg overflow-hidden">
@@ -249,20 +249,20 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
               </Button>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </DrawerContent>
+      </Drawer>
 
-      {/* Share Dialog */}
-      <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-        <DialogContent className="max-w-sm mx-4 bg-card border-border">
-          <DialogHeader>
-            <DialogTitle className="text-foreground">Share Meme</DialogTitle>
-            <DialogDescription className="text-muted-foreground">
+      {/* Share Drawer */}
+      <Drawer open={showShareDialog} onOpenChange={setShowShareDialog}>
+        <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+          <DrawerHeader>
+            <DrawerTitle className="text-foreground">Share Meme</DrawerTitle>
+            <DrawerDescription className="text-muted-foreground">
               Share "{meme.title}" on social platforms
-            </DialogDescription>
-          </DialogHeader>
+            </DrawerDescription>
+          </DrawerHeader>
 
-          <div className="flex flex-col gap-3 py-4">
+          <div className="flex flex-col gap-3 py-4 px-4">
             <Button
               onClick={() => {
                 shareToTwitter();
@@ -284,8 +284,8 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
               Share on Telegram
             </Button>
           </div>
-        </DialogContent>
-      </Dialog>
+        </DrawerContent>
+      </Drawer>
     </>
   );
 }
