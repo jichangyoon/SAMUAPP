@@ -277,9 +277,6 @@ Changelog:
 - June 21, 2025. Replaced all Dialog components with Drawer components for consistent mobile UX
 - June 21, 2025. Fixed modal content display with proper padding and scrolling for detailed descriptions
 - June 21, 2025. Completed comprehensive mobile-first modal system with swipe-to-close functionality
-- June 21, 2025. Implemented horizontal swipe navigation between main sections (Contest/Archive/NFT/Goods Shop)
-- June 21, 2025. Added touch event handlers for left-right swipe gestures with 50px minimum distance threshold
-- June 21, 2025. Enhanced mobile UX with intuitive swipe-based section navigation alongside bottom tab bar
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```

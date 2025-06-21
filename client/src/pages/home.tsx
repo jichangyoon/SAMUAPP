@@ -26,41 +26,6 @@ import samuLogoImg from "/assets/images/logos/samu-logo.jpg";
 export default function Home() {
   const [sortBy, setSortBy] = useState("votes");
   const [currentTab, setCurrentTab] = useState("contest");
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-
-  // Tab order for swipe navigation
-  const tabOrder = ["contest", "archive", "nfts", "goods"];
-  
-  // Minimum swipe distance
-  const minSwipeDistance = 50;
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    const currentIndex = tabOrder.indexOf(currentTab);
-    
-    if (isLeftSwipe && currentIndex < tabOrder.length - 1) {
-      // Swipe left - go to next tab
-      setCurrentTab(tabOrder[currentIndex + 1]);
-    } else if (isRightSwipe && currentIndex > 0) {
-      // Swipe right - go to previous tab
-      setCurrentTab(tabOrder[currentIndex - 1]);
-    }
-  };
   const [viewMode, setViewMode] = useState<'card' | 'grid'>('card');
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
   const [showVoteDialog, setShowVoteDialog] = useState(false);
@@ -325,12 +290,7 @@ export default function Home() {
 
 
       {/* Main Content Container */}
-      <div 
-        className="max-w-md mx-auto px-4"
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-      >
+      <div className="max-w-md mx-auto px-4">
         <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
 
           <TabsContent value="contest" className="mt-4 space-y-4 pb-24">
