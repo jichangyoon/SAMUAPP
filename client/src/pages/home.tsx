@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Image } from "lucide-react";
 import { useLocation } from "wouter";
@@ -630,16 +630,16 @@ export default function Home() {
         </Tabs>
       </div>
 
-      {/* Archive Meme Detail Modal */}
+      {/* Archive Meme Detail Drawer */}
       {selectedArchiveMeme && (
-        <Dialog open={!!selectedArchiveMeme} onOpenChange={() => setSelectedArchiveMeme(null)}>
-          <DialogContent className="max-w-md mx-4 bg-card border-border">
-            <DialogHeader>
-              <DialogTitle className="text-foreground">{selectedArchiveMeme.title}</DialogTitle>
-              <DialogDescription className="text-muted-foreground">
+        <Drawer open={!!selectedArchiveMeme} onOpenChange={() => setSelectedArchiveMeme(null)}>
+          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+            <DrawerHeader>
+              <DrawerTitle className="text-foreground">{selectedArchiveMeme.title}</DrawerTitle>
+              <DrawerDescription className="text-muted-foreground">
                 Contest Entry from {selectedArchiveContest?.title}
-              </DialogDescription>
-            </DialogHeader>
+              </DrawerDescription>
+            </DrawerHeader>
 
             <div className="space-y-4">
               <div className="aspect-square rounded-lg overflow-hidden">
@@ -689,8 +689,8 @@ export default function Home() {
                 </Button>
               </div>
             </div>
-          </DialogContent>
-        </Dialog>
+          </DrawerContent>
+        </Drawer>
       )}
 
       {/* Bottom Navigation */}
@@ -743,13 +743,13 @@ export default function Home() {
 
 
 
-      {/* Grid View Meme Detail Modal */}
+      {/* Grid View Meme Detail Drawer */}
       {selectedMeme && (
-        <Dialog open={!!selectedMeme} onOpenChange={() => setSelectedMeme(null)}>
-          <DialogContent className="max-w-md mx-4 bg-card border-border">
-            <DialogHeader>
-              <DialogTitle className="text-foreground">{selectedMeme.title}</DialogTitle>
-            </DialogHeader>
+        <Drawer open={!!selectedMeme} onOpenChange={() => setSelectedMeme(null)}>
+          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+            <DrawerHeader>
+              <DrawerTitle className="text-foreground">{selectedMeme.title}</DrawerTitle>
+            </DrawerHeader>
 
             <div className="space-y-4">
               <div className="aspect-square rounded-lg overflow-hidden">
@@ -800,20 +800,20 @@ export default function Home() {
                 </Button>
               </div>
             </div>
-          </DialogContent>
-        </Dialog>
+          </DrawerContent>
+        </Drawer>
       )}
 
-      {/* Grid View Vote Confirmation Dialog */}
+      {/* Grid View Vote Confirmation Drawer */}
       {selectedMeme && (
-        <Dialog open={showVoteDialog} onOpenChange={setShowVoteDialog}>
-          <DialogContent className="max-w-sm mx-4 bg-card border-border">
-            <DialogHeader>
-              <DialogTitle className="text-foreground">Confirm Your Vote</DialogTitle>
-              <DialogDescription className="text-muted-foreground">
+        <Drawer open={showVoteDialog} onOpenChange={setShowVoteDialog}>
+          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+            <DrawerHeader>
+              <DrawerTitle className="text-foreground">Confirm Your Vote</DrawerTitle>
+              <DrawerDescription className="text-muted-foreground">
                 You're about to vote for "{selectedMeme.title}" by {selectedMeme.authorUsername}
-              </DialogDescription>
-            </DialogHeader>
+              </DrawerDescription>
+            </DrawerHeader>
 
             <div className="bg-accent rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
@@ -825,7 +825,7 @@ export default function Home() {
               </div>
             </div>
 
-            <DialogFooter className="flex space-x-3">
+            <DrawerFooter className="flex space-x-3">
               <Button
                 variant="outline"
                 onClick={() => setShowVoteDialog(false)}
@@ -840,21 +840,21 @@ export default function Home() {
               >
                 {isVoting ? "Voting..." : "Confirm Vote"}
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
       )}
 
-      {/* Share Dialog */}
+      {/* Share Drawer */}
       {selectedMeme && (
-        <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-          <DialogContent className="max-w-sm mx-4 bg-card border-border">
-            <DialogHeader>
-              <DialogTitle className="text-foreground">Share Meme</DialogTitle>
-              <DialogDescription className="text-muted-foreground">
+        <Drawer open={showShareDialog} onOpenChange={setShowShareDialog}>
+          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+            <DrawerHeader>
+              <DrawerTitle className="text-foreground">Share Meme</DrawerTitle>
+              <DrawerDescription className="text-muted-foreground">
                 Share "{selectedMeme.title}" on social platforms
-              </DialogDescription>
-            </DialogHeader>
+              </DrawerDescription>
+            </DrawerHeader>
 
             <div className="flex flex-col gap-3 py-4">
               <Button
