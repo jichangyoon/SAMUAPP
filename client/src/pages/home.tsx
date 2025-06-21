@@ -641,7 +641,7 @@ export default function Home() {
               </DrawerDescription>
             </DrawerHeader>
 
-            <div className="space-y-4">
+            <div className="px-4 pb-4 overflow-y-auto flex-1 space-y-4">
               <div className="aspect-square rounded-lg overflow-hidden">
                 <img 
                   src={selectedArchiveMeme.imageUrl} 

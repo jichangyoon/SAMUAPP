@@ -162,13 +162,15 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
             </DrawerDescription>
           </DrawerHeader>
 
-          <div className="bg-accent rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-muted-foreground">Your voting power:</span>
-              <span className="font-semibold text-primary">{votingPower.toLocaleString()}</span>
-            </div>
-            <div className="text-xs text-muted-foreground">
-              Based on your SAMU token balance: {samuBalance.toLocaleString()}
+          <div className="px-4 pb-4 overflow-y-auto flex-1">
+            <div className="bg-accent rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-muted-foreground">Your voting power:</span>
+                <span className="font-semibold text-primary">{votingPower.toLocaleString()}</span>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Based on your SAMU token balance: {samuBalance.toLocaleString()}
+              </div>
             </div>
           </div>
 
@@ -197,7 +199,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
             <DrawerTitle className="text-foreground">{meme.title}</DrawerTitle>
           </DrawerHeader>
 
-          <div className="space-y-4">
+          <div className="px-4 pb-4 overflow-y-auto flex-1 space-y-4">
             <div className="aspect-square rounded-lg overflow-hidden">
               <img
                 src={meme.imageUrl}

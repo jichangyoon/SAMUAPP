@@ -162,7 +162,7 @@ export function GoodsShop() {
           </DrawerHeader>
           
           {selectedItem && (
-            <div className="space-y-4">
+            <div className="space-y-4 px-4 pb-4 overflow-y-auto flex-1">
               <div className="aspect-square rounded-lg overflow-hidden">
                 <img 
                   src={selectedItem.image} 
