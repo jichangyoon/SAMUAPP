@@ -202,17 +202,20 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
               }}
             >
               <CardContent className="p-4 text-center">
-                <div className="flex items-center justify-center gap-3 mb-2">
-                  <img 
-                    src={partner.logo} 
-                    alt={partner.name}
-                    className="w-8 h-8 rounded-full"
-                  />
-                  <h2 className="text-xl font-bold" style={{ color: partner.color }}>
-                    {partner.name} Meme Contest
-                  </h2>
+                <div className="flex flex-col items-center gap-2 mb-3">
+                  <div className="flex items-center gap-3">
+                    <img 
+                      src={partner.logo} 
+                      alt={partner.name}
+                      className="w-8 h-8 rounded-full"
+                    />
+                    <h2 className="text-lg font-bold" style={{ color: partner.color }}>
+                      {partner.name}
+                    </h2>
+                  </div>
+                  <h3 className="text-md text-foreground">Meme Contest</h3>
                 </div>
-                <p className="text-sm text-muted-foreground mb-3">
+                <p className="text-sm text-muted-foreground mb-3 px-2">
                   {partner.description}
                 </p>
                 <Badge 
