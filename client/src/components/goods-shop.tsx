@@ -77,7 +77,7 @@ export function GoodsShop() {
       {/* 굿즈샵 헤더 */}
       <Card className="bg-black border-0">
         <CardHeader className="text-center py-3">
-          <CardTitle className="text-lg font-bold text-[hsl(50,85%,75%)] flex items-center justify-center gap-2">
+          <CardTitle className="text-xl font-bold text-[hsl(50,85%,75%)] flex items-center justify-center gap-2">
             <Trophy className="h-4 w-4" />
             SAMU Goods Shop
           </CardTitle>

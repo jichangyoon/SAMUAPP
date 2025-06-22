@@ -283,6 +283,7 @@ Changelog:
 - June 21, 2025. Added Partners navigation tab positioned at rightmost end of bottom navigation
 - June 21, 2025. Extended UploadForm component to support partner-specific meme submissions
 - June 21, 2025. Updated Archive header styling to match exact SAMU brand colors (hsl(50,85%,75%)) used in Goods Shop for perfect brand consistency
+- June 21, 2025. Standardized header text sizes across all sections (Contest, Goods Shop, Archive) to text-xl for uniform typography
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
