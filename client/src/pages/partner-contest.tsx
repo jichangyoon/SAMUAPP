@@ -209,7 +209,7 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
                     className="w-8 h-8 rounded-full"
                   />
                   <h2 className="text-xl font-bold" style={{ color: partner.color }}>
-                    {partner.name} Meme Contest
+                    {partner.symbol} Meme Contest
                   </h2>
                 </div>
                 <p className="text-sm text-muted-foreground mb-3">

@@ -303,6 +303,7 @@ Changelog:
 - June 22, 2025. Fixed partner logo display - moved images to client/src/assets and implemented proper Vite import system for reliable image loading
 - June 22, 2025. Improved back button design - made buttons smaller and positioned them closer to left edge for better mobile UX
 - June 22, 2025. Fixed partner community badge text visibility - changed white/light text to black for WAGUS and DoctorBird badges
+- June 22, 2025. Updated partner contest headers to use symbol instead of full name - "BIRD Meme Contest" instead of "DoctorBird Meme Contest"
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
