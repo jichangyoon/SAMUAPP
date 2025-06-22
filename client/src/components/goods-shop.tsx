@@ -113,19 +113,17 @@ export function GoodsShop() {
               {filteredGoods.map((item) => (
                 <Card 
                   key={item.id} 
-                  className="overflow-hidden"
+                  className="overflow-hidden cursor-pointer hover:bg-accent/50 transition-colors"
+                  onClick={() => setSelectedItem(item)}
                 >
                   <div className="flex p-3">
-                    <button 
-                      className="w-16 h-16 flex-shrink-0 hover:opacity-80 transition-opacity"
-                      onClick={() => setSelectedItem(item)}
-                    >
+                    <div className="w-16 h-16 flex-shrink-0">
                       <img 
                         src={item.image} 
                         alt={item.name}
                         className="w-full h-full object-cover rounded"
                       />
-                    </button>
+                    </div>
                     <div className="flex-1 ml-3 min-w-0">
                       <h3 className="font-semibold text-sm text-foreground truncate">
                         {item.name}
