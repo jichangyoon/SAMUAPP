@@ -465,10 +465,10 @@ export default function Home() {
                           description: "You need to login to view contest archives - our community heritage"
                         });
                         
-                        // Auto dismiss after 2 seconds for better mobile UX
+                        // Auto dismiss after 1.3 seconds for better mobile UX
                         setTimeout(() => {
                           toastResult.dismiss();
-                        }, 2000);
+                        }, 1300);
                         return;
                       }
                       setSelectedArchiveContest({
