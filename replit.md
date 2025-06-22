@@ -298,7 +298,7 @@ Changelog:
 - June 21, 2025. Fixed bottom navigation spacing - converted to grid layout for perfectly equal icon spacing across all 5 tabs
 - June 21, 2025. Added matching icons to section headers - Contest (Trophy), NFT (Image), Goods (ShoppingBag) icons now match bottom navigation
 - June 21, 2025. Moved Trophy icon from "Entries" to "SAMU Meme Contest" title in contest header for better visual hierarchy
-- June 21, 2025. Improved archive login toast message - reduced duration to 2 seconds and made dismissible by tap/click
+- June 21, 2025. Improved archive login toast message - reduced duration to 2 seconds with built-in tap-to-dismiss functionality
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
