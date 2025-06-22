@@ -28,7 +28,7 @@ export const partners: Partner[] = [
     id: "doctorbird",
     name: "DoctorBird",
     symbol: "BIRD",
-    description: "The healing bird bringing wellness to the crypto space",
+    description: "DoctorBird vs. the Fallen Ministry of Health",
     logo: doctorbirdLogo,
     color: "#FFE4B5",
     tokenAddress: "BIRDxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
