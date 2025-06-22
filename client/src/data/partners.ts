@@ -18,7 +18,7 @@ export const partners: Partner[] = [
     id: "wagus",
     name: "WAGUS",
     symbol: "WAGUS",
-    description: "Community-driven meme coin with innovative utilities",
+    description: "The Future of Utility Tokens",
     logo: wagusLogo,
     color: "#FFFFFF",
     tokenAddress: "WAGUSxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",

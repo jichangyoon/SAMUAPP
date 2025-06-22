@@ -305,6 +305,7 @@ Changelog:
 - June 22, 2025. Fixed partner community badge text visibility - changed white/light text to black for WAGUS and DoctorBird badges
 - June 22, 2025. Updated partner contest headers to use symbol instead of full name - "BIRD Meme Contest" instead of "DoctorBird Meme Contest"
 - June 22, 2025. Updated DoctorBird description to "DoctorBird vs. the Fallen Ministry of Health" per user request
+- June 22, 2025. Updated WAGUS description to "The Future of Utility Tokens" per user request
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
