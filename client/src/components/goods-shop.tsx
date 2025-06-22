@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { usePrivy } from '@privy-io/react-auth';
 import { useToast } from "@/hooks/use-toast";
-import { ShoppingCart, ShoppingBag, Shirt, Coffee, Sticker, X } from "lucide-react";
+import { ShoppingCart, ShoppingBag, Trophy, Shirt, Coffee, Sticker, X } from "lucide-react";
 
 // Hall of Fame meme collectibles showcase data
 const goodsData = [

@@ -114,7 +114,7 @@ export function NftGallery() {
       <Card className="bg-black border-0">
         <CardContent className="p-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Image className="h-5 w-5 text-[hsl(50,85%,75%)]" />
+            <ImageIcon className="h-5 w-5 text-[hsl(50,85%,75%)]" />
             <h2 className="text-xl font-bold text-[hsl(50,85%,75%)]">SAMU Wolf Collection</h2>
           </div>
           <p className="text-sm text-[hsl(50,85%,75%)]/90">
