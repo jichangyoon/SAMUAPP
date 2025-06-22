@@ -282,6 +282,7 @@ Changelog:
 - June 21, 2025. Created backend API routes for partner contest management (/api/partners/{id}/memes)
 - June 21, 2025. Added Partners navigation tab positioned at rightmost end of bottom navigation
 - June 21, 2025. Extended UploadForm component to support partner-specific meme submissions
+- June 21, 2025. Updated Archive header styling to match other sections with yellow text on black background for brand consistency
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```

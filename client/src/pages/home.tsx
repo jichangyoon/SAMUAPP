@@ -427,13 +427,13 @@ export default function Home() {
             {archiveView === 'list' ? (
               <div className="space-y-4">
                 {/* Archive Header */}
-                <Card className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-400/20">
+                <Card className="bg-black border-yellow-500/20">
                   <CardContent className="p-4 text-center">
                     <div className="flex items-center justify-center gap-2 mb-2">
-                      <Archive className="h-5 w-5 text-purple-400" />
-                      <h2 className="text-lg font-bold text-purple-400">Contest Archive</h2>
+                      <Archive className="h-5 w-5 text-yellow-500" />
+                      <h2 className="text-lg font-bold text-yellow-500">Contest Archive</h2>
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-yellow-500/80">
                       Past contest winners and memorable memes
                     </p>
                   </CardContent>
