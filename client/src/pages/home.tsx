@@ -321,17 +321,44 @@ export default function Home() {
                       {viewMode === 'card' ? (
                         <div className="space-y-3">
                           {sortedMemes.map((meme) => (
-                            <MemeCard
-                              key={meme.id}
-                              meme={meme}
-                              walletAddress={walletAddress}
-                              authenticated={authenticated}
-                              isConnected={isConnected}
-                              isSolana={isSolana}
-                              onVote={() => handleGridVote(meme)}
-                              onShare={handleShareClick}
-                              onClick={handleMemeClick}
-                            />
+                            <Card key={meme.id} className="overflow-hidden">
+                              <div className="aspect-square bg-accent">
+                                <img 
+                                  src={meme.imageUrl} 
+                                  alt={meme.title}
+                                  className="w-full h-full object-cover cursor-pointer"
+                                  onClick={() => handleMemeClick(meme)}
+                                />
+                              </div>
+                              <CardContent className="p-4">
+                                <h3 className="font-semibold text-lg mb-2">{meme.title}</h3>
+                                <p className="text-sm text-muted-foreground mb-3">By {meme.authorUsername}</p>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-medium">{meme.votes} votes</span>
+                                  <div className="flex gap-2">
+                                    {authenticated && (
+                                      <Button
+                                        onClick={() => handleGridVote(meme)}
+                                        size="sm"
+                                        variant="default"
+                                        className="flex items-center gap-1"
+                                      >
+                                        <ArrowUp className="h-3 w-3" />
+                                        Vote
+                                      </Button>
+                                    )}
+                                    <Button
+                                      onClick={() => handleShareClick(meme)}
+                                      size="sm"
+                                      variant="outline"
+                                      className="flex items-center gap-1"
+                                    >
+                                      <Share2 className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
                           ))}
                         </div>
                       ) : (
