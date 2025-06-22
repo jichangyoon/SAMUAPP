@@ -137,9 +137,9 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setLocation("/partners")}
-              className="p-2 hover:bg-accent rounded-lg transition-colors"
+              className="p-1 hover:bg-accent rounded-lg transition-colors"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-4 w-4" />
             </button>
             <div className="flex items-center gap-2">
               <img 

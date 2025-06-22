@@ -608,14 +608,14 @@ export default function Home() {
                 }}
               >
                 {/* Contest Detail View */}
-                <div className="flex items-center gap-2 mb-4">
+                <div className="mb-4">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setArchiveView('list')}
-                    className="text-foreground hover:text-primary"
+                    className="text-foreground hover:text-primary px-2 py-1 text-xs h-6"
                   >
-                    ← Back to Archive
+                    ← Back
                   </Button>
                 </div>
 
