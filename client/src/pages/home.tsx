@@ -149,16 +149,9 @@ export default function Home() {
     window.open(telegramUrl, '_blank');
   };
 
-  // Phantom 지갑 자동 연결 방지
+  // Wallet connection handled by Privy
   useEffect(() => {
-    if (window.phantom?.solana?.isConnected && !authenticated) {
-      try {
-        window.phantom.solana.disconnect();
-        console.log('🚫 Phantom auto-connection prevented');
-      } catch (error) {
-        console.log('⚠️ Could not disconnect Phantom:', error);
-      }
-    }
+    // All wallet management is now handled by Privy authentication
   }, [authenticated]);
 
   // React Query로 잔액 조회 최적화
