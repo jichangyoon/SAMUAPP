@@ -19,6 +19,14 @@ export interface IStorage {
   // NFT Comment operations
   createNftComment(comment: InsertNftComment): Promise<NftComment>;
   getNftComments(nftId: number): Promise<NftComment[]>;
+  
+  // Partner Meme operations
+  createPartnerMeme(meme: InsertMeme, partnerId: string): Promise<Meme>;
+  getPartnerMemes(partnerId: string): Promise<Meme[]>;
+  getPartnerMemeById(partnerId: string, id: number): Promise<Meme | undefined>;
+  createPartnerVote(vote: InsertVote, partnerId: string): Promise<Vote>;
+  hasUserVotedPartner(partnerId: string, memeId: number, voterWallet: string): Promise<boolean>;
+  updatePartnerMemeVoteCount(partnerId: string, memeId: number): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -26,6 +34,8 @@ export class MemStorage implements IStorage {
   private votes: Map<number, Vote>;
   private nfts: Map<number, Nft>;
   private nftComments: Map<number, NftComment>;
+  private partnerMemes: Map<string, Map<number, Meme>>;
+  private partnerVotes: Map<string, Map<number, Vote>>;
   private currentMemeId: number;
   private currentVoteId: number;
   private currentNftId: number;
@@ -36,6 +46,8 @@ export class MemStorage implements IStorage {
     this.votes = new Map();
     this.nfts = new Map();
     this.nftComments = new Map();
+    this.partnerMemes = new Map();
+    this.partnerVotes = new Map();
     this.currentMemeId = 1;
     this.currentVoteId = 1;
     this.currentNftId = 1;
@@ -202,6 +214,75 @@ export class MemStorage implements IStorage {
     return Array.from(this.nftComments.values())
       .filter(comment => comment.nftId === nftId)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  // Partner Meme operations
+  async createPartnerMeme(insertMeme: InsertMeme, partnerId: string): Promise<Meme> {
+    if (!this.partnerMemes.has(partnerId)) {
+      this.partnerMemes.set(partnerId, new Map());
+    }
+    
+    const id = this.currentMemeId++;
+    const meme: Meme = {
+      ...insertMeme,
+      id,
+      votes: 0,
+      createdAt: new Date()
+    };
+    
+    this.partnerMemes.get(partnerId)!.set(id, meme);
+    return meme;
+  }
+
+  async getPartnerMemes(partnerId: string): Promise<Meme[]> {
+    if (!this.partnerMemes.has(partnerId)) {
+      return [];
+    }
+    return Array.from(this.partnerMemes.get(partnerId)!.values())
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getPartnerMemeById(partnerId: string, id: number): Promise<Meme | undefined> {
+    return this.partnerMemes.get(partnerId)?.get(id);
+  }
+
+  async createPartnerVote(insertVote: InsertVote, partnerId: string): Promise<Vote> {
+    if (!this.partnerVotes.has(partnerId)) {
+      this.partnerVotes.set(partnerId, new Map());
+    }
+    
+    const id = this.currentVoteId++;
+    const vote: Vote = {
+      ...insertVote,
+      id,
+      createdAt: new Date()
+    };
+    
+    this.partnerVotes.get(partnerId)!.set(id, vote);
+    return vote;
+  }
+
+  async hasUserVotedPartner(partnerId: string, memeId: number, voterWallet: string): Promise<boolean> {
+    if (!this.partnerVotes.has(partnerId)) {
+      return false;
+    }
+    
+    return Array.from(this.partnerVotes.get(partnerId)!.values())
+      .some(vote => vote.memeId === memeId && vote.voterWallet === voterWallet);
+  }
+
+  async updatePartnerMemeVoteCount(partnerId: string, memeId: number): Promise<void> {
+    const meme = this.partnerMemes.get(partnerId)?.get(memeId);
+    if (!meme) return;
+
+    if (!this.partnerVotes.has(partnerId)) {
+      return;
+    }
+    
+    const voteCount = Array.from(this.partnerVotes.get(partnerId)!.values())
+      .filter(vote => vote.memeId === memeId).length;
+    
+    meme.votes = voteCount;
   }
 }
 

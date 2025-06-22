@@ -718,6 +718,12 @@ export default function Home() {
               <Archive className="h-4 w-4" />
             </button>
             <button
+              onClick={() => setLocation("/partners")}
+              className="flex items-center justify-center p-3 rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+            >
+              <Users className="h-4 w-4" />
+            </button>
+            <button
               onClick={() => setCurrentTab("nfts")}
               className={`flex items-center justify-center p-3 rounded-lg transition-colors ${
                 currentTab === "nfts" 
