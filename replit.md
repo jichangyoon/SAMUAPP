@@ -302,6 +302,7 @@ Changelog:
 - June 22, 2025. Updated Partners section with real projects - replaced demo partners with WAGUS and DoctorBird using their actual logos
 - June 22, 2025. Fixed partner logo display - moved images to client/src/assets and implemented proper Vite import system for reliable image loading
 - June 22, 2025. Improved back button design - made buttons smaller and positioned them closer to left edge for better mobile UX
+- June 22, 2025. Fixed partner community badge text visibility - changed white/light text to black for WAGUS and DoctorBird badges
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```

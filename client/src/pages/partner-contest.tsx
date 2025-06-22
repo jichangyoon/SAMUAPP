@@ -219,7 +219,7 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
                   className="text-xs px-3 py-1"
                   style={{ 
                     backgroundColor: partner.color,
-                    color: 'white'
+                    color: partner.color === '#FFFFFF' || partner.color === '#FFE4B5' ? '#000000' : '#FFFFFF'
                   }}
                 >
                   {partner.symbol} Community

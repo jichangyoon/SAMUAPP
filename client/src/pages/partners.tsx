@@ -114,8 +114,8 @@ export function Partners() {
                           variant="secondary" 
                           className="text-xs px-2 py-0.5"
                           style={{ 
-                            backgroundColor: `${partner.color}20`,
-                            color: partner.color,
+                            backgroundColor: partner.color,
+                            color: partner.color === '#FFFFFF' || partner.color === '#FFE4B5' ? '#000000' : '#FFFFFF',
                             borderColor: `${partner.color}40`
                           }}
                         >
