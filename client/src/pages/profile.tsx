@@ -171,7 +171,43 @@ const Profile = React.memo(() => {
   const usedVotingPower = votingPowerData?.usedPower ?? 0;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div 
+      className="min-h-screen bg-background text-foreground transition-transform duration-300 ease-out"
+      onTouchStart={(e) => {
+        const touch = e.touches[0];
+        (e.currentTarget as any).touchStartX = touch.clientX;
+        (e.currentTarget as any).touchStartTime = Date.now();
+      }}
+      onTouchMove={(e) => {
+        const touch = e.touches[0];
+        const touchStartX = (e.currentTarget as any).touchStartX;
+        const deltaX = touch.clientX - touchStartX;
+        
+        // Only apply transform for right swipe
+        if (deltaX > 0) {
+          const progress = Math.min(deltaX / 150, 1);
+          (e.currentTarget as HTMLElement).style.transform = `translateX(${deltaX * 0.3}px)`;
+          (e.currentTarget as HTMLElement).style.opacity = String(1 - progress * 0.2);
+        }
+      }}
+      onTouchEnd={(e) => {
+        const touch = e.changedTouches[0];
+        const touchStartX = (e.currentTarget as any).touchStartX;
+        const touchStartTime = (e.currentTarget as any).touchStartTime;
+        const touchEndX = touch.clientX;
+        const deltaX = touchEndX - touchStartX;
+        const deltaTime = Date.now() - touchStartTime;
+        
+        // Reset transform
+        (e.currentTarget as HTMLElement).style.transform = 'translateX(0)';
+        (e.currentTarget as HTMLElement).style.opacity = '1';
+        
+        // Swipe right (left to right) to go back with velocity check
+        if (deltaX > 100 && deltaTime < 300) {
+          navigate("/");
+        }
+      }}
+    >
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card shadow-sm border-b border-border">
         <div className="max-w-md mx-auto px-4 py-1">

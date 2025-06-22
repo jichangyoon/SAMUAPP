@@ -288,6 +288,7 @@ Changelog:
 - June 21, 2025. Added Submit button to main meme contest section matching partner contest UI design for consistent user experience
 - June 21, 2025. Simplified "Contest Entries" text to just "Entries" for cleaner UI display
 - June 21, 2025. Added swipe gesture navigation - right swipe (left to right) in Archive contest detail pages and Partner contest pages goes back to previous screen
+- June 21, 2025. Enhanced swipe animations with smooth book-page-like transitions - added onTouchMove for real-time visual feedback, translateX transforms, opacity changes, and velocity-based gesture detection across all navigation pages (Profile, Partners, Archive detail, Partner contest)
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
