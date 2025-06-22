@@ -79,13 +79,30 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
     const formData = new FormData();
     formData.append('file', file);
 
+    // Add timeout to fetch request
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
     try {
+      console.log('Starting file upload:', {
+        name: file.name,
+        size: file.size,
+        type: file.type
+      });
+
       const response = await fetch('/api/uploads/upload', {
         method: 'POST',
         body: formData,
-        headers: {
-          // Don't set Content-Type for FormData - browser will set it with boundary
-        },
+        signal: controller.signal,
+        // Remove all custom headers for FormData
+      });
+
+      clearTimeout(timeoutId);
+
+      console.log('Upload response:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
       });
 
       if (!response.ok) {
@@ -95,13 +112,21 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       }
 
       const result = await response.json();
+      console.log('Upload successful:', result);
       return result.fileUrl;
-    } catch (error) {
+    } catch (error: any) {
+      clearTimeout(timeoutId);
       console.error('Upload error:', error);
-      if (error instanceof TypeError && error.message.includes('fetch')) {
-        throw new Error('Network error - please check your connection');
+      
+      if (error.name === 'AbortError') {
+        throw new Error('Upload timeout - file may be too large or connection too slow');
       }
-      throw error;
+      
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Network connection failed - please check your internet');
+      }
+      
+      throw new Error(error.message || 'Upload failed - please try again');
     }
   };
 
