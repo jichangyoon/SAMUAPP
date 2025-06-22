@@ -460,10 +460,21 @@ export default function Home() {
                   <button
                     onClick={() => {
                       if (!isConnected) {
-                        toast({
+                        let toastInstance: any;
+                        toastInstance = toast({
                           title: "Please login first",
                           description: "You need to login to view contest archives - our community heritage",
-                          duration: 2000
+                          duration: 2000,
+                          action: (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toastInstance?.dismiss()}
+                              className="h-8 px-3"
+                            >
+                              ✕
+                            </Button>
+                          )
                         });
                         return;
                       }
