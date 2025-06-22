@@ -1,4 +1,7 @@
 // Partner meme coins data
+import wagusLogo from "@/assets/wagus-logo.jpg";
+import doctorbirdLogo from "@/assets/doctorbird-logo.png";
+
 export interface Partner {
   id: string;
   name: string;
@@ -16,7 +19,7 @@ export const partners: Partner[] = [
     name: "WAGUS",
     symbol: "WAGUS",
     description: "Community-driven meme coin with innovative utilities",
-    logo: "@assets/20250622_124905_1750564614367.jpg",
+    logo: wagusLogo,
     color: "#FFFFFF",
     tokenAddress: "WAGUSxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     isActive: true
@@ -26,7 +29,7 @@ export const partners: Partner[] = [
     name: "DoctorBird",
     symbol: "BIRD",
     description: "The healing bird bringing wellness to the crypto space",
-    logo: "@assets/1738243385726_1750564660604.png",
+    logo: doctorbirdLogo,
     color: "#FFE4B5",
     tokenAddress: "BIRDxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     isActive: true
