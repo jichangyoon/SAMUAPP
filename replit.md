@@ -299,6 +299,7 @@ Changelog:
 - June 21, 2025. Added matching icons to section headers - Contest (Trophy), NFT (Image), Goods (ShoppingBag) icons now match bottom navigation
 - June 21, 2025. Moved Trophy icon from "Entries" to "SAMU Meme Contest" title in contest header for better visual hierarchy
 - June 21, 2025. Reduced archive login toast message duration to 1.3 seconds for faster user experience
+- June 22, 2025. Updated Partners section with real projects - replaced demo partners with WAGUS and DoctorBird using their actual logos
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
