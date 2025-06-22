@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Trophy } from "lucide-react";
 
 export function ContestHeader() {
   // Mock contest data - in a real app this would come from an API
@@ -14,7 +15,10 @@ export function ContestHeader() {
     <Card className="border-border bg-card">
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-3">
-          <h1 className="text-xl font-bold text-primary">SAMU Meme Contest</h1>
+          <h1 className="text-xl font-bold text-primary flex items-center">
+            <Trophy className="h-5 w-5 mr-2" />
+            SAMU Meme Contest
+          </h1>
           <Badge className="bg-primary text-primary-foreground">
             {contestData.status}
           </Badge>

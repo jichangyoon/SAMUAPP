@@ -316,10 +316,7 @@ export default function Home() {
                   {/* Meme Gallery */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-lg font-semibold text-foreground flex items-center">
-                        <Trophy className="h-5 w-5 mr-2" />
-                        Entries
-                      </h2>
+                      <h2 className="text-lg font-semibold text-foreground">Entries</h2>
                       <div className="flex items-center space-x-2">
                         <div className="flex bg-accent rounded-lg p-1">
                           <button
