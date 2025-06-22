@@ -194,27 +194,24 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
                           <p className="text-muted-foreground text-sm mb-2">
                             Drag & drop your meme or click to browse
                           </p>
-                          <Button
-                            type="button"
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                          >
-                            Choose File
-                          </Button>
+                          <label htmlFor="file-upload" className="cursor-pointer">
+                            <Button
+                              type="button"
+                              className="bg-primary hover:bg-primary/90 text-primary-foreground pointer-events-none"
+                            >
+                              Choose File
+                            </Button>
+                          </label>
                         </>
                       )}
                       <Input
+                        id="file-upload"
                         type="file"
-                        accept="image/*"
+                        accept="image/*,video/*"
                         className="hidden"
                         onChange={(e) => {
                           field.onChange(e.target.files);
                           handleImageChange(e);
-                        }}
-                        ref={(e) => {
-                          if (e) {
-                            const button = e.parentElement?.querySelector('button:last-child');
-                            button?.addEventListener('click', () => e.click());
-                          }
                         }}
                       />
                     </div>
