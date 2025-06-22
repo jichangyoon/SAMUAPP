@@ -311,6 +311,10 @@ Changelog:
 - June 22, 2025. Created upload/delete API endpoints with secure file handling and validation
 - June 22, 2025. Enhanced meme submission with real file storage and database persistence
 - June 22, 2025. Added user authentication checks for meme deletion (only authors can delete their own memes)
+- June 22, 2025. Implemented comprehensive user management system with individual profiles, voting power tracking, and personal statistics
+- June 22, 2025. Created user API endpoints for profile management, meme collections, vote history, and detailed statistics
+- June 22, 2025. Enhanced profile page with real database integration showing personalized user data and voting power metrics
+- June 22, 2025. Added automatic user creation on first wallet connection with SAMU token balance-based voting power calculation
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
