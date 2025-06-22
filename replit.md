@@ -306,6 +306,11 @@ Changelog:
 - June 22, 2025. Updated partner contest headers to use symbol instead of full name - "BIRD Meme Contest" instead of "DoctorBird Meme Contest"
 - June 22, 2025. Updated DoctorBird description to "DoctorBird vs. the Fallen Ministry of Health" per user request
 - June 22, 2025. Updated WAGUS description to "The Future of Utility Tokens" per user request
+- June 22, 2025. Implemented real PostgreSQL database backend with Drizzle ORM replacing in-memory storage
+- June 22, 2025. Added comprehensive file upload system supporting images (JPEG, PNG, GIF, WebP) and videos (MP4, MOV, AVI, WebM) up to 50MB
+- June 22, 2025. Created upload/delete API endpoints with secure file handling and validation
+- June 22, 2025. Enhanced meme submission with real file storage and database persistence
+- June 22, 2025. Added user authentication checks for meme deletion (only authors can delete their own memes)
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```

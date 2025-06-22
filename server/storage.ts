@@ -127,6 +127,18 @@ export class MemStorage implements IStorage {
     return this.memes.get(id);
   }
 
+  async deleteMeme(id: number): Promise<void> {
+    // Delete associated votes first
+    const votesToDelete = Array.from(this.votes.values())
+      .filter(vote => vote.memeId === id)
+      .map(vote => vote.id);
+    
+    votesToDelete.forEach(voteId => this.votes.delete(voteId));
+    
+    // Delete the meme
+    this.memes.delete(id);
+  }
+
   async createVote(insertVote: InsertVote): Promise<Vote> {
     const id = this.currentVoteId++;
     const vote: Vote = {
