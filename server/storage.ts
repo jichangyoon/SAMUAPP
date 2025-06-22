@@ -7,6 +7,7 @@ export interface IStorage {
   createMeme(meme: InsertMeme): Promise<Meme>;
   getMemes(): Promise<Meme[]>;
   getMemeById(id: number): Promise<Meme | undefined>;
+  deleteMeme(id: number): Promise<void>;
   
   // Vote operations
   createVote(vote: InsertVote): Promise<Vote>;
@@ -322,6 +323,20 @@ export class DatabaseStorage implements IStorage {
       .from(memes)
       .where(eq(memes.id, id));
     return meme;
+  }
+
+  async deleteMeme(id: number): Promise<void> {
+    if (!this.db) throw new Error("Database not available");
+    
+    // Delete associated votes first
+    await this.db
+      .delete(votes)
+      .where(eq(votes.memeId, id));
+    
+    // Delete the meme
+    await this.db
+      .delete(memes)
+      .where(eq(memes.id, id));
   }
 
   async createVote(insertVote: InsertVote): Promise<Vote> {

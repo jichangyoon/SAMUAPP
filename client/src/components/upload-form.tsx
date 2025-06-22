@@ -46,12 +46,51 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/mov', 'video/avi', 'video/webm'];
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload an image (JPEG, PNG, GIF, WebP) or video (MP4, MOV, AVI, WebM)",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Validate file size (50MB limit)
+      if (file.size > 50 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please upload a file smaller than 50MB",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = () => setPreview(reader.result as string);
       reader.readAsDataURL(file);
     } else {
       setPreview(null);
     }
+  };
+
+  const uploadFile = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch('/api/uploads/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Upload failed');
+    }
+
+    const result = await response.json();
+    return result.fileUrl;
   };
 
   const onSubmit = async (values: z.infer<typeof uploadSchema>) => {
@@ -66,21 +105,33 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
 
     setIsUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('title', values.title);
-      formData.append('description', values.description || '');
-      formData.append('image', values.image[0]);
-      formData.append('authorWallet', walletAddress);
-      formData.append('authorUsername', walletAddress.slice(0, 8) + '...' + walletAddress.slice(-4));
+      const file = values.image[0];
+      
+      // Upload file to server
+      const imageUrl = await uploadFile(file);
+      
+      const memeData = {
+        title: values.title,
+        description: values.description || "",
+        imageUrl,
+        authorWallet: walletAddress,
+        authorUsername: user?.email?.address || walletAddress.slice(0, 8) + '...' + walletAddress.slice(-4)
+      };
 
-      const endpoint = partnerId ? `/api/partners/${partnerId}/memes` : '/api/memes';
+      const endpoint = partnerId 
+        ? `/api/partners/${partnerId}/memes`
+        : "/api/memes";
+
       const response = await fetch(endpoint, {
-        method: 'POST',
-        body: formData,
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(memeData),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to upload meme');
+        throw new Error('Failed to submit meme');
       }
 
       toast({
@@ -91,6 +142,7 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       form.reset();
       setPreview(null);
       onSuccess();
+      onClose?.();
     } catch (error: any) {
       toast({
         title: "Upload Failed",

@@ -14,11 +14,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const assetsPath = path.resolve(import.meta.dirname, "..", "attached_assets");
   app.use("/assets", express.static(assetsPath));
 
+  // Serve uploaded files as static files under /uploads
+  const uploadsPath = path.resolve(import.meta.dirname, "..", "uploads");
+  app.use("/uploads", express.static(uploadsPath));
+
   // Register modular routes
   app.use("/api/memes", memesRouter);
   app.use("/api/memes", votesRouter);
   app.use("/api/nfts", nftsRouter);
   app.use("/api/partners", partnersRouter);
+  app.use("/api/uploads", uploadsRouter);
   app.use("/api", walletRouter);
 
   const httpServer = createServer(app);
