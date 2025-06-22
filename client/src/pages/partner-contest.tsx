@@ -147,7 +147,7 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
                 alt={partner.name}
                 className="w-6 h-6 rounded-full"
               />
-              <h1 className="text-lg font-bold text-foreground">{partner.name} Contest</h1>
+              <h1 className="text-lg font-bold text-foreground">{partner.name}</h1>
             </div>
           </div>
           <WalletConnect />
@@ -514,6 +514,29 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
           </DrawerContent>
         </Drawer>
       )}
+
+      {/* Upload Form Drawer */}
+      <Drawer open={showUploadForm} onOpenChange={setShowUploadForm}>
+        <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+          <DrawerHeader>
+            <DrawerTitle className="text-foreground">Submit to {partner.name} Contest</DrawerTitle>
+            <DrawerDescription className="text-muted-foreground">
+              Upload your meme to join the {partner.name} community contest
+            </DrawerDescription>
+          </DrawerHeader>
+
+          <div className="px-4 pb-4 overflow-y-auto flex-1">
+            <UploadForm 
+              onClose={() => setShowUploadForm(false)}
+              onSuccess={() => {
+                setShowUploadForm(false);
+                refetch();
+              }}
+              partnerId={partnerId}
+            />
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }

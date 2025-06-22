@@ -289,6 +289,8 @@ Changelog:
 - June 21, 2025. Simplified "Contest Entries" text to just "Entries" for cleaner UI display
 - June 21, 2025. Added swipe gesture navigation - right swipe (left to right) in Archive contest detail pages and Partner contest pages goes back to previous screen
 - June 21, 2025. Enhanced swipe animations with smooth book-page-like transitions - added onTouchMove for real-time visual feedback, translateX transforms, opacity changes, and velocity-based gesture detection across all navigation pages (Profile, Partners, Archive detail, Partner contest)
+- June 21, 2025. Removed "Contest" text from partner section headers for cleaner UI (now shows just partner name)
+- June 21, 2025. Added upload form modal to partner contest pages - Submit button now opens drawer with partner-specific form
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
