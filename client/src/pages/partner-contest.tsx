@@ -56,7 +56,7 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
   });
 
   const sortedMemes = useMemo(() => {
-    return [...memes].sort((a, b) => {
+    return [...(memes || [])].sort((a, b) => {
       if (sortBy === "votes") {
         return b.votes - a.votes;
       } else {

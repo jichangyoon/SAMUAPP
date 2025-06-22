@@ -33,6 +33,7 @@ export default function Home() {
   const [isVoting, setIsVoting] = useState(false);
   const [samuBalance, setSamuBalance] = useState<number>(0);
   const [solBalance, setSolBalance] = useState<number>(0);
+  const [, setLocation] = useLocation();
   const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [archiveView, setArchiveView] = useState<'list' | 'contest'>('list');
   const [selectedArchiveContest, setSelectedArchiveContest] = useState<any>(null);

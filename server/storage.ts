@@ -224,8 +224,12 @@ export class MemStorage implements IStorage {
     
     const id = this.currentMemeId++;
     const meme: Meme = {
-      ...insertMeme,
       id,
+      title: insertMeme.title,
+      description: insertMeme.description ?? null,
+      imageUrl: insertMeme.imageUrl,
+      authorWallet: insertMeme.authorWallet,
+      authorUsername: insertMeme.authorUsername,
       votes: 0,
       createdAt: new Date()
     };
