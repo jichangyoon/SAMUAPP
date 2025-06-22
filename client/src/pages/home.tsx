@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Image, Users } from "lucide-react";
+import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Image, Users, Plus } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -34,6 +34,7 @@ export default function Home() {
   const [samuBalance, setSamuBalance] = useState<number>(0);
   const [solBalance, setSolBalance] = useState<number>(0);
   const [, setLocation] = useLocation();
+  const [showUploadForm, setShowUploadForm] = useState(false);
   const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [archiveView, setArchiveView] = useState<'list' | 'contest'>('list');
   const [selectedArchiveContest, setSelectedArchiveContest] = useState<any>(null);
@@ -298,6 +299,17 @@ export default function Home() {
                 <main className="space-y-4 pb-20">
                   {/* Contest Header */}
                   <ContestHeader />
+
+                  {/* Submit Button */}
+                  <div className="flex justify-center">
+                    <Button 
+                      onClick={() => setShowUploadForm(true)}
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg font-medium"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Submit Meme
+                    </Button>
+                  </div>
 
                   {/* Meme Gallery */}
                   <div>
