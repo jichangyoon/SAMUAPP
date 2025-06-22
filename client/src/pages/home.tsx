@@ -53,7 +53,7 @@ export default function Home() {
   const selectedWalletAccount = walletAccounts[0]; // 유일한 Solana 지갑
 
   const isConnected = authenticated && !!selectedWalletAccount;
-  const walletAddress = selectedWalletAccount?.address || '';
+  const walletAddress = (selectedWalletAccount as any)?.address || '';
   const isSolana = true; // 항상 Solana
 
   // Profile state management
@@ -209,7 +209,7 @@ export default function Home() {
       case "recent":
         return memes.slice().sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
       case "author":
-        return memes.slice().sort((a, b) => (a.author || "").localeCompare(b.author || ""));
+        return memes.slice().sort((a, b) => (a.authorUsername || "").localeCompare(b.authorUsername || ""));
       default:
         return memes;
     }

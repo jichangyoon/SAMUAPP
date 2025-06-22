@@ -73,7 +73,8 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       formData.append('authorWallet', walletAddress);
       formData.append('authorUsername', walletAddress.slice(0, 8) + '...' + walletAddress.slice(-4));
 
-      const response = await fetch('/api/memes', {
+      const endpoint = partnerId ? `/api/partners/${partnerId}/memes` : '/api/memes';
+      const response = await fetch(endpoint, {
         method: 'POST',
         body: formData,
       });

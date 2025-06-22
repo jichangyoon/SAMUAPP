@@ -32,8 +32,8 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
 
   // Get wallet address from user's linked accounts
   const walletAddress = user?.linkedAccounts?.find(
-    account => account.type === 'wallet' && account.walletClientType === 'privy'
-  )?.address || '';
+    account => account.type === 'wallet'
+  )?.address as string || '';
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
   const [showVoteDialog, setShowVoteDialog] = useState(false);
