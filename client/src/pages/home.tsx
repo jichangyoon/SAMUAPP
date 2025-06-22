@@ -463,7 +463,7 @@ export default function Home() {
                         toast({
                           title: "Please login first",
                           description: "You need to login to view contest archives - our community heritage",
-                          duration: 1300
+                          duration: 1000
                         });
                         return;
                       }
