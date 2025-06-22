@@ -296,39 +296,81 @@ export default function Home() {
 
               <TabsContent value="contest-main" className="mt-0">
                 <main className="space-y-4 pb-20">
-                  {/* Contest Header */}
-                  <ContestHeader />
+                  {/* SAMU Contest Header */}
+                  <Card className="bg-black border-0">
+                    <CardContent className="p-4 text-center">
+                      <div className="flex items-center justify-center gap-3 mb-2">
+                        <img 
+                          src={samuLogoImg} 
+                          alt="SAMU"
+                          className="w-8 h-8 rounded-full"
+                        />
+                        <h2 className="text-xl font-bold text-[hsl(50,85%,75%)]">
+                          SAMU Meme Contest
+                        </h2>
+                      </div>
+                      <p className="text-sm text-[hsl(50,85%,75%)]/90 mb-3">
+                        Submit your best SAMU memes and vote with your token power. The most voted meme wins!
+                      </p>
+                      <Badge className="bg-[hsl(50,85%,75%)] text-black text-xs px-3 py-1">
+                        Live Contest
+                      </Badge>
+                    </CardContent>
+                  </Card>
+
+                  {/* Controls */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Select value={sortBy} onValueChange={setSortBy}>
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="votes">Most Votes</SelectItem>
+                          <SelectItem value="recent">Latest</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <div className="flex bg-muted rounded-lg p-1">
+                        <button
+                          onClick={() => setViewMode("card")}
+                          className={`p-2 rounded transition-colors ${
+                            viewMode === "card" 
+                              ? "bg-background text-foreground shadow-sm" 
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          <List className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => setViewMode("grid")}
+                          className={`p-2 rounded transition-colors ${
+                            viewMode === "grid" 
+                              ? "bg-background text-foreground shadow-sm" 
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          <Grid3X3 className="h-4 w-4" />
+                        </button>
+                      </div>
+
+                      {authenticated && (
+                        <Button
+                          onClick={() => setShowUploadForm(true)}
+                          size="sm"
+                          className="bg-[hsl(50,85%,75%)] text-black hover:opacity-90"
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Submit
+                        </Button>
+                      )}
+                    </div>
+                  </div>
 
                   {/* Meme Gallery */}
                   <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-lg font-semibold text-foreground">Contest Entries</h2>
-                      <div className="flex items-center space-x-2">
-                        <div className="flex bg-accent rounded-lg p-1">
-                          <button
-                            onClick={() => setViewMode('card')}
-                            className={`p-1.5 rounded ${viewMode === 'card' ? 'bg-background shadow-sm' : ''}`}
-                          >
-                            <List className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => setViewMode('grid')}
-                            className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-background shadow-sm' : ''}`}
-                          >
-                            <Grid3X3 className="h-4 w-4" />
-                          </button>
-                        </div>
-                        <Select value={sortBy} onValueChange={setSortBy}>
-                          <SelectTrigger className="w-32 h-8 text-sm">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="votes">Most Votes</SelectItem>
-                            <SelectItem value="latest">Latest</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
 
                     {isLoading ? (
                       <div className="space-y-4">
