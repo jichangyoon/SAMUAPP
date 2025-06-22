@@ -459,6 +459,14 @@ export default function Home() {
 
                   <button
                     onClick={() => {
+                      if (!isConnected) {
+                        toast({
+                          title: "Please login first",
+                          description: "You need to login to view contest archives - our community heritage",
+                          variant: "destructive"
+                        });
+                        return;
+                      }
                       setSelectedArchiveContest({
                         id: 1,
                         title: "Contest #1 - December 2024",
@@ -533,16 +541,28 @@ export default function Home() {
                     }}
                     className="w-full"
                   >
-                    <Card className="border-border/50 hover:border-primary/30 transition-colors">
+                    <Card className={`border-border/50 hover:border-primary/30 transition-colors relative ${!isConnected ? 'opacity-70' : ''}`}>
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                           <div className="text-left">
                             <h4 className="font-semibold text-foreground">Contest #1 - December 2024</h4>
-                            <p className="text-sm text-muted-foreground">50 participants • 1,247 votes</p>
+                            <p className="text-sm text-muted-foreground">
+                              50 participants • 1,247 votes
+                              {!isConnected && (
+                                <span className="text-primary ml-2">• Login to view</span>
+                              )}
+                            </p>
                           </div>
-                          <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-400/20">
-                            Completed
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-400/20">
+                              Completed
+                            </Badge>
+                            {!isConnected && (
+                              <Badge variant="outline" className="text-primary border-primary/50">
+                                🔒
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                       </CardContent>
                     </Card>

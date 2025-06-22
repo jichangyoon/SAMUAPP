@@ -292,6 +292,7 @@ Changelog:
 - June 21, 2025. Removed "Contest" text from partner section headers for cleaner UI (now shows just partner name)
 - June 21, 2025. Added upload form modal to partner contest pages - Submit button now opens drawer with partner-specific form
 - June 21, 2025. Fixed Submit button visibility - now only appears for authenticated users in main meme contest section
+- June 21, 2025. Added authentication requirement for archive access - users must login to view contest heritage, displays lock icon and "Login to view" message for unauthenticated users
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
