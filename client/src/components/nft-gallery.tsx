@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Send } from "lucide-react";
+import { MessageCircle, Send, Image as ImageIcon } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { NftComment } from "@shared/schema";
@@ -114,6 +114,7 @@ export function NftGallery() {
       <Card className="bg-black border-0">
         <CardContent className="p-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
+            <Image className="h-5 w-5 text-[hsl(50,85%,75%)]" />
             <h2 className="text-xl font-bold text-[hsl(50,85%,75%)]">SAMU Wolf Collection</h2>
           </div>
           <p className="text-sm text-[hsl(50,85%,75%)]/90">

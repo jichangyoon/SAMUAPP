@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { usePrivy } from '@privy-io/react-auth';
 import { useToast } from "@/hooks/use-toast";
-import { ShoppingCart, Trophy, Shirt, Coffee, Sticker, X } from "lucide-react";
+import { ShoppingCart, ShoppingBag, Shirt, Coffee, Sticker, X } from "lucide-react";
 
 // Hall of Fame meme collectibles showcase data
 const goodsData = [
@@ -78,7 +78,7 @@ export function GoodsShop() {
       <Card className="bg-black border-0">
         <CardHeader className="text-center py-3">
           <CardTitle className="text-xl font-bold text-[hsl(50,85%,75%)] flex items-center justify-center gap-2">
-            <Trophy className="h-4 w-4" />
+            <ShoppingBag className="h-5 w-5" />
             SAMU Goods Shop
           </CardTitle>
           <CardDescription className="text-xs text-[hsl(50,85%,75%)]/90 mt-1 whitespace-nowrap">
