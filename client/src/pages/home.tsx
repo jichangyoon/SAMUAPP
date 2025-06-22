@@ -460,22 +460,22 @@ export default function Home() {
                   <button
                     onClick={() => {
                       if (!isConnected) {
-                        let toastInstance: any;
-                        toastInstance = toast({
+                        const toastInstance = toast({
                           title: "Please login first",
                           description: "You need to login to view contest archives - our community heritage",
-                          duration: 2000,
-                          action: (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => toastInstance?.dismiss()}
-                              className="h-8 px-3"
-                            >
-                              ✕
-                            </Button>
-                          )
+                          duration: 2000
                         });
+                        
+                        // Make toast clickable to dismiss
+                        setTimeout(() => {
+                          const toastElement = document.querySelector('[data-radix-toast-viewport] [data-radix-toast-root]:last-child');
+                          if (toastElement) {
+                            toastElement.addEventListener('click', () => {
+                              toastInstance.dismiss();
+                            });
+                          }
+                        }, 100);
+                        
                         return;
                       }
                       setSelectedArchiveContest({
