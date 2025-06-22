@@ -762,49 +762,54 @@ export default function Home() {
           <div className="flex justify-around items-center">
             <button
               onClick={() => setCurrentTab("contest")}
-              className={`flex items-center justify-center p-3 rounded-lg transition-colors ${
+              className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
                 currentTab === "contest" 
                   ? "bg-primary/20 text-primary" 
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Trophy className="h-4 w-4" />
+              <span className="text-xs mt-1">Contest</span>
             </button>
             <button
               onClick={() => setCurrentTab("archive")}
-              className={`flex items-center justify-center p-3 rounded-lg transition-colors ${
+              className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
                 currentTab === "archive" 
                   ? "bg-primary/20 text-primary" 
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Archive className="h-4 w-4" />
+              <span className="text-xs mt-1">Archive</span>
             </button>
             <button
               onClick={() => setCurrentTab("nfts")}
-              className={`flex items-center justify-center p-3 rounded-lg transition-colors ${
+              className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
                 currentTab === "nfts" 
                   ? "bg-primary/20 text-primary" 
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Image className="h-4 w-4" />
+              <span className="text-xs mt-1">NFT</span>
             </button>
             <button
               onClick={() => setCurrentTab("goods")}
-              className={`flex items-center justify-center p-3 rounded-lg transition-colors ${
+              className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
                 currentTab === "goods" 
                   ? "bg-primary/20 text-primary" 
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <ShoppingBag className="h-4 w-4" />
+              <span className="text-xs mt-1">Goods</span>
             </button>
             <button
               onClick={() => setLocation("/partners")}
-              className="flex items-center justify-center p-3 rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+              className="flex flex-col items-center justify-center p-2 rounded-lg transition-colors text-muted-foreground hover:text-foreground"
             >
               <Users className="h-4 w-4" />
+              <span className="text-xs mt-1">Partners</span>
             </button>
           </div>
         </div>

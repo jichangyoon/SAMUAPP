@@ -294,6 +294,7 @@ Changelog:
 - June 21, 2025. Fixed Submit button visibility - now only appears for authenticated users in main meme contest section
 - June 21, 2025. Added authentication requirement for archive access - users must login to view contest heritage, displays lock icon and "Login to view" message for unauthenticated users
 - June 21, 2025. Softened archive login toast message - removed destructive variant for gentler notification color
+- June 21, 2025. Added text labels to bottom navigation icons for better UX (Contest, Archive, NFT, Goods, Partners)
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
