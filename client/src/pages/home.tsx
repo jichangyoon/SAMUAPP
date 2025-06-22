@@ -759,10 +759,10 @@ export default function Home() {
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50">
         <div className="max-w-md mx-auto px-4 py-1">
-          <div className="flex justify-around items-center">
+          <div className="grid grid-cols-5 gap-0">
             <button
               onClick={() => setCurrentTab("contest")}
-              className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+              className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors ${
                 currentTab === "contest" 
                   ? "bg-primary/20 text-primary" 
                   : "text-muted-foreground hover:text-foreground"
@@ -773,7 +773,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => setCurrentTab("archive")}
-              className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+              className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors ${
                 currentTab === "archive" 
                   ? "bg-primary/20 text-primary" 
                   : "text-muted-foreground hover:text-foreground"
@@ -784,7 +784,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => setCurrentTab("nfts")}
-              className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+              className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors ${
                 currentTab === "nfts" 
                   ? "bg-primary/20 text-primary" 
                   : "text-muted-foreground hover:text-foreground"
@@ -795,7 +795,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => setCurrentTab("goods")}
-              className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+              className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors ${
                 currentTab === "goods" 
                   ? "bg-primary/20 text-primary" 
                   : "text-muted-foreground hover:text-foreground"
@@ -806,7 +806,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => setLocation("/partners")}
-              className="flex flex-col items-center justify-center p-2 rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+              className="flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors text-muted-foreground hover:text-foreground"
             >
               <Users className="h-4 w-4" />
               <span className="text-xs mt-1">Partners</span>
