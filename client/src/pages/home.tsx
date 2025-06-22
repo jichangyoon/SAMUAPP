@@ -462,8 +462,7 @@ export default function Home() {
                       if (!isConnected) {
                         toast({
                           title: "Please login first",
-                          description: "You need to login to view contest archives - our community heritage",
-                          variant: "destructive"
+                          description: "You need to login to view contest archives - our community heritage"
                         });
                         return;
                       }
