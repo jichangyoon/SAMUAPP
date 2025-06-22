@@ -40,6 +40,27 @@ export const nftComments = pgTable("nft_comments", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const partnerMemes = pgTable("partner_memes", {
+  id: serial("id").primaryKey(),
+  partnerId: text("partner_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  imageUrl: text("image_url").notNull(),
+  authorWallet: text("author_wallet").notNull(),
+  authorUsername: text("author_username").notNull(),
+  votes: bigint("votes", { mode: "number" }).notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const partnerVotes = pgTable("partner_votes", {
+  id: serial("id").primaryKey(),
+  partnerId: text("partner_id").notNull(),
+  memeId: integer("meme_id").notNull(),
+  voterWallet: text("voter_wallet").notNull(),
+  votingPower: bigint("voting_power", { mode: "number" }).notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertMemeSchema = createInsertSchema(memes).omit({
   id: true,
   votes: true,
@@ -61,6 +82,17 @@ export const insertNftCommentSchema = createInsertSchema(nftComments).omit({
   createdAt: true,
 });
 
+export const insertPartnerMemeSchema = createInsertSchema(partnerMemes).omit({
+  id: true,
+  votes: true,
+  createdAt: true,
+});
+
+export const insertPartnerVoteSchema = createInsertSchema(partnerVotes).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertMeme = z.infer<typeof insertMemeSchema>;
 export type Meme = typeof memes.$inferSelect;
 export type InsertVote = z.infer<typeof insertVoteSchema>;
@@ -69,3 +101,7 @@ export type InsertNft = z.infer<typeof insertNftSchema>;
 export type Nft = typeof nfts.$inferSelect;
 export type InsertNftComment = z.infer<typeof insertNftCommentSchema>;
 export type NftComment = typeof nftComments.$inferSelect;
+export type InsertPartnerMeme = z.infer<typeof insertPartnerMemeSchema>;
+export type PartnerMeme = typeof partnerMemes.$inferSelect;
+export type InsertPartnerVote = z.infer<typeof insertPartnerVoteSchema>;
+export type PartnerVote = typeof partnerVotes.$inferSelect;

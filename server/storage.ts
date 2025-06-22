@@ -1,4 +1,6 @@
-import { memes, votes, nfts, nftComments, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type NftComment, type InsertNftComment } from "@shared/schema";
+import { memes, votes, nfts, nftComments, partnerMemes, partnerVotes, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type NftComment, type InsertNftComment, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote } from "@shared/schema";
+import { getDatabase } from "./db";
+import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
   // Meme operations
@@ -290,4 +292,242 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  private db = getDatabase();
+
+  async createMeme(insertMeme: InsertMeme): Promise<Meme> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [meme] = await this.db
+      .insert(memes)
+      .values(insertMeme)
+      .returning();
+    return meme;
+  }
+
+  async getMemes(): Promise<Meme[]> {
+    if (!this.db) throw new Error("Database not available");
+    
+    return await this.db
+      .select()
+      .from(memes)
+      .orderBy(desc(memes.createdAt));
+  }
+
+  async getMemeById(id: number): Promise<Meme | undefined> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [meme] = await this.db
+      .select()
+      .from(memes)
+      .where(eq(memes.id, id));
+    return meme;
+  }
+
+  async createVote(insertVote: InsertVote): Promise<Vote> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [vote] = await this.db
+      .insert(votes)
+      .values(insertVote)
+      .returning();
+    
+    // Update meme vote count
+    await this.updateMemeVoteCount(insertVote.memeId);
+    
+    return vote;
+  }
+
+  async getVotesByMemeId(memeId: number): Promise<Vote[]> {
+    if (!this.db) throw new Error("Database not available");
+    
+    return await this.db
+      .select()
+      .from(votes)
+      .where(eq(votes.memeId, memeId));
+  }
+
+  async hasUserVoted(memeId: number, voterWallet: string): Promise<boolean> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [vote] = await this.db
+      .select()
+      .from(votes)
+      .where(and(eq(votes.memeId, memeId), eq(votes.voterWallet, voterWallet)));
+    
+    return !!vote;
+  }
+
+  async updateMemeVoteCount(memeId: number): Promise<void> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const memeVotes = await this.getVotesByMemeId(memeId);
+    const totalVotes = memeVotes.reduce((sum, vote) => sum + vote.votingPower, 0);
+    
+    await this.db
+      .update(memes)
+      .set({ votes: totalVotes })
+      .where(eq(memes.id, memeId));
+  }
+
+  async getNfts(): Promise<Nft[]> {
+    if (!this.db) throw new Error("Database not available");
+    
+    return await this.db
+      .select()
+      .from(nfts)
+      .orderBy(desc(nfts.createdAt));
+  }
+
+  async getNftById(id: number): Promise<Nft | undefined> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [nft] = await this.db
+      .select()
+      .from(nfts)
+      .where(eq(nfts.id, id));
+    return nft;
+  }
+
+  async createNftComment(insertComment: InsertNftComment): Promise<NftComment> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [comment] = await this.db
+      .insert(nftComments)
+      .values(insertComment)
+      .returning();
+    return comment;
+  }
+
+  async getNftComments(nftId: number): Promise<NftComment[]> {
+    if (!this.db) throw new Error("Database not available");
+    
+    return await this.db
+      .select()
+      .from(nftComments)
+      .where(eq(nftComments.nftId, nftId))
+      .orderBy(desc(nftComments.createdAt));
+  }
+
+  async createPartnerMeme(insertMeme: InsertMeme, partnerId: string): Promise<Meme> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [meme] = await this.db
+      .insert(partnerMemes)
+      .values({ ...insertMeme, partnerId })
+      .returning();
+    
+    // Convert PartnerMeme to Meme format for compatibility
+    return {
+      id: meme.id,
+      title: meme.title,
+      description: meme.description,
+      imageUrl: meme.imageUrl,
+      authorWallet: meme.authorWallet,
+      authorUsername: meme.authorUsername,
+      votes: meme.votes,
+      createdAt: meme.createdAt
+    };
+  }
+
+  async getPartnerMemes(partnerId: string): Promise<Meme[]> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const partnerMemesList = await this.db
+      .select()
+      .from(partnerMemes)
+      .where(eq(partnerMemes.partnerId, partnerId))
+      .orderBy(desc(partnerMemes.createdAt));
+    
+    // Convert PartnerMeme to Meme format for compatibility
+    return partnerMemesList.map(meme => ({
+      id: meme.id,
+      title: meme.title,
+      description: meme.description,
+      imageUrl: meme.imageUrl,
+      authorWallet: meme.authorWallet,
+      authorUsername: meme.authorUsername,
+      votes: meme.votes,
+      createdAt: meme.createdAt
+    }));
+  }
+
+  async getPartnerMemeById(partnerId: string, id: number): Promise<Meme | undefined> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [meme] = await this.db
+      .select()
+      .from(partnerMemes)
+      .where(and(eq(partnerMemes.partnerId, partnerId), eq(partnerMemes.id, id)));
+    
+    if (!meme) return undefined;
+    
+    // Convert PartnerMeme to Meme format for compatibility
+    return {
+      id: meme.id,
+      title: meme.title,
+      description: meme.description,
+      imageUrl: meme.imageUrl,
+      authorWallet: meme.authorWallet,
+      authorUsername: meme.authorUsername,
+      votes: meme.votes,
+      createdAt: meme.createdAt
+    };
+  }
+
+  async createPartnerVote(insertVote: InsertVote, partnerId: string): Promise<Vote> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [vote] = await this.db
+      .insert(partnerVotes)
+      .values({ ...insertVote, partnerId })
+      .returning();
+    
+    // Update partner meme vote count
+    await this.updatePartnerMemeVoteCount(partnerId, insertVote.memeId);
+    
+    // Convert PartnerVote to Vote format for compatibility
+    return {
+      id: vote.id,
+      memeId: vote.memeId,
+      voterWallet: vote.voterWallet,
+      votingPower: vote.votingPower,
+      createdAt: vote.createdAt
+    };
+  }
+
+  async hasUserVotedPartner(partnerId: string, memeId: number, voterWallet: string): Promise<boolean> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [vote] = await this.db
+      .select()
+      .from(partnerVotes)
+      .where(and(
+        eq(partnerVotes.partnerId, partnerId),
+        eq(partnerVotes.memeId, memeId),
+        eq(partnerVotes.voterWallet, voterWallet)
+      ));
+    
+    return !!vote;
+  }
+
+  async updatePartnerMemeVoteCount(partnerId: string, memeId: number): Promise<void> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const partnerVotesList = await this.db
+      .select()
+      .from(partnerVotes)
+      .where(and(eq(partnerVotes.partnerId, partnerId), eq(partnerVotes.memeId, memeId)));
+    
+    const totalVotes = partnerVotesList.reduce((sum, vote) => sum + vote.votingPower, 0);
+    
+    await this.db
+      .update(partnerMemes)
+      .set({ votes: totalVotes })
+      .where(and(eq(partnerMemes.partnerId, partnerId), eq(partnerMemes.id, memeId)));
+  }
+}
+
+// Use DatabaseStorage if database is available, otherwise fallback to MemStorage
+const db = getDatabase();
+export const storage = db ? new DatabaseStorage() : new MemStorage();

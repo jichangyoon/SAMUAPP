@@ -7,6 +7,7 @@ import { votesRouter } from "./routes/votes";
 import { walletRouter } from "./routes/wallet";
 import nftsRouter from "./routes/nfts";
 import partnersRouter from "./routes/partners";
+import uploadsRouter from "./routes/uploads";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Serve attached_assets as static files under /assets
