@@ -386,8 +386,8 @@ const Profile = React.memo(() => {
               <div className="mt-3">
                 <SendTokens 
                   walletAddress={walletAddress}
-                  samuBalance={samuBalance}
-                  solBalance={solBalance}
+                  samuBalance={currentSamuBalance}
+                  solBalance={currentSolBalance}
                   chainType={selectedWalletAccount?.chainType || 'solana'}
                 />
               </div>
@@ -478,13 +478,13 @@ const Profile = React.memo(() => {
           <TabsContent value="votes" className="space-y-4">
             <Card className="border-border bg-card">
               <CardHeader>
-                <CardTitle className="text-lg text-foreground">My Votes ({userVotes.length})</CardTitle>
+                <CardTitle className="text-lg text-foreground">My Votes ({myVotes.length})</CardTitle>
               </CardHeader>
               <CardContent>
-                {userVotes.length > 0 ? (
+                {myVotes.length > 0 ? (
                   <div className="space-y-2">
-                    {userVotes.map((vote: any) => {
-                      const meme = allMemes.find((m: any) => m.id === vote.memeId);
+                    {myVotes.map((vote: any) => {
+                      const meme = myMemes.find((m: any) => m.id === vote.memeId);
                       return meme ? (
                         <div key={vote.id} className="flex items-center gap-3 p-2 bg-accent/50 rounded-lg">
                           <img 
@@ -529,7 +529,7 @@ const Profile = React.memo(() => {
                     <div className="text-xs text-muted-foreground">Total Power</div>
                   </div>
                   <div className="text-center bg-accent/30 rounded-lg p-3">
-                    <div className="text-lg font-bold text-red-400">{usedVotingPower.toLocaleString()}</div>
+                    <div className="text-lg font-bold text-red-400">{totalVotingPowerUsed.toLocaleString()}</div>
                     <div className="text-xs text-muted-foreground">Used Power</div>
                   </div>
                 </div>
@@ -538,11 +538,11 @@ const Profile = React.memo(() => {
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-muted-foreground">Remaining Power</span>
                     <span className="text-sm font-medium text-foreground">
-                      {votingPower.toLocaleString()} / {totalVotingPower.toLocaleString()}
+                      {remainingVotingPower.toLocaleString()} / {totalVotingPower.toLocaleString()}
                     </span>
                   </div>
                   <Progress 
-                    value={(votingPower / totalVotingPower) * 100} 
+                    value={totalVotingPower > 0 ? (remainingVotingPower / totalVotingPower) * 100 : 0} 
                     className="h-2"
                   />
                 </div>
