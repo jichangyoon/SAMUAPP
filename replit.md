@@ -316,6 +316,8 @@ Changelog:
 - June 22, 2025. Enhanced profile page with real database integration showing personalized user data and voting power metrics
 - June 22, 2025. Added automatic user creation on first wallet connection with SAMU token balance-based voting power calculation
 - June 22, 2025. Fixed mobile file upload issue - "Choose File" button now works properly on mobile devices using HTML label wrapper
+- June 22, 2025. Resolved file upload validation errors - corrected MIME type checking to properly accept image and video files
+- June 22, 2025. Verified complete upload workflow - file upload, validation, storage, and meme creation all functioning with PostgreSQL backend
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
