@@ -49,10 +49,10 @@ export default function Home() {
   const walletAccounts = user?.linkedAccounts?.filter(account => 
     account.type === 'wallet' && 
     account.connectorType !== 'injected' && 
-    account.walletClientType === 'privy'
+    (account as any).walletClientType === 'privy'
   );
 
-  const walletAddress = walletAccounts?.[0]?.address || '';
+  const walletAddress = (walletAccounts?.[0] as any)?.address || '';
   const isConnected = authenticated && !!walletAddress;
   const isSolana = true; // Privy 지갑은 항상 Solana
 
@@ -80,7 +80,7 @@ export default function Home() {
     }
   }, []);
 
-  const displayName = profileData.displayName || user?.email?.split('@')[0] || 'User';
+  const displayName = profileData.displayName || (user?.email ? String(user.email).split('@')[0] : 'User');
 
   const handleProfileUpdate = (event: CustomEvent) => {
     const { displayName, profileImage } = event.detail;
@@ -149,13 +149,10 @@ export default function Home() {
     
     setIsVoting(true);
     try {
-      await apiRequest('/api/votes', {
-        method: 'POST',
-        body: {
-          memeId: selectedMeme.id,
-          voterWallet: walletAddress,
-          votingPower: 1
-        }
+      await apiRequest('/api/votes', 'POST', {
+        memeId: selectedMeme.id,
+        voterWallet: walletAddress,
+        votingPower: 1
       });
       
       toast({
