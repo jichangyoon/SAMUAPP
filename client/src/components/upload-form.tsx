@@ -79,18 +79,30 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch('/api/uploads/upload', {
-      method: 'POST',
-      body: formData,
-    });
+    try {
+      const response = await fetch('/api/uploads/upload', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          // Don't set Content-Type for FormData - browser will set it with boundary
+        },
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Upload failed');
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Upload failed:', response.status, errorText);
+        throw new Error(`Upload failed: ${response.status} ${errorText}`);
+      }
+
+      const result = await response.json();
+      return result.fileUrl;
+    } catch (error) {
+      console.error('Upload error:', error);
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Network error - please check your connection');
+      }
+      throw error;
     }
-
-    const result = await response.json();
-    return result.fileUrl;
   };
 
   const onSubmit = async (values: z.infer<typeof uploadSchema>) => {
@@ -107,8 +119,34 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
     try {
       const file = values.image[0];
       
-      // Upload file to server
-      const imageUrl = await uploadFile(file);
+      // Test connectivity first
+      try {
+        const testResponse = await fetch('/api/memes', { method: 'HEAD' });
+        if (!testResponse.ok) {
+          throw new Error('Server connection failed');
+        }
+      } catch (connectError) {
+        throw new Error('Cannot connect to server. Please check your internet connection.');
+      }
+      
+      // Upload file to server with retry logic
+      let imageUrl;
+      let uploadAttempts = 0;
+      const maxAttempts = 3;
+      
+      while (uploadAttempts < maxAttempts) {
+        try {
+          imageUrl = await uploadFile(file);
+          break;
+        } catch (uploadError) {
+          uploadAttempts++;
+          if (uploadAttempts >= maxAttempts) {
+            throw uploadError;
+          }
+          // Wait before retry
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
       
       const memeData = {
         title: values.title,
@@ -144,6 +182,7 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       onSuccess();
       onClose?.();
     } catch (error: any) {
+      console.error('Submit error:', error);
       toast({
         title: "Upload Failed",
         description: error.message || "Failed to submit meme. Please try again.",

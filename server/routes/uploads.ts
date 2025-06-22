@@ -66,25 +66,44 @@ const upload = multer({
 });
 
 // Upload single file endpoint
-router.post("/upload", upload.single("file"), async (req, res) => {
+router.post("/upload", (req, res, next) => {
+  console.log('Upload request received:', {
+    method: req.method,
+    contentType: req.headers['content-type'],
+    contentLength: req.headers['content-length']
+  });
+  next();
+}, upload.single("file"), async (req, res) => {
   try {
+    console.log('File upload processing:', {
+      file: req.file ? {
+        filename: req.file.filename,
+        originalname: req.file.originalname,
+        size: req.file.size,
+        mimetype: req.file.mimetype
+      } : 'No file received'
+    });
+
     if (!req.file) {
+      console.log('No file in request');
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    // Return the file URL that can be accessed via static serving
     const fileUrl = `/uploads/${req.file.filename}`;
     
-    res.json({
+    const response = {
       success: true,
       fileUrl: fileUrl,
       filename: req.file.filename,
       originalName: req.file.originalname,
       size: req.file.size
-    });
-  } catch (error) {
+    };
+
+    console.log('Upload successful:', response);
+    res.json(response);
+  } catch (error: any) {
     console.error("Upload error:", error);
-    res.status(500).json({ error: "Upload failed" });
+    res.status(500).json({ error: "Upload failed", details: error?.message || 'Unknown error' });
   }
 });
 
