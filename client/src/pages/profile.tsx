@@ -32,6 +32,50 @@ const Profile = React.memo(() => {
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
   const walletAddress = selectedWalletAccount?.address || '';
 
+  // User profile data
+  const { data: userProfile } = useQuery({
+    queryKey: ['user-profile', walletAddress],
+    queryFn: async () => {
+      if (!walletAddress) return null;
+      const res = await fetch(`/api/users/profile/${walletAddress}`);
+      return res.json();
+    },
+    enabled: !!walletAddress,
+  });
+
+  // User statistics
+  const { data: userStats } = useQuery({
+    queryKey: ['user-stats', walletAddress],
+    queryFn: async () => {
+      if (!walletAddress) return null;
+      const res = await fetch(`/api/users/${walletAddress}/stats`);
+      return res.json();
+    },
+    enabled: !!walletAddress,
+  });
+
+  // User memes
+  const { data: userMemes = [] } = useQuery({
+    queryKey: ['user-memes', walletAddress],
+    queryFn: async () => {
+      if (!walletAddress) return [];
+      const res = await fetch(`/api/users/${walletAddress}/memes`);
+      return res.json();
+    },
+    enabled: !!walletAddress,
+  });
+
+  // User votes
+  const { data: userVoteHistory = [] } = useQuery({
+    queryKey: ['user-votes', walletAddress],
+    queryFn: async () => {
+      if (!walletAddress) return [];
+      const res = await fetch(`/api/users/${walletAddress}/votes`);
+      return res.json();
+    },
+    enabled: !!walletAddress,
+  });
+
   // Balance fetching with React Query - 중복 요청 방지
   const { data: samuData } = useQuery({
     queryKey: ['samu-balance', walletAddress],
@@ -41,9 +85,9 @@ const Profile = React.memo(() => {
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 30000, // 30초 동안 캐시 유지
-    refetchInterval: false, // 자동 갱신 비활성화
-    refetchOnWindowFocus: false, // 창 포커스 시 갱신 비활성화
+    staleTime: 30000,
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: solData } = useQuery({
@@ -58,9 +102,6 @@ const Profile = React.memo(() => {
     refetchInterval: false, // 자동 갱신 비활성화
     refetchOnWindowFocus: false, // 창 포커스 시 갱신 비활성화
   });
-
-  const samuBalance = samuData?.balance || 0;
-  const solBalance = solData?.balance || 0;
 
   // 저장된 프로필 가져오기 - useMemo로 최적화
   const getStoredProfile = React.useMemo(() => {
@@ -142,33 +183,22 @@ const Profile = React.memo(() => {
 
 
 
-  // 사용자가 만든 밈들 가져오기
-  const { data: allMemes = [] } = useQuery<any[]>({
-    queryKey: ['/api/memes'],
-  });
-
-  // 사용자가 투표한 밈들 가져오기  
-  const { data: userVotes = [] } = useQuery<any[]>({
-    queryKey: ['/api/votes', walletAddress],
-    enabled: !!walletAddress,
-  });
-
-  // 투표력 데이터 가져오기
-  const { data: votingPowerData } = useQuery<any>({
-    queryKey: ['/api/voting-power', walletAddress],
-    enabled: !!walletAddress,
-  });
-
-  // 필터링된 사용자 밈들
-  const myMemes = allMemes.filter((meme: any) => meme.authorWallet === walletAddress);
-
-  const totalVotesReceived = myMemes.reduce((sum: number, meme: any) => sum + meme.votes, 0);
-  const contestProgress = 75; // 임시 값, 실제로는 콘테스트 기간 계산
-
-  // 투표력 계산
-  const votingPower = votingPowerData?.remainingPower ?? Math.floor(samuBalance * 0.8);
-  const totalVotingPower = votingPowerData?.totalPower ?? samuBalance;
-  const usedVotingPower = votingPowerData?.usedPower ?? 0;
+  // Calculate statistics from user data
+  const currentSamuBalance = samuData?.balance || 0;
+  const currentSolBalance = solData?.balance || 0;
+  
+  // User statistics calculations
+  const totalMemesCreated = userStats?.totalMemes || 0;
+  const totalVotesReceived = userStats?.totalMemesVotes || 0;
+  const totalVotesCast = userStats?.totalVotesCast || 0;
+  const totalVotingPowerUsed = userStats?.totalVotingPowerUsed || 0;
+  const remainingVotingPower = userStats?.remainingVotingPower || Math.floor(currentSamuBalance * 0.8);
+  const totalVotingPower = userStats?.samuBalance || currentSamuBalance;
+  const contestProgress = 75; // Contest period calculation placeholder
+  
+  // User's memes and votes
+  const myMemes = userMemes || [];
+  const myVotes = userVoteHistory || [];
 
   return (
     <div 
@@ -303,19 +333,19 @@ const Profile = React.memo(() => {
 
             <div className="grid grid-cols-2 gap-2">
               <div className="text-center bg-accent/30 rounded-lg p-2">
-                <div className="text-sm font-bold text-primary">{samuBalance.toLocaleString()}</div>
+                <div className="text-sm font-bold text-primary">{currentSamuBalance.toLocaleString()}</div>
                 <div className="text-xs text-muted-foreground">SAMU</div>
               </div>
               <div className="text-center bg-accent/30 rounded-lg p-2">
-                <div className="text-sm font-bold text-purple-400">{solBalance.toFixed(4)}</div>
+                <div className="text-sm font-bold text-purple-400">{currentSolBalance.toFixed(4)}</div>
                 <div className="text-xs text-muted-foreground">SOL</div>
               </div>
               <div className="text-center bg-accent/30 rounded-lg p-2">
-                <div className="text-sm font-bold text-green-400">{votingPower.toLocaleString()}</div>
+                <div className="text-sm font-bold text-green-400">{remainingVotingPower.toLocaleString()}</div>
                 <div className="text-xs text-muted-foreground">Voting Power</div>
               </div>
               <div className="text-center bg-accent/30 rounded-lg p-2">
-                <div className="text-sm font-bold text-blue-400">{myMemes.length}</div>
+                <div className="text-sm font-bold text-blue-400">{totalMemesCreated}</div>
                 <div className="text-xs text-muted-foreground">Memes</div>
               </div>
             </div>
