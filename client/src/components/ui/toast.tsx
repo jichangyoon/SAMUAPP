@@ -42,20 +42,11 @@ const Toast = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
     VariantProps<typeof toastVariants>
->(({ className, variant, onClick, ...props }, ref) => {
-  const handleClick = (event: React.MouseEvent) => {
-    // Close toast when clicking anywhere on it
-    if (props.onOpenChange) {
-      props.onOpenChange(false);
-    }
-    onClick?.(event);
-  };
-
+>(({ className, variant, ...props }, ref) => {
   return (
     <ToastPrimitives.Root
       ref={ref}
-      className={cn(toastVariants({ variant }), "cursor-pointer", className)}
-      onClick={handleClick}
+      className={cn(toastVariants({ variant }), className)}
       {...props}
     />
   )

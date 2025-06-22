@@ -460,10 +460,15 @@ export default function Home() {
                   <button
                     onClick={() => {
                       if (!isConnected) {
-                        toast({
+                        const toastResult = toast({
                           title: "Please login first",
                           description: "You need to login to view contest archives - our community heritage"
                         });
+                        
+                        // Auto dismiss after 2 seconds for better mobile UX
+                        setTimeout(() => {
+                          toastResult.dismiss();
+                        }, 2000);
                         return;
                       }
                       setSelectedArchiveContest({
