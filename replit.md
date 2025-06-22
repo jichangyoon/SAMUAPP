@@ -277,6 +277,11 @@ Changelog:
 - June 21, 2025. Replaced all Dialog components with Drawer components for consistent mobile UX
 - June 21, 2025. Fixed modal content display with proper padding and scrolling for detailed descriptions
 - June 21, 2025. Completed comprehensive mobile-first modal system with swipe-to-close functionality
+- June 21, 2025. Added Partners section allowing other meme coin communities to host independent contests
+- June 21, 2025. Implemented partner-specific meme submission and voting system with isolated storage
+- June 21, 2025. Created backend API routes for partner contest management (/api/partners/{id}/memes)
+- June 21, 2025. Added Partners navigation tab positioned at rightmost end of bottom navigation
+- June 21, 2025. Extended UploadForm component to support partner-specific meme submissions
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
