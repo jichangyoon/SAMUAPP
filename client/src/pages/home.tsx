@@ -548,7 +548,24 @@ export default function Home() {
                 </div>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div 
+                className="space-y-4"
+                onTouchStart={(e) => {
+                  const touch = e.touches[0];
+                  (e.currentTarget as any).touchStartX = touch.clientX;
+                }}
+                onTouchEnd={(e) => {
+                  const touch = e.changedTouches[0];
+                  const touchStartX = (e.currentTarget as any).touchStartX;
+                  const touchEndX = touch.clientX;
+                  const deltaX = touchEndX - touchStartX;
+                  
+                  // Swipe right (left to right) to go back
+                  if (deltaX > 100 && Math.abs(deltaX) > 50) {
+                    setArchiveView('list');
+                  }
+                }}
+              >
                 {/* Contest Detail View */}
                 <div className="flex items-center gap-2 mb-4">
                   <Button

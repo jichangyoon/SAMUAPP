@@ -287,6 +287,7 @@ Changelog:
 - June 21, 2025. Enhanced Goods Shop UX by making entire product cards clickable with hover effects for improved mobile interaction
 - June 21, 2025. Added Submit button to main meme contest section matching partner contest UI design for consistent user experience
 - June 21, 2025. Simplified "Contest Entries" text to just "Entries" for cleaner UI display
+- June 21, 2025. Added swipe gesture navigation - right swipe (left to right) in Archive contest detail pages and Partner contest pages goes back to previous screen
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```

@@ -154,7 +154,24 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
         </div>
       </header>
 
-      <div className="max-w-md mx-auto">
+      <div 
+        className="max-w-md mx-auto"
+        onTouchStart={(e) => {
+          const touch = e.touches[0];
+          (e.currentTarget as any).touchStartX = touch.clientX;
+        }}
+        onTouchEnd={(e) => {
+          const touch = e.changedTouches[0];
+          const touchStartX = (e.currentTarget as any).touchStartX;
+          const touchEndX = touch.clientX;
+          const deltaX = touchEndX - touchStartX;
+          
+          // Swipe right (left to right) to go back
+          if (deltaX > 100 && Math.abs(deltaX) > 50) {
+            setLocation("/partners");
+          }
+        }}
+      >
         <Tabs defaultValue="contest" className="w-full">
           <TabsContent value="contest" className="mt-4 space-y-4 pb-24">
             {/* Partner Contest Header */}
