@@ -291,6 +291,7 @@ Changelog:
 - June 21, 2025. Enhanced swipe animations with smooth book-page-like transitions - added onTouchMove for real-time visual feedback, translateX transforms, opacity changes, and velocity-based gesture detection across all navigation pages (Profile, Partners, Archive detail, Partner contest)
 - June 21, 2025. Removed "Contest" text from partner section headers for cleaner UI (now shows just partner name)
 - June 21, 2025. Added upload form modal to partner contest pages - Submit button now opens drawer with partner-specific form
+- June 21, 2025. Fixed Submit button visibility - now only appears for authenticated users in main meme contest section
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
