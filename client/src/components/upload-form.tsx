@@ -19,9 +19,11 @@ const uploadSchema = z.object({
 
 interface UploadFormProps {
   onSuccess: () => void;
+  onClose?: () => void;
+  partnerId?: string;
 }
 
-export function UploadForm({ onSuccess }: UploadFormProps) {
+export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const { authenticated, user } = usePrivy();

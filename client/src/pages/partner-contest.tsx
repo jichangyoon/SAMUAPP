@@ -23,11 +23,17 @@ interface PartnerContestProps {
 
 export function PartnerContest({ partnerId }: PartnerContestProps) {
   const [, setLocation] = useLocation();
-  const { authenticated } = usePrivy();
+  const { authenticated, user } = usePrivy();
   const { toast } = useToast();
   
   const [sortBy, setSortBy] = useState<"votes" | "latest">("votes");
   const [viewMode, setViewMode] = useState<"card" | "grid">("card");
+  const [samuBalance, setSamuBalance] = useState<number>(0);
+
+  // Get wallet address from user's linked accounts
+  const walletAddress = user?.linkedAccounts?.find(
+    account => account.type === 'wallet' && account.walletClientType === 'privy'
+  )?.address || '';
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
   const [showVoteDialog, setShowVoteDialog] = useState(false);
@@ -50,8 +56,8 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
   }
 
   // Use partner-specific memes endpoint
-  const { data: memes = [], refetch } = useQuery({
-    queryKey: [`/api/partner-memes/${partnerId}`],
+  const { data: memes = [], refetch } = useQuery<Meme[]>({
+    queryKey: [`/api/partners/${partnerId}/memes`],
     enabled: !!partnerId
   });
 
@@ -77,9 +83,15 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
 
     setIsVoting(true);
     try {
-      await apiRequest(`/api/partner-memes/${partnerId}/${selectedMeme.id}/vote`, {
-        method: "POST"
-      });
+      await apiRequest(
+        "POST",
+        `/api/partners/${partnerId}/memes/${selectedMeme.id}/vote`,
+        {
+          memeId: selectedMeme.id,
+          voterWallet: walletAddress,
+          votingPower: Math.min(1000, samuBalance)
+        }
+      );
       
       toast({
         title: "Vote submitted!",
