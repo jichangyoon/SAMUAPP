@@ -61,6 +61,18 @@ export const partnerVotes = pgTable("partner_votes", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  walletAddress: text("wallet_address").notNull().unique(),
+  email: text("email").unique(),
+  username: text("username").notNull(),
+  avatarUrl: text("avatar_url"),
+  samuBalance: bigint("samu_balance", { mode: "number" }).notNull().default(0),
+  totalVotingPower: bigint("total_voting_power", { mode: "number" }).notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const insertMemeSchema = createInsertSchema(memes).omit({
   id: true,
   votes: true,
@@ -93,6 +105,12 @@ export const insertPartnerVoteSchema = createInsertSchema(partnerVotes).omit({
   createdAt: true,
 });
 
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type InsertMeme = z.infer<typeof insertMemeSchema>;
 export type Meme = typeof memes.$inferSelect;
 export type InsertVote = z.infer<typeof insertVoteSchema>;
@@ -105,3 +123,5 @@ export type InsertPartnerMeme = z.infer<typeof insertPartnerMemeSchema>;
 export type PartnerMeme = typeof partnerMemes.$inferSelect;
 export type InsertPartnerVote = z.infer<typeof insertPartnerVoteSchema>;
 export type PartnerVote = typeof partnerVotes.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type User = typeof users.$inferSelect;

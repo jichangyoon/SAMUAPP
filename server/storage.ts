@@ -1,8 +1,15 @@
-import { memes, votes, nfts, nftComments, partnerMemes, partnerVotes, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type NftComment, type InsertNftComment, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote } from "@shared/schema";
+import { memes, votes, nfts, nftComments, partnerMemes, partnerVotes, users, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type NftComment, type InsertNftComment, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser } from "@shared/schema";
 import { getDatabase } from "./db";
 import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
+  // User operations
+  createUser(user: InsertUser): Promise<User>;
+  getUserByWallet(walletAddress: string): Promise<User | undefined>;
+  updateUser(walletAddress: string, updates: Partial<InsertUser>): Promise<User>;
+  getUserMemes(walletAddress: string): Promise<Meme[]>;
+  getUserVotes(walletAddress: string): Promise<Vote[]>;
+  
   // Meme operations
   createMeme(meme: InsertMeme): Promise<Meme>;
   getMemes(): Promise<Meme[]>;
@@ -39,10 +46,12 @@ export class MemStorage implements IStorage {
   private nftComments: Map<number, NftComment>;
   private partnerMemes: Map<string, Map<number, Meme>>;
   private partnerVotes: Map<string, Map<number, Vote>>;
+  private users: Map<string, User>;
   private currentMemeId: number;
   private currentVoteId: number;
   private currentNftId: number;
   private currentCommentId: number;
+  private currentUserId: number;
 
   constructor() {
     this.memes = new Map();
@@ -51,10 +60,12 @@ export class MemStorage implements IStorage {
     this.nftComments = new Map();
     this.partnerMemes = new Map();
     this.partnerVotes = new Map();
+    this.users = new Map();
     this.currentMemeId = 1;
     this.currentVoteId = 1;
     this.currentNftId = 1;
     this.currentCommentId = 1;
+    this.currentUserId = 1;
     
     // Add some sample memes for the contest
     this.initializeSampleData();
@@ -137,6 +148,55 @@ export class MemStorage implements IStorage {
     
     // Delete the meme
     this.memes.delete(id);
+  }
+
+  // User operations
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const id = this.currentUserId++;
+    const user: User = {
+      id,
+      walletAddress: insertUser.walletAddress,
+      email: insertUser.email || null,
+      username: insertUser.username,
+      avatarUrl: insertUser.avatarUrl || null,
+      samuBalance: insertUser.samuBalance || 0,
+      totalVotingPower: insertUser.totalVotingPower || 0,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.users.set(insertUser.walletAddress, user);
+    return user;
+  }
+
+  async getUserByWallet(walletAddress: string): Promise<User | undefined> {
+    return this.users.get(walletAddress);
+  }
+
+  async updateUser(walletAddress: string, updates: Partial<InsertUser>): Promise<User> {
+    const existingUser = this.users.get(walletAddress);
+    if (!existingUser) {
+      throw new Error("User not found");
+    }
+    
+    const updatedUser: User = {
+      ...existingUser,
+      ...updates,
+      updatedAt: new Date()
+    };
+    this.users.set(walletAddress, updatedUser);
+    return updatedUser;
+  }
+
+  async getUserMemes(walletAddress: string): Promise<Meme[]> {
+    return Array.from(this.memes.values())
+      .filter(meme => meme.authorWallet === walletAddress)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getUserVotes(walletAddress: string): Promise<Vote[]> {
+    return Array.from(this.votes.values())
+      .filter(vote => vote.voterWallet === walletAddress)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
   async createVote(insertVote: InsertVote): Promise<Vote> {
@@ -307,6 +367,58 @@ export class MemStorage implements IStorage {
 
 export class DatabaseStorage implements IStorage {
   private db = getDatabase();
+
+  // User operations
+  async createUser(insertUser: InsertUser): Promise<User> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [user] = await this.db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async getUserByWallet(walletAddress: string): Promise<User | undefined> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [user] = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.walletAddress, walletAddress));
+    return user;
+  }
+
+  async updateUser(walletAddress: string, updates: Partial<InsertUser>): Promise<User> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [user] = await this.db
+      .update(users)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(users.walletAddress, walletAddress))
+      .returning();
+    return user;
+  }
+
+  async getUserMemes(walletAddress: string): Promise<Meme[]> {
+    if (!this.db) throw new Error("Database not available");
+    
+    return await this.db
+      .select()
+      .from(memes)
+      .where(eq(memes.authorWallet, walletAddress))
+      .orderBy(desc(memes.createdAt));
+  }
+
+  async getUserVotes(walletAddress: string): Promise<Vote[]> {
+    if (!this.db) throw new Error("Database not available");
+    
+    return await this.db
+      .select()
+      .from(votes)
+      .where(eq(votes.voterWallet, walletAddress))
+      .orderBy(desc(votes.createdAt));
+  }
 
   async createMeme(insertMeme: InsertMeme): Promise<Meme> {
     if (!this.db) throw new Error("Database not available");
