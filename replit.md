@@ -344,6 +344,9 @@ Changelog:
 - June 23, 2025. Enhanced upload system with proper MIME type detection and cache headers
 - June 23, 2025. Integrated R2 storage with existing upload forms for meme submissions and profile images
 - June 23, 2025. Verified R2 upload functionality - successfully uploading files to cloud storage
+- June 23, 2025. Configured CORS policy and Public Development URL for R2 bucket public access
+- June 23, 2025. Set up complete R2 infrastructure: upload/delete endpoints, profile image support, public URL access
+- June 23, 2025. Final R2 setup: awaiting R2_PUBLIC_URL environment variable update to Public Development URL
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
