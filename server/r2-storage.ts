@@ -37,14 +37,13 @@ export async function uploadToR2(
     // MIME 타입 결정
     const mimeType = getMimeType(fileExtension);
 
-    // R2에 업로드
+    // R2에 업로드 (ACL 제거 - R2는 버킷 레벨에서 공개 설정)
     const command = new PutObjectCommand({
       Bucket: bucketName,
       Key: key,
       Body: file,
       ContentType: mimeType,
-      // 공개 읽기 권한 설정
-      ACL: 'public-read',
+      CacheControl: 'public, max-age=31536000', // 1년 캐시
     });
 
     await r2Client.send(command);
