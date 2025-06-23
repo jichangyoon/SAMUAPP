@@ -21,7 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { getSamuTokenBalance, getSolBalance } from "@/lib/solana";
 import type { Meme } from "@shared/schema";
-import samuLogoImg from "/assets/images/logos/samu-logo.jpg";
+import samuLogoImg from "@/assets/samu-logo.webp";
 
 export default function Home() {
   const [sortBy, setSortBy] = useState("votes");
