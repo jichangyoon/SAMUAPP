@@ -48,7 +48,7 @@ export async function uploadToR2(
 
     await r2Client.send(command);
 
-    // 공개 URL 생성
+    // 공개 URL 생성 (환경변수에서 가져온 URL 사용)
     const publicUrl = `${process.env.R2_PUBLIC_URL}/${key}`;
 
     return {
@@ -110,9 +110,14 @@ function getMimeType(extension: string): string {
  */
 export function extractKeyFromUrl(url: string): string | null {
   try {
-    const publicUrl = process.env.R2_PUBLIC_URL!;
-    if (url.startsWith(publicUrl)) {
-      return url.replace(`${publicUrl}/`, '');
+    const publicDevUrl = 'https://pub-91c83b692b4477b6dc61a79e70a97.r2.dev';
+    const legacyUrl = process.env.R2_PUBLIC_URL;
+    
+    if (url.startsWith(publicDevUrl)) {
+      return url.replace(`${publicDevUrl}/`, '');
+    }
+    if (legacyUrl && url.startsWith(legacyUrl)) {
+      return url.replace(`${legacyUrl}/`, '');
     }
     return null;
   } catch {
