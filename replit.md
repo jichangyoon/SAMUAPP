@@ -338,10 +338,6 @@ Changelog:
 - June 23, 2025. Fixed Submit button text visibility in partner sections - applied conditional text color for better contrast against WAGUS and DoctorBird background colors
 - June 23, 2025. Streamlined Goods Shop to single premium item - SAMU x SOL Samurai Shirt with authentic design photo
 - June 23, 2025. Optimized goods shop image from 5.8MB PNG to 609KB WebP achieving 89.5% file size reduction
-- June 23, 2025. Implemented server-side profile storage system with PostgreSQL database integration
-- June 23, 2025. Enhanced profile management with dual storage: PostgreSQL (main) + localStorage (backup)
-- June 23, 2025. Added localStorage usage monitoring and automatic fallback for server-side profile storage
-- June 23, 2025. Optimized profile data persistence - PostgreSQL handles production load, localStorage only for backup
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
