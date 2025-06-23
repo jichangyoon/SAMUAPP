@@ -7,52 +7,20 @@ import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, D
 import { usePrivy } from '@privy-io/react-auth';
 import { useToast } from "@/hooks/use-toast";
 import { ShoppingCart, ShoppingBag, Trophy, Shirt, Coffee, Sticker, X } from "lucide-react";
+import samuSamuraiShirt from "@/assets/samu-samurai-shirt.webp";
 
 // Hall of Fame meme collectibles showcase data
 const goodsData = [
   {
     id: 1,
-    name: "SAMU TO MARS Collection",
-    description: "Hall of Fame meme design featuring the legendary space journey theme",
+    name: "SAMU x SOL Samurai Shirt",
+    description: "Exclusive SAMU Wolf samurai design featuring traditional Japanese warrior aesthetics with crossed katanas",
     category: "clothing",
-    image: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23F7DC6F'/%3E%3Crect x='50' y='100' width='300' height='200' rx='20' fill='%23ffffff'/%3E%3Ctext x='200' y='180' text-anchor='middle' font-family='Arial' font-size='24' font-weight='bold' fill='%232C3E50'%3ESAMU TO MARS%3C/text%3E%3Ctext x='200' y='220' text-anchor='middle' font-family='Arial' font-size='14' fill='%238B4513'%3EHall of Fame Design%3C/text%3E%3Ccircle cx='100' cy='130' r='15' fill='%23FF8C00'/%3E%3Ccircle cx='300' cy='130' r='15' fill='%23FF8C00'/%3E%3C/svg%3E",
-    originalMeme: "SAMU TO MARS",
-    originalAuthor: "crypto_legend",
+    image: samuSamuraiShirt,
+    originalMeme: "SAMU Wolf Samurai",
+    originalAuthor: "samu_artist",
     limited: true,
-    stock: 150
-  },
-  {
-    id: 2,
-    name: "PACK LEADER Showcase",
-    description: "Alpha wolf design from the Hall of Fame collection",
-    category: "lifestyle",
-    image: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%238B4513'/%3E%3Cellipse cx='200' cy='250' rx='120' ry='80' fill='%23ffffff'/%3E%3Crect x='320' y='200' width='30' height='60' rx='15' fill='%23ffffff'/%3E%3Ctext x='200' y='230' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='%232C3E50'%3EPACK LEADER%3C/text%3E%3Ctext x='200' y='280' text-anchor='middle' font-family='Arial' font-size='12' fill='%238B4513'%3ECollectible Design%3C/text%3E%3C/svg%3E",
-    originalMeme: "PACK LEADER",
-    originalAuthor: "wolf_alpha",
-    limited: false,
-    stock: 500
-  },
-  {
-    id: 3,
-    name: "DIAMOND HODLER Archive",
-    description: "Holographic design celebrating diamond hands mentality",
-    category: "accessories",
-    image: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23F7DC6F'/%3E%3Cpolygon points='200,80 260,160 200,240 140,160' fill='%2300BFFF' stroke='%232C3E50' stroke-width='3'/%3E%3Cpolygon points='200,120 230,160 200,200 170,160' fill='%23ffffff' opacity='0.7'/%3E%3Ctext x='200' y='280' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='%232C3E50'%3EDIAMOND HODLER%3C/text%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='12' fill='%238B4513'%3EArt Collection%3C/text%3E%3C/svg%3E",
-    originalMeme: "DIAMOND HODLER",
-    originalAuthor: "gem_hands",
-    limited: true,
-    stock: 200
-  },
-  {
-    id: 4,
-    name: "SAMU Wolf Heritage",
-    description: "Official SAMU community logo and wolf graphics showcase",
-    category: "clothing",
-    image: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%232C3E50'/%3E%3Crect x='60' y='120' width='280' height='200' rx='30' fill='%23F7DC6F'/%3E%3Ccircle cx='200' cy='180' r='40' fill='%232C3E50'/%3E%3Cpath d='M160 160 L180 140 L200 160 L220 140 L240 160 L220 180 L180 180 Z' fill='%23F7DC6F'/%3E%3Ctext x='200' y='280' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold' fill='%232C3E50'%3ESAMU WOLF HERITAGE%3C/text%3E%3C/svg%3E",
-    originalMeme: "Community Design",
-    originalAuthor: "SAMU Team",
-    limited: false,
-    stock: 300
+    stock: 100
   }
 ];
 

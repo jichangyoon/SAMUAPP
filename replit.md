@@ -336,6 +336,8 @@ Changelog:
 - June 23, 2025. Fixed NFT #78 image with user-provided replacement - converted to WebP with 92.4% size reduction
 - June 23, 2025. Cleaned up temporary optimization scripts - removed one-time conversion tools, kept reusable optimize-images.js
 - June 23, 2025. Fixed Submit button text visibility in partner sections - applied conditional text color for better contrast against WAGUS and DoctorBird background colors
+- June 23, 2025. Streamlined Goods Shop to single premium item - SAMU x SOL Samurai Shirt with authentic design photo
+- June 23, 2025. Optimized goods shop image from 5.8MB PNG to 609KB WebP achieving 89.5% file size reduction
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
