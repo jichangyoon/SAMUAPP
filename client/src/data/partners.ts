@@ -1,6 +1,6 @@
-// Partner meme coins data
-import wagusLogo from "@/assets/wagus-logo.jpg";
-import doctorbirdLogo from "@/assets/doctorbird-logo.png";
+// Partner meme coins data - using optimized WebP logos for faster loading
+import wagusLogo from "@/assets/wagus-logo.webp";
+import doctorbirdLogo from "@/assets/doctorbird-logo.webp";
 
 export interface Partner {
   id: string;

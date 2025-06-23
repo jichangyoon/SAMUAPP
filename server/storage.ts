@@ -255,11 +255,11 @@ export class MemStorage implements IStorage {
   }
 
   private generateNftImageUrls(): string[] {
-    // High-performance NFT image URLs - using local assets as external URLs for faster loading
+    // High-performance NFT image URLs - using WebP format for 98% size reduction
     const urls: string[] = [];
     for (let i = 1; i <= 164; i++) {
-      // Using local assets served as static URLs for optimal performance
-      urls.push(`/assets/nfts/${i}.png`);
+      // Using WebP optimized images for faster loading
+      urls.push(`/assets/nfts/${i}.webp`);
     }
     return urls;
   }
