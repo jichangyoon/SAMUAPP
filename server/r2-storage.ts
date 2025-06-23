@@ -25,13 +25,14 @@ export interface UploadResult {
 export async function uploadToR2(
   file: Buffer,
   originalName: string,
-  bucketName: string = process.env.R2_BUCKET_NAME!
+  bucketName: string = process.env.R2_BUCKET_NAME!,
+  folder: string = 'uploads'
 ): Promise<UploadResult> {
   try {
     // 고유한 파일명 생성
     const fileExtension = path.extname(originalName);
     const fileName = `${crypto.randomUUID()}${fileExtension}`;
-    const key = `uploads/${fileName}`;
+    const key = `${folder}/${fileName}`;
 
     // MIME 타입 결정
     const mimeType = getMimeType(fileExtension);

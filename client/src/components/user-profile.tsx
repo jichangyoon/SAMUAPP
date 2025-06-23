@@ -82,17 +82,68 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
     }
   });
 
-  // Handle image upload
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle image upload to R2
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image file (JPEG, PNG, GIF, WebP)",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate file size (5MB limit for profile images)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please upload an image smaller than 5MB",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Show preview immediately
       const reader = new FileReader();
       reader.onloadend = () => {
-        const base64String = reader.result as string;
-        setImagePreview(base64String);
-        setProfileImage(base64String);
+        setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+
+      // Upload to R2 profile bucket
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/uploads/profile', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Profile image upload failed');
+      }
+
+      const result = await response.json();
+      setProfileImage(result.profileUrl);
+
+      toast({
+        title: "Image uploaded",
+        description: "Profile image uploaded successfully",
+      });
+    } catch (error) {
+      console.error('Profile image upload error:', error);
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload profile image",
+        variant: "destructive"
+      });
+      setImagePreview('');
     }
   };
 

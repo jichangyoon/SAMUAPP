@@ -101,25 +101,27 @@ router.post("/upload", (req, res, next) => {
   }
 });
 
-// Delete file endpoint
-router.delete("/delete/:filename", async (req, res) => {
+// Delete file endpoint (now supports R2 URLs)
+router.delete("/delete", async (req, res) => {
   try {
-    const { filename } = req.params;
+    const { fileUrl } = req.body;
     
-    // Validate filename to prevent path traversal
-    if (!filename || filename.includes("..") || filename.includes("/")) {
-      return res.status(400).json({ error: "Invalid filename" });
+    if (!fileUrl) {
+      return res.status(400).json({ error: "File URL required" });
     }
 
-    const filePath = path.join(uploadsDir, filename);
-    
-    // Check if file exists
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: "File not found" });
+    // Extract key from R2 URL
+    const key = extractKeyFromUrl(fileUrl);
+    if (!key) {
+      return res.status(400).json({ error: "Invalid R2 file URL" });
     }
 
-    // Delete the file
-    await fsPromises.unlink(filePath);
+    // Delete from R2
+    const success = await deleteFromR2(key, process.env.R2_BUCKET_NAME!);
+    
+    if (!success) {
+      return res.status(500).json({ error: "Failed to delete file from R2" });
+    }
     
     res.json({ success: true, message: "File deleted successfully" });
   } catch (error) {
@@ -128,34 +130,70 @@ router.delete("/delete/:filename", async (req, res) => {
   }
 });
 
-// Get file info endpoint
-router.get("/info/:filename", async (req, res) => {
+// Profile image upload endpoint (uses separate profile bucket)
+router.post("/profile", upload.single("file"), async (req, res) => {
   try {
-    const { filename } = req.params;
-    
-    // Validate filename
-    if (!filename || filename.includes("..") || filename.includes("/")) {
-      return res.status(400).json({ error: "Invalid filename" });
+    if (!req.file) {
+      return res.status(400).json({ error: "No profile image uploaded" });
     }
 
-    const filePath = path.join(uploadsDir, filename);
-    
-    // Check if file exists
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: "File not found" });
-    }
+    // Upload to profile bucket with profiles folder
+    const uploadResult = await uploadToR2(
+      req.file.buffer,
+      req.file.originalname,
+      "profile", // Use profile bucket
+      "profiles"
+    );
 
-    const stats = await fsPromises.stat(filePath);
+    if (!uploadResult.success) {
+      console.error('Profile image R2 upload failed:', uploadResult.error);
+      return res.status(500).json({ 
+        error: "Profile upload failed", 
+        details: uploadResult.error 
+      });
+    }
+    
+    const response = {
+      success: true,
+      profileUrl: uploadResult.url!,
+      key: uploadResult.key!,
+      originalName: req.file.originalname,
+      size: req.file.size
+    };
+
+    console.log('Profile image R2 upload successful:', response);
+    res.json(response);
+  } catch (error: any) {
+    console.error("Profile upload error:", error);
+    res.status(500).json({ error: "Profile upload failed", details: error?.message || 'Unknown error' });
+  }
+});
+
+// Health check endpoint for R2 connectivity
+router.get("/health", async (req, res) => {
+  try {
+    // Simple check to verify R2 configuration
+    const hasRequiredEnvs = process.env.R2_ACCESS_KEY_ID && 
+                           process.env.R2_SECRET_ACCESS_KEY && 
+                           process.env.R2_ACCOUNT_ID && 
+                           process.env.R2_BUCKET_NAME && 
+                           process.env.R2_PUBLIC_URL;
+    
+    if (!hasRequiredEnvs) {
+      return res.status(500).json({ 
+        error: "R2 configuration incomplete",
+        configured: false 
+      });
+    }
     
     res.json({
-      filename: filename,
-      size: stats.size,
-      createdAt: stats.birthtime,
-      modifiedAt: stats.mtime
+      status: "ok",
+      storage: "cloudflare-r2",
+      configured: true
     });
   } catch (error) {
-    console.error("File info error:", error);
-    res.status(500).json({ error: "Failed to get file info" });
+    console.error("R2 health check error:", error);
+    res.status(500).json({ error: "R2 health check failed" });
   }
 });
 
