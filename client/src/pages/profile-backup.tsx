@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import * as React from "react";
 import { usePrivy } from "@privy-io/react-auth";
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,19 +33,6 @@ function Profile() {
   const selectedWalletAccount = walletAccounts[0];
   const walletAddress = (selectedWalletAccount as any)?.address || '';
 
-  // Fetch user profile from server
-  const { data: userProfile } = useQuery({
-    queryKey: ['user-profile', walletAddress],
-    queryFn: async () => {
-      if (!walletAddress) return null;
-      const response = await fetch(`/api/users/profile/${walletAddress}`);
-      if (!response.ok) throw new Error('Failed to fetch user profile');
-      return response.json();
-    },
-    enabled: !!walletAddress,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-
   // Load profile data from localStorage
   const getStoredProfile = React.useMemo(() => {
     if (!user?.id) return { displayName: '', profileImage: '' };
@@ -60,77 +47,12 @@ function Profile() {
     return { displayName: '', profileImage: '' };
   }, [user?.id]);
 
-  // Server profile update mutation
-  const updateProfileMutation = useMutation({
-    mutationFn: async (profileData: { username: string; avatarUrl?: string }) => {
-      const response = await fetch(`/api/users/profile/${walletAddress}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(profileData),
-      });
-      if (!response.ok) throw new Error('Failed to update profile');
-      return response.json();
-    },
-    onSuccess: (data: any) => {
-      // Update localStorage as backup
-      const profileData = {
-        displayName: data.username,
-        profileImage: data.avatarUrl || ''
-      };
-      localStorage.setItem(`profile_${user?.id}`, JSON.stringify(profileData));
-      
-      // Notify home page
-      window.dispatchEvent(new CustomEvent('profileUpdated', { 
-        detail: profileData 
-      }));
-      
-      queryClient.invalidateQueries({ queryKey: ['user-profile', walletAddress] });
-      
-      toast({
-        title: "Profile Updated",
-        description: "Your profile has been saved to the server",
-      });
-      
-      setIsEditing(false);
-      setImagePreview('');
-    },
-    onError: (error: any) => {
-      console.error('Server profile update failed:', error);
-      // Fallback to localStorage only
-      const profileData = {
-        displayName,
-        profileImage: imagePreview || profileImage
-      };
-      localStorage.setItem(`profile_${user?.id}`, JSON.stringify(profileData));
-      
-      window.dispatchEvent(new CustomEvent('profileUpdated', { 
-        detail: profileData 
-      }));
-      
-      toast({
-        title: "Profile Updated",
-        description: "Profile saved locally (server unavailable)",
-        variant: "destructive",
-      });
-      
-      setIsEditing(false);
-      setImagePreview('');
-    }
-  });
-
-  // Load profile from server or localStorage
+  // Load profile on mount
   useEffect(() => {
-    if (userProfile) {
-      // Use server data if available
-      setDisplayName(userProfile.username || 'User');
-      setProfileImage(userProfile.avatarUrl || '');
-    } else {
-      // Fallback to localStorage
-      const storedProfile = getStoredProfile;
-      setDisplayName(storedProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
-      setProfileImage(storedProfile.profileImage || '');
-    }
-  }, [userProfile, getStoredProfile, user?.email?.address]);
+    const storedProfile = getStoredProfile;
+    setDisplayName(storedProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
+    setProfileImage(storedProfile.profileImage || '');
+  }, [getStoredProfile, user?.email?.address]);
 
   // Handle image change
   const handleImageChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -145,41 +67,32 @@ function Profile() {
     }
   }, []);
 
-  // Save profile with server integration
+  // Save profile
   const handleSaveProfile = React.useCallback(() => {
-    if (!walletAddress) {
-      // Fallback to localStorage for users without wallet
-      const profileData = {
-        displayName,
-        profileImage: imagePreview || profileImage
-      };
-      localStorage.setItem(`profile_${user?.id}`, JSON.stringify(profileData));
-      
-      if (imagePreview) {
-        setProfileImage(imagePreview);
-        setImagePreview('');
-      }
-      setIsEditing(false);
-      
-      window.dispatchEvent(new CustomEvent('profileUpdated', {
-        detail: profileData
-      }));
-      
-      toast({
-        title: "Profile Updated",
-        description: "Profile saved locally",
-      });
-      return;
-    }
-
-    // Save to server for wallet users
-    const serverProfileData = {
-      username: displayName,
-      avatarUrl: imagePreview || profileImage || undefined
+    const profileData = {
+      displayName,
+      profileImage: imagePreview || profileImage
     };
 
-    updateProfileMutation.mutate(serverProfileData);
-  }, [displayName, imagePreview, profileImage, walletAddress, user?.id, updateProfileMutation, toast]);
+    localStorage.setItem(`profile_${user?.id}`, JSON.stringify(profileData));
+
+    if (imagePreview) {
+      setProfileImage(imagePreview);
+      setImagePreview('');
+    }
+
+    setIsEditing(false);
+
+    toast({
+      title: "Profile Updated",
+      description: "Your profile has been saved successfully.",
+    });
+
+    // Notify home page
+    window.dispatchEvent(new CustomEvent('profileUpdated', {
+      detail: profileData
+    }));
+  }, [displayName, imagePreview, profileImage, user?.id, toast]);
 
   // Cancel edit
   const handleCancelEdit = React.useCallback(() => {
@@ -266,12 +179,11 @@ function Profile() {
                   <>
                     <Button
                       onClick={handleSaveProfile}
-                      disabled={updateProfileMutation.isPending}
                       size="sm"
                       className="bg-green-600 hover:bg-green-700 text-xs"
                     >
                       <Save className="h-3 w-3 mr-1" />
-                      {updateProfileMutation.isPending ? 'Saving...' : 'Save'}
+                      Save
                     </Button>
                     <Button onClick={handleCancelEdit} variant="outline" size="sm" className="text-xs">
                       Cancel
