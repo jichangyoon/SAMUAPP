@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import * as React from "react";
 import { usePrivy } from "@privy-io/react-auth";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -138,48 +138,101 @@ const Profile = React.memo(() => {
     }
   }, []);
 
-  // 프로필 저장 - useCallback으로 최적화
-  const handleSaveProfile = React.useCallback(() => {
-    const profileData = {
-      displayName,
-      profileImage: imagePreview || profileImage
-    };
-
-    localStorage.setItem(`profile_${user?.id}`, JSON.stringify(profileData));
-
-    if (imagePreview) {
-      setProfileImage(imagePreview);
+  // 서버에 프로필 업데이트
+  const updateProfileMutation = useMutation({
+    mutationFn: async (profileData: { username: string; avatarUrl?: string }) => {
+      const response = await fetch(`/api/users/profile/${walletAddress}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profileData),
+      });
+      if (!response.ok) throw new Error('Failed to update profile');
+      return response.json();
+    },
+    onSuccess: (data: any) => {
+      // 서버 업데이트 성공 시 localStorage도 업데이트
+      const profileData = {
+        displayName: data.username,
+        profileImage: data.avatarUrl || ''
+      };
+      localStorage.setItem(`profile_${user?.id}`, JSON.stringify(profileData));
+      
+      // 홈페이지에 프로필 업데이트 알림
+      window.dispatchEvent(new CustomEvent('profileUpdated', { 
+        detail: profileData 
+      }));
+      
+      queryClient.invalidateQueries({ queryKey: ['user-profile', walletAddress] });
+      
+      toast({
+        title: "Profile updated successfully",
+        description: "Your profile has been saved to the server",
+      });
+      
+      setIsEditing(false);
       setImagePreview('');
-    }
-
-    setIsEditing(false);
-
-    toast({
-      title: "Profile Updated",
-      description: "Your profile has been saved successfully.",
-    });
-
-    // 쿼리 캐시 무효화
-    queryClient.invalidateQueries({
-      queryKey: ['profile', user?.id]
-    });
-
-    // 홈 페이지의 헤더 데이터도 업데이트 - 브라우저 이벤트로 알림
-    window.dispatchEvent(new CustomEvent('profileUpdated', {
-      detail: {
+    },
+    onError: (error: any) => {
+      console.error('Profile update failed:', error);
+      toast({
+        title: "Update failed",
+        description: "Failed to save profile to server. Saved locally instead.",
+        variant: "destructive",
+      });
+      
+      // 서버 실패 시 localStorage만 업데이트
+      const profileData = {
         displayName,
         profileImage: imagePreview || profileImage
-      }
-    }));
-  }, [displayName, imagePreview, profileImage, user?.id, toast, queryClient]);
+      };
+      localStorage.setItem(`profile_${user?.id}`, JSON.stringify(profileData));
+      
+      window.dispatchEvent(new CustomEvent('profileUpdated', { 
+        detail: profileData 
+      }));
+      
+      setIsEditing(false);
+      setImagePreview('');
+    }
+  });
 
-  // 편집 취소 - useCallback으로 최적화
+  // 프로필 저장 - useCallback으로 최적화
+  const handleSaveProfile = React.useCallback(() => {
+    if (!walletAddress) {
+      toast({
+        title: "No wallet connected",
+        description: "Please connect your wallet to save profile",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const profileData = {
+      username: displayName,
+      avatarUrl: imagePreview || profileImage || undefined
+    };
+
+    updateProfileMutation.mutate(profileData);
+  }, [displayName, imagePreview, profileImage, walletAddress, updateProfileMutation, toast]);
+
+  // 프로필 취소
   const handleCancelEdit = React.useCallback(() => {
-    setDisplayName(getStoredProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
-    setProfileImage(getStoredProfile.profileImage || '');
-    setImagePreview('');
     setIsEditing(false);
+    setImagePreview('');
+    
+    // 저장된 값으로 복원
+    const storedProfile = getStoredProfile;
+    setDisplayName(storedProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
+    setProfileImage(storedProfile.profileImage || '');
   }, [getStoredProfile, user?.email?.address]);
+
+  // 서버에서 프로필 로드
+  useEffect(() => {
+    if (userProfile) {
+      setDisplayName(userProfile.username || 'User');
+      setProfileImage(userProfile.avatarUrl || '');
+    }
+  }, [userProfile]);
 
 
 
