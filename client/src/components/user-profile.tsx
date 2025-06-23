@@ -50,7 +50,7 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
   const solanaWallet = user?.linkedAccounts?.find(account => 
     account.type === 'wallet' && account.chainType === 'solana'
   );
-  const walletAddress = solanaWallet?.address || '';
+  const walletAddress = solanaWallet && 'address' in solanaWallet ? solanaWallet.address : '';
   const displayAddress = useMemo(() => walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : '', [walletAddress]);
 
   // Update profile mutation - using API call since Privy doesn't expose updateUser directly
