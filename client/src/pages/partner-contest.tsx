@@ -277,8 +277,11 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
                         <Button
                           onClick={() => setShowUploadForm(true)}
                           size="sm"
-                          style={{ backgroundColor: partner.color }}
-                          className="text-white hover:opacity-90"
+                          style={{ 
+                            backgroundColor: partner.color,
+                            color: partner.color === '#FFFFFF' || partner.color === '#FFE4B5' ? '#000000' : '#FFFFFF'
+                          }}
+                          className="hover:opacity-90"
                         >
                           <Plus className="h-4 w-4 mr-1" />
                           Submit
