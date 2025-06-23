@@ -37,8 +37,7 @@ router.put("/users/:id", async (req, res) => {
       .set({
         username: updateData.username,
         email: updateData.email,
-        samuBalance: updateData.samu_balance,
-        totalVotingPower: updateData.total_voting_power,
+        // SAMU balance and voting power are auto-synced from on-chain data
         updatedAt: new Date()
       })
       .where(eq(users.id, userId))

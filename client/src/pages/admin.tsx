@@ -87,9 +87,9 @@ function AdminDashboard() {
   });
 
   const filteredUsers = users.filter((user: User) =>
-    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.wallet_address.toLowerCase().includes(searchTerm.toLowerCase())
+    user.wallet_address?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleEditUser = (user: User) => {
@@ -98,7 +98,12 @@ function AdminDashboard() {
 
   const handleSaveUser = () => {
     if (editingUser) {
-      updateUserMutation.mutate(editingUser);
+      updateUserMutation.mutate({
+        id: editingUser.id,
+        username: editingUser.username,
+        email: editingUser.email
+        // SAMU balance is auto-synced from blockchain
+      });
     }
   };
 
@@ -156,7 +161,10 @@ function AdminDashboard() {
                             <h4 className="font-semibold">ID: {user.id} - {user.username}</h4>
                             <p className="text-sm text-muted-foreground">{user.email || 'No email'}</p>
                             <p className="text-xs font-mono">
-                              {user.wallet_address.slice(0, 12)}...{user.wallet_address.slice(-12)}
+                              {user.wallet_address ? 
+                                `${user.wallet_address.slice(0, 12)}...${user.wallet_address.slice(-12)}` : 
+                                'No wallet address'
+                              }
                             </p>
                           </div>
                           <div className="flex gap-2">
@@ -179,15 +187,15 @@ function AdminDashboard() {
                         </div>
                         <div className="flex gap-4 text-sm">
                           <div>
-                            <span className="text-muted-foreground">SAMU:</span>
-                            <Badge variant="outline" className="ml-1">
-                              {user.samu_balance.toLocaleString()}
+                            <span className="text-muted-foreground">SAMU (On-chain):</span>
+                            <Badge variant="secondary" className="ml-1">
+                              Auto-synced
                             </Badge>
                           </div>
                           <div>
                             <span className="text-muted-foreground">Voting Power:</span>
                             <Badge variant="outline" className="ml-1">
-                              {user.total_voting_power.toLocaleString()}
+                              Auto-calculated
                             </Badge>
                           </div>
                           <div>
@@ -275,27 +283,20 @@ function AdminDashboard() {
                     })}
                   />
                 </div>
-                <div>
-                  <Label>SAMU Balance</Label>
-                  <Input
-                    type="number"
-                    value={editingUser.samu_balance}
-                    onChange={(e) => setEditingUser({
-                      ...editingUser,
-                      samu_balance: parseInt(e.target.value) || 0
-                    })}
-                  />
-                </div>
-                <div>
-                  <Label>Voting Power</Label>
-                  <Input
-                    type="number"
-                    value={editingUser.total_voting_power}
-                    onChange={(e) => setEditingUser({
-                      ...editingUser,
-                      total_voting_power: parseInt(e.target.value) || 0
-                    })}
-                  />
+                <div className="p-4 border rounded-lg bg-muted">
+                  <h4 className="font-medium mb-2">Token Balances</h4>
+                  <p className="text-sm text-muted-foreground">
+                    SAMU balance and voting power are automatically synced from on-chain data. 
+                    These values cannot be manually edited.
+                  </p>
+                  <div className="mt-2 space-y-1">
+                    <div className="text-sm">
+                      <span className="font-medium">Current SAMU:</span> Auto-synced from wallet
+                    </div>
+                    <div className="text-sm">
+                      <span className="font-medium">Voting Power:</span> Calculated from SAMU holdings
+                    </div>
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <Button onClick={handleSaveUser} disabled={updateUserMutation.isPending}>
