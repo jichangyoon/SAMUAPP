@@ -118,6 +118,18 @@ function Profile() {
     }
   });
 
+  // Check localStorage usage (개발용)
+  useEffect(() => {
+    let totalSize = 0;
+    for (let key in localStorage) {
+      if (localStorage.hasOwnProperty(key)) {
+        const value = localStorage.getItem(key);
+        if (value) totalSize += new Blob([value]).size;
+      }
+    }
+    console.log(`localStorage 사용량: ${(totalSize / 1024).toFixed(1)}KB / 5MB`);
+  }, []);
+
   // Load profile from server or localStorage
   useEffect(() => {
     if (userProfile) {
