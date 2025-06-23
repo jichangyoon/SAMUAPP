@@ -48,8 +48,8 @@ export async function uploadToR2(
 
     await r2Client.send(command);
 
-    // 공개 URL 생성 (환경변수에서 가져온 URL 사용)
-    const publicUrl = `${process.env.R2_PUBLIC_URL}/${key}`;
+    // 공개 URL 생성 (Public Development URL 사용)
+    const publicUrl = `https://pub-91c83b692b4477b6dc61a79e70a97.r2.dev/${key}`;
 
     return {
       success: true,
