@@ -333,6 +333,7 @@ Changelog:
 - June 23, 2025. Cleaned up legacy image files and folders - removed original JPG/PNG files after WebP conversion
 - June 23, 2025. Deleted development screenshots and temporary files saving additional 3.34MB storage space
 - June 23, 2025. Finalized project structure with only optimized WebP assets - total space savings of 87.8MB
+- June 23, 2025. Fixed NFT #78 image with user-provided replacement - converted to WebP with 92.4% size reduction
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
