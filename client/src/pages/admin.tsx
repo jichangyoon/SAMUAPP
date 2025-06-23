@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, BarChart3, Settings, Search, Edit, Trash2, Save } from "lucide-react";
@@ -137,7 +136,7 @@ function AdminDashboard() {
               </CardContent>
             </Card>
 
-            {/* Users Table */}
+            {/* Users List */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -149,64 +148,56 @@ function AdminDashboard() {
                 {isLoading ? (
                   <div>Loading users...</div>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Username</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Wallet</TableHead>
-                        <TableHead>SAMU Balance</TableHead>
-                        <TableHead>Voting Power</TableHead>
-                        <TableHead>Created</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredUsers.map((user: User) => (
-                        <TableRow key={user.id}>
-                          <TableCell>{user.id}</TableCell>
-                          <TableCell>{user.username}</TableCell>
-                          <TableCell>{user.email || '-'}</TableCell>
-                          <TableCell className="font-mono text-sm">
-                            {user.wallet_address.slice(0, 8)}...{user.wallet_address.slice(-8)}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">
+                  <div className="space-y-4">
+                    {filteredUsers.map((user: User) => (
+                      <div key={user.id} className="border rounded-lg p-4 space-y-2">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-semibold">ID: {user.id} - {user.username}</h4>
+                            <p className="text-sm text-muted-foreground">{user.email || 'No email'}</p>
+                            <p className="text-xs font-mono">
+                              {user.wallet_address.slice(0, 12)}...{user.wallet_address.slice(-12)}
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEditUser(user)}
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleDeleteUser(user.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="flex gap-4 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">SAMU:</span>
+                            <Badge variant="outline" className="ml-1">
                               {user.samu_balance.toLocaleString()}
                             </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Voting Power:</span>
+                            <Badge variant="outline" className="ml-1">
                               {user.total_voting_power.toLocaleString()}
                             </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {new Date(user.created_at).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleEditUser(user)}
-                              >
-                                <Edit className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleDeleteUser(user.id)}
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Created:</span>
+                            <span className="ml-1">{new Date(user.created_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </CardContent>
             </Card>
