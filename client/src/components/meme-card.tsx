@@ -95,11 +95,18 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   // Delete meme mutation
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest(`/api/memes/${meme.id}`, {
+      const response = await fetch(`/api/memes/${meme.id}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ authorWallet: walletAddress })
       });
-      return response;
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to delete meme');
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
@@ -182,6 +189,16 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
             >
               <Share2 className="h-4 w-4" />
             </Button>
+            {isAuthor && (
+              <Button
+                onClick={() => setShowDeleteDialog(true)}
+                variant="outline"
+                size="sm"
+                className="px-4 border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -317,6 +334,35 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
             >
               <Send className="h-4 w-4" />
               Share on Telegram
+            </Button>
+          </div>
+        </DrawerContent>
+      </Drawer>
+
+      {/* Delete Confirmation Drawer */}
+      <Drawer open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+          <DrawerHeader>
+            <DrawerTitle className="text-foreground">Delete Meme</DrawerTitle>
+            <DrawerDescription className="text-muted-foreground">
+              Are you sure you want to delete "{meme.title}"? This action cannot be undone.
+            </DrawerDescription>
+          </DrawerHeader>
+
+          <div className="flex flex-col gap-3 py-4 px-4">
+            <Button
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete Meme"}
+            </Button>
+            <Button
+              onClick={() => setShowDeleteDialog(false)}
+              variant="outline"
+              disabled={deleteMutation.isPending}
+            >
+              Cancel
             </Button>
           </div>
         </DrawerContent>

@@ -62,14 +62,28 @@ router.delete("/:id", async (req, res) => {
       return res.status(403).json({ message: "Only the author can delete this meme" });
     }
 
-    // Delete associated file if it's a local upload
-    if (meme.imageUrl.startsWith('/uploads/')) {
+    // Delete associated file from R2 or local storage
+    if (meme.imageUrl.includes('r2.dev') || meme.imageUrl.includes('r2.cloudflarestorage.com')) {
+      // R2 cloud file - extract key from URL
+      const urlParts = meme.imageUrl.split('/');
+      const key = urlParts.slice(-2).join('/'); // Get "uploads/filename"
+      try {
+        await fetch(`/api/uploads/delete-r2`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key })
+        });
+      } catch (error) {
+        console.warn('Failed to delete R2 file:', error);
+      }
+    } else if (meme.imageUrl.startsWith('/uploads/')) {
+      // Local file
       const filename = meme.imageUrl.split('/').pop();
       if (filename) {
         try {
           await fetch(`/api/uploads/delete/${filename}`, { method: 'DELETE' });
         } catch (error) {
-          console.warn('Failed to delete file:', error);
+          console.warn('Failed to delete local file:', error);
         }
       }
     }

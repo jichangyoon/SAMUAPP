@@ -197,4 +197,26 @@ router.get("/health", async (req, res) => {
   }
 });
 
+// Delete file from R2 by key
+router.delete('/delete-r2', async (req, res) => {
+  try {
+    const { key } = req.body;
+    
+    if (!key) {
+      return res.status(400).json({ error: 'File key is required' });
+    }
+
+    const result = await deleteFromR2(key, process.env.R2_BUCKET_NAME!);
+    
+    if (result) {
+      res.json({ message: 'File deleted successfully' });
+    } else {
+      res.status(500).json({ error: 'Failed to delete file' });
+    }
+  } catch (error) {
+    console.error('Delete R2 file error:', error);
+    res.status(500).json({ error: 'Failed to delete file' });
+  }
+});
+
 export default router;
