@@ -5,7 +5,8 @@ import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, D
 import { usePrivy } from '@privy-io/react-auth';
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowUp, Share2, Twitter, Send } from "lucide-react";
+import { ArrowUp, Share2, Twitter, Send, Trash2 } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Meme } from "@shared/schema";
 
 interface MemeCardProps {
@@ -18,8 +19,10 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   const [showVoteDialog, setShowVoteDialog] = useState(false);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
   const { authenticated, user } = usePrivy();
+  const queryClient = useQueryClient();
 
   // Get wallet using same logic as WalletConnect component - prioritize Solana
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
@@ -88,6 +91,36 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
       shareToTelegram();
     }
   };
+
+  // Delete meme mutation
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest(`/api/memes/${meme.id}`, {
+        method: 'DELETE',
+        body: JSON.stringify({ authorWallet: walletAddress })
+      });
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+      toast({ title: "Meme deleted successfully" });
+      setShowDeleteDialog(false);
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Failed to delete meme", 
+        description: error.message || "Please try again",
+        variant: "destructive" 
+      });
+    }
+  });
+
+  const handleDelete = () => {
+    deleteMutation.mutate();
+  };
+
+  // Check if current user is the author
+  const isAuthor = authenticated && walletAddress === meme.authorWallet;
 
   return (
     <>
