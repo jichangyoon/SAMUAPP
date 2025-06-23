@@ -102,8 +102,7 @@ router.post("/all-users", async (req, res) => {
     // Get all users with wallet addresses
     const allUsers = await db
       .select()
-      .from(users)
-      .where(users.walletAddress);
+      .from(users);
 
     const syncResults = [];
 
@@ -141,7 +140,7 @@ router.post("/all-users", async (req, res) => {
           userId: user.id,
           username: user.username,
           walletAddress: user.walletAddress,
-          error: error.message,
+          error: String(error),
           synced: false
         });
       }

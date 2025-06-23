@@ -86,6 +86,28 @@ function AdminDashboard() {
     }
   });
 
+  // SAMU balance sync mutation
+  const syncAllUsersMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/sync/all-users', {
+        method: 'POST',
+      });
+      if (!response.ok) throw new Error('Failed to sync users');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+      toast({ 
+        title: "SAMU balances synced", 
+        description: `${data.successfulSyncs}/${data.totalUsers} users updated from blockchain` 
+      });
+    },
+    onError: () => {
+      toast({ title: "Failed to sync SAMU balances", variant: "destructive" });
+    }
+  });
+
   const filteredUsers = users.filter((user: User) =>
     user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -144,9 +166,19 @@ function AdminDashboard() {
             {/* Users List */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Users ({filteredUsers.length})
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Users ({filteredUsers.length})
+                  </div>
+                  <Button 
+                    onClick={() => syncAllUsersMutation.mutate()}
+                    disabled={syncAllUsersMutation.isPending}
+                    variant="outline"
+                    size="sm"
+                  >
+                    {syncAllUsersMutation.isPending ? 'Syncing...' : 'Sync SAMU Balances'}
+                  </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
