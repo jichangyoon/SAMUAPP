@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import * as React from 'react';
 import Home from "@/pages/home";
 import Profile from "@/pages/profile";
+import AdminDashboard from "@/pages/admin";
 import { Partners } from "@/pages/partners";
 import { PartnerContest } from "@/pages/partner-contest";
 import NotFound from "@/pages/not-found";
@@ -36,6 +37,7 @@ const Router = React.memo(() => {
       <Route path="/" component={Home} />
       <Route path="/connected" component={Home} />
       <Route path="/profile" component={Profile} />
+      <Route path="/admin" component={AdminDashboard} />
       <Route path="/partners" component={Partners} />
       <Route path="/partner/:partnerId">
         {(params) => <PartnerContest partnerId={params.partnerId} />}
