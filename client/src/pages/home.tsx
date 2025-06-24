@@ -472,14 +472,14 @@ export default function Home() {
                                     animation: `fadeIn 0.4s ease-out ${index * 30}ms forwards`
                                   }}
                                 >
-                                  <img
+                                  <MediaDisplay
                                     src={meme.imageUrl}
                                     alt={meme.title}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                      const target = e.target as HTMLImageElement;
-                                      target.style.display = 'none';
-                                    }}
+                                    className="w-full h-full"
+                                    showControls={false}
+                                    autoPlay={false}
+                                    muted={true}
+                                    loop={true}
                                   />
                                   <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <div className="text-white text-center">
@@ -752,10 +752,14 @@ export default function Home() {
                             onClick={() => setSelectedArchiveMeme(meme)}
                             className="aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-opacity relative group"
                           >
-                            <img
+                            <MediaDisplay
                               src={meme.imageUrl}
                               alt={meme.title}
-                              className="w-full h-full object-cover"
+                              className="w-full h-full"
+                              showControls={false}
+                              autoPlay={false}
+                              muted={true}
+                              loop={true}
                             />
                             {/* Medal icon for top 3 */}
                             {meme.rank <= 3 && (

@@ -17,6 +17,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { SendTokens } from "@/components/send-tokens";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
+import { MediaDisplay } from "@/components/media-display";
 
 const Profile = React.memo(() => {
   const { user, authenticated } = usePrivy();
@@ -745,15 +746,23 @@ const Profile = React.memo(() => {
                         key={meme.id} 
                         className="flex items-center gap-3 p-2 bg-accent/50 rounded-lg hover:bg-accent/70 transition-colors"
                       >
-                        <img 
-                          src={meme.imageUrl} 
-                          alt={meme.title}
-                          className="w-10 h-10 object-cover rounded cursor-pointer"
+                        <div 
+                          className="w-10 h-10 cursor-pointer"
                           onClick={() => {
                             setSelectedMeme(meme);
                             setIsModalOpen(true);
                           }}
-                        />
+                        >
+                          <MediaDisplay
+                            src={meme.imageUrl}
+                            alt={meme.title}
+                            className="w-full h-full rounded"
+                            showControls={false}
+                            autoPlay={false}
+                            muted={true}
+                            loop={true}
+                          />
+                        </div>
                         <div 
                           className="flex-1 min-w-0 cursor-pointer"
                           onClick={() => {
@@ -829,10 +838,14 @@ const Profile = React.memo(() => {
                             setIsModalOpen(true);
                           }}
                         >
-                          <img 
-                            src={meme.imageUrl} 
+                          <MediaDisplay
+                            src={meme.imageUrl}
                             alt={meme.title}
-                            className="w-10 h-10 object-cover rounded"
+                            className="w-10 h-10 rounded"
+                            showControls={false}
+                            autoPlay={false}
+                            muted={true}
+                            loop={true}
                           />
                           <div className="flex-1 min-w-0">
                             <h4 className="font-medium text-foreground text-sm truncate">{meme.title}</h4>
