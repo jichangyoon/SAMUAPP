@@ -6,6 +6,7 @@ export interface IStorage {
   // User operations
   createUser(user: InsertUser): Promise<User>;
   getUserByWallet(walletAddress: string): Promise<User | undefined>;
+  getUserByDisplayName(displayName: string): Promise<User | undefined>;
   updateUser(walletAddress: string, updates: Partial<InsertUser & { displayName?: string; avatarUrl?: string }>): Promise<User>;
   getUserMemes(walletAddress: string): Promise<Meme[]>;
   getUserVotes(walletAddress: string): Promise<Vote[]>;
@@ -170,6 +171,15 @@ export class MemStorage implements IStorage {
 
   async getUserByWallet(walletAddress: string): Promise<User | undefined> {
     return this.users.get(walletAddress);
+  }
+
+  async getUserByDisplayName(displayName: string): Promise<User | undefined> {
+    for (const user of this.users.values()) {
+      if (user.displayName === displayName) {
+        return user;
+      }
+    }
+    return undefined;
   }
 
   async updateUser(walletAddress: string, updates: Partial<InsertUser>): Promise<User> {
@@ -386,6 +396,16 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(users)
       .where(eq(users.walletAddress, walletAddress));
+    return user;
+  }
+
+  async getUserByDisplayName(displayName: string): Promise<User | undefined> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [user] = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.displayName, displayName));
     return user;
   }
 

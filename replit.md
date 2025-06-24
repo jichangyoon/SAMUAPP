@@ -356,6 +356,10 @@ Changelog:
 - June 24, 2025. Optimized project structure - removed legacy local files, using only R2 cloud storage for new uploads
 - June 24, 2025. Fixed profile image storage - now correctly uploads to R2 cloud storage in profiles/ folder
 - June 24, 2025. Verified profile image R2 integration - 42KB PNG successfully uploaded and accessible via public URL
+- June 24, 2025. Implemented comprehensive display name uniqueness validation system with real-time availability checking
+- June 24, 2025. Added automatic username suggestion feature - generates numbered alternatives when names are taken
+- June 24, 2025. Enhanced profile editing UI with inline validation, error messages, and clickable name suggestions
+- June 24, 2025. Completed PostgreSQL-based profile data storage - display names stored in database with uniqueness constraints
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```

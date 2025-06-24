@@ -50,6 +50,8 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
   const [displayName, setDisplayName] = useState('');
   const [profileImage, setProfileImage] = useState('');
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [nameError, setNameError] = useState('');
+  const [nameSuggestions, setNameSuggestions] = useState<string[]>([]);
 
   // Update local state when userProfile loads
   useEffect(() => {
@@ -62,6 +64,49 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
       setProfileImage(stored.profileImage || '');
     }
   }, [userProfile, user]);
+
+  // Check display name availability
+  const checkNameAvailability = async (name: string) => {
+    if (name.length < 3) {
+      setNameError('Name must be at least 3 characters');
+      setNameSuggestions([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/users/check-name/${encodeURIComponent(name)}`);
+      const result = await response.json();
+      
+      if (result.isAvailable) {
+        setNameError('');
+        setNameSuggestions([]);
+      } else {
+        setNameError('This name is already taken');
+        setNameSuggestions(result.suggestions || []);
+      }
+    } catch (error) {
+      console.error('Error checking name availability:', error);
+      setNameError('Unable to check name availability');
+      setNameSuggestions([]);
+    }
+  };
+
+  // Handle display name change with debouncing
+  const handleNameChange = (name: string) => {
+    setDisplayName(name);
+    
+    if (name !== (userProfile?.displayName || userProfile?.username)) {
+      // Debounce the availability check
+      const timeoutId = setTimeout(() => {
+        checkNameAvailability(name);
+      }, 500);
+      
+      return () => clearTimeout(timeoutId);
+    } else {
+      setNameError('');
+      setNameSuggestions([]);
+    }
+  };
 
   // Solana 지갑 주소만 가져오기
   const solanaWallet = user?.linkedAccounts?.find(account => 
@@ -109,13 +154,22 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
       // Invalidate user profile query to refetch updated data
       queryClient.invalidateQueries({ queryKey: ['/api/users/profile', walletAddress] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Profile update error:', error);
-      toast({
-        title: "Update Failed",
-        description: "Failed to update profile. Please try again.",
-        variant: "destructive",
-      });
+      
+      if (error.message?.includes('DISPLAY_NAME_TAKEN') || error.message?.includes('already taken')) {
+        toast({
+          title: "Name Already Taken",
+          description: "This display name is already in use. Please choose another.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Update Failed",
+          description: "Failed to update profile. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   });
 
@@ -186,10 +240,16 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
 
   // Save profile changes
   const handleSaveProfile = () => {
-    if (displayName.trim()) {
+    if (displayName.trim() && !nameError) {
       updateProfileMutation.mutate({
         name: displayName.trim(),
         image: profileImage
+      });
+    } else if (nameError) {
+      toast({
+        title: "Invalid Name",
+        description: nameError,
+        variant: "destructive",
       });
     }
   };
@@ -290,9 +350,9 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
                     <>
                       <Button
                         onClick={handleSaveProfile}
-                        disabled={updateProfileMutation.isPending}
+                        disabled={updateProfileMutation.isPending || !!nameError || displayName.length < 3}
                         size="sm"
-                        className="bg-green-600 hover:bg-green-700"
+                        className="bg-green-600 hover:bg-green-700 disabled:bg-gray-500"
                       >
                         <Save className="h-4 w-4 mr-1" />
                         {updateProfileMutation.isPending ? 'Saving...' : 'Save'}

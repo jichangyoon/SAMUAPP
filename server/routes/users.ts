@@ -36,6 +36,17 @@ router.put("/profile/:walletAddress", async (req, res) => {
     const { walletAddress } = req.params;
     const { displayName, avatarUrl, ...otherData } = req.body;
     
+    // Check if display name is already taken by another user
+    if (displayName) {
+      const existingUser = await storage.getUserByDisplayName(displayName);
+      if (existingUser && existingUser.walletAddress !== walletAddress) {
+        return res.status(400).json({ 
+          message: "Display name is already taken",
+          error: "DISPLAY_NAME_TAKEN"
+        });
+      }
+    }
+    
     const updateData = insertUserSchema.partial().parse(otherData);
     if (displayName) updateData.displayName = displayName;
     if (avatarUrl) updateData.avatarUrl = avatarUrl;
@@ -104,6 +115,38 @@ router.get("/:walletAddress/stats", async (req, res) => {
   } catch (error) {
     console.error("Error fetching user stats:", error);
     res.status(500).json({ message: "Failed to fetch user stats" });
+  }
+});
+
+// Check display name availability
+router.get("/check-name/:displayName", async (req, res) => {
+  try {
+    const { displayName } = req.params;
+    
+    // Check if display name already exists
+    const existingUser = await storage.getUserByDisplayName(displayName);
+    const isAvailable = !existingUser;
+    
+    // If not available, suggest alternatives
+    let suggestions: string[] = [];
+    if (!isAvailable) {
+      for (let i = 1; i <= 5; i++) {
+        const suggestion = `${displayName}${i}`;
+        const suggestionExists = await storage.getUserByDisplayName(suggestion);
+        if (!suggestionExists) {
+          suggestions.push(suggestion);
+        }
+      }
+    }
+    
+    res.json({
+      displayName,
+      isAvailable,
+      suggestions
+    });
+  } catch (error) {
+    console.error("Error checking display name:", error);
+    res.status(500).json({ message: "Failed to check display name availability" });
   }
 });
 
