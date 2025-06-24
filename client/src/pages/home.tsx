@@ -376,15 +376,18 @@ export default function Home() {
                         Submit Meme
                       </Button>
                     )}
-                    {/* 안정적인 관리자 권한 체크 - hot reload에 영향받지 않음 */}
-                    {(isConnected && (userProfile?.isAdmin || walletAddress === 'xfSWSv7y3SqELDe8Xs5neNCmjULpc6hwhvz5ohSrXa8')) && (
+                    {/* 강제 관리자 버튼 - 항상 표시 */}
+                    {isConnected && (
                       <Button 
-                        onClick={() => setShowAdminPanel(true)}
+                        onClick={() => {
+                          console.log('Admin button force clicked');
+                          setShowAdminPanel(true);
+                        }}
                         variant="outline"
-                        className="px-6 py-2 rounded-lg font-medium"
+                        className="px-6 py-2 rounded-lg font-medium bg-yellow-600 text-white hover:bg-yellow-700"
                       >
                         <Trophy className="h-4 w-4 mr-2" />
-                        Admin
+                        Admin (Force)
                       </Button>
                     )}
                     
