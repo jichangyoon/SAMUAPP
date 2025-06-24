@@ -45,28 +45,35 @@ export function Leaderboard() {
   const [showMemeModal, setShowMemeModal] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
 
-  // Fetch ALL memes for accurate leaderboard calculations 
+  // Optimized data fetching for leaderboard with smart caching
   const { data: memesResponse, isLoading } = useQuery({
-    queryKey: ["/api/memes"],
+    queryKey: ["/api/memes", "leaderboard-all"],
     queryFn: async () => {
-      // Fetch all pages to get complete data
-      let allMemes = [];
-      let page = 1;
-      let hasMore = true;
+      // Fetch larger page size to get most data in one request
+      const response = await fetch(`/api/memes?page=1&limit=100&sortBy=votes`);
+      const data = await response.json();
       
-      while (hasMore) {
-        const response = await fetch(`/api/memes?page=${page}&limit=50`);
-        const data = await response.json();
-        allMemes.push(...data.memes);
-        hasMore = data.pagination.hasMore;
-        page++;
+      // If there are more pages, fetch remaining data
+      if (data.pagination.hasMore) {
+        let allMemes = [...data.memes];
+        let page = 2;
+        
+        while (page <= data.pagination.totalPages) {
+          const nextResponse = await fetch(`/api/memes?page=${page}&limit=100&sortBy=votes`);
+          const nextData = await nextResponse.json();
+          allMemes.push(...nextData.memes);
+          page++;
+        }
+        
+        return { memes: allMemes };
       }
       
-      return { memes: allMemes };
+      return data;
     },
     enabled: true,
-    staleTime: 0,
-    refetchInterval: 10000,
+    staleTime: 30000, // 30초 캐시 (적당한 균형)
+    refetchInterval: 60000, // 1분마다 갱신
+    refetchOnWindowFocus: false, // 창 포커스시 자동 갱신 비활성화
   });
 
   // Extract memes array with proper type checking
