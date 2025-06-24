@@ -331,12 +331,36 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
                   {isEditing ? (
                     <div className="space-y-2">
                       <Label htmlFor="displayName">Display Name</Label>
-                      <Input
-                        id="displayName"
-                        value={displayName}
-                        onChange={(e) => setDisplayName(e.target.value)}
-                        placeholder="Enter your display name"
-                      />
+                      <div className="space-y-2">
+                        <Input
+                          id="displayName"
+                          value={displayName}
+                          onChange={(e) => handleNameChange(e.target.value)}
+                          className={`${nameError ? 'border-red-500' : ''}`}
+                          placeholder="Enter your display name"
+                        />
+                        {nameError && (
+                          <p className="text-red-500 text-sm">{nameError}</p>
+                        )}
+                        {nameSuggestions.length > 0 && (
+                          <div className="space-y-1">
+                            <p className="text-sm text-muted-foreground">Suggestions:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {nameSuggestions.map((suggestion) => (
+                                <Button
+                                  key={suggestion}
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleNameChange(suggestion)}
+                                  className="text-xs"
+                                >
+                                  {suggestion}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ) : (
                     <div>
