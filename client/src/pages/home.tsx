@@ -1050,6 +1050,12 @@ export default function Home() {
         </DrawerContent>
       </Drawer>
 
+      {/* Admin Panel - 절대 위치로 렌더링 */}
+      <AdminPanel 
+        isOpen={showAdminPanel} 
+        onClose={() => setShowAdminPanel(false)} 
+      />
+
     </div>
   );
 }
