@@ -390,6 +390,7 @@ Changelog:
 - June 24, 2025. Consolidated all modal implementations - replaced 4 duplicate modal systems (MemeCard internal modal, home.tsx grid modal, archive modal) with single unified MemeDetailModal component
 - June 24, 2025. Removed unnecessary debug logs from upload system and optimized performance across all components
 - June 24, 2025. Cleaned up redundant code comments and simplified component structure while maintaining existing UI appearance
+- June 24, 2025. Fixed "My Votes" image display issue in Profile page - now properly shows images of all memes user voted on by searching in all memes instead of only user's own memes
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
