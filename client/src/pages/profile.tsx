@@ -202,6 +202,14 @@ const Profile = React.memo(() => {
           }
         }));
         
+        // Force query invalidation for immediate header update
+        queryClient.invalidateQueries({ 
+          predicate: (query) => {
+            const key = query.queryKey;
+            return key.includes('/api/users/profile') && key.includes(walletAddress);
+          }
+        });
+        
         toast({
           title: "Profile Image Updated",
           description: "Your profile image has been uploaded successfully"
