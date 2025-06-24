@@ -54,15 +54,22 @@ export function Leaderboard() {
   const sortedMemes = [...memes].sort((a, b) => b.votes - a.votes);
   const topMemes = sortedMemes.slice(0, 10);
 
-  // Get top creators
+  // Get top creators with profile images
   const creatorStats = memes.reduce((acc, meme) => {
     if (!acc[meme.authorUsername]) {
       acc[meme.authorUsername] = {
         username: meme.authorUsername,
+        walletAddress: meme.authorWallet,
+        avatarUrl: (meme as any).authorAvatarUrl,
         totalVotes: 0,
         memeCount: 0,
         avgVotes: 0
       };
+    } else {
+      // Update avatar if this meme has a more recent one
+      if ((meme as any).authorAvatarUrl) {
+        acc[meme.authorUsername].avatarUrl = (meme as any).authorAvatarUrl;
+      }
     }
     acc[meme.authorUsername].totalVotes += meme.votes;
     acc[meme.authorUsername].memeCount += 1;
@@ -177,12 +184,8 @@ export function Leaderboard() {
                 <div key={creator.username} 
                      className="flex items-center justify-between p-3 bg-accent rounded-lg cursor-pointer hover:bg-accent/80 transition-colors"
                      onClick={() => {
-                       // Find a meme by this creator to get wallet address
-                       const creatorMeme = memes.find(m => m.authorUsername === creator.username);
-                       if (creatorMeme) {
-                         setSelectedUser({ walletAddress: creatorMeme.authorWallet, username: creator.username });
-                         setShowUserModal(true);
-                       }
+                       setSelectedUser({ walletAddress: creator.walletAddress, username: creator.username });
+                       setShowUserModal(true);
                      }}>
                   <div className="flex items-center space-x-3">
                     <div className="flex items-center justify-center w-8 h-8">
@@ -190,9 +193,17 @@ export function Leaderboard() {
                     </div>
                     <div className="flex items-center space-x-2">
                       <Avatar className="h-8 w-8 bg-primary">
-                        <AvatarFallback className="text-primary-foreground font-bold text-xs">
-                          {creator.username.charAt(0).toUpperCase()}
-                        </AvatarFallback>
+                        {creator.avatarUrl ? (
+                          <img 
+                            src={creator.avatarUrl} 
+                            alt={creator.username}
+                            className="w-full h-full rounded-full object-cover"
+                          />
+                        ) : (
+                          <AvatarFallback className="text-primary-foreground font-bold text-xs">
+                            {creator.username.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        )}
                       </Avatar>
                       <div>
                         <div className="font-semibold text-foreground text-sm">
