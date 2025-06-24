@@ -63,14 +63,15 @@ export async function createContest(req: Request, res: Response) {
 // Start contest
 export async function startContest(req: Request, res: Response) {
   try {
-    const { contestId, userWallet } = req.body;
+    const { id } = req.params;
+    const { userWallet } = req.body;
     
     const isAdmin = await storage.isUserAdmin(userWallet);
     if (!isAdmin) {
       return res.status(403).json({ error: "Admin access required" });
     }
 
-    const contest = await storage.startContest(contestId);
+    const contest = await storage.startContest(parseInt(id));
     res.json({ contest });
   } catch (error) {
     console.error("Error starting contest:", error);
@@ -81,14 +82,15 @@ export async function startContest(req: Request, res: Response) {
 // End contest and archive memes
 export async function endContest(req: Request, res: Response) {
   try {
-    const { contestId, userWallet } = req.body;
+    const { id } = req.params;
+    const { userWallet } = req.body;
     
     const isAdmin = await storage.isUserAdmin(userWallet);
     if (!isAdmin) {
       return res.status(403).json({ error: "Admin access required" });
     }
 
-    const result = await storage.endContestAndArchive(contestId);
+    const result = await storage.endContestAndArchive(parseInt(id));
     res.json({ 
       contest: result.contest,
       archivedCount: result.archivedMemes.length 

@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, bigint, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, bigint, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -113,6 +113,18 @@ export const insertUserSchema = createInsertSchema(users).omit({
   updatedAt: true,
 });
 
+export const insertContestSchema = createInsertSchema(contests).omit({
+  id: true,
+  createdAt: true,
+  archivedAt: true,
+});
+
+export const insertArchivedMemeSchema = createInsertSchema(archivedMemes).omit({
+  id: true,
+  createdAt: true,
+  archivedAt: true,
+});
+
 export type InsertMeme = z.infer<typeof insertMemeSchema>;
 export type Meme = typeof memes.$inferSelect;
 export type InsertVote = z.infer<typeof insertVoteSchema>;
@@ -127,3 +139,7 @@ export type InsertPartnerVote = z.infer<typeof insertPartnerVoteSchema>;
 export type PartnerVote = typeof partnerVotes.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type InsertContest = z.infer<typeof insertContestSchema>;
+export type Contest = typeof contests.$inferSelect;
+export type InsertArchivedMeme = z.infer<typeof insertArchivedMemeSchema>;
+export type ArchivedMeme = typeof archivedMemes.$inferSelect;
