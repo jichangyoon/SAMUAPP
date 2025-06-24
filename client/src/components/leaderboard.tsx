@@ -5,7 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { Trophy, Medal, Crown, TrendingUp, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Trophy, Medal, Crown, TrendingUp, Calendar, ChevronDown } from "lucide-react";
 import { UserInfoModal } from "@/components/user-info-modal";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import type { Meme } from "@shared/schema";
@@ -44,6 +45,8 @@ export function Leaderboard() {
   const [selectedUser, setSelectedUser] = useState<{ walletAddress: string; username: string } | null>(null);
   const [showMemeModal, setShowMemeModal] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
+  const [showAllCurrent, setShowAllCurrent] = useState(false);
+  const [showAllCreators, setShowAllCreators] = useState(false);
 
   // Optimized data fetching for leaderboard with smart caching
   const { data: memesResponse, isLoading } = useQuery({
@@ -79,24 +82,26 @@ export function Leaderboard() {
   // Extract memes array with proper type checking
   const memesArray: Meme[] = memesResponse?.memes || [];
 
-  // Optimize meme sorting with useMemo (must be before early returns)
-  const { sortedMemes, topMemes } = useMemo(() => {
+  // Optimize meme sorting with useMemo
+  const { sortedMemes, topMemes, displayedMemes } = useMemo(() => {
     if (!Array.isArray(memesArray) || memesArray.length === 0) {
-      return { sortedMemes: [], topMemes: [] };
+      return { sortedMemes: [], topMemes: [], displayedMemes: [] };
     }
     const sorted = [...memesArray].sort((a, b) => b.votes - a.votes);
     return {
       sortedMemes: sorted,
-      topMemes: sorted.slice(0, 10)
+      topMemes: sorted.slice(0, 10),
+      displayedMemes: showAllCurrent ? sorted : sorted.slice(0, 10)
     };
-  }, [memesArray]);
+  }, [memesArray, showAllCurrent]);
 
   // Optimize creator stats calculation with useMemo
-  const creatorStats = useMemo(() => {
+  const { creatorStats, displayedCreators } = useMemo(() => {
     if (!Array.isArray(memesArray) || memesArray.length === 0) {
-      return {};
+      return { creatorStats: {}, displayedCreators: [] };
     }
-    return memesArray.reduce((acc, meme) => {
+    
+    const stats = memesArray.reduce((acc, meme) => {
       if (!acc[meme.authorUsername]) {
         acc[meme.authorUsername] = {
           username: meme.authorUsername,
@@ -117,11 +122,19 @@ export function Leaderboard() {
       acc[meme.authorUsername].avgVotes = Math.round(acc[meme.authorUsername].totalVotes / acc[meme.authorUsername].memeCount);
       return acc;
     }, {} as Record<string, any>);
-  }, [memesArray]);
+    
+    const creators = Object.values(stats)
+      .sort((a: any, b: any) => b.totalVotes - a.totalVotes);
+    
+    return {
+      creatorStats: stats,
+      displayedCreators: showAllCreators ? creators : creators.slice(0, 10)
+    };
+  }, [memesArray, showAllCreators]);
 
-  // Optimize top creators calculation
+  // Top creators for Hall of Fame tab
   const topCreators = useMemo(() => {
-    return Object.values(creatorStats)
+    return Object.values(creatorStats || {})
       .sort((a: any, b: any) => b.totalVotes - a.totalVotes)
       .slice(0, 5);
   }, [creatorStats]);
@@ -178,7 +191,7 @@ export function Leaderboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {topMemes.map((meme, index) => (
+              {displayedMemes.map((meme, index) => (
                 <div key={meme.id} className="flex items-center justify-between p-3 bg-accent rounded-lg cursor-pointer hover:bg-accent/80 transition-colors"
                      onClick={() => {
                        setSelectedMeme(meme);
@@ -215,9 +228,37 @@ export function Leaderboard() {
                 </div>
               ))}
               
-              {topMemes.length === 0 && (
+              {displayedMemes.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
                   No memes with votes yet
+                </div>
+              )}
+              
+              {/* More button for current rankings */}
+              {!showAllCurrent && sortedMemes.length > 10 && (
+                <div className="flex justify-center pt-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowAllCurrent(true)}
+                    className="text-primary border-primary hover:bg-primary hover:text-primary-foreground"
+                  >
+                    <ChevronDown className="h-4 w-4 mr-2" />
+                    MORE ({sortedMemes.length - 10} more)
+                  </Button>
+                </div>
+              )}
+              
+              {showAllCurrent && sortedMemes.length > 10 && (
+                <div className="flex justify-center pt-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowAllCurrent(false)}
+                    className="text-muted-foreground"
+                  >
+                    Show Less
+                  </Button>
                 </div>
               )}
             </CardContent>
@@ -234,7 +275,7 @@ export function Leaderboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {topCreators.map((creator: any, index) => (
+              {displayedCreators.map((creator: any, index) => (
                 <div key={creator.username} 
                      className="flex items-center justify-between p-3 bg-accent rounded-lg cursor-pointer hover:bg-accent/80 transition-colors"
                      onClick={() => {
