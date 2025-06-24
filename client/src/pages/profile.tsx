@@ -118,68 +118,172 @@ const Profile = React.memo(() => {
     return { displayName: '', profileImage: '' };
   }, [user?.id]);
 
-  // 컴포넌트 마운트 시 저장된 프로필 정보 로드
+  // Load profile data from database, not localStorage
   useEffect(() => {
-    const storedProfile = getStoredProfile;
-    setDisplayName(storedProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
-    setProfileImage(storedProfile.profileImage || '');
-  }, [getStoredProfile, user?.email?.address]);
+    if (userProfile) {
+      setDisplayName(userProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
+      setProfileImage(userProfile.avatarUrl || '');
+      console.log('Profile loaded from database:', { displayName: userProfile.displayName, avatarUrl: userProfile.avatarUrl });
+    } else {
+      setDisplayName(user?.email?.address?.split('@')[0] || 'User');
+      setProfileImage('');
+    }
+  }, [userProfile, user?.email?.address]);
 
-  // 프로필 이미지 변경 - useCallback으로 최적화
-  const handleImageChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle image upload to R2
+  const handleImageChange = React.useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (!file) return;
+
+    console.log('=== PROFILE IMAGE UPLOAD STARTED (Profile Page) ===');
+    console.log('File selected:', { name: file.name, size: file.size, type: file.type });
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image file (JPEG, PNG, GIF, WebP)",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please upload an image smaller than 5MB",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Show preview immediately
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
         setImagePreview(result);
       };
       reader.readAsDataURL(file);
-    }
-  }, []);
 
-  // 프로필 저장 - useCallback으로 최적화
-  const handleSaveProfile = React.useCallback(() => {
-    const profileData = {
-      displayName,
-      profileImage: imagePreview || profileImage
-    };
+      // Upload to R2
+      const formData = new FormData();
+      formData.append('file', file);
 
-    localStorage.setItem(`profile_${user?.id}`, JSON.stringify(profileData));
+      console.log('Starting profile image upload to /api/uploads/profile');
+      const response = await fetch('/api/uploads/profile', {
+        method: 'POST',
+        body: formData,
+      });
 
-    if (imagePreview) {
-      setProfileImage(imagePreview);
-      setImagePreview('');
-    }
-
-    setIsEditing(false);
-
-    toast({
-      title: "Profile Updated",
-      description: "Your profile has been saved successfully.",
-    });
-
-    // 쿼리 캐시 무효화
-    queryClient.invalidateQueries({
-      queryKey: ['profile', user?.id]
-    });
-
-    // 홈 페이지의 헤더 데이터도 업데이트 - 브라우저 이벤트로 알림
-    window.dispatchEvent(new CustomEvent('profileUpdated', {
-      detail: {
-        displayName,
-        profileImage: imagePreview || profileImage
+      if (!response.ok) {
+        throw new Error('Profile image upload failed');
       }
-    }));
-  }, [displayName, imagePreview, profileImage, user?.id, toast, queryClient]);
 
-  // 편집 취소 - useCallback으로 최적화
+      const result = await response.json();
+      console.log('Profile upload API response:', result);
+
+      if (result.success && result.profileUrl) {
+        // Update profile image with R2 URL
+        setProfileImage(result.profileUrl);
+        
+        // Update database with new profile data
+        await updateProfile(displayName, result.profileUrl);
+        
+        toast({
+          title: "Profile Image Updated",
+          description: "Your profile image has been uploaded successfully"
+        });
+      }
+
+    } catch (error) {
+      console.error('Profile image upload error:', error);
+      toast({
+        title: "Upload Failed",
+        description: "Failed to upload profile image. Please try again.",
+        variant: "destructive"
+      });
+    }
+  }, [displayName, toast]);
+
+  // Update profile function
+  const updateProfile = async (name: string, imageUrl?: string) => {
+    try {
+      const response = await apiRequest('/api/users/profile', {
+        method: 'PUT',
+        body: JSON.stringify({
+          walletAddress,
+          displayName: name,
+          avatarUrl: imageUrl || profileImage
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        // Invalidate queries to refresh data
+        queryClient.invalidateQueries({ queryKey: ['user-profile', walletAddress] });
+        
+        // Update home page header
+        window.dispatchEvent(new CustomEvent('profileUpdated', {
+          detail: { displayName: name, profileImage: imageUrl || profileImage }
+        }));
+        
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Profile update error:', error);
+      return false;
+    }
+  };
+
+  // Save profile changes
+  const handleSaveProfile = React.useCallback(async () => {
+    if (!displayName.trim()) {
+      toast({
+        title: "Invalid Name",
+        description: "Display name cannot be empty",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const success = await updateProfile(displayName.trim());
+    
+    if (success) {
+      setIsEditing(false);
+      setImagePreview('');
+      
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been saved successfully."
+      });
+    } else {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive"
+      });
+    }
+  }, [displayName, profileImage, walletAddress, toast, queryClient]);
+
+  // Cancel editing
   const handleCancelEdit = React.useCallback(() => {
-    setDisplayName(getStoredProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
-    setProfileImage(getStoredProfile.profileImage || '');
+    // Reset to database values
+    if (userProfile) {
+      setDisplayName(userProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
+      setProfileImage(userProfile.avatarUrl || '');
+    } else {
+      setDisplayName(user?.email?.address?.split('@')[0] || 'User');
+      setProfileImage('');
+    }
     setImagePreview('');
     setIsEditing(false);
-  }, [getStoredProfile, user?.email?.address]);
+  }, [userProfile, user?.email?.address]);
 
 
 
