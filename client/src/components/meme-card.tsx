@@ -183,7 +183,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
               )}
               <button 
                 onClick={() => setShowUserModal(true)}
-                className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer underline"
+                className="text-sm text-muted-foreground cursor-pointer underline"
               >
                 {meme.authorUsername}
               </button>

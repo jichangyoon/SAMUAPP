@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Trophy, Medal, Crown, TrendingUp, Calendar } from "lucide-react";
 import { UserInfoModal } from "@/components/user-info-modal";
@@ -140,7 +140,7 @@ export function Leaderboard() {
                       </div>
                       <div className="text-xs text-muted-foreground">
                         by <span 
-                          className="hover:text-primary underline cursor-pointer"
+                          className="underline cursor-pointer"
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedUser({ walletAddress: meme.authorWallet, username: meme.authorUsername });
