@@ -6,8 +6,9 @@ import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, D
 import { usePrivy } from '@privy-io/react-auth';
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowUp, Share2, Twitter, Send, Trash2 } from "lucide-react";
+import { ArrowUp, Trash2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { UserInfoModal } from "@/components/user-info-modal";
 import type { Meme } from "@shared/schema";
 
@@ -19,8 +20,7 @@ interface MemeCardProps {
 
 export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   const [showVoteDialog, setShowVoteDialog] = useState(false);
-  const [showDetailDialog, setShowDetailDialog] = useState(false);
-  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
@@ -84,19 +84,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   };
 
   // Share functions
-  const shareToTwitter = () => {
-    const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername} 🔥`;
-    const url = window.location.href;
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
-    window.open(twitterUrl, '_blank');
-  };
 
-  const shareToTelegram = () => {
-    const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername}`;
-    const url = window.location.href;
-    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
-    window.open(telegramUrl, '_blank');
-  };
 
   const handleShare = (platform: string) => {
     if (platform === 'twitter') {
@@ -147,7 +135,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
     <>
       <Card className="overflow-hidden border-border bg-card">
         <button 
-          onClick={() => setShowDetailDialog(true)}
+          onClick={() => setShowDetailModal(true)}
           className="w-full aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-opacity"
         >
           <img

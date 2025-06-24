@@ -17,8 +17,6 @@ interface MemeDetailModalProps {
 export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false }: MemeDetailModalProps) {
   const [showShareDialog, setShowShareDialog] = useState(false);
   
-
-
   const shareToTwitter = () => {
     const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername} 🔥`;
     const url = window.location.href;
