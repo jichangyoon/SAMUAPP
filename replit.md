@@ -360,6 +360,9 @@ Changelog:
 - June 24, 2025. Added automatic username suggestion feature - generates numbered alternatives when names are taken
 - June 24, 2025. Enhanced profile editing UI with inline validation, error messages, and clickable name suggestions
 - June 24, 2025. Completed PostgreSQL-based profile data storage - display names stored in database with uniqueness constraints
+- June 24, 2025. Fixed R2 cloud storage file deletion system - memes deleted from app now properly remove files from R2 storage
+- June 24, 2025. Enhanced R2 deletion function with proper error handling and detailed logging for successful file cleanup
+- June 24, 2025. Improved URL parsing for R2 key extraction to handle various R2 Public Development URL formats
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
