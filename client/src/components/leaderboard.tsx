@@ -84,8 +84,8 @@ export function Leaderboard() {
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1: return <Trophy className="h-5 w-5 text-yellow-400" />;
-      case 2: return <Medal className="h-5 w-5 text-muted-foreground" />;
-      case 3: return <Medal className="h-5 w-5 text-amber-400" />;
+      case 2: return <Medal className="h-5 w-5 text-gray-400" />;
+      case 3: return <Medal className="h-5 w-5 text-amber-600" />;
       default: return <span className="text-sm font-bold text-muted-foreground">#{rank}</span>;
     }
   };
