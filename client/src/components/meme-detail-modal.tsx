@@ -16,6 +16,14 @@ interface MemeDetailModalProps {
 
 export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false }: MemeDetailModalProps) {
   const [showShareDialog, setShowShareDialog] = useState(false);
+  
+  // Debug logging
+  console.log('MemeDetailModal - meme data:', {
+    id: meme.id,
+    authorUsername: meme.authorUsername,
+    authorAvatarUrl: (meme as any).authorAvatarUrl,
+    fullMeme: meme
+  });
 
   const shareToTwitter = () => {
     const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername} 🔥`;
@@ -62,6 +70,7 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
                     src={(meme as any).authorAvatarUrl} 
                     alt={meme.authorUsername}
                     key={`${meme.id}-${(meme as any).authorAvatarUrl}`}
+                    onError={() => console.log('Avatar image failed to load:', (meme as any).authorAvatarUrl)}
                   />
                   <AvatarFallback className="bg-gray-700 text-white">
                     {meme.authorUsername.charAt(0).toUpperCase()}
@@ -70,6 +79,10 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
                 <div>
                   <div className="font-semibold text-white">{meme.authorUsername}</div>
                   <div className="text-sm text-gray-400">Creator</div>
+                  {/* Debug info */}
+                  <div className="text-xs text-red-400">
+                    Avatar URL: {(meme as any).authorAvatarUrl ? 'Present' : 'Missing'}
+                  </div>
                 </div>
               </div>
               <div className="text-right">
