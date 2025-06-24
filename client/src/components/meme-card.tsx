@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowUp, Share2, Twitter, Send, Trash2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserInfoModal } from "@/components/user-info-modal";
+import { MemeDetailModal } from "@/components/meme-detail-modal";
 import type { Meme } from "@shared/schema";
 
 interface MemeCardProps {
@@ -267,71 +268,16 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
         </DrawerContent>
       </Drawer>
 
-      <Drawer open={showDetailDialog} onOpenChange={setShowDetailDialog}>
-        <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
-          <DrawerHeader>
-            <DrawerTitle className="text-foreground">{meme.title}</DrawerTitle>
-          </DrawerHeader>
-
-          <div className="px-4 pb-4 overflow-y-auto flex-1 space-y-4">
-            <div className="aspect-square rounded-lg overflow-hidden">
-              <img
-                src={meme.imageUrl}
-                alt={meme.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Avatar className="h-8 w-8">
-                <AvatarImage 
-                  src={(meme as any).authorAvatarUrl} 
-                  alt={meme.authorUsername}
-                  key={`detail-${meme.id}-${(meme as any).authorAvatarUrl}`}
-                />
-                <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                  {meme.authorUsername.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="font-medium text-foreground">{meme.authorUsername}</div>
-                <div className="text-sm text-muted-foreground">
-                  {meme.votes.toLocaleString()} votes
-                </div>
-              </div>
-            </div>
-
-            {meme.description && (
-              <div>
-                <h4 className="font-medium text-foreground mb-2">Description</h4>
-                <p className="text-muted-foreground">{meme.description}</p>
-              </div>
-            )}
-
-            <div className="flex space-x-2 pt-2">
-              <Button
-                onClick={() => {
-                  setShowDetailDialog(false);
-                  setShowVoteDialog(true);
-                }}
-                disabled={!canVote}
-                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
-              >
-                <ArrowUp className="h-4 w-4 mr-2" />
-                Vote
-              </Button>
-              <Button
-                onClick={() => setShowShareDialog(true)}
-                variant="outline"
-                size="sm"
-                className="px-4"
-              >
-                <Share2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </DrawerContent>
-      </Drawer>
+      <MemeDetailModal
+        isOpen={showDetailDialog}
+        onClose={() => setShowDetailDialog(false)}
+        meme={meme}
+        onVote={() => {
+          setShowDetailDialog(false);
+          setShowVoteDialog(true);
+        }}
+        canVote={canVote}
+      />
 
       {/* Share Drawer */}
       <Drawer open={showShareDialog} onOpenChange={setShowShareDialog}>
