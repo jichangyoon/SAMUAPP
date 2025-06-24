@@ -432,7 +432,15 @@ export default function Home() {
                                 >
                                   <MemeCard 
                                     meme={meme} 
-                                    onVote={() => refetch()}
+                                    onVote={() => {
+                                      // 즉시 UI 업데이트
+                                      setAllMemes(prevMemes => 
+                                        prevMemes.map(m => 
+                                          m.id === meme.id ? { ...m, votes: m.votes + samuBalance } : m
+                                        )
+                                      );
+                                      refetch();
+                                    }}
                                     canVote={isConnected}
                                   />
                                 </div>
@@ -452,7 +460,9 @@ export default function Home() {
                                 <button
                                   key={meme.id}
                                   onClick={() => {
-                                    setSelectedMeme(meme);
+                                    // 현재 투표 수를 포함한 meme 객체 전달
+                                    const currentMeme = allMemes.find(m => m.id === meme.id) || meme;
+                                    setSelectedMeme(currentMeme);
                                   }}
                                   className="aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-all duration-200 relative group animate-fade-in"
                                   style={{ 
@@ -901,19 +911,11 @@ export default function Home() {
                   setIsVoting(true);
                   
                   // 즉시 UI 업데이트 (낙관적 업데이트)
-                  const optimisticUpdate = () => {
-                    queryClient.setQueryData(['/api/memes'], (oldData: any) => {
-                      if (!oldData?.memes) return oldData;
-                      return {
-                        ...oldData,
-                        memes: oldData.memes.map((m: any) => 
-                          m.id === selectedMeme.id ? { ...m, votes: m.votes + 1 } : m
-                        )
-                      };
-                    });
-                  };
-
-                  optimisticUpdate();
+                  setAllMemes(prevMemes => 
+                    prevMemes.map(m => 
+                      m.id === selectedMeme.id ? { ...m, votes: m.votes + 1 } : m
+                    )
+                  );
                   
                   try {
                     await apiRequest("POST", `/api/memes/${selectedMeme.id}/vote`, {
@@ -923,6 +925,9 @@ export default function Home() {
 
                     // 성공 시 실제 데이터로 업데이트
                     refetch();
+                    
+                    // 선택된 밈도 업데이트
+                    setSelectedMeme(prev => prev ? { ...prev, votes: prev.votes + 1 } : null);
 
                     toast({
                       title: "Vote Submitted!",
@@ -933,6 +938,11 @@ export default function Home() {
                     handleVoteSuccess();
                   } catch (error: any) {
                     // 실패 시 원래 상태로 복구
+                    setAllMemes(prevMemes => 
+                      prevMemes.map(m => 
+                        m.id === selectedMeme.id ? { ...m, votes: m.votes - 1 } : m
+                      )
+                    );
                     refetch();
                     
                     toast({

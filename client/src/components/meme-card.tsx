@@ -60,31 +60,11 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
 
     setIsVoting(true);
     
-    // 1. 즉시 UI 업데이트 (낙관적 업데이트)
-    const optimisticUpdate = () => {
-      queryClient.setQueryData(['/api/memes'], (oldData: any) => {
-        if (!oldData?.memes) return oldData;
-        return {
-          ...oldData,
-          memes: oldData.memes.map((m: any) => 
-            m.id === meme.id ? { ...m, votes: m.votes + votingPower } : m
-          )
-        };
-      });
-    };
-
-    optimisticUpdate();
-
     try {
-      // 2. 서버 요청
       await apiRequest("POST", `/api/memes/${meme.id}/vote`, {
         voterWallet: walletAddress,
         votingPower,
       });
-
-      // 3. 성공 시 실제 데이터로 업데이트
-      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
-      queryClient.invalidateQueries({ queryKey: ['user-votes', walletAddress] });
 
       toast({
         title: "Vote Submitted!",
@@ -93,11 +73,8 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
       });
 
       setShowVoteDialog(false);
-      onVote();
+      onVote(); // 부모에서 UI 업데이트 처리
     } catch (error: any) {
-      // 4. 실패 시 원래 상태로 복구
-      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
-      
       toast({
         title: "Voting Failed",
         description: error.message || "Failed to submit vote. You may have already voted on this meme.",
