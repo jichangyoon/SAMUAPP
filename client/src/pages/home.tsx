@@ -80,10 +80,7 @@ export default function Home() {
     enabled: !!walletAddress && authenticated,
   });
 
-  // 디버그를 위한 강제 상태 확인
-  useEffect(() => {
-    console.log('Home component state:', { showAdminPanel, isConnected, userProfile: userProfile?.isAdmin });
-  }, [showAdminPanel, isConnected, userProfile]);
+
 
   // Profile state management
   const [profileData, setProfileData] = useState({ displayName: 'User', profileImage: '' });
@@ -379,18 +376,14 @@ export default function Home() {
                         Submit Meme
                       </Button>
                     )}
-                    {/* 임시로 모든 연결된 사용자에게 Admin 버튼 표시 */}
-                    {isConnected && (
+                    {userProfile?.isAdmin && (
                       <Button 
-                        onClick={() => {
-                          console.log('Admin button clicked - forcing panel open');
-                          setShowAdminPanel(true);
-                        }}
+                        onClick={() => setShowAdminPanel(true)}
                         variant="outline"
                         className="px-6 py-2 rounded-lg font-medium"
                       >
                         <Trophy className="h-4 w-4 mr-2" />
-                        Admin (Test)
+                        Admin
                       </Button>
                     )}
                     
