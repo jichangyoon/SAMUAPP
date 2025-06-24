@@ -306,13 +306,13 @@ export function Leaderboard() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-3 bg-accent rounded-lg">
                   <div className="text-2xl font-bold text-primary">
-                    {memes.length + hallOfFameData.length}
+                    {memesArray.length + hallOfFameData.length}
                   </div>
                   <div className="text-sm text-muted-foreground">Total Memes</div>
                 </div>
                 <div className="text-center p-3 bg-accent rounded-lg">
                   <div className="text-2xl font-bold text-primary">
-                    {memes.reduce((sum, meme) => sum + meme.votes, 0).toLocaleString()}
+                    {memesArray.reduce((sum, meme) => sum + meme.votes, 0).toLocaleString()}
                   </div>
                   <div className="text-sm text-muted-foreground">Total Votes</div>
                 </div>
