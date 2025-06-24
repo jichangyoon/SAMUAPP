@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Image, Users, Plus } from "lucide-react";
+import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -827,65 +828,18 @@ export default function Home() {
 
 
 
-      {/* Grid View Meme Detail Drawer */}
+      {/* Grid View Meme Detail Modal */}
       {selectedMeme && (
-        <Drawer open={!!selectedMeme} onOpenChange={() => setSelectedMeme(null)}>
-          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
-            <DrawerHeader>
-              <DrawerTitle className="text-foreground">{selectedMeme.title}</DrawerTitle>
-            </DrawerHeader>
-
-            <div className="px-4 pb-4 overflow-y-auto flex-1 space-y-4">
-              <div className="aspect-square rounded-lg overflow-hidden">
-                <img
-                  src={selectedMeme.imageUrl}
-                  alt={selectedMeme.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-sm font-bold text-primary-foreground">
-                    {selectedMeme.authorUsername.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <div>
-                  <div className="font-medium text-foreground">{selectedMeme.authorUsername}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {selectedMeme.votes.toLocaleString()} votes
-                  </div>
-                </div>
-              </div>
-
-              {selectedMeme.description && (
-                <div>
-                  <h4 className="font-medium text-foreground mb-2">Description</h4>
-                  <p className="text-muted-foreground">{selectedMeme.description}</p>
-                </div>
-              )}
-
-              <div className="flex space-x-2 pt-2">
-                <Button
-                  onClick={() => setShowVoteDialog(true)}
-                  disabled={!isConnected}
-                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
-                >
-                  <ArrowUp className="h-4 w-4 mr-2" />
-                  Vote
-                </Button>
-                <Button
-                  onClick={() => setShowShareDialog(true)}
-                  variant="outline"
-                  size="sm"
-                  className="px-4"
-                >
-                  <Share2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </DrawerContent>
-        </Drawer>
+        <MemeDetailModal
+          isOpen={!!selectedMeme}
+          onClose={() => setSelectedMeme(null)}
+          meme={selectedMeme}
+          onVote={() => {
+            setSelectedMeme(null);
+            setShowVoteDialog(true);
+          }}
+          canVote={isConnected}
+        />
       )}
 
       {/* Grid View Vote Confirmation Drawer */}

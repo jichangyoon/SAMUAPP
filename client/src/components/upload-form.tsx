@@ -112,7 +112,7 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       }
 
       const result = await response.json();
-      console.log('Upload successful:', result);
+  
       return result.fileUrl; // R2 URL is returned directly
     } catch (error: any) {
       clearTimeout(timeoutId);
