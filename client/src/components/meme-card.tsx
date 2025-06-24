@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { usePrivy } from '@privy-io/react-auth';
 import { apiRequest } from "@/lib/queryClient";
@@ -168,19 +169,16 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-2">
-              {(meme as any).authorAvatarUrl ? (
-                <img 
+              <Avatar className="h-6 w-6">
+                <AvatarImage 
                   src={(meme as any).authorAvatarUrl} 
                   alt={meme.authorUsername}
-                  className="w-6 h-6 rounded-full object-cover"
+                  key={(meme as any).authorAvatarUrl}
                 />
-              ) : (
-                <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-xs font-bold text-primary-foreground">
-                    {meme.authorUsername.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                  {meme.authorUsername.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
               <button 
                 onClick={() => setShowUserModal(true)}
                 className="text-sm text-muted-foreground cursor-pointer underline"
