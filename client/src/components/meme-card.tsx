@@ -147,10 +147,10 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
 
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-foreground text-sm">{meme.title}</h3>
+            <h3 className="font-semibold text-foreground">{meme.title}</h3>
             <div className="flex items-center gap-1 text-primary">
               <ArrowUp className="h-4 w-4" />
-              <span className="font-bold text-sm">{meme.votes}</span>
+              <span className="font-bold">{meme.votes}</span>
             </div>
           </div>
 
@@ -159,25 +159,25 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
               onClick={() => setShowUserModal(true)}
               className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
             >
-              <Avatar className="h-6 w-6">
+              <Avatar className="h-8 w-8">
                 <AvatarImage 
                   src={(meme as any).authorAvatarUrl} 
                   alt={meme.authorUsername}
                   key={`card-${meme.id}-${(meme as any).authorAvatarUrl}`}
                 />
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                <AvatarFallback className="bg-primary text-primary-foreground">
                   {meme.authorUsername.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-xs text-muted-foreground">{meme.authorUsername}</span>
+              <span className="text-sm text-muted-foreground">{meme.authorUsername}</span>
             </button>
 
-            <div className="flex gap-1">
+            <div className="flex gap-2">
               {canVote && (
                 <Button 
                   onClick={() => setShowVoteDialog(true)}
                   size="sm" 
-                  className="h-7 px-2 text-xs bg-primary hover:bg-primary/90"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   Vote
                 </Button>
@@ -187,9 +187,9 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
                   onClick={() => setShowDeleteDialog(true)}
                   size="sm" 
                   variant="outline"
-                  className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                  className="text-destructive hover:text-destructive"
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               )}
             </div>
