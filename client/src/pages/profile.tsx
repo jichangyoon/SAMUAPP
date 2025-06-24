@@ -88,15 +88,17 @@ const Profile = React.memo(() => {
   });
 
   // All memes data to match with user votes
-  const { data: allMemes = [] } = useQuery({
+  const { data: memesResponse } = useQuery({
     queryKey: ['memes'],
     queryFn: async () => {
-      const res = await fetch('/api/memes');
+      const res = await fetch('/api/memes?limit=1000'); // Get all memes for profile
       if (!res.ok) throw new Error('Failed to fetch memes');
       return res.json();
     },
     staleTime: 5 * 60 * 1000, // 5분 캐시
   });
+
+  const allMemes = memesResponse?.memes || [];
 
   // Balance fetching - 짧은 캐시로 최신 잔고 유지
   const { data: samuData } = useQuery({
