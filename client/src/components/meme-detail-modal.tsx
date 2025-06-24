@@ -14,6 +14,38 @@ interface MemeDetailModalProps {
   canVote?: boolean;
 }
 
+// 특정 유저들에게 다른 역할 부여
+const getUserRole = (walletAddress: string, username: string) => {
+  // 여기에 특별한 역할을 줄 지갑 주소들을 추가하세요
+  const specialRoles: { [key: string]: string } = {
+    // 예시: 지갑 주소를 키로 하고 역할을 값으로 설정
+    'xfSWSv7y3SqELDe8Xs5neNCmjULpc6hwhvz5ohSrXa8': 'Admin',
+    // 다른 지갑 주소들도 추가 가능
+    // 'other_wallet_address': 'Moderator',
+    // 'another_wallet_address': 'VIP Member',
+  };
+
+  // 유저명을 기반으로도 설정 가능
+  const specialUsernames: { [key: string]: string } = {
+    // 예시: 특정 유저명에 역할 부여
+    // 'admin_user': 'Admin',
+    // 'mod_user': 'Moderator',
+  };
+
+  // 지갑 주소 우선 확인
+  if (specialRoles[walletAddress]) {
+    return specialRoles[walletAddress];
+  }
+
+  // 유저명 확인
+  if (specialUsernames[username]) {
+    return specialUsernames[username];
+  }
+
+  // 기본값
+  return 'Creator';
+};
+
 export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false }: MemeDetailModalProps) {
   const [showShareDialog, setShowShareDialog] = useState(false);
   
@@ -72,7 +104,7 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
                 </Avatar>
                 <div>
                   <div className="font-semibold text-white">{meme.authorUsername}</div>
-                  <div className="text-sm text-gray-400">Creator</div>
+                  <div className="text-sm text-gray-400">{getUserRole(meme.authorWallet, meme.authorUsername)}</div>
 
                 </div>
               </div>
