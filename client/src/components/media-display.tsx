@@ -1,7 +1,5 @@
-import { useState, useEffect } from "react";
-import { Play, Pause, Volume2, VolumeX } from "lucide-react";
-import { getMediaType } from "@/utils/media-utils";
-import { Button } from "@/components/ui/button";
+import { useState, useRef, useEffect } from "react";
+import { Play } from "lucide-react";
 
 interface MediaDisplayProps {
   src: string;
@@ -24,32 +22,16 @@ export function MediaDisplay({
   loop = true,
   onClick 
 }: MediaDisplayProps) {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(muted);
-  const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null);
-  const [thumbnailGenerated, setThumbnailGenerated] = useState(false);
-  const [showVideoControls, setShowVideoControls] = useState(true);
-  
-  const mediaType = getMediaType(src);
-  
-  const handleVideoPlay = () => {
-    if (videoRef) {
-      if (isPlaying) {
-        videoRef.pause();
-      } else {
-        videoRef.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
-  
-  const handleMuteToggle = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (videoRef) {
-      videoRef.muted = !isMuted;
-      setIsMuted(!isMuted);
-    }
-  };
+  const [showVideoControls, setShowVideoControls] = useState(showControls);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  // props 변경시 state 업데이트
+  useEffect(() => {
+    setShowVideoControls(showControls);
+  }, [showControls]);
+
+  const mediaType = src.includes('.mp4') || src.includes('.mov') || src.includes('.avi') || src.includes('.webm') ? 'video' : 'image';
+
   
   const handleVideoClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -66,7 +48,7 @@ export function MediaDisplay({
     return (
       <div className={`relative group ${className}`}>
         <video
-          ref={setVideoRef}
+          ref={videoRef}
           src={src}
           className="w-full h-full object-cover cursor-pointer"
           autoPlay={autoPlay && showVideoControls}
@@ -80,10 +62,9 @@ export function MediaDisplay({
           lang="en"
           onClick={handleVideoClick}
           onLoadedMetadata={() => {
-            // 썸네일 생성
-            if (videoRef && !thumbnailGenerated) {
-              videoRef.currentTime = 0.1;
-              setThumbnailGenerated(true);
+            // 썸네일 생성을 위해 첫 프레임으로 이동
+            if (videoRef.current && !showVideoControls) {
+              videoRef.current.currentTime = 0.1;
             }
           }}
         />
