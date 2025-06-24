@@ -143,6 +143,46 @@ const Profile = React.memo(() => {
     }
   }, [userProfile, user?.email?.address]);
 
+  // Update profile function
+  const updateProfile = React.useCallback(async (name: string, imageUrl?: string) => {
+    try {
+      
+      const response = await fetch(`/api/users/profile/${walletAddress}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          displayName: name,
+          avatarUrl: imageUrl || profileImage
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Invalidate specific profile queries
+        queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] });
+        queryClient.invalidateQueries({ queryKey: [`/api/users/profile/${walletAddress}`] });
+        
+        // Dispatch profile update event for immediate sync
+        window.dispatchEvent(new CustomEvent('profileUpdated', {
+          detail: { 
+            displayName: name, 
+            profileImage: imageUrl || profileImage,
+            avatarUrl: imageUrl || profileImage
+          }
+        }));
+        
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      return false;
+    }
+  }, [walletAddress, profileImage, queryClient]);
+
   // Handle image upload to R2 - 메모리 누수 방지 및 최적화
   const handleImageChange = React.useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -250,46 +290,7 @@ const Profile = React.memo(() => {
       });
     }
   }, [displayName, walletAddress, toast, queryClient, updateProfile]);
-
-  // Update profile function
-  const updateProfile = async (name: string, imageUrl?: string) => {
-    try {
-      
-      const response = await fetch(`/api/users/profile/${walletAddress}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          displayName: name,
-          avatarUrl: imageUrl || profileImage
-        })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        
-        // Invalidate specific profile queries
-        queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] });
-        queryClient.invalidateQueries({ queryKey: [`/api/users/profile/${walletAddress}`] });
-        
-        // Dispatch profile update event for immediate sync
-        window.dispatchEvent(new CustomEvent('profileUpdated', {
-          detail: { 
-            displayName: name, 
-            profileImage: imageUrl || profileImage,
-            avatarUrl: imageUrl || profileImage
-          }
-        }));
-        
-        return true;
-      } else {
-        return false;
-      }
-    } catch (error) {
-      return false;
-    }
-  };
+    
 
   // Save profile changes
   const handleSaveProfile = React.useCallback(async () => {
