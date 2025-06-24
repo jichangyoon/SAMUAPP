@@ -1,38 +1,33 @@
-import { useState, useEffect, useRef } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { usePrivy } from "@privy-io/react-auth";
-import { useLocation } from "wouter";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
-import { Drawer, DrawerContent } from "@/components/ui/drawer";
-import { apiRequest } from "@/lib/queryClient";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { WalletConnect } from "@/components/wallet-connect";
+import { ContestHeader } from "@/components/contest-header";
+import { UploadForm } from "@/components/upload-form";
 import { MemeCard } from "@/components/meme-card";
 import { Leaderboard } from "@/components/leaderboard";
 import { GoodsShop } from "@/components/goods-shop";
 import { NftGallery } from "@/components/nft-gallery";
-import { UploadForm } from "@/components/upload-form";
-import { AdminPanel } from "@/components/admin-panel";
-import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { MediaDisplay } from "@/components/media-display";
+
+import { usePrivy } from '@privy-io/react-auth';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Image, Users, Plus } from "lucide-react";
+import { MemeDetailModal } from "@/components/meme-detail-modal";
+import { useLocation } from "wouter";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { getSamuTokenBalance, getSolBalance } from "@/lib/solana";
 import type { Meme } from "@shared/schema";
+import samuLogoImg from "@/assets/samu-logo.webp";
 
-const SAMU_TOKEN_ADDRESS = "EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF";
-
-interface HomeProps {}
-
-export default function Home({}: HomeProps) {
-  const { user, ready: privyReady, authenticated: isConnected, logout } = usePrivy();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  // State management
-  const [currentTab, setCurrentTab] = useState<"contest" | "archive" | "nfts" | "goods">("contest");
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
-  const [sortBy, setSortBy] = useState<'votes' | 'latest'>('votes');
+export default function Home() {
+  const [sortBy, setSortBy] = useState("votes");
+  const [currentTab, setCurrentTab] = useState("contest");
   const [viewMode, setViewMode] = useState<'card' | 'grid'>('card');
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
   const [showVoteDialog, setShowVoteDialog] = useState(false);
@@ -47,77 +42,159 @@ export default function Home({}: HomeProps) {
   const [selectedArchiveContest, setSelectedArchiveContest] = useState<any>(null);
   const [selectedArchiveMeme, setSelectedArchiveMeme] = useState<any>(null);
   
-  // Load archived contests
-  const { data: archivedContests } = useQuery({
-    queryKey: ['/api/archived-contests'],
-    enabled: isConnected,
-  });
-  
-  // Load archived memes for selected contest
-  const { data: archivedMemes } = useQuery({
-    queryKey: ['/api/archived-memes', selectedArchiveContest?.id],
-    enabled: !!selectedArchiveContest?.id,
-  });
-  
-  const loadArchivedContest = async (contestId: number) => {
-    try {
-      const response = await fetch(`/api/archived-memes?contestId=${contestId}`);
-      const data = await response.json();
-      
-      setSelectedArchiveContest({
-        id: contestId,
-        title: archivedContests?.find((c: any) => c.id === contestId)?.title || "Contest",
-        participants: data.archivedMemes?.length || 0,
-        totalVotes: data.archivedMemes?.reduce((sum: number, meme: any) => sum + meme.votes, 0) || 0,
-        status: "Completed",
-        memes: data.archivedMemes || []
-      });
-      setArchiveView('contest');
-    } catch (error) {
-      console.error('Failed to load archived contest:', error);
-    }
-  };
-  
   // Infinite scroll state
   const [page, setPage] = useState(1);
   const [allMemes, setAllMemes] = useState<Meme[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  
-  // Get wallet address
-  const walletAddress = user?.wallet?.address || user?.linkedAccounts?.find(account => account.type === 'wallet')?.address || '';
 
-  // User profile query
+  // Privy authentication
+  const { authenticated, user } = usePrivy();
+  const { toast } = useToast();
+  const [, navigate] = useLocation();
+
+  // Solana 지갑만 사용 - 간단하고 깔끔한 로직
+  const walletAccounts = user?.linkedAccounts?.filter(account => 
+    account.type === 'wallet' && 
+    account.connectorType !== 'injected' && 
+    account.chainType === 'solana'
+  ) || [];
+  const selectedWalletAccount = walletAccounts[0]; // 유일한 Solana 지갑
+
+  const isConnected = authenticated && !!selectedWalletAccount;
+  const walletAddress = (selectedWalletAccount as any)?.address || '';
+  const isSolana = true; // 항상 Solana
+
+  // User profile data from database
   const { data: userProfile } = useQuery({
-    queryKey: ['/api/users/profile', walletAddress],
-    enabled: !!walletAddress,
-  });
-
-  // Fetch combined balance data
-  const { data: balanceData } = useQuery({
-    queryKey: ['/api/wallet/balance', walletAddress],
+    queryKey: ['user-profile-header', walletAddress],
     queryFn: async () => {
-      const [samuResponse, solResponse] = await Promise.all([
-        fetch(`/api/samu-balance/${walletAddress}`),
-        fetch(`/api/sol-balance/${walletAddress}`)
-      ]);
-      
-      const [samuData, solData] = await Promise.all([
-        samuResponse.json(),
-        solResponse.json()
-      ]);
-      
-      return {
-        samu: samuData.balance || 0,
-        sol: solData.balance || 0
-      };
+      if (!walletAddress) return null;
+      const res = await fetch(`/api/users/profile/${walletAddress}`);
+      return res.json();
     },
-    enabled: !!walletAddress && isConnected,
-    staleTime: 30 * 1000,
-    refetchInterval: 60 * 1000,
+    enabled: !!walletAddress && authenticated,
   });
 
-  // Update balance state
+  // Profile state management
+  const [profileData, setProfileData] = useState({ displayName: 'User', profileImage: '' });
+
+  // Load profile data from database, not localStorage
+  useEffect(() => {
+    if (userProfile) {
+      setProfileData({
+        displayName: userProfile.displayName || user?.email?.address?.split('@')[0] || 'User',
+        profileImage: userProfile.avatarUrl || ''
+      });
+      // console.log('Header profile loaded from database:', { displayName: userProfile.displayName, avatarUrl: userProfile.avatarUrl });
+    } else if (authenticated) {
+      setProfileData({
+        displayName: user?.email?.address?.split('@')[0] || 'User',
+        profileImage: ''
+      });
+    } else {
+      setProfileData({ displayName: 'User', profileImage: '' });
+    }
+  }, [userProfile, authenticated, user?.email?.address]);
+
+  // Listen for profile updates from profile page
+  useEffect(() => {
+    const handleProfileUpdate = (event: CustomEvent) => {
+      // Force immediate state update for instant visual feedback
+      setProfileData({
+        displayName: event.detail.displayName,
+        profileImage: event.detail.profileImage || event.detail.avatarUrl
+      });
+
+      // Invalidate queries for immediate sync
+      queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] });
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate as EventListener);
+    return () => window.removeEventListener('profileUpdated', handleProfileUpdate as EventListener);
+  }, [queryClient, walletAddress]);
+
+  const displayName = authenticated ? profileData.displayName : 'SAMU';
+  const profileImage = profileData.profileImage;
+
+  // Grid view voting function
+  const handleGridVote = async (meme: Meme) => {
+    if (!isConnected || !walletAddress) {
+      toast({
+        title: "Wallet Required",
+        description: "Please connect your wallet to vote.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const votingPower = 1; // Simplified for now
+    setIsVoting(true);
+
+    try {
+      await apiRequest("POST", `/api/memes/${meme.id}/vote`, {
+        voterWallet: walletAddress,
+        votingPower,
+      });
+
+      toast({
+        title: "Vote Submitted!",
+        description: `Your vote with ${votingPower} voting power has been recorded.`,
+      });
+
+      setSelectedMeme(null);
+      refetch(); // Refresh the memes list
+    } catch (error: any) {
+      toast({
+        title: "Voting Failed",
+        description: error.message || "Failed to submit vote. You may have already voted on this meme.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsVoting(false);
+    }
+  };
+
+  // Share functions
+  const shareToTwitter = (meme: Meme) => {
+    const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername} 🔥`;
+    const url = window.location.href;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+    window.open(twitterUrl, '_blank');
+  };
+
+  const shareToTelegram = (meme: Meme) => {
+    const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername}`;
+    const url = window.location.href;
+    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+    window.open(telegramUrl, '_blank');
+  };
+
+  // Wallet connection handled by Privy
+  useEffect(() => {
+    // All wallet management is now handled by Privy authentication
+  }, [authenticated]);
+
+  // React Query로 잔액 조회 최적화
+  const { data: balanceData } = useQuery({
+    queryKey: ['balances', walletAddress],
+    queryFn: async () => {
+      if (!walletAddress || !isSolana) return { samu: 0, sol: 0 };
+
+      const [samuBal, solBal] = await Promise.all([
+        getSamuTokenBalance(walletAddress),
+        getSolBalance(walletAddress)
+      ]);
+
+      return { samu: samuBal, sol: solBal };
+    },
+    enabled: isConnected && !!walletAddress && isSolana,
+    staleTime: 30 * 1000, // 30초간 캐시 유지
+    refetchInterval: 60 * 1000, // 1분마다 자동 갱신
+  });
+
+  // 잔액 상태 업데이트
   useEffect(() => {
     if (balanceData) {
       setSamuBalance(balanceData.samu);
@@ -154,7 +231,7 @@ export default function Home({}: HomeProps) {
       return response.json();
     },
     enabled: true,
-    staleTime: 10 * 1000,
+    staleTime: 10 * 1000, // 10초간 캐시 유지
   });
 
   // Update memes list when new data arrives
@@ -165,222 +242,273 @@ export default function Home({}: HomeProps) {
       } else {
         setAllMemes(prev => [...prev, ...memesResponse.memes]);
       }
-      
       setHasMore(memesResponse.pagination.hasMore);
       setIsLoadingMore(false);
     }
   }, [memesResponse, page]);
 
   // Load more function
-  const loadMore = () => {
+  const loadMore = useCallback(async () => {
     if (!hasMore || isLoadingMore || isLoading) return;
+    
     setIsLoadingMore(true);
     setPage(prev => prev + 1);
-  };
+  }, [hasMore, isLoadingMore, isLoading]);
 
-  // Get sorted memes for display
+  // Infinite scroll detection
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
+        loadMore();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loadMore]);
+
+  // Use allMemes for display (already sorted by backend)
   const sortedMemes = allMemes;
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  // Optimized click handlers with minimal dependencies
+  const handleMemeClick = useCallback((meme: Meme) => {
+    setSelectedMeme(meme);
+    setShowVoteDialog(true);
+  }, []);
 
-  // Handle successful vote
-  const handleVoteSuccess = () => {
+  const handleVoteSuccess = useCallback(async () => {
     setShowVoteDialog(false);
     setSelectedMeme(null);
-    queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
-    queryClient.invalidateQueries({ 
-      predicate: (query) => {
-        const key = query.queryKey;
-        return Array.isArray(key) && key[0] === '/api/memes';
-      }
-    });
-  };
+    
+    // Force immediate refetch of current data instead of resetting
+    await Promise.all([
+      refetch(), // Refetch current page data
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'] }),
+      queryClient.invalidateQueries({ queryKey: ['user-memes', walletAddress] }),
+      queryClient.invalidateQueries({ queryKey: ['user-votes', walletAddress] })
+    ]);
+  }, [queryClient, walletAddress, refetch]);
+
+  const handleShareClick = useCallback((meme: Meme) => {
+    setSelectedMeme(meme);
+    setShowShareDialog(true);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-['Poppins']">
-      <div className="max-w-md mx-auto bg-card">
-        {/* Header */}
-        <div className="sticky top-0 z-10 bg-card border-b border-border">
-          <div className="flex items-center justify-between p-3">
-            <div className="flex items-center space-x-3">
-              <img 
-                src="/assets/samu-logo.webp" 
-                alt="SAMU Logo" 
-                className="w-10 h-10 rounded-full"
-              />
-              <div>
-                <h1 className="text-lg font-bold text-foreground">SAMU</h1>
-                <p className="text-xs text-muted-foreground">Meme Contest</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              {isConnected ? (
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-card shadow-sm border-b border-border">
+        <div className="max-w-md mx-auto px-4 py-1">
+          <div className="flex items-center justify-between">
+            <button 
+              onClick={() => navigate('/profile')}
+              className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+            >
+              {authenticated ? (
                 <>
-                  <button 
-                    onClick={() => setLocation("/profile")}
-                    className="flex items-center space-x-2 px-3 py-1.5 rounded-lg hover:bg-accent transition-colors"
-                  >
-                    {userProfile?.avatarUrl ? (
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
+                    {profileImage ? (
                       <img 
-                        src={userProfile.avatarUrl} 
+                        src={profileImage} 
                         alt="Profile" 
-                        className="w-6 h-6 rounded-full object-cover"
+                        className="w-full h-full object-cover rounded-full"
                       />
                     ) : (
-                      <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
-                        <User className="h-3 w-3 text-primary" />
+                      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                        <span className="text-primary font-bold text-sm">
+                          {displayName.slice(0, 2).toUpperCase()}
+                        </span>
                       </div>
                     )}
-                    <span className="text-sm font-medium text-foreground">
-                      {userProfile?.displayName || 'User'}
-                    </span>
-                  </button>
-                  
-                  {/* Admin Button - Force Show for Testing */}
-                  <Button 
-                    onClick={() => {
-                      console.log('Admin button force clicked');
-                      setShowAdminPanel(true);
-                    }}
-                    variant="outline"
-                    className="px-6 py-2 rounded-lg font-medium bg-yellow-600 text-white hover:bg-yellow-700"
-                  >
-                    <Trophy className="h-4 w-4 mr-2" />
-                    Admin (Force)
-                  </Button>
+                  </div>
+                  <span className="text-lg font-bold text-primary">{displayName}</span>
                 </>
               ) : (
-                <Button 
-                  onClick={() => {
-                    if (privyReady) {
-                      window.location.href = '/login';
-                    }
-                  }} 
-                  variant="outline"
-                  className="px-4 py-2 text-sm"
-                >
-                  Login
-                </Button>
+                <>
+                  <div className="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center samu-wolf-logo overflow-hidden">
+                    <img 
+                      src={samuLogoImg} 
+                      alt="SAMU Wolf" 
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  </div>
+                  <span className="text-lg font-bold text-primary">SAMU</span>
+                </>
               )}
-            </div>
+            </button>
+            <WalletConnect />
           </div>
         </div>
+      </header>
 
-        {/* Tab Content */}
-        <Tabs value={currentTab} onValueChange={(value) => setCurrentTab(value as any)}>
+
+
+      {/* Main Content Container */}
+      <div className="max-w-md mx-auto px-4">
+        <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
+
           <TabsContent value="contest" className="mt-4 space-y-4 pb-24">
-            <Tabs defaultValue="memes" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4 mx-4">
-                <TabsTrigger value="memes" className="text-sm">Entries</TabsTrigger>
+            <Tabs defaultValue="contest-main" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 h-10">
+                <TabsTrigger value="contest-main" className="text-sm">Contest</TabsTrigger>
                 <TabsTrigger value="leaderboard" className="text-sm">Leaderboard</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="memes">
-                <main className="px-4 space-y-4">
-                  {/* Controls */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <select 
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value as 'votes' | 'latest')}
-                        className="px-3 py-1.5 text-sm bg-accent border border-border rounded-lg"
-                      >
-                        <option value="votes">Most Votes</option>
-                        <option value="latest">Latest</option>
-                      </select>
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant={viewMode === 'card' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setViewMode('card')}
-                      >
-                        <List className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant={viewMode === 'grid' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setViewMode('grid')}
-                      >
-                        <Grid3X3 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
+              <TabsContent value="contest-main" className="mt-0">
+                <main className="space-y-4 pb-20">
+                  {/* Contest Header */}
+                  <ContestHeader />
 
-                  {/* Submit Button */}
+                  {/* Submit Button - Only show when logged in */}
                   {isConnected && (
-                    <Button 
-                      onClick={() => setShowUploadForm(true)}
-                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Submit Meme
-                    </Button>
+                    <div className="flex justify-center">
+                      <Button 
+                        onClick={() => setShowUploadForm(true)}
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg font-medium"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Submit Meme
+                      </Button>
+                    </div>
                   )}
 
-                  {/* Memes Display */}
-                  <div className="space-y-4">
-                    {viewMode === 'card' ? (
-                      <div className="space-y-6">
-                        {sortedMemes.map((meme) => (
-                          <MemeCard
-                            key={meme.id}
-                            meme={meme}
-                            onVote={handleVoteSuccess}
-                            canVote={isConnected}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-3 gap-2">
-                        {sortedMemes.map((meme) => (
+                  {/* Meme Gallery */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h2 className="text-lg font-semibold text-foreground">Entries</h2>
+                      <div className="flex items-center space-x-2">
+                        <div className="flex bg-accent rounded-lg p-1">
                           <button
-                            key={meme.id}
-                            onClick={() => setSelectedMeme(meme)}
-                            className="aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-opacity relative group"
+                            onClick={() => setViewMode('card')}
+                            className={`p-1.5 rounded ${viewMode === 'card' ? 'bg-background shadow-sm' : ''}`}
                           >
-                            <MediaDisplay
-                              src={meme.imageUrl}
-                              alt={meme.title}
-                              className="w-full h-full"
-                              showControls={false}
-                              autoPlay={false}
-                              muted={true}
-                              loop={true}
-                            />
-                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                              <div className="text-center">
-                                <div className="text-white text-xs font-medium mb-1">{meme.votes} votes</div>
-                                <div className="text-white/80 text-xs">Tap to view</div>
-                              </div>
-                            </div>
+                            <List className="h-4 w-4" />
                           </button>
-                        ))}
+                          <button
+                            onClick={() => setViewMode('grid')}
+                            className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-background shadow-sm' : ''}`}
+                          >
+                            <Grid3X3 className="h-4 w-4" />
+                          </button>
+                        </div>
+                        <Select value={sortBy} onValueChange={setSortBy}>
+                          <SelectTrigger className="w-32 h-8 text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="votes">Most Votes</SelectItem>
+                            <SelectItem value="latest">Latest</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
-                    )}
+                    </div>
 
-                    {/* Load More */}
-                    {hasMore && !isLoading && (
-                      <div className="text-center mt-6">
-                        <Button 
-                          onClick={loadMore}
-                          disabled={isLoadingMore}
-                          variant="outline"
-                          className="px-8"
-                        >
-                          {isLoadingMore ? 'Loading...' : 'Load More'}
-                        </Button>
-                      </div>
-                    )}
+                    {/* 메인 콘텐츠 영역 - 로딩 중일 때 반투명 효과 */}
+                    <div className={`transition-opacity duration-300 ${isLoadingMore ? 'opacity-60' : 'opacity-100'}`}>
+                      {isLoading ? (
+                        <div className="space-y-4">
+                          {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                            <Card key={i} className="animate-pulse">
+                              <div className="aspect-square bg-accent" />
+                              <CardContent className="p-4">
+                                <div className="h-4 bg-accent rounded mb-2" />
+                                <div className="h-3 bg-accent rounded w-3/4" />
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      ) : (
+                        <>
+                          {viewMode === 'card' ? (
+                            <div className="space-y-4">
+                              {sortedMemes.map((meme, index) => (
+                                <div 
+                                  key={meme.id}
+                                  className="animate-fade-in"
+                                  style={{ 
+                                    animationDelay: `${index * 50}ms`,
+                                    opacity: 0,
+                                    animation: `fadeIn 0.5s ease-out ${index * 50}ms forwards`
+                                  }}
+                                >
+                                  <MemeCard 
+                                    meme={meme} 
+                                    onVote={() => {
+                                      // 즉시 UI 업데이트
+                                      setAllMemes(prevMemes => 
+                                        prevMemes.map(m => 
+                                          m.id === meme.id ? { ...m, votes: m.votes + samuBalance } : m
+                                        )
+                                      );
+                                      refetch();
+                                    }}
+                                    canVote={isConnected}
+                                  />
+                                </div>
+                              ))}
 
-                    {/* Loading Indicator */}
-                    {(isLoading || isLoadingMore) && (
-                      <div className="flex flex-col items-center justify-center py-8">
-                        <div className="flex space-x-1 mb-3">
+                              {sortedMemes.length === 0 && (
+                                <Card>
+                                  <CardContent className="p-8 text-center">
+                                    <p className="text-muted-foreground">No memes submitted yet. Be the first!</p>
+                                  </CardContent>
+                                </Card>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-3 gap-1">
+                              {sortedMemes.map((meme, index) => (
+                                <button
+                                  key={meme.id}
+                                  onClick={() => {
+                                    // 현재 투표 수를 포함한 meme 객체 전달
+                                    const currentMeme = allMemes.find(m => m.id === meme.id) || meme;
+                                    setSelectedMeme(currentMeme);
+                                  }}
+                                  className="aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-all duration-200 relative group animate-fade-in"
+                                  style={{ 
+                                    animationDelay: `${index * 30}ms`,
+                                    opacity: 0,
+                                    animation: `fadeIn 0.4s ease-out ${index * 30}ms forwards`
+                                  }}
+                                >
+                                  <MediaDisplay
+                                    src={meme.imageUrl}
+                                    alt={meme.title}
+                                    className="w-full h-full"
+                                    showControls={false}
+                                    autoPlay={false}
+                                    muted={true}
+                                    loop={true}
+                                  />
+                                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <div className="text-white text-center">
+                                      <div className="text-sm font-semibold">{meme.votes}</div>
+                                      <div className="text-xs">votes</div>
+                                    </div>
+                                  </div>
+                                </button>
+                              ))}
+
+                              {sortedMemes.length === 0 && (
+                                <div className="col-span-3">
+                                  <Card>
+                                    <CardContent className="p-8 text-center">
+                                      <p className="text-muted-foreground">No memes submitted yet. Be the first!</p>
+                                    </CardContent>
+                                  </Card>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+
+                    {/* Infinite scroll loading indicator - 더 부드러운 애니메이션 */}
+                    {isLoadingMore && (
+                      <div className="text-center mt-6 animate-fade-in">
+                        <div className="flex items-center justify-center space-x-2">
                           <div className="animate-bounce w-2 h-2 bg-primary rounded-full" style={{ animationDelay: '0ms' }}></div>
                           <div className="animate-bounce w-2 h-2 bg-primary rounded-full" style={{ animationDelay: '150ms' }}></div>
                           <div className="animate-bounce w-2 h-2 bg-primary rounded-full" style={{ animationDelay: '300ms' }}></div>
@@ -424,53 +552,157 @@ export default function Home({}: HomeProps) {
                 <div className="space-y-4">
                   <h3 className="text-md font-semibold text-foreground">Previous Contests</h3>
 
-                  {/* Real archived contests from database */}
-                  {archivedContests?.map((contest: any) => (
-                    <button
-                      key={contest.id}
-                      onClick={() => {
-                        if (!isConnected) {
-                          toast({
-                            title: "Please login first",
-                            description: "You need to login to view contest archives - our community heritage",
-                            duration: 1000
-                          });
-                          return;
-                        }
-                        loadArchivedContest(contest.id);
-                      }}
-                      className="w-full"
-                    >
-                      <Card className={`border-border/50 hover:border-primary/30 transition-colors relative ${!isConnected ? 'opacity-70' : ''}`}>
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="text-left">
-                              <h4 className="font-semibold text-foreground">
-                                {contest.title} - {new Date(contest.createdAt).toLocaleDateString()}
-                              </h4>
-                              <p className="text-sm text-muted-foreground">
-                                Contest #{contest.id} • {contest.description}
-                                {!isConnected && (
-                                  <span className="text-primary ml-2">• Login to view</span>
-                                )}
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-400/20">
-                                {contest.status}
-                              </Badge>
-                              <Archive className="h-4 w-4 text-muted-foreground" />
-                            </div>
+                  <button
+                    onClick={() => {
+                      if (!isConnected) {
+                        toast({
+                          title: "Please login first",
+                          description: "You need to login to view contest archives - our community heritage",
+                          duration: 1000
+                        });
+                        return;
+                      }
+                      setSelectedArchiveContest({
+                        id: 1,
+                        title: "Contest #1 - December 2024",
+                        participants: 50,
+                        totalVotes: 1247,
+                        status: "Completed",
+                        winner: {
+                          name: "SAMU TO MARS",
+                          author: "crypto_legend",
+                          votes: 324
+                        },
+                        secondPlace: "DIAMOND PAWS",
+                        thirdPlace: "PACK LEADER",
+                        memes: [
+                          {
+                            id: 1,
+                            title: "SAMU TO MARS",
+                            author: "crypto_legend",
+                            votes: 324,
+                            rank: 1,
+                            imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23F7DC6F'/%3E%3Ccircle cx='200' cy='200' r='100' fill='%23E74C3C'/%3E%3Ctext x='200' y='180' text-anchor='middle' font-family='Arial' font-size='24' font-weight='bold' fill='white'%3ESAMU%3C/text%3E%3Ctext x='200' y='220' text-anchor='middle' font-family='Arial' font-size='16' fill='white'%3ETO MARS%3C/text%3E%3C/svg%3E",
+                            description: "The ultimate SAMU moon mission meme"
+                          },
+                          {
+                            id: 2,
+                            title: "DIAMOND PAWS",
+                            author: "gem_hands",
+                            votes: 287,
+                            rank: 2,
+                            imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23667BC6'/%3E%3Cpolygon points='200,100 250,150 200,200 150,150' fill='%2300BFFF'/%3E%3Ctext x='200' y='260' text-anchor='middle' font-family='Arial' font-size='20' font-weight='bold' fill='white'%3EDIAMOND%3C/text%3E%3Ctext x='200' y='290' text-anchor='middle' font-family='Arial' font-size='20' font-weight='bold' fill='white'%3EPAWS%3C/text%3E%3C/svg%3E",
+                            description: "Diamond hands, diamond paws"
+                          },
+                          {
+                            id: 3,
+                            title: "PACK LEADER",
+                            author: "wolf_alpha",
+                            votes: 245,
+                            rank: 3,
+                            imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%238B4513'/%3E%3Ccircle cx='200' cy='180' r='60' fill='%23D2691E'/%3E%3Cpath d='M170 160 L200 140 L230 160 L220 180 L180 180 Z' fill='%23654321'/%3E%3Ctext x='200' y='280' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='white'%3EPACK LEADER%3C/text%3E%3C/svg%3E",
+                            description: "Leading the pack to victory"
+                          },
+                          {
+                            id: 4,
+                            title: "HODL STRONG",
+                            author: "diamond_wolf",
+                            votes: 198,
+                            rank: 4,
+                            imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%232C3E50'/%3E%3Crect x='100' y='150' width='200' height='100' fill='%23F39C12'/%3E%3Ctext x='200' y='190' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold'%3EHODL%3C/text%3E%3Ctext x='200' y='220' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold'%3ESTRONG%3C/text%3E%3C/svg%3E",
+                            description: "Never selling, always holding"
+                          },
+                          {
+                            id: 5,
+                            title: "MOON WOLF",
+                            author: "lunar_pack",
+                            votes: 156,
+                            rank: 5,
+                            imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%231a1a2e'/%3E%3Ccircle cx='150' cy='100' r='40' fill='%23f5f5f5'/%3E%3Ccircle cx='250' cy='200' r='50' fill='%23654321'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='%23f5f5f5'%3EMOON WOLF%3C/text%3E%3C/svg%3E",
+                            description: "Howling at the crypto moon"
+                          },
+                          {
+                            id: 6,
+                            title: "ALPHA GAINS",
+                            author: "profit_hunter",
+                            votes: 134,
+                            rank: 6,
+                            imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%2327ae60'/%3E%3Cpath d='M200 100 L300 200 L250 250 L200 200 L150 250 L100 200 Z' fill='%23f1c40f'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='white'%3EALPHA GAINS%3C/text%3E%3C/svg%3E",
+                            description: "Always making alpha gains"
+                          }
+                        ]
+                      });
+                      setArchiveView('contest');
+                    }}
+                    className="w-full"
+                  >
+                    <Card className={`border-border/50 hover:border-primary/30 transition-colors relative ${!isConnected ? 'opacity-70' : ''}`}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="text-left">
+                            <h4 className="font-semibold text-foreground">Contest #1 - December 2024</h4>
+                            <p className="text-sm text-muted-foreground">
+                              50 participants • 1,247 votes
+                              {!isConnected && (
+                                <span className="text-primary ml-2">• Login to view</span>
+                              )}
+                            </p>
                           </div>
-                        </CardContent>
-                      </Card>
-                    </button>
-                  ))}
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-400/20">
+                              Completed
+                            </Badge>
+                            {!isConnected && (
+                              <Badge variant="outline" className="text-primary border-primary/50">
+                                🔒
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </button>
                 </div>
               </div>
             ) : (
-              /* Archive Contest Detail View */
-              <div className="space-y-4">
+              <div 
+                className="space-y-4 transition-transform duration-300 ease-out"
+                onTouchStart={(e) => {
+                  const touch = e.touches[0];
+                  (e.currentTarget as any).touchStartX = touch.clientX;
+                  (e.currentTarget as any).touchStartTime = Date.now();
+                }}
+                onTouchMove={(e) => {
+                  const touch = e.touches[0];
+                  const touchStartX = (e.currentTarget as any).touchStartX;
+                  const deltaX = touch.clientX - touchStartX;
+
+                  // Only apply transform for right swipe
+                  if (deltaX > 0) {
+                    const progress = Math.min(deltaX / 150, 1);
+                    (e.currentTarget as HTMLElement).style.transform = `translateX(${deltaX * 0.3}px)`;
+                    (e.currentTarget as HTMLElement).style.opacity = String(1 - progress * 0.2);
+                  }
+                }}
+                onTouchEnd={(e) => {
+                  const touch = e.changedTouches[0];
+                  const touchStartX = (e.currentTarget as any).touchStartX;
+                  const touchStartTime = (e.currentTarget as any).touchStartTime;
+                  const touchEndX = touch.clientX;
+                  const deltaX = touchEndX - touchStartX;
+                  const deltaTime = Date.now() - touchStartTime;
+
+                  // Reset transform
+                  (e.currentTarget as HTMLElement).style.transform = 'translateX(0)';
+                  (e.currentTarget as HTMLElement).style.opacity = '1';
+
+                  // Swipe right (left to right) to go back with velocity check
+                  if (deltaX > 100 && deltaTime < 300) {
+                    setArchiveView('list');
+                  }
+                }}
+              >
+                {/* Contest Detail View */}
                 <div className="mb-4">
                   <Button
                     variant="ghost"
@@ -478,7 +710,7 @@ export default function Home({}: HomeProps) {
                     onClick={() => setArchiveView('list')}
                     className="text-foreground hover:text-primary px-2 py-1 text-xs h-6"
                   >
-                    ← Back to Archive
+                    ← Back
                   </Button>
                 </div>
 
@@ -501,7 +733,7 @@ export default function Home({}: HomeProps) {
                               <div className="text-muted-foreground">Total Votes</div>
                             </div>
                             <div className="flex justify-center">
-                              <Badge variant="secondary" className="bg-purple-500/20 text-purple-400 border-purple-400/20">
+                              <Badge variant="secondary" className="bg-green-500/20 text-green-400">
                                 {selectedArchiveContest.status}
                               </Badge>
                             </div>
@@ -514,7 +746,7 @@ export default function Home({}: HomeProps) {
                     <div className="space-y-4">
                       <h3 className="font-semibold text-foreground">All Contest Entries</h3>
                       <div className="grid grid-cols-3 gap-2">
-                        {selectedArchiveContest.memes?.map((meme: any) => (
+                        {selectedArchiveContest.memes.map((meme: any) => (
                           <button
                             key={meme.id}
                             onClick={() => setSelectedArchiveMeme(meme)}
@@ -530,13 +762,16 @@ export default function Home({}: HomeProps) {
                               loop={true}
                             />
                             {/* Medal icon for top 3 */}
-                            {meme.finalRank <= 3 && (
+                            {meme.rank <= 3 && (
                               <div className="absolute top-1 left-1 text-lg">
-                                {meme.finalRank === 1 ? '🥇' : meme.finalRank === 2 ? '🥈' : '🥉'}
+                                {meme.rank === 1 ? '🥇' : meme.rank === 2 ? '🥈' : '🥉'}
                               </div>
                             )}
-                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                              <span className="text-white text-xs font-medium">View Details</span>
+                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <div className="text-white text-center">
+                                <div className="text-sm font-semibold">#{meme.rank}</div>
+                                <div className="text-xs">{meme.votes} votes</div>
+                              </div>
                             </div>
                           </button>
                         ))}
@@ -560,32 +795,12 @@ export default function Home({}: HomeProps) {
 
       {/* Archive Meme Detail Modal */}
       {selectedArchiveMeme && (
-        <Drawer open={!!selectedArchiveMeme} onOpenChange={() => setSelectedArchiveMeme(null)}>
-          <DrawerContent className="h-[92vh] p-4">
-            <div className="space-y-4">
-              <div className="text-center">
-                <MediaDisplay
-                  src={selectedArchiveMeme.imageUrl}
-                  alt={selectedArchiveMeme.title}
-                  className="max-w-full max-h-[60vh] mx-auto"
-                  showControls={true}
-                  autoPlay={false}
-                  muted={true}
-                  loop={true}
-                />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-lg font-bold text-foreground">{selectedArchiveMeme.title}</h3>
-                <p className="text-sm text-muted-foreground">
-                  by {selectedArchiveMeme.authorUsername} • Rank #{selectedArchiveMeme.finalRank} • {selectedArchiveMeme.votes} votes
-                </p>
-                {selectedArchiveMeme.description && (
-                  <p className="text-sm text-foreground/80">{selectedArchiveMeme.description}</p>
-                )}
-              </div>
-            </div>
-          </DrawerContent>
-        </Drawer>
+        <MemeDetailModal
+          isOpen={!!selectedArchiveMeme}
+          onClose={() => setSelectedArchiveMeme(null)}
+          meme={selectedArchiveMeme}
+          canVote={false}
+        />
       )}
 
       {/* Bottom Navigation */}
@@ -647,6 +862,8 @@ export default function Home({}: HomeProps) {
         </div>
       </div>
 
+
+
       {/* Grid View Meme Detail Modal */}
       {selectedMeme && (
         <MemeDetailModal
@@ -661,34 +878,157 @@ export default function Home({}: HomeProps) {
         />
       )}
 
-      {/* Upload Form */}
-      {showUploadForm && (
-        <UploadForm
-          isOpen={showUploadForm}
-          onClose={() => setShowUploadForm(false)}
-          onSuccess={() => {
-            setShowUploadForm(false);
-            queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
-          }}
-        />
+      {/* Grid View Vote Confirmation Drawer */}
+      {selectedMeme && (
+        <Drawer open={showVoteDialog} onOpenChange={setShowVoteDialog}>
+          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+            <DrawerHeader>
+              <DrawerTitle className="text-foreground">Confirm Your Vote</DrawerTitle>
+              <DrawerDescription className="text-muted-foreground">
+                You're about to vote for "{selectedMeme.title}" by {selectedMeme.authorUsername}
+              </DrawerDescription>
+            </DrawerHeader>
+
+            <div className="px-4 pb-4 overflow-y-auto flex-1">
+              <div className="bg-accent rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">Your voting power:</span>
+                  <span className="font-semibold text-primary">1</span>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Based on your SAMU token balance: {samuBalance.toLocaleString()}
+                </div>
+              </div>
+            </div>
+
+          <DrawerFooter className="flex space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowVoteDialog(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  if (!selectedMeme || !walletAddress) return;
+                  
+                  setIsVoting(true);
+                  
+                  // 즉시 UI 업데이트 (낙관적 업데이트)
+                  setAllMemes(prevMemes => 
+                    prevMemes.map(m => 
+                      m.id === selectedMeme.id ? { ...m, votes: m.votes + 1 } : m
+                    )
+                  );
+                  
+                  try {
+                    await apiRequest("POST", `/api/memes/${selectedMeme.id}/vote`, {
+                      voterWallet: walletAddress,
+                      votingPower: 1,
+                    });
+
+                    // 성공 시 실제 데이터로 업데이트
+                    refetch();
+                    
+                    // 선택된 밈도 업데이트
+                    setSelectedMeme(prev => prev ? { ...prev, votes: prev.votes + 1 } : null);
+
+                    toast({
+                      title: "Vote Submitted!",
+                      description: "Your vote has been recorded.",
+                      duration: 1000
+                    });
+
+                    handleVoteSuccess();
+                  } catch (error: any) {
+                    // 실패 시 원래 상태로 복구
+                    setAllMemes(prevMemes => 
+                      prevMemes.map(m => 
+                        m.id === selectedMeme.id ? { ...m, votes: m.votes - 1 } : m
+                      )
+                    );
+                    refetch();
+                    
+                    toast({
+                      title: "Voting Failed",
+                      description: error.message || "Failed to submit vote. You may have already voted on this meme.",
+                      variant: "destructive",
+                      duration: 1000
+                    });
+                  } finally {
+                    setIsVoting(false);
+                  }
+                }}
+                disabled={isVoting}
+                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                {isVoting ? "Voting..." : "Confirm Vote"}
+              </Button>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
       )}
 
-      {/* Admin Panel */}
-      {showAdminPanel && (
-        <AdminPanel 
-          isOpen={showAdminPanel} 
-          onClose={() => setShowAdminPanel(false)} 
-        />
+      {/* Share Drawer */}
+      {selectedMeme && (
+        <Drawer open={showShareDialog} onOpenChange={setShowShareDialog}>
+          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+            <DrawerHeader>
+              <DrawerTitle className="text-foreground">Share Meme</DrawerTitle>
+              <DrawerDescription className="text-muted-foreground">
+                Share "{selectedMeme.title}" on social platforms
+              </DrawerDescription>
+            </DrawerHeader>
+
+            <div className="px-4 pb-4 overflow-y-auto flex-1 flex flex-col gap-3">
+              <Button
+                onClick={() => {
+                  shareToTwitter(selectedMeme);
+                  setShowShareDialog(false);
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+              >
+                <Twitter className="h-4 w-4" />
+                Share on X
+              </Button>
+              <Button
+                onClick={() => {
+                  shareToTelegram(selectedMeme);
+                  setShowShareDialog(false);
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+              >
+                <Send className="h-4 w-4" />
+                Share on Telegram
+              </Button>
+            </div>
+          </DrawerContent>
+        </Drawer>
       )}
 
-      {/* Scroll to Top Button */}
-      <Button
-        onClick={scrollToTop}
-        className="fixed bottom-20 right-4 w-12 h-12 rounded-full shadow-lg z-40"
-        size="sm"
-      >
-        <ArrowUp className="h-4 w-4" />
-      </Button>
+      {/* Upload Form Drawer */}
+      <Drawer open={showUploadForm} onOpenChange={setShowUploadForm}>
+        <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+          <DrawerHeader>
+            <DrawerTitle className="text-foreground">Submit New Meme</DrawerTitle>
+            <DrawerDescription className="text-muted-foreground">
+              Upload your meme to join the SAMU contest
+            </DrawerDescription>
+          </DrawerHeader>
+
+          <div className="px-4 pb-4 overflow-y-auto flex-1">
+            <UploadForm 
+              onClose={() => setShowUploadForm(false)}
+              onSuccess={() => {
+                setShowUploadForm(false);
+                refetch();
+              }}
+            />
+          </div>
+        </DrawerContent>
+      </Drawer>
+
     </div>
   );
 }

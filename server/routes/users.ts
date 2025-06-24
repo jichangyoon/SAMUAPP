@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { storage } from "../storage";
 import { insertUserSchema } from "@shared/schema";
-import * as adminRoutes from './admin';
 
 const router = Router();
 
@@ -150,13 +149,5 @@ router.get("/check-name/:displayName", async (req, res) => {
     res.status(500).json({ message: "Failed to check display name availability" });
   }
 });
-
-// Admin routes
-router.get("/admin/contests/current", adminRoutes.getCurrentContest);
-router.get("/admin/contests", adminRoutes.getAllContests);
-router.post("/admin/contests", adminRoutes.createContest);
-router.post("/admin/contests/:id/start", adminRoutes.startContest);
-router.post("/admin/contests/:id/end", adminRoutes.endContest);
-router.get("/admin/check/:walletAddress", adminRoutes.checkAdminStatus);
 
 export default router;
