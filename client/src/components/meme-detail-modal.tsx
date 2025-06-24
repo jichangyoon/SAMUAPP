@@ -77,7 +77,7 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
                 </div>
               </div>
               <div className="text-right">
-                <div className="flex items-center gap-1 text-yellow-400">
+                <div className="flex items-center gap-1" style={{ color: 'hsl(50, 85%, 75%)' }}>
                   <Trophy className="h-4 w-4" />
                   <span className="font-bold">{meme.votes.toLocaleString()}</span>
                 </div>
