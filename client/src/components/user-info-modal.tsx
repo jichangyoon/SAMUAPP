@@ -139,11 +139,7 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
                 {userMemes.map((meme: any) => (
                   <div 
                     key={meme.id} 
-                    className="relative cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => {
-                      setSelectedMeme(meme);
-                      setShowMemeModal(true);
-                    }}
+                    className="relative hover:opacity-80 transition-opacity"
                   >
                     <MediaDisplay
                       src={meme.imageUrl}
@@ -153,6 +149,10 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
                       autoPlay={false}
                       muted={true}
                       loop={false}
+                      onClick={() => {
+                        setSelectedMeme(meme);
+                        setShowMemeModal(true);
+                      }}
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-black/80 text-white p-2 rounded-b-lg">
                       <div className="text-xs font-medium truncate">{meme.title}</div>
