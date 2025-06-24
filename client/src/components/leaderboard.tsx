@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Trophy, Medal, Crown, TrendingUp, Calendar } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { UserInfoModal } from "@/components/user-info-modal";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import type { Meme } from "@shared/schema";
@@ -106,8 +107,9 @@ export function Leaderboard() {
   }
 
   return (
-    <div className="space-y-4">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+    <TooltipProvider>
+      <div className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3 h-10">
           <TabsTrigger value="current" className="text-xs">Current</TabsTrigger>
           <TabsTrigger value="creators" className="text-xs">Top Creators</TabsTrigger>
@@ -219,9 +221,16 @@ export function Leaderboard() {
                     <div className="font-bold text-primary">
                       {creator.totalVotes.toLocaleString()}
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      avg {creator.avgVotes}
-                    </div>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <div className="text-xs text-muted-foreground">
+                          avg {creator.avgVotes}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-xs">Average votes per meme</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
               ))}
@@ -329,6 +338,7 @@ export function Leaderboard() {
           username={selectedUser.username}
         />
       )}
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }
