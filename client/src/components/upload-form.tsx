@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { usePrivy } from '@privy-io/react-auth';
 import { useToast } from "@/hooks/use-toast";
 import { Upload } from "lucide-react";
+import { MediaDisplay } from "@/components/media-display";
+import { getMediaType } from "@/utils/media-utils";
 
 const uploadSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title too long"),
@@ -26,6 +28,7 @@ interface UploadFormProps {
 export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { authenticated, user } = usePrivy();
   
   // Get wallet using same logic as WalletConnect component - prioritize Solana
@@ -67,11 +70,13 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
         return;
       }
 
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onload = () => setPreview(reader.result as string);
       reader.readAsDataURL(file);
     } else {
       setPreview(null);
+      setSelectedFile(null);
     }
   };
 
@@ -228,26 +233,34 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
                     <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary transition-colors duration-200">
                       {preview ? (
                         <div className="space-y-4">
-                          <img
-                            src={preview}
-                            alt="Preview"
-                            className="max-w-full max-h-48 mx-auto rounded-lg"
-                          />
+                          <div className="max-w-full max-h-48 mx-auto">
+                            <MediaDisplay
+                              src={preview}
+                              alt="Preview"
+                              className="max-w-full max-h-48 rounded-lg"
+                              showControls={selectedFile && getMediaType(selectedFile.name) === 'video'}
+                              autoPlay={false}
+                              muted={true}
+                              loop={false}
+                            />
+                          </div>
                           <Button
                             type="button"
                             variant="outline"
                             onClick={() => {
                               setPreview(null);
+                              setSelectedFile(null);
                               field.onChange([]);
                             }}
                           >
-                            Remove Image
+                            Remove {selectedFile && getMediaType(selectedFile.name) === 'video' ? 'Video' : 'Image'}
                           </Button>
                         </div>
                       ) : (
                         <>
                           <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
                           <p className="text-muted-foreground text-sm mb-2">
+                            Upload image or video (max 50MB)<br />
                             Drag & drop your meme or click to browse
                           </p>
                           <label htmlFor="file-upload" className="cursor-pointer">
