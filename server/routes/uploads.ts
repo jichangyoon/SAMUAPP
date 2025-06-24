@@ -141,8 +141,8 @@ router.post("/profile", upload.single("file"), async (req, res) => {
     const uploadResult = await uploadToR2(
       req.file.buffer,
       req.file.originalname,
-      process.env.R2_BUCKET_NAME!, // Use main bucket
-      "profiles"
+      'profiles', // Use profiles folder
+      5 * 1024 * 1024 // 5MB limit for profile images
     );
 
     if (!uploadResult.success) {
