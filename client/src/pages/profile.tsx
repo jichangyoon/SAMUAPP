@@ -760,7 +760,7 @@ const Profile = React.memo(() => {
                             showControls={false}
                             autoPlay={false}
                             muted={true}
-                            loop={true}
+                            loop={false}
                           />
                         </div>
                         <div 

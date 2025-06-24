@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Play } from "lucide-react";
+import { getMediaType } from "@/utils/media-utils";
 
 interface MediaDisplayProps {
   src: string;
@@ -30,7 +31,7 @@ export function MediaDisplay({
     setShowVideoControls(showControls);
   }, [showControls]);
 
-  const mediaType = src.includes('.mp4') || src.includes('.mov') || src.includes('.avi') || src.includes('.webm') ? 'video' : 'image';
+  const mediaType = getMediaType(src);
 
   
   const handleVideoClick = (e: React.MouseEvent) => {
