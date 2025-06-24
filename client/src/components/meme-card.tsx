@@ -7,6 +7,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowUp, Share2, Twitter, Send, Trash2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { UserInfoModal } from "@/components/user-info-modal";
 import type { Meme } from "@shared/schema";
 
 interface MemeCardProps {
@@ -20,6 +21,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
   const { authenticated, user } = usePrivy();
   const queryClient = useQueryClient();
@@ -179,7 +181,12 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
                   </span>
                 </div>
               )}
-              <span className="text-sm text-muted-foreground">{meme.authorUsername}</span>
+              <button 
+                onClick={() => setShowUserModal(true)}
+                className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer underline"
+              >
+                {meme.authorUsername}
+              </button>
             </div>
             <div className="text-right">
               <div className="text-lg font-bold text-primary">{meme.votes.toLocaleString()}</div>
@@ -386,6 +393,14 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
           </div>
         </DrawerContent>
       </Drawer>
+
+      {/* User Info Modal */}
+      <UserInfoModal
+        isOpen={showUserModal}
+        onClose={() => setShowUserModal(false)}
+        walletAddress={meme.authorWallet}
+        username={meme.authorUsername}
+      />
     </>
   );
 }

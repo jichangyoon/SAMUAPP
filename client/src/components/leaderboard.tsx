@@ -4,7 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Trophy, Medal, Crown, TrendingUp, Calendar } from "lucide-react";
+import { UserInfoModal } from "@/components/user-info-modal";
 import type { Meme } from "@shared/schema";
 
 // Mock data for past winners (명예의 전당)
@@ -37,6 +39,10 @@ const hallOfFameData = [
 
 export function Leaderboard() {
   const [activeTab, setActiveTab] = useState("current");
+  const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
+  const [selectedUser, setSelectedUser] = useState<{ walletAddress: string; username: string } | null>(null);
+  const [showMemeModal, setShowMemeModal] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
 
   const { data: memes = [], isLoading } = useQuery<Meme[]>({
     queryKey: ["/api/memes"],
