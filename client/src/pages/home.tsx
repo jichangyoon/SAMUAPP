@@ -374,13 +374,22 @@ export default function Home() {
                     )}
                     {userProfile?.isAdmin && (
                       <Button 
-                        onClick={() => setShowAdminPanel(true)}
+                        onClick={() => {
+                          console.log('Admin button clicked');
+                          setShowAdminPanel(true);
+                        }}
                         variant="outline"
                         className="px-6 py-2 rounded-lg font-medium"
                       >
                         <Trophy className="h-4 w-4 mr-2" />
                         Admin
                       </Button>
+                    )}
+                    {/* Debug info */}
+                    {isConnected && (
+                      <div className="text-xs text-muted-foreground">
+                        Admin: {userProfile?.isAdmin ? 'YES' : 'NO'}
+                      </div>
                     )}
                   </div>
 

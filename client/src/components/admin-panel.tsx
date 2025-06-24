@@ -39,30 +39,36 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
     endDate: ""
   });
 
-  const walletAddress = user?.linkedAccounts?.find(account => account.type === 'wallet')?.address;
+  const walletAddress = user?.linkedAccounts?.find(
+    account => account.type === 'wallet' && account.chainType === 'solana'
+  )?.address;
+
+  console.log('AdminPanel - isOpen:', isOpen, 'walletAddress:', walletAddress);
 
   // Check admin status
   const { data: adminData } = useQuery({
-    queryKey: ['/api/admin/check', walletAddress],
+    queryKey: ['/api/users/admin/check', walletAddress],
     enabled: !!walletAddress,
   });
 
+  console.log('AdminPanel - adminData:', adminData);
+
   // Get current contest
   const { data: currentContestData } = useQuery({
-    queryKey: ['/api/admin/contests/current'],
+    queryKey: ['/api/users/admin/contests/current'],
     enabled: adminData?.isAdmin,
   });
 
   // Get all contests
   const { data: contestsData } = useQuery({
-    queryKey: ['/api/admin/contests'],
+    queryKey: ['/api/users/admin/contests'],
     enabled: adminData?.isAdmin,
   });
 
   // Create contest mutation
   const createContestMutation = useMutation({
     mutationFn: async (contestData: any) => {
-      return apiRequest(`/api/admin/contests`, {
+      return apiRequest(`/api/users/admin/contests`, {
         method: 'POST',
         body: JSON.stringify({
           ...contestData,
@@ -73,7 +79,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
     onSuccess: () => {
       toast({ title: "Contest created successfully" });
       setNewContest({ title: "", description: "", startDate: "", endDate: "" });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/contests'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/users/admin/contests'] });
     },
     onError: () => {
       toast({ title: "Failed to create contest", variant: "destructive" });
@@ -83,15 +89,15 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
   // Start contest mutation
   const startContestMutation = useMutation({
     mutationFn: async (contestId: number) => {
-      return apiRequest(`/api/admin/contests/${contestId}/start`, {
+      return apiRequest(`/api/users/admin/contests/${contestId}/start`, {
         method: 'POST',
         body: JSON.stringify({ userWallet: walletAddress })
       });
     },
     onSuccess: () => {
       toast({ title: "Contest started successfully" });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/contests'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/contests/current'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/users/admin/contests'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/users/admin/contests/current'] });
     },
     onError: () => {
       toast({ title: "Failed to start contest", variant: "destructive" });
@@ -101,7 +107,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
   // End contest mutation
   const endContestMutation = useMutation({
     mutationFn: async (contestId: number) => {
-      return apiRequest(`/api/admin/contests/${contestId}/end`, {
+      return apiRequest(`/api/users/admin/contests/${contestId}/end`, {
         method: 'POST',
         body: JSON.stringify({ userWallet: walletAddress })
       });
@@ -111,8 +117,8 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
         title: "Contest ended successfully", 
         description: `${data.archivedCount} memes archived`
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/contests'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/contests/current'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/users/admin/contests'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/users/admin/contests/current'] });
       queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
     },
     onError: () => {
