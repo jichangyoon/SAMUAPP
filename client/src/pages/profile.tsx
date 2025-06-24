@@ -203,12 +203,7 @@ const Profile = React.memo(() => {
         }));
         
         // Force query invalidation for immediate header update
-        queryClient.invalidateQueries({ 
-          predicate: (query) => {
-            const key = query.queryKey;
-            return key.includes('/api/users/profile') && key.includes(walletAddress);
-          }
-        });
+        queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] });
         
         toast({
           title: "Profile Image Updated",
@@ -246,12 +241,9 @@ const Profile = React.memo(() => {
         const result = await response.json();
         console.log('Profile update successful:', result);
         
-        // Invalidate ALL profile-related queries immediately
-        queryClient.invalidateQueries({ 
-          predicate: (query) => 
-            query.queryKey.includes('user-profile') && 
-            query.queryKey.includes(walletAddress)
-        });
+        // Invalidate specific profile queries
+        queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] });
+        queryClient.invalidateQueries({ queryKey: [`/api/users/profile/${walletAddress}`] });
         
         // Force immediate header update
         console.log('Dispatching profile update event:', { displayName: name, profileImage: imageUrl || profileImage });

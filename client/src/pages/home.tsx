@@ -100,17 +100,11 @@ export default function Home() {
         profileImage: event.detail.profileImage || event.detail.avatarUrl
       });
       
-      // Invalidate ALL queries that might contain user profile data
-      queryClient.invalidateQueries({ 
-        predicate: (query) => {
-          const key = query.queryKey;
-          return key.includes('user-profile') || 
-                 key.includes('/api/memes') ||
-                 key.includes('/api/nfts') ||
-                 key.includes('comments') ||
-                 key.includes(walletAddress);
-        }
-      });
+      // Invalidate the specific header profile query
+      queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] });
+      
+      // Also invalidate memes for author info sync
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
     };
 
     window.addEventListener('profileUpdated', handleProfileUpdate as EventListener);
