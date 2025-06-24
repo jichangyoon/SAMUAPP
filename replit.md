@@ -424,6 +424,7 @@ Changelog:
 - June 24, 2025. Enhanced mobile video controls - implemented tap-to-hide video controls functionality for better mobile UX, controls disappear when tapped and reappear on next tap
 - June 24, 2025. Simplified mobile video interface - removed complex overlay controls, using only native video controls with tap-to-toggle for clean mobile app experience
 - June 24, 2025. Fixed video modal functionality - restored tap-to-open detail modal behavior for meme videos while maintaining control toggle for upload previews
+- June 24, 2025. Fixed video and image click handlers - simplified event handling with proper preventDefault and stopPropagation to ensure modal opens correctly
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```

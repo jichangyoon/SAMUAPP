@@ -78,7 +78,7 @@ export function MediaDisplay({
           preload="metadata"
           poster=""
           controls={showVideoControls}
-          onClickCapture={handleVideoClick}
+          onClick={handleVideoClick}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onLoadedMetadata={() => {
@@ -127,7 +127,11 @@ export function MediaDisplay({
       src={src}
       alt={alt}
       className={`w-full h-full object-cover ${onClick ? 'cursor-pointer' : ''} ${className}`}
-      onClick={onClick}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (onClick) onClick();
+      }}
       loading="lazy"
     />
   );
