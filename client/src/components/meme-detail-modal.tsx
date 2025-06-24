@@ -17,12 +17,17 @@ interface MemeDetailModalProps {
 export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false }: MemeDetailModalProps) {
   const [showShareDialog, setShowShareDialog] = useState(false);
   
-  // Debug: Log avatar data
-  console.log('Avatar Debug:', {
-    id: meme.id,
-    authorAvatarUrl: (meme as any).authorAvatarUrl,
-    hasAvatarUrl: !!(meme as any).authorAvatarUrl
-  });
+  // Debug: Log avatar data when modal opens
+  if (isOpen) {
+    console.log('🔍 AVATAR DEBUG - Modal Opened:', {
+      memeId: meme.id,
+      memeTitle: meme.title,
+      authorUsername: meme.authorUsername,
+      authorAvatarUrl: (meme as any).authorAvatarUrl,
+      hasAvatarUrl: !!(meme as any).authorAvatarUrl,
+      fullMemeObject: meme
+    });
+  }
 
   const shareToTwitter = () => {
     const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername} 🔥`;
