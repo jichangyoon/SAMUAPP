@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -45,12 +45,28 @@ export function Leaderboard() {
   const [showMemeModal, setShowMemeModal] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
 
-  // Force fresh data for accurate leaderboard calculations
+  // Fetch ALL memes for accurate leaderboard calculations 
   const { data: memesResponse, isLoading } = useQuery({
     queryKey: ["/api/memes"],
+    queryFn: async () => {
+      // Fetch all pages to get complete data
+      let allMemes = [];
+      let page = 1;
+      let hasMore = true;
+      
+      while (hasMore) {
+        const response = await fetch(`/api/memes?page=${page}&limit=50`);
+        const data = await response.json();
+        allMemes.push(...data.memes);
+        hasMore = data.pagination.hasMore;
+        page++;
+      }
+      
+      return { memes: allMemes };
+    },
     enabled: true,
-    staleTime: 0, // Always fetch fresh data
-    refetchInterval: 30000, // Refetch every 30 seconds
+    staleTime: 0,
+    refetchInterval: 10000,
   });
 
   // Extract memes array with proper type checking
