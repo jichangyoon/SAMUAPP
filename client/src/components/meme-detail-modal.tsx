@@ -1,6 +1,7 @@
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowUp, Share2, Twitter, Send, Calendar, Trophy } from "lucide-react";
 import { useState } from "react";
 import type { Meme } from "@shared/schema";
@@ -56,19 +57,16 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {(meme as any).authorAvatarUrl ? (
-                  <img 
+                <Avatar className="h-10 w-10">
+                  <AvatarImage 
                     src={(meme as any).authorAvatarUrl} 
                     alt={meme.authorUsername}
-                    className="w-10 h-10 rounded-full object-cover"
+                    key={(meme as any).authorAvatarUrl}
                   />
-                ) : (
-                  <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-bold text-white">
-                      {meme.authorUsername.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                )}
+                  <AvatarFallback className="bg-gray-700 text-white">
+                    {meme.authorUsername.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
                 <div>
                   <div className="font-semibold text-white">{meme.authorUsername}</div>
                   <div className="text-sm text-gray-400">Creator</div>
