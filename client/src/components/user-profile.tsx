@@ -230,6 +230,8 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
         
         // Immediately update profile in database with R2 URL
         console.log('Profile upload result:', result);
+        console.log('Updating profile with avatar URL:', result.profileUrl);
+        
         updateProfileMutation.mutate({
           name: displayName,
           image: result.profileUrl

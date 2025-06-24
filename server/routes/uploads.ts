@@ -238,6 +238,7 @@ router.post('/profile', upload.single('file'), async (req, res) => {
     });
 
     // Upload to R2 in profiles/ folder with size limit
+    console.log('Profile upload: calling uploadToR2 with folder="profiles"');
     const uploadResult = await uploadToR2(
       req.file.buffer,
       req.file.originalname,

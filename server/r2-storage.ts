@@ -39,10 +39,16 @@ export async function uploadToR2(
     // 고유한 파일명 생성
     const fileExtension = path.extname(originalName);
     const fileName = `${crypto.randomUUID()}${fileExtension}`;
-    // folder가 비어있으면 루트에, 있으면 해당 폴더에 저장
-    const key = folder ? `${folder}/${fileName}` : fileName;
     
-    console.log(`R2 upload: folder="${folder}", key="${key}"`);
+    // 폴더 구조 수정: samumemecontest 버킷 내에서 하위 폴더 사용
+    let key: string;
+    if (folder && folder !== '') {
+      key = `${folder}/${fileName}`;
+    } else {
+      key = fileName; // 루트에 저장
+    }
+    
+    console.log(`R2 upload debug: bucket="${process.env.R2_BUCKET_NAME}", folder="${folder}", key="${key}", fileName="${fileName}"`);
 
     // MIME 타입 결정
     const mimeType = getMimeType(fileExtension);
