@@ -385,6 +385,7 @@ Changelog:
 - June 24, 2025. Fixed DatabaseStorage.updateUser to properly call updateUserMemeAuthorInfo method for synchronizing meme author names when profile is updated
 - June 24, 2025. Added authorAvatarUrl column to memes table and implemented complete author profile synchronization - both name and profile image now update across all meme cards when user profile changes
 - June 24, 2025. Fixed header profile synchronization - now listens to both profileUpdated and imageUpdated events for immediate updates without page refresh
+- June 24, 2025. Optimized profile image caching - added key prop to AvatarImage and forced query refetch to prevent stale image display
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```

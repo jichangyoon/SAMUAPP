@@ -186,6 +186,9 @@ const Profile = React.memo(() => {
       const result = await response.json();
 
       if (result.success && result.profileUrl) {
+        // Clear image preview to prevent showing old cached image
+        setImagePreview('');
+        
         // Update profile image with R2 URL
         setProfileImage(result.profileUrl);
         
@@ -202,8 +205,12 @@ const Profile = React.memo(() => {
           }
         }));
         
-        // Force query invalidation for immediate header update
+        // Force query invalidation for immediate update everywhere
         queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] });
+        queryClient.invalidateQueries({ queryKey: [`/api/users/profile/${walletAddress}`] });
+        
+        // Force re-render by clearing cache
+        queryClient.refetchQueries({ queryKey: [`/api/users/profile/${walletAddress}`] });
         
         toast({
           title: "Profile Image Updated",
@@ -395,7 +402,7 @@ const Profile = React.memo(() => {
             <div className="flex items-center gap-3 mb-3">
               <div className="relative">
                 <Avatar className="h-12 w-12">
-                  <AvatarImage src={imagePreview || profileImage} />
+                  <AvatarImage src={imagePreview || profileImage} key={profileImage} />
                   <AvatarFallback className="bg-primary/20 text-primary text-sm">
                     {displayName.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
