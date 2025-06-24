@@ -283,11 +283,16 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
             </div>
 
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <span className="text-sm font-bold text-primary-foreground">
+              <Avatar className="h-8 w-8">
+                <AvatarImage 
+                  src={(meme as any).authorAvatarUrl} 
+                  alt={meme.authorUsername}
+                  key={`detail-${meme.id}-${(meme as any).authorAvatarUrl}`}
+                />
+                <AvatarFallback className="bg-primary text-primary-foreground text-sm">
                   {meme.authorUsername.charAt(0).toUpperCase()}
-                </span>
-              </div>
+                </AvatarFallback>
+              </Avatar>
               <div>
                 <div className="font-medium text-foreground">{meme.authorUsername}</div>
                 <div className="text-sm text-muted-foreground">

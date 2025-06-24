@@ -17,17 +17,7 @@ interface MemeDetailModalProps {
 export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false }: MemeDetailModalProps) {
   const [showShareDialog, setShowShareDialog] = useState(false);
   
-  // Debug: Log avatar data when modal opens
-  if (isOpen) {
-    console.log('🔍 AVATAR DEBUG - Modal Opened:', {
-      memeId: meme.id,
-      memeTitle: meme.title,
-      authorUsername: meme.authorUsername,
-      authorAvatarUrl: (meme as any).authorAvatarUrl,
-      hasAvatarUrl: !!(meme as any).authorAvatarUrl,
-      fullMemeObject: meme
-    });
-  }
+
 
   const shareToTwitter = () => {
     const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername} 🔥`;
@@ -74,7 +64,7 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
                     src={(meme as any).authorAvatarUrl} 
                     alt={meme.authorUsername}
                     key={`${meme.id}-${(meme as any).authorAvatarUrl}`}
-                    onError={() => console.log('Avatar image failed to load:', (meme as any).authorAvatarUrl)}
+
                   />
                   <AvatarFallback className="bg-gray-700 text-white">
                     {meme.authorUsername.charAt(0).toUpperCase()}
@@ -83,9 +73,7 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
                 <div>
                   <div className="font-semibold text-white">{meme.authorUsername}</div>
                   <div className="text-sm text-gray-400">Creator</div>
-                  {!((meme as any).authorAvatarUrl) && (
-                    <div className="text-xs text-red-400">No avatar URL found</div>
-                  )}
+
                 </div>
               </div>
               <div className="text-right">

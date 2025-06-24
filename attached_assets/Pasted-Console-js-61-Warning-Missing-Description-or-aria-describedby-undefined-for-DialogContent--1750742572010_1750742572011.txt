@@ -1,0 +1,52 @@
+Console.js:61 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+Mt.forEach.n.<computed> @ Console.js:61
+(anonymous) @ chunk-ZYWLA3V6.js?v=68664d10:341
+commitHookEffectListMount @ chunk-LQCVLUPF.js?v=68664d10:16915
+commitPassiveMountOnFiber @ chunk-LQCVLUPF.js?v=68664d10:18156
+commitPassiveMountEffects_complete @ chunk-LQCVLUPF.js?v=68664d10:18129
+commitPassiveMountEffects_begin @ chunk-LQCVLUPF.js?v=68664d10:18119
+commitPassiveMountEffects @ chunk-LQCVLUPF.js?v=68664d10:18109
+flushPassiveEffectsImpl @ chunk-LQCVLUPF.js?v=68664d10:19490
+flushPassiveEffects @ chunk-LQCVLUPF.js?v=68664d10:19447
+commitRootImpl @ chunk-LQCVLUPF.js?v=68664d10:19416
+commitRoot @ chunk-LQCVLUPF.js?v=68664d10:19277
+performSyncWorkOnRoot @ chunk-LQCVLUPF.js?v=68664d10:18895
+flushSyncCallbacks @ chunk-LQCVLUPF.js?v=68664d10:9119
+(anonymous) @ chunk-LQCVLUPF.js?v=68664d10:18627Understand this warning
+Console.js:61 Privy iframe failed to load:  Yc2: Frame ancestor is not allowed
+    at https://4def2f81-75c3-4eac-a5fc-a59cb8dbc6bc-00-1vxco4gii0mu8.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@privy-io_react-auth.js?v=68664d10:73834:41
+    at n66 (https://4def2f81-75c3-4eac-a5fc-a59cb8dbc6bc-00-1vxco4gii0mu8.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@privy-io_react-auth.js?v=68664d10:73906:8)
+Mt.forEach.n.<computed> @ Console.js:61
+(anonymous) @ @privy-io_react-auth.js?v=68664d10:73912
+Promise.then
+(anonymous) @ @privy-io_react-auth.js?v=68664d10:73911
+commitHookEffectListMount @ chunk-LQCVLUPF.js?v=68664d10:16915
+commitPassiveMountOnFiber @ chunk-LQCVLUPF.js?v=68664d10:18156
+commitPassiveMountEffects_complete @ chunk-LQCVLUPF.js?v=68664d10:18129
+commitPassiveMountEffects_begin @ chunk-LQCVLUPF.js?v=68664d10:18119
+commitPassiveMountEffects @ chunk-LQCVLUPF.js?v=68664d10:18109
+flushPassiveEffectsImpl @ chunk-LQCVLUPF.js?v=68664d10:19490
+flushPassiveEffects @ chunk-LQCVLUPF.js?v=68664d10:19447
+(anonymous) @ chunk-LQCVLUPF.js?v=68664d10:19328
+workLoop @ chunk-LQCVLUPF.js?v=68664d10:197
+flushWork @ chunk-LQCVLUPF.js?v=68664d10:176
+performWorkUntilDeadline @ chunk-LQCVLUPF.js?v=68664d10:384Understand this warning
+Console.js:61 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+Mt.forEach.n.<computed> @ Console.js:61
+(anonymous) @ chunk-ZYWLA3V6.js?v=68664d10:341
+commitHookEffectListMount @ chunk-LQCVLUPF.js?v=68664d10:16915
+commitPassiveMountOnFiber @ chunk-LQCVLUPF.js?v=68664d10:18156
+commitPassiveMountEffects_complete @ chunk-LQCVLUPF.js?v=68664d10:18129
+commitPassiveMountEffects_begin @ chunk-LQCVLUPF.js?v=68664d10:18119
+commitPassiveMountEffects @ chunk-LQCVLUPF.js?v=68664d10:18109
+flushPassiveEffectsImpl @ chunk-LQCVLUPF.js?v=68664d10:19490
+flushPassiveEffects @ chunk-LQCVLUPF.js?v=68664d10:19447
+commitRootImpl @ chunk-LQCVLUPF.js?v=68664d10:19416
+commitRoot @ chunk-LQCVLUPF.js?v=68664d10:19277
+performSyncWorkOnRoot @ chunk-LQCVLUPF.js?v=68664d10:18895
+flushSyncCallbacks @ chunk-LQCVLUPF.js?v=68664d10:9119
+(anonymous) @ chunk-LQCVLUPF.js?v=68664d10:18627Understand this warning
+4def2f81-75c3-4eac-a5fc-a59cb8dbc6bc-00-1vxco4gii0mu8.worf.replit.dev/:1 Blocked aria-hidden on an element because its descendant retained focus. The focus must not be hidden from assistive technology users. Avoid using aria-hidden on a focused element or its ancestor. Consider using the inert attribute instead, which will also prevent focus. For more details, see the aria-hidden section of the WAI-ARIA specification at https://w3c.github.io/aria/#aria-hidden.
+Element with focus: <button.w-full aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-opacity>
+Ancestor with aria-hidden: <div#root> <div id=​"root" data-aria-hidden=​"true" aria-hidden=​"true">​…​</div>​Understand this warning
+2Console.js:61 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
