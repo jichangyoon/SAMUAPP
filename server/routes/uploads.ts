@@ -220,7 +220,13 @@ router.delete('/delete-r2', async (req, res) => {
 });
 
 // Profile image upload endpoint - uploads to profiles/ folder
-router.post('/profile', upload.single('file'), async (req, res) => {
+router.post('/profile', (req, res, next) => {
+  console.log('=== PROFILE UPLOAD REQUEST RECEIVED ===');
+  console.log('Method:', req.method);
+  console.log('URL:', req.url);
+  console.log('Content-Type:', req.headers['content-type']);
+  next();
+}, upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ 

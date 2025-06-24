@@ -217,10 +217,12 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
       const formData = new FormData();
       formData.append('file', file);
 
+      console.log('Starting profile image upload to /api/uploads/profile');
       const response = await fetch('/api/uploads/profile', {
         method: 'POST',
         body: formData,
       });
+      console.log('Profile upload response status:', response.status);
 
       if (!response.ok) {
         throw new Error('Profile image upload failed');
@@ -238,10 +240,11 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
         
         // Update database with R2 URL
         console.log('Updating database with avatar URL:', result.profileUrl);
-        updateProfileMutation.mutate({
+        await updateProfileMutation.mutateAsync({
           name: displayName,
           image: result.profileUrl
         });
+        console.log('Database update completed successfully');
         
         toast({
           title: "Image uploaded",
