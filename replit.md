@@ -426,6 +426,7 @@ Changelog:
 - June 24, 2025. Fixed video modal functionality - restored tap-to-open detail modal behavior for meme videos while maintaining control toggle for upload previews
 - June 24, 2025. Fixed video and image click handlers - simplified event handling with proper preventDefault and stopPropagation to ensure modal opens correctly
 - June 24, 2025. Implemented mobile-first video architecture - videos show thumbnail with play button in feed, full controls and playback only available in detail modal for better mobile UX
+- June 24, 2025. Fixed mobile video player language settings - added lang="en" attribute and CSS controls to prevent Korean text in video controls
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```

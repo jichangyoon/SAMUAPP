@@ -79,6 +79,9 @@ export function MediaDisplay({
           preload="metadata"
           poster=""
           controls={showControls}
+          controlsList="nodownload"
+          disablePictureInPicture
+          lang="en"
           onClick={handleVideoClick}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
