@@ -92,14 +92,14 @@ export default function Home() {
   // Listen for profile updates from profile page and refresh database query
   useEffect(() => {
     const handleProfileUpdate = (event: CustomEvent) => {
-      // Refresh database query instead of using localStorage data
-      queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] });
-      
-      // Also update local state immediately for responsiveness
+      // Force immediate state update for instant visual feedback
       setProfileData({
         displayName: event.detail.displayName,
-        profileImage: event.detail.profileImage
+        profileImage: event.detail.profileImage || event.detail.avatarUrl
       });
+      
+      // Then refresh database query for consistency
+      queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] });
     };
 
     window.addEventListener('profileUpdated', handleProfileUpdate as EventListener);

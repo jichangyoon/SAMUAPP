@@ -192,6 +192,15 @@ const Profile = React.memo(() => {
         // Update database with new profile data
         await updateProfile(displayName, result.profileUrl);
         
+        // Force immediate header sync
+        window.dispatchEvent(new CustomEvent('profileUpdated', {
+          detail: { 
+            displayName, 
+            profileImage: result.profileUrl,
+            avatarUrl: result.profileUrl
+          }
+        }));
+        
         toast({
           title: "Profile Image Updated",
           description: "Your profile image has been uploaded successfully"
@@ -228,16 +237,20 @@ const Profile = React.memo(() => {
         const result = await response.json();
         console.log('Profile update successful:', result);
         
-        // Invalidate all profile-related queries at once
+        // Invalidate ALL profile-related queries immediately
         queryClient.invalidateQueries({ 
           predicate: (query) => 
             query.queryKey.includes('user-profile') && 
             query.queryKey.includes(walletAddress)
         });
         
-        // Update home page header
+        // Force immediate header update
         window.dispatchEvent(new CustomEvent('profileUpdated', {
-          detail: { displayName: name, profileImage: imageUrl || profileImage }
+          detail: { 
+            displayName: name, 
+            profileImage: imageUrl || profileImage,
+            avatarUrl: imageUrl || profileImage
+          }
         }));
         
         return true;
