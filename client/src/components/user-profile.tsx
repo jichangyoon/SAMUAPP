@@ -63,13 +63,13 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
       setDisplayName(userProfile.displayName || userProfile.username || user?.email?.address?.split('@')[0] || 'User');
       // Only use database avatar URL, completely ignore localStorage for images
       setProfileImage(userProfile.avatarUrl || '');
-
+      console.log('Profile loaded from database:', { avatarUrl: userProfile.avatarUrl });
     } else {
       const stored = getStoredProfile();
       setDisplayName(stored.displayName || user?.email?.address?.split('@')[0] || 'User');
       // Don't load profile image from localStorage - only from database
       setProfileImage('');
-
+      console.log('No database profile, clearing profile image');
     }
   }, [userProfile, user]);
 
@@ -93,7 +93,7 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
         setNameSuggestions(result.suggestions || []);
       }
     } catch (error) {
-
+      console.error('Error checking name availability:', error);
       setNameError('Unable to check name availability');
       setNameSuggestions([]);
     }
@@ -168,7 +168,7 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
       queryClient.invalidateQueries({ queryKey: ['/api/users/profile', walletAddress] });
     },
     onError: (error: any) => {
-
+      console.error('Profile update error:', error);
       
       if (error.message?.includes('DISPLAY_NAME_TAKEN') || error.message?.includes('already taken')) {
         toast({

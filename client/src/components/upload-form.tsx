@@ -107,16 +107,16 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
 
       if (!response.ok) {
         const errorText = await response.text();
-
+        console.error('Upload failed:', response.status, errorText);
         throw new Error(`Upload failed: ${response.status} ${errorText}`);
       }
 
       const result = await response.json();
-
+      console.log('Upload successful:', result);
       return result.fileUrl; // R2 URL is returned directly
     } catch (error: any) {
       clearTimeout(timeoutId);
-
+      console.error('Upload error:', error);
       
       if (error.name === 'AbortError') {
         throw new Error('Upload timeout - file may be too large or connection too slow');
@@ -207,7 +207,7 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       onSuccess();
       onClose?.();
     } catch (error: any) {
-
+      console.error('Submit error:', error);
       toast({
         title: "Upload Failed",
         description: error.message || "Failed to submit meme. Please try again.",

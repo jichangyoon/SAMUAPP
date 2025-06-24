@@ -17,6 +17,8 @@ interface MemeDetailModalProps {
 export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false }: MemeDetailModalProps) {
   const [showShareDialog, setShowShareDialog] = useState(false);
   
+
+
   const shareToTwitter = () => {
     const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername} 🔥`;
     const url = window.location.href;
@@ -101,7 +103,7 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
             {canVote && onVote && (
               <Button
                 onClick={onVote}
-                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+                className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-black font-semibold"
               >
                 <ArrowUp className="h-4 w-4 mr-2" />
                 Vote

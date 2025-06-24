@@ -6,9 +6,8 @@ import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, D
 import { usePrivy } from '@privy-io/react-auth';
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowUp, Trash2 } from "lucide-react";
+import { ArrowUp, Share2, Twitter, Send, Trash2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { UserInfoModal } from "@/components/user-info-modal";
 import type { Meme } from "@shared/schema";
 
@@ -20,103 +19,125 @@ interface MemeCardProps {
 
 export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   const [showVoteDialog, setShowVoteDialog] = useState(false);
-  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
   const { authenticated, user } = usePrivy();
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   
-  // Listen for profile updates
+  // Listen for profile updates to refresh author info
   useEffect(() => {
-    const handleProfileUpdate = (event: any) => {
-      if (event.detail.walletAddress === meme.authorWallet) {
-        queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
-      }
-    };
-
-    const handleImageUpdate = (event: any) => {
-      if (event.detail.walletAddress === meme.authorWallet) {
-        queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
-      }
+    const handleProfileUpdate = () => {
+      // Refresh memes data to get updated author info
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
     };
 
     window.addEventListener('profileUpdated', handleProfileUpdate);
-    window.addEventListener('imageUpdated', handleImageUpdate);
+    return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
+  }, [queryClient]);
 
-    return () => {
-      window.removeEventListener('profileUpdated', handleProfileUpdate);
-      window.removeEventListener('imageUpdated', handleImageUpdate);
-    };
-  }, [meme.authorWallet, queryClient]);
+  // Get wallet using same logic as WalletConnect component - prioritize Solana
+  const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
+  const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
+  const selectedWalletAccount = solanaWallet || walletAccounts[0];
+  const walletAddress = selectedWalletAccount?.address || '';
+  const samuBalance = 1; // Simplified for now
+  const { toast } = useToast();
 
-  // Get wallet address
-  const walletAddress = user?.linkedAccounts?.find(
-    (account: any) => account.type === 'wallet' && account.chainType === 'solana'
-  )?.address;
+  const votingPower = samuBalance; // Voting power based on SAMU balance only
 
-  const deleteMeme = useMutation({
+  const handleVote = async () => {
+    if (!canVote || !walletAddress) {
+      toast({
+        title: "Wallet Required",
+        description: "Please connect your wallet to vote.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsVoting(true);
+    try {
+      await apiRequest("POST", `/api/memes/${meme.id}/vote`, {
+        voterWallet: walletAddress,
+        votingPower,
+      });
+
+      toast({
+        title: "Vote Submitted!",
+        description: `Your vote with ${votingPower} voting power has been recorded.`,
+      });
+
+      setShowVoteDialog(false);
+      onVote();
+    } catch (error: any) {
+      toast({
+        title: "Voting Failed",
+        description: error.message || "Failed to submit vote. You may have already voted on this meme.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsVoting(false);
+    }
+  };
+
+  // Share functions
+  const shareToTwitter = () => {
+    const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername} 🔥`;
+    const url = window.location.href;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+    window.open(twitterUrl, '_blank');
+  };
+
+  const shareToTelegram = () => {
+    const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername}`;
+    const url = window.location.href;
+    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+    window.open(telegramUrl, '_blank');
+  };
+
+  const handleShare = (platform: string) => {
+    if (platform === 'twitter') {
+      shareToTwitter();
+    } else if (platform === 'telegram') {
+      shareToTelegram();
+    }
+  };
+
+  // Delete meme mutation
+  const deleteMutation = useMutation({
     mutationFn: async () => {
       const response = await fetch(`/api/memes/${meme.id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ authorWallet: walletAddress })
       });
-
       if (!response.ok) {
-        throw new Error('Failed to delete meme');
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to delete meme');
       }
-
       return response.json();
     },
     onSuccess: () => {
-      toast({
-        title: "Meme deleted successfully",
-        duration: 1000,
-      });
       queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+      toast({ title: "Meme deleted successfully" });
       setShowDeleteDialog(false);
     },
-    onError: (error) => {
-      toast({
-        title: "Failed to delete meme",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  });
-
-  const voteMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest(`/api/memes/${meme.id}/vote`, {
-        method: 'POST'
-      });
-      return response;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Vote submitted successfully!",
-        duration: 1000,
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
-      setShowVoteDialog(false);
-      setIsVoting(false);
-    },
     onError: (error: any) => {
-      toast({
-        title: "Failed to vote",
-        description: error.message,
-        variant: "destructive",
+      toast({ 
+        title: "Failed to delete meme", 
+        description: error.message || "Please try again",
+        variant: "destructive" 
       });
-      setIsVoting(false);
     }
   });
 
-  const handleVote = () => {
-    setIsVoting(true);
-    voteMutation.mutate();
+  const handleDelete = () => {
+    deleteMutation.mutate();
   };
 
   // Check if current user is the author
@@ -126,7 +147,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
     <>
       <Card className="overflow-hidden border-border bg-card">
         <button 
-          onClick={() => setShowDetailModal(true)}
+          onClick={() => setShowDetailDialog(true)}
           className="w-full aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-opacity"
         >
           <img
@@ -147,125 +168,234 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
 
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-foreground">{meme.title}</h3>
-            <div className="flex items-center gap-1 text-primary">
-              <ArrowUp className="h-4 w-4" />
-              <span className="font-bold">{meme.votes}</span>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => setShowUserModal(true)}
-              className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
-            >
-              <Avatar className="h-8 w-8">
+            <div className="flex items-center space-x-2">
+              <Avatar className="h-6 w-6">
                 <AvatarImage 
                   src={(meme as any).authorAvatarUrl} 
                   alt={meme.authorUsername}
-                  key={`card-${meme.id}-${(meme as any).authorAvatarUrl}`}
+                  key={`${meme.id}-${(meme as any).authorAvatarUrl}`}
                 />
-                <AvatarFallback className="bg-primary text-primary-foreground">
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                   {meme.authorUsername.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-sm text-muted-foreground">{meme.authorUsername}</span>
-            </button>
-
-            <div className="flex gap-2">
-              {canVote && (
-                <Button 
-                  onClick={() => setShowVoteDialog(true)}
-                  size="sm" 
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                >
-                  Vote
-                </Button>
-              )}
-              {isAuthor && (
-                <Button 
-                  onClick={() => setShowDeleteDialog(true)}
-                  size="sm" 
-                  variant="outline"
-                  className="text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              )}
+              <button 
+                onClick={() => setShowUserModal(true)}
+                className="text-sm text-muted-foreground cursor-pointer underline"
+              >
+                {meme.authorUsername}
+              </button>
             </div>
+            <div className="text-right">
+              <div className="text-lg font-bold text-primary">{meme.votes.toLocaleString()}</div>
+              <div className="text-xs text-muted-foreground">votes</div>
+            </div>
+          </div>
+
+          <div className="mb-3">
+            <h3 className="font-semibold text-foreground mb-1">{meme.title}</h3>
+          </div>
+
+          <div className="flex space-x-2">
+            <Button
+              onClick={() => setShowVoteDialog(true)}
+              disabled={!canVote}
+              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+            >
+              <ArrowUp className="h-4 w-4 mr-2" />
+              Vote
+            </Button>
+            <Button
+              onClick={() => setShowShareDialog(true)}
+              variant="outline"
+              size="sm"
+              className="px-4"
+            >
+              <Share2 className="h-4 w-4" />
+            </Button>
+            {isAuthor && (
+              <Button
+                onClick={() => setShowDeleteDialog(true)}
+                variant="outline"
+                size="sm"
+                className="px-4 border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Vote Confirmation Dialog */}
       <Drawer open={showVoteDialog} onOpenChange={setShowVoteDialog}>
-        <DrawerContent className="bg-card border-border">
+        <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
           <DrawerHeader>
-            <DrawerTitle className="text-foreground">Confirm Vote</DrawerTitle>
+            <DrawerTitle className="text-foreground">Confirm Your Vote</DrawerTitle>
             <DrawerDescription className="text-muted-foreground">
-              Vote for "{meme.title}" by {meme.authorUsername}?
+              You're about to vote for "{meme.title}" by {meme.authorUsername}
             </DrawerDescription>
           </DrawerHeader>
-          
-          <DrawerFooter>
-            <Button 
-              onClick={handleVote}
-              disabled={isVoting || voteMutation.isPending}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
-            >
-              {isVoting || voteMutation.isPending ? 'Voting...' : 'Confirm Vote'}
-            </Button>
-            <Button 
-              variant="outline" 
+
+          <div className="px-4 pb-4 overflow-y-auto flex-1">
+            <div className="bg-accent rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-muted-foreground">Your voting power:</span>
+                <span className="font-semibold text-primary">{votingPower.toLocaleString()}</span>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Based on your SAMU token balance: {samuBalance.toLocaleString()}
+              </div>
+            </div>
+          </div>
+
+          <DrawerFooter className="flex space-x-3">
+            <Button
+              variant="outline"
               onClick={() => setShowVoteDialog(false)}
-              disabled={isVoting || voteMutation.isPending}
+              className="flex-1"
             >
               Cancel
+            </Button>
+            <Button
+              onClick={handleVote}
+              disabled={isVoting}
+              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              {isVoting ? "Voting..." : "Confirm Vote"}
             </Button>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
 
-      {/* Delete Confirmation Dialog */}
+      <Drawer open={showDetailDialog} onOpenChange={setShowDetailDialog}>
+        <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+          <DrawerHeader>
+            <DrawerTitle className="text-foreground">{meme.title}</DrawerTitle>
+          </DrawerHeader>
+
+          <div className="px-4 pb-4 overflow-y-auto flex-1 space-y-4">
+            <div className="aspect-square rounded-lg overflow-hidden">
+              <img
+                src={meme.imageUrl}
+                alt={meme.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Avatar className="h-8 w-8">
+                <AvatarImage 
+                  src={(meme as any).authorAvatarUrl} 
+                  alt={meme.authorUsername}
+                  key={`detail-${meme.id}-${(meme as any).authorAvatarUrl}`}
+                />
+                <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                  {meme.authorUsername.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <div className="font-medium text-foreground">{meme.authorUsername}</div>
+                <div className="text-sm text-muted-foreground">
+                  {meme.votes.toLocaleString()} votes
+                </div>
+              </div>
+            </div>
+
+            {meme.description && (
+              <div>
+                <h4 className="font-medium text-foreground mb-2">Description</h4>
+                <p className="text-muted-foreground">{meme.description}</p>
+              </div>
+            )}
+
+            <div className="flex space-x-2 pt-2">
+              <Button
+                onClick={() => {
+                  setShowDetailDialog(false);
+                  setShowVoteDialog(true);
+                }}
+                disabled={!canVote}
+                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+              >
+                <ArrowUp className="h-4 w-4 mr-2" />
+                Vote
+              </Button>
+              <Button
+                onClick={() => setShowShareDialog(true)}
+                variant="outline"
+                size="sm"
+                className="px-4"
+              >
+                <Share2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer>
+
+      {/* Share Drawer */}
+      <Drawer open={showShareDialog} onOpenChange={setShowShareDialog}>
+        <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+          <DrawerHeader>
+            <DrawerTitle className="text-foreground">Share Meme</DrawerTitle>
+            <DrawerDescription className="text-muted-foreground">
+              Share "{meme.title}" on social platforms
+            </DrawerDescription>
+          </DrawerHeader>
+
+          <div className="flex flex-col gap-3 py-4 px-4">
+            <Button
+              onClick={() => {
+                shareToTwitter();
+                setShowShareDialog(false);
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+            >
+              <Twitter className="h-4 w-4" />
+              Share on X
+            </Button>
+            <Button
+              onClick={() => {
+                shareToTelegram();
+                setShowShareDialog(false);
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+            >
+              <Send className="h-4 w-4" />
+              Share on Telegram
+            </Button>
+          </div>
+        </DrawerContent>
+      </Drawer>
+
+      {/* Delete Confirmation Drawer */}
       <Drawer open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DrawerContent className="bg-card border-border">
+        <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
           <DrawerHeader>
             <DrawerTitle className="text-foreground">Delete Meme</DrawerTitle>
             <DrawerDescription className="text-muted-foreground">
               Are you sure you want to delete "{meme.title}"? This action cannot be undone.
             </DrawerDescription>
           </DrawerHeader>
-          
-          <DrawerFooter>
-            <Button 
-              onClick={() => deleteMeme.mutate()}
-              disabled={deleteMeme.isPending}
-              variant="destructive"
+
+          <div className="flex flex-col gap-3 py-4 px-4">
+            <Button
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+              className="bg-red-600 hover:bg-red-700 text-white"
             >
-              {deleteMeme.isPending ? 'Deleting...' : 'Delete'}
+              {deleteMutation.isPending ? "Deleting..." : "Delete Meme"}
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
               onClick={() => setShowDeleteDialog(false)}
-              disabled={deleteMeme.isPending}
+              variant="outline"
+              disabled={deleteMutation.isPending}
             >
               Cancel
             </Button>
-          </DrawerFooter>
+          </div>
         </DrawerContent>
       </Drawer>
-
-      {/* Unified Detail Modal */}
-      <MemeDetailModal
-        isOpen={showDetailModal}
-        onClose={() => setShowDetailModal(false)}
-        meme={meme}
-        onVote={() => {
-          setShowDetailModal(false);
-          setShowVoteDialog(true);
-        }}
-        canVote={canVote}
-      />
 
       {/* User Info Modal */}
       <UserInfoModal
