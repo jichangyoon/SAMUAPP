@@ -4,8 +4,10 @@ import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } f
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, Trophy, TrendingUp, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { User, Trophy, TrendingUp, Calendar, Copy } from "lucide-react";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
+import { useToast } from "@/hooks/use-toast";
 import type { Meme } from "@shared/schema";
 
 interface UserInfoModalProps {
@@ -18,6 +20,7 @@ interface UserInfoModalProps {
 export function UserInfoModal({ isOpen, onClose, walletAddress, username }: UserInfoModalProps) {
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
   const [showMemeModal, setShowMemeModal] = useState(false);
+  const { toast } = useToast();
   const { data: userProfile } = useQuery({
     queryKey: [`/api/users/profile/${walletAddress}`],
     enabled: isOpen && !!walletAddress,
@@ -56,13 +59,29 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
                 {(userProfile?.displayName || username)?.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <div>
+            <div className="flex-1">
               <DrawerTitle className="text-xl font-bold text-white">
                 {userProfile?.displayName || username}
               </DrawerTitle>
-              <DrawerDescription className="text-gray-400">
-                {walletAddress.slice(0, 8)}...{walletAddress.slice(-8)}
-              </DrawerDescription>
+              <div className="flex items-center gap-2 mt-1">
+                <DrawerDescription className="text-gray-400 font-mono text-sm">
+                  {walletAddress.slice(0, 8)}...{walletAddress.slice(-8)}
+                </DrawerDescription>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(walletAddress);
+                    toast({
+                      title: "복사됨!",
+                      description: "지갑 주소가 클립보드에 복사되었습니다.",
+                    });
+                  }}
+                  className="h-6 w-6 p-0 text-gray-400 hover:text-white hover:bg-gray-800"
+                >
+                  <Copy className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
           </div>
         </DrawerHeader>
