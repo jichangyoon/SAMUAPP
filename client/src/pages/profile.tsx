@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { SendTokens } from "@/components/send-tokens";
+import { MemeDetailModal } from "@/components/meme-detail-modal";
 
 const Profile = React.memo(() => {
   const { user } = usePrivy();
@@ -28,6 +29,8 @@ const Profile = React.memo(() => {
   const [imagePreview, setImagePreview] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedMeme, setSelectedMeme] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   // 지갑 주소 가져오기 (홈과 동일한 로직)
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
@@ -686,7 +689,14 @@ const Profile = React.memo(() => {
                 {myMemes.length > 0 ? (
                   <div className="space-y-2">
                     {myMemes.map((meme: any) => (
-                      <div key={meme.id} className="flex items-center gap-3 p-2 bg-accent/50 rounded-lg">
+                      <div 
+                        key={meme.id} 
+                        className="flex items-center gap-3 p-2 bg-accent/50 rounded-lg cursor-pointer hover:bg-accent/70 transition-colors"
+                        onClick={() => {
+                          setSelectedMeme(meme);
+                          setIsModalOpen(true);
+                        }}
+                      >
                         <img 
                           src={meme.imageUrl} 
                           alt={meme.title}
@@ -724,7 +734,14 @@ const Profile = React.memo(() => {
                     {myVotes.map((vote: any) => {
                       const meme = allMemes.find((m: any) => m.id === vote.memeId);
                       return meme ? (
-                        <div key={vote.id} className="flex items-center gap-3 p-2 bg-accent/50 rounded-lg">
+                        <div 
+                          key={vote.id} 
+                          className="flex items-center gap-3 p-2 bg-accent/50 rounded-lg cursor-pointer hover:bg-accent/70 transition-colors"
+                          onClick={() => {
+                            setSelectedMeme(meme);
+                            setIsModalOpen(true);
+                          }}
+                        >
                           <img 
                             src={meme.imageUrl} 
                             alt={meme.title}
@@ -795,6 +812,19 @@ const Profile = React.memo(() => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Meme Detail Modal */}
+      {selectedMeme && (
+        <MemeDetailModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedMeme(null);
+          }}
+          meme={selectedMeme}
+          canVote={false}
+        />
+      )}
     </div>
   );
 });
