@@ -418,7 +418,27 @@ export class DatabaseStorage implements IStorage {
       .set({ ...updates, updatedAt: new Date() })
       .where(eq(users.walletAddress, walletAddress))
       .returning();
+    
+    // Update author info in all memes if displayName changed
+    if (updates.displayName) {
+      await this.updateUserMemeAuthorInfo(walletAddress, updates.displayName);
+      console.log('Updated author info in memes for user:', walletAddress, 'to:', updates.displayName);
+    }
+    
     return user;
+  }
+
+  async updateUserMemeAuthorInfo(walletAddress: string, newDisplayName: string): Promise<void> {
+    if (!this.db) throw new Error("Database not available");
+    
+    // Update author username in all memes created by this user
+    const result = await this.db
+      .update(memes)
+      .set({ authorUsername: newDisplayName })
+      .where(eq(memes.authorWallet, walletAddress))
+      .returning();
+    
+    console.log('Updated memes count:', result.length, 'for wallet:', walletAddress);
   }
 
   async getUserMemes(walletAddress: string): Promise<Meme[]> {
