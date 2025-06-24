@@ -36,6 +36,8 @@ router.put("/profile/:walletAddress", async (req, res) => {
     const { walletAddress } = req.params;
     const { displayName, avatarUrl, ...otherData } = req.body;
     
+    console.log('Profile update request:', { walletAddress, displayName, avatarUrl });
+    
     // Check if display name is already taken by another user
     if (displayName) {
       const existingUser = await storage.getUserByDisplayName(displayName);
@@ -47,15 +49,19 @@ router.put("/profile/:walletAddress", async (req, res) => {
       }
     }
     
-    const updateData = insertUserSchema.partial().parse(otherData);
+    const updateData: any = {};
     if (displayName) updateData.displayName = displayName;
     if (avatarUrl) updateData.avatarUrl = avatarUrl;
     
+    console.log('Updating user with data:', updateData);
+    
     const user = await storage.updateUser(walletAddress, updateData);
+    
+    console.log('User updated successfully:', user);
     res.json(user);
   } catch (error) {
     console.error("Error updating user profile:", error);
-    res.status(400).json({ message: "Failed to update user profile" });
+    res.status(400).json({ message: "Failed to update user profile", error: error.message });
   }
 });
 

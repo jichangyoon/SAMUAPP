@@ -211,31 +211,36 @@ const Profile = React.memo(() => {
   // Update profile function
   const updateProfile = async (name: string, imageUrl?: string) => {
     try {
-      const response = await fetch('/api/users/profile', {
+      console.log('Updating profile:', { walletAddress, displayName: name, avatarUrl: imageUrl || profileImage });
+      
+      const response = await fetch(`/api/users/profile/${walletAddress}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          walletAddress,
           displayName: name,
           avatarUrl: imageUrl || profileImage
         })
       });
 
       if (response.ok) {
+        const result = await response.json();
+        console.log('Profile update successful:', result);
+        
         // Invalidate queries to refresh data
         queryClient.invalidateQueries({ queryKey: ['user-profile', walletAddress] });
+        queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] });
         
         // Update home page header
         window.dispatchEvent(new CustomEvent('profileUpdated', {
           detail: { displayName: name, profileImage: imageUrl || profileImage }
         }));
         
-        console.log('Profile database update successful');
         return true;
       } else {
-        console.error('Profile update failed:', response.status, response.statusText);
+        const errorData = await response.json();
+        console.error('Profile update failed:', response.status, errorData);
         return false;
       }
     } catch (error) {
@@ -255,7 +260,8 @@ const Profile = React.memo(() => {
       return;
     }
 
-    const success = await updateProfile(displayName.trim());
+    console.log('Saving profile with name:', displayName.trim());
+    const success = await updateProfile(displayName.trim(), profileImage);
     
     if (success) {
       setIsEditing(false);
@@ -272,7 +278,7 @@ const Profile = React.memo(() => {
         variant: "destructive"
       });
     }
-  }, [displayName, profileImage, walletAddress, toast, queryClient]);
+  }, [displayName, profileImage, walletAddress, toast, queryClient, updateProfile]);
 
   // Cancel editing
   const handleCancelEdit = React.useCallback(() => {
