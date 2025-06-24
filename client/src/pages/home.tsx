@@ -388,7 +388,7 @@ export default function Home() {
                     {/* Debug info */}
                     {isConnected && (
                       <div className="text-xs text-muted-foreground">
-                        Admin: {userProfile?.isAdmin ? 'YES' : 'NO'}
+                        Admin: {userProfile?.isAdmin ? 'YES' : 'NO'} | Panel: {showAdminPanel ? 'OPEN' : 'CLOSED'}
                       </div>
                     )}
                   </div>
