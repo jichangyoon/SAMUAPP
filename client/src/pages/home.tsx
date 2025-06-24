@@ -361,9 +361,9 @@ export default function Home() {
                   {/* Contest Header */}
                   <ContestHeader />
 
-                  {/* Submit Button - Only show when logged in */}
-                  {isConnected && (
-                    <div className="flex justify-center">
+                  {/* Submit and Admin Buttons */}
+                  <div className="flex justify-center gap-3">
+                    {isConnected && (
                       <Button 
                         onClick={() => setShowUploadForm(true)}
                         className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg font-medium"
@@ -371,8 +371,18 @@ export default function Home() {
                         <Plus className="h-4 w-4 mr-2" />
                         Submit Meme
                       </Button>
-                    </div>
-                  )}
+                    )}
+                    {userProfile?.isAdmin && (
+                      <Button 
+                        onClick={() => setShowAdminPanel(true)}
+                        variant="outline"
+                        className="px-6 py-2 rounded-lg font-medium"
+                      >
+                        <Trophy className="h-4 w-4 mr-2" />
+                        Admin
+                      </Button>
+                    )}
+                  </div>
 
                   {/* Meme Gallery */}
                   <div>
