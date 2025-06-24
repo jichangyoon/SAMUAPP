@@ -31,7 +31,6 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   // Listen for profile updates to refresh author info
   useEffect(() => {
     const handleProfileUpdate = () => {
-      // Refresh memes data to get updated author info
       queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
     };
 
@@ -44,10 +43,10 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
   const walletAddress = selectedWalletAccount?.address || '';
-  const samuBalance = 1; // Simplified for now
+  const samuBalance = 1;
   const { toast } = useToast();
 
-  const votingPower = samuBalance; // Voting power based on SAMU balance only
+  const votingPower = samuBalance;
 
   const handleVote = async () => {
     if (!canVote || !walletAddress) {
