@@ -45,12 +45,12 @@ export function Leaderboard() {
   const [showMemeModal, setShowMemeModal] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
 
-  // Optimize query with stale time to reduce unnecessary refetches
+  // Force fresh data for accurate leaderboard calculations
   const { data: memesResponse, isLoading } = useQuery({
     queryKey: ["/api/memes"],
     enabled: true,
-    staleTime: 30000, // 30 seconds
-    refetchInterval: 60000, // Refetch every minute
+    staleTime: 0, // Always fetch fresh data
+    refetchInterval: 30000, // Refetch every 30 seconds
   });
 
   // Extract memes array with proper type checking
