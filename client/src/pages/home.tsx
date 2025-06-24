@@ -30,6 +30,8 @@ export default function Home() {
   const [sortBy, setSortBy] = useState("votes");
   const [currentTab, setCurrentTab] = useState("contest");
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  
+
   const [viewMode, setViewMode] = useState<'card' | 'grid'>('card');
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
   const [showVoteDialog, setShowVoteDialog] = useState(false);
@@ -77,6 +79,11 @@ export default function Home() {
     },
     enabled: !!walletAddress && authenticated,
   });
+
+  // 디버그를 위한 강제 상태 확인
+  useEffect(() => {
+    console.log('Home component state:', { showAdminPanel, isConnected, userProfile: userProfile?.isAdmin });
+  }, [showAdminPanel, isConnected, userProfile]);
 
   // Profile state management
   const [profileData, setProfileData] = useState({ displayName: 'User', profileImage: '' });
@@ -372,14 +379,18 @@ export default function Home() {
                         Submit Meme
                       </Button>
                     )}
-                    {userProfile?.isAdmin && (
+                    {/* 임시로 모든 연결된 사용자에게 Admin 버튼 표시 */}
+                    {isConnected && (
                       <Button 
-                        onClick={() => setShowAdminPanel(true)}
+                        onClick={() => {
+                          console.log('Admin button clicked - forcing panel open');
+                          setShowAdminPanel(true);
+                        }}
                         variant="outline"
                         className="px-6 py-2 rounded-lg font-medium"
                       >
                         <Trophy className="h-4 w-4 mr-2" />
-                        Admin
+                        Admin (Test)
                       </Button>
                     )}
                     
