@@ -124,15 +124,11 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
     account => account.type === 'wallet' && account.chainType === 'solana'
   )?.address;
 
-  console.log('AdminPanel - isOpen:', isOpen, 'walletAddress:', walletAddress);
-
   // Check admin status
   const { data: adminData } = useQuery({
     queryKey: ['/api/users/admin/check', walletAddress],
     enabled: !!walletAddress,
   });
-
-  console.log('AdminPanel - adminData:', adminData);
 
   // Get current contest
   const { data: currentContestData } = useQuery({
@@ -226,33 +222,11 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
     }
   });
 
-  console.log('AdminPanel render check:', { isOpen, walletAddress, adminData });
-
   if (!isOpen) return null;
 
-  // 디버깅을 위해 임시로 관리자 체크 비활성화
-  // if (!adminData?.isAdmin) {
-  //   return (
-  //     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-  //       <Card className="w-96 mx-4">
-  //         <CardHeader>
-  //           <CardTitle className="flex items-center gap-2">
-  //             <Settings className="h-5 w-5" />
-  //             Admin Access Required
-  //           </CardTitle>
-  //         </CardHeader>
-  //         <CardContent>
-  //           <p className="text-muted-foreground mb-4">
-  //             You need admin privileges to access this panel.
-  //           </p>
-  //           <Button onClick={onClose} className="w-full">
-  //             Close
-  //           </Button>
-  //         </CardContent>
-  //       </Card>
-  //     </div>
-  //   );
-  // }
+  if (!adminData?.isAdmin) {
+    return null; // 관리자가 아니면 아무것도 렌더링하지 않음
+  }
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[9999] p-4">
