@@ -27,6 +27,7 @@ const Profile = React.memo(() => {
   const [profileImage, setProfileImage] = useState("");
   const [imagePreview, setImagePreview] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   // 지갑 주소 가져오기 (홈과 동일한 로직)
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
@@ -262,6 +263,7 @@ const Profile = React.memo(() => {
       return;
     }
 
+    setIsSaving(true);
     let finalImageUrl = profileImage;
 
     // Upload image if a new file is selected
@@ -306,6 +308,7 @@ const Profile = React.memo(() => {
           description: errorMessage,
           variant: "destructive"
         });
+        setIsSaving(false);
         return;
       }
     }
@@ -334,6 +337,8 @@ const Profile = React.memo(() => {
         variant: "destructive"
       });
     }
+
+    setIsSaving(false);
   }, [displayName, profileImage, selectedFile, walletAddress, imagePreview, toast, queryClient, updateProfile]);
 
   // Cancel editing - 메모리 정리 포함
@@ -354,6 +359,7 @@ const Profile = React.memo(() => {
     setImagePreview('');
     setSelectedFile(null);
     setIsEditing(false);
+    setIsSaving(false);
   }, [userProfile, user?.email?.address, imagePreview]);
 
   // Cleanup on unmount
@@ -473,13 +479,14 @@ const Profile = React.memo(() => {
                   </AvatarFallback>
                 </Avatar>
                 {isEditing && user && (
-                  <label className="absolute -bottom-0.5 -right-0.5 bg-primary text-primary-foreground rounded-full p-1 cursor-pointer hover:bg-primary/80">
+                  <label className={`absolute -bottom-0.5 -right-0.5 bg-primary text-primary-foreground rounded-full p-1 ${isSaving ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-primary/80'}`}>
                     <Camera className="h-2.5 w-2.5" />
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleImageChange}
                       className="hidden"
+                      disabled={isSaving}
                     />
                   </label>
                 )}
@@ -493,6 +500,7 @@ const Profile = React.memo(() => {
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       placeholder="Enter your display name"
+                      disabled={isSaving}
                     />
                   </div>
                 ) : (
@@ -511,11 +519,27 @@ const Profile = React.memo(() => {
                       onClick={handleSaveProfile}
                       size="sm"
                       className="bg-green-600 hover:bg-green-700 text-xs"
+                      disabled={isSaving}
                     >
-                      <Save className="h-3 w-3 mr-1" />
-                      Save
+                      {isSaving ? (
+                        <>
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-3 w-3 mr-1" />
+                          Save
+                        </>
+                      )}
                     </Button>
-                    <Button onClick={handleCancelEdit} variant="outline" size="sm" className="text-xs">
+                    <Button 
+                      onClick={handleCancelEdit} 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-xs"
+                      disabled={isSaving}
+                    >
                       Cancel
                     </Button>
                   </>
@@ -525,7 +549,7 @@ const Profile = React.memo(() => {
                     variant="outline"
                     size="sm"
                     className="text-xs"
-                    disabled={!user}
+                    disabled={!user || isSaving}
                   >
                     <Settings className="h-3 w-3 mr-1" />
                     Edit
