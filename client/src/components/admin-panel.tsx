@@ -1,4 +1,5 @@
 import { useState } from "react";
+import * as React from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,19 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
     endDate: ""
   });
 
+  // 기본값 설정
+  React.useEffect(() => {
+    const now = new Date();
+    const defaultStart = now.toISOString().slice(0, 16);
+    const defaultEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16);
+    
+    setNewContest(prev => ({
+      ...prev,
+      startDate: prev.startDate || defaultStart,
+      endDate: prev.endDate || defaultEnd
+    }));
+  }, []);
+
   const walletAddress = user?.linkedAccounts?.find(
     account => account.type === 'wallet' && account.chainType === 'solana'
   )?.address;
@@ -68,21 +82,40 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
   // Create contest mutation
   const createContestMutation = useMutation({
     mutationFn: async (contestData: any) => {
-      return apiRequest(`/api/users/admin/contests`, {
+      const response = await apiRequest(`/api/users/admin/contests`, {
         method: 'POST',
         body: JSON.stringify({
           ...contestData,
           createdBy: walletAddress
         })
       });
+      
+      // 생성 후 바로 시작
+      if (response.contest) {
+        await apiRequest(`/api/users/admin/contests/${response.contest.id}/start`, {
+          method: 'POST',
+          body: JSON.stringify({ userWallet: walletAddress })
+        });
+      }
+      
+      return response;
     },
     onSuccess: () => {
-      toast({ title: "Contest created successfully" });
+      toast({ 
+        title: "Contest started successfully!",
+        description: "New contest is now live and accepting submissions"
+      });
       setNewContest({ title: "", description: "", startDate: "", endDate: "" });
       queryClient.invalidateQueries({ queryKey: ['/api/users/admin/contests'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/users/admin/contests/current'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
     },
-    onError: () => {
-      toast({ title: "Failed to create contest", variant: "destructive" });
+    onError: (error: any) => {
+      toast({ 
+        title: "Failed to start contest", 
+        description: error.message || "Please try again",
+        variant: "destructive" 
+      });
     }
   });
 
@@ -218,8 +251,10 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                     value={newContest.title}
                     onChange={(e) => setNewContest(prev => ({ ...prev, title: e.target.value }))}
                     placeholder="Enter contest title"
+                    className="text-base"
                   />
                 </div>
+                
                 <div>
                   <Label htmlFor="description">Description</Label>
                   <Textarea
@@ -227,35 +262,97 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                     value={newContest.description}
                     onChange={(e) => setNewContest(prev => ({ ...prev, description: e.target.value }))}
                     placeholder="Contest description"
-                    rows={3}
+                    rows={2}
+                    className="text-base"
                   />
                 </div>
+
+                {/* Duration Selection */}
+                <div className="space-y-3">
+                  <Label>Contest Duration</Label>
+                  <div className="grid grid-cols-1 gap-2">
+                    <Button 
+                      type="button"
+                      onClick={() => {
+                        const now = new Date();
+                        const startDate = now.toISOString().slice(0, 16);
+                        const endDate = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString().slice(0, 16);
+                        setNewContest(prev => ({ ...prev, startDate, endDate }));
+                      }}
+                      variant="outline"
+                      className="justify-start text-left"
+                    >
+                      📅 24 Hours (Start now, end tomorrow)
+                    </Button>
+                    
+                    <Button 
+                      type="button"
+                      onClick={() => {
+                        const now = new Date();
+                        const startDate = now.toISOString().slice(0, 16);
+                        const endDate = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16);
+                        setNewContest(prev => ({ ...prev, startDate, endDate }));
+                      }}
+                      variant="outline"
+                      className="justify-start text-left"
+                    >
+                      📅 3 Days (72 hours)
+                    </Button>
+                    
+                    <Button 
+                      type="button"
+                      onClick={() => {
+                        const now = new Date();
+                        const startDate = now.toISOString().slice(0, 16);
+                        const endDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16);
+                        setNewContest(prev => ({ ...prev, startDate, endDate }));
+                      }}
+                      variant="outline"
+                      className="justify-start text-left"
+                    >
+                      📅 1 Week (7 days)
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Manual Date/Time Input */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="startDate">Start Date</Label>
-                    <Input
+                    <Label htmlFor="startDate">Start Date & Time</Label>
+                    <input
                       id="startDate"
                       type="datetime-local"
                       value={newContest.startDate}
                       onChange={(e) => setNewContest(prev => ({ ...prev, startDate: e.target.value }))}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="endDate">End Date</Label>
-                    <Input
+                    <Label htmlFor="endDate">End Date & Time</Label>
+                    <input
                       id="endDate"
                       type="datetime-local"
                       value={newContest.endDate}
                       onChange={(e) => setNewContest(prev => ({ ...prev, endDate: e.target.value }))}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
                 </div>
+
+                {newContest.startDate && newContest.endDate && (
+                  <div className="text-sm text-muted-foreground p-3 bg-accent rounded">
+                    Contest will run from {new Date(newContest.startDate).toLocaleString()} 
+                    to {new Date(newContest.endDate).toLocaleString()}
+                  </div>
+                )}
+                
                 <Button 
                   onClick={() => createContestMutation.mutate(newContest)}
-                  disabled={createContestMutation.isPending || !newContest.title}
+                  disabled={createContestMutation.isPending || !newContest.title || !newContest.startDate || !newContest.endDate}
                   className="w-full"
+                  size="lg"
                 >
-                  Create Contest
+                  {createContestMutation.isPending ? "Creating..." : "🚀 Create & Start Contest"}
                 </Button>
               </CardContent>
             </Card>
