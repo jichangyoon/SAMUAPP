@@ -193,6 +193,7 @@ const Profile = React.memo(() => {
         await updateProfile(displayName, result.profileUrl);
         
         // Force immediate header sync
+        console.log('Dispatching image update event:', { displayName, profileImage: result.profileUrl });
         window.dispatchEvent(new CustomEvent('profileUpdated', {
           detail: { 
             displayName, 
@@ -245,6 +246,7 @@ const Profile = React.memo(() => {
         });
         
         // Force immediate header update
+        console.log('Dispatching profile update event:', { displayName: name, profileImage: imageUrl || profileImage });
         window.dispatchEvent(new CustomEvent('profileUpdated', {
           detail: { 
             displayName: name, 

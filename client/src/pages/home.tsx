@@ -92,6 +92,8 @@ export default function Home() {
   // Listen for profile updates from profile page and refresh database query
   useEffect(() => {
     const handleProfileUpdate = (event: CustomEvent) => {
+      console.log('Header received profile update event:', event.detail);
+      
       // Force immediate state update for instant visual feedback
       setProfileData({
         displayName: event.detail.displayName,
