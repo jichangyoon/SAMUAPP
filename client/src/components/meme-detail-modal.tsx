@@ -17,12 +17,11 @@ interface MemeDetailModalProps {
 export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false }: MemeDetailModalProps) {
   const [showShareDialog, setShowShareDialog] = useState(false);
   
-  // Debug logging
-  console.log('MemeDetailModal - meme data:', {
+  // Debug: Log avatar data
+  console.log('Avatar Debug:', {
     id: meme.id,
-    authorUsername: meme.authorUsername,
     authorAvatarUrl: (meme as any).authorAvatarUrl,
-    fullMeme: meme
+    hasAvatarUrl: !!(meme as any).authorAvatarUrl
   });
 
   const shareToTwitter = () => {
@@ -47,7 +46,7 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
             {meme.title}
           </DrawerTitle>
           <DrawerDescription className="text-gray-400">
-            By {meme.authorUsername} • {meme.votes.toLocaleString()} votes
+            Meme details and information
           </DrawerDescription>
         </DrawerHeader>
 
@@ -79,10 +78,9 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
                 <div>
                   <div className="font-semibold text-white">{meme.authorUsername}</div>
                   <div className="text-sm text-gray-400">Creator</div>
-                  {/* Debug info */}
-                  <div className="text-xs text-red-400">
-                    Avatar URL: {(meme as any).authorAvatarUrl ? 'Present' : 'Missing'}
-                  </div>
+                  {!((meme as any).authorAvatarUrl) && (
+                    <div className="text-xs text-red-400">No avatar URL found</div>
+                  )}
                 </div>
               </div>
               <div className="text-right">
