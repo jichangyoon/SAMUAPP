@@ -57,13 +57,15 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
   useEffect(() => {
     if (userProfile) {
       setDisplayName(userProfile.displayName || userProfile.username || user?.email?.address?.split('@')[0] || 'User');
-      // Only use database avatar URL, ignore localStorage for images
+      // Only use database avatar URL, completely ignore localStorage for images
       setProfileImage(userProfile.avatarUrl || '');
+      console.log('Profile loaded from database:', { avatarUrl: userProfile.avatarUrl });
     } else {
       const stored = getStoredProfile();
       setDisplayName(stored.displayName || user?.email?.address?.split('@')[0] || 'User');
       // Don't load profile image from localStorage - only from database
       setProfileImage('');
+      console.log('No database profile, clearing profile image');
     }
   }, [userProfile, user]);
 
@@ -139,8 +141,8 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
       
       const updatedUser = await response.json();
       
-      // Update localStorage for immediate UI feedback
-      const profileData = { displayName: name || displayName, profileImage: image || profileImage };
+      // Update localStorage for display name only, not profile image
+      const profileData = { displayName: name || displayName, profileImage: '' };
       localStorage.setItem(`privy_profile_${user?.id}`, JSON.stringify(profileData));
       
       return updatedUser;
@@ -225,13 +227,17 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
       }
 
       const result = await response.json();
+      console.log('Profile upload API response:', result);
+      
       if (result.success && result.profileUrl) {
+        // Clear localStorage completely for profile images
+        localStorage.removeItem(`privy_profile_${user?.id}`);
+        
+        // Update state immediately
         setProfileImage(result.profileUrl);
         
-        // Immediately update profile in database with R2 URL
-        console.log('Profile upload result:', result);
-        console.log('Updating profile with avatar URL:', result.profileUrl);
-        
+        // Update database with R2 URL
+        console.log('Updating database with avatar URL:', result.profileUrl);
         updateProfileMutation.mutate({
           name: displayName,
           image: result.profileUrl
