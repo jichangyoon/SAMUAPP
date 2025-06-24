@@ -374,10 +374,7 @@ export default function Home() {
                     )}
                     {userProfile?.isAdmin && (
                       <Button 
-                        onClick={() => {
-                          console.log('Admin button clicked, userProfile:', userProfile);
-                          setShowAdminPanel(true);
-                        }}
+                        onClick={() => setShowAdminPanel(true)}
                         variant="outline"
                         className="px-6 py-2 rounded-lg font-medium"
                       >
@@ -386,20 +383,7 @@ export default function Home() {
                       </Button>
                     )}
                     
-                    {/* 임시 디버그 - 관리자가 아닌 경우에도 표시 */}
-                    {isConnected && !userProfile?.isAdmin && (
-                      <Button 
-                        onClick={() => {
-                          console.log('Debug admin button clicked');
-                          setShowAdminPanel(true);
-                        }}
-                        variant="secondary"
-                        size="sm"
-                        className="text-xs"
-                      >
-                        Debug Admin
-                      </Button>
-                    )}
+
                   </div>
 
                   {/* Meme Gallery */}
