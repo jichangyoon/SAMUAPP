@@ -8,6 +8,7 @@ import { Leaderboard } from "@/components/leaderboard";
 import { GoodsShop } from "@/components/goods-shop";
 import { NftGallery } from "@/components/nft-gallery";
 import { MediaDisplay } from "@/components/media-display";
+import { AdminPanel } from "@/components/admin-panel";
 
 import { usePrivy } from '@privy-io/react-auth';
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ import samuLogoImg from "@/assets/samu-logo.webp";
 export default function Home() {
   const [sortBy, setSortBy] = useState("votes");
   const [currentTab, setCurrentTab] = useState("contest");
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [viewMode, setViewMode] = useState<'card' | 'grid'>('card');
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
   const [showVoteDialog, setShowVoteDialog] = useState(false);
