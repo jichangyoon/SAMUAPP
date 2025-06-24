@@ -149,11 +149,27 @@ const Profile = React.memo(() => {
       if (response.ok) {
         const result = await response.json();
         
-        // Invalidate specific profile queries
-        queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] });
-        queryClient.invalidateQueries({ queryKey: [`/api/users/profile/${walletAddress}`] });
+        // Comprehensive query invalidation - invalidate ALL profile-related queries
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['user-profile', walletAddress] }),
+          queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] }),
+          queryClient.invalidateQueries({ queryKey: [`/api/users/profile/${walletAddress}`] }),
+          queryClient.invalidateQueries({ 
+            predicate: (query) => {
+              const key = query.queryKey[0] as string;
+              return key.includes('user-profile') || key.includes(walletAddress);
+            }
+          })
+        ]);
         
-        // Dispatch profile update event for immediate sync
+        // Force refetch of current profile data
+        queryClient.refetchQueries({ queryKey: ['user-profile', walletAddress] });
+        
+        // Update local state immediately
+        setDisplayName(name);
+        if (imageUrl) setProfileImage(imageUrl);
+        
+        // Dispatch profile update event for immediate sync across app
         window.dispatchEvent(new CustomEvent('profileUpdated', {
           detail: { 
             displayName: name, 
@@ -182,6 +198,23 @@ const Profile = React.memo(() => {
       setProfileImage('');
     }
   }, [userProfile, user?.email?.address]);
+
+  // Listen for external profile updates (from other components)
+  useEffect(() => {
+    const handleProfileUpdate = (event: CustomEvent) => {
+      const { displayName: newName, avatarUrl } = event.detail;
+      if (newName) setDisplayName(newName);
+      if (avatarUrl) setProfileImage(avatarUrl);
+      
+      // Force refetch to ensure data consistency
+      queryClient.refetchQueries({ queryKey: ['user-profile', walletAddress] });
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate as EventListener);
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate as EventListener);
+    };
+  }, [walletAddress, queryClient]);
 
   // Handle image upload to R2 - 메모리 누수 방지 및 최적화
   const handleImageChange = React.useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -251,20 +284,17 @@ const Profile = React.memo(() => {
         setProfileImage(result.profileUrl);
         
         // Update database
-        await updateProfile(displayName, result.profileUrl);
+        const updateSuccess = await updateProfile(displayName, result.profileUrl);
         
-        // Efficient query invalidation
-        queryClient.invalidateQueries({ 
-          predicate: (query) => {
-            const key = query.queryKey[0] as string;
-            return key.includes('user-profile') && query.queryKey.includes(walletAddress);
-          }
-        });
-        
-        // Dispatch update event
-        window.dispatchEvent(new CustomEvent('profileUpdated', {
-          detail: { displayName, profileImage: result.profileUrl, avatarUrl: result.profileUrl }
-        }));
+        if (updateSuccess) {
+          // Additional comprehensive query invalidation for image updates
+          await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ['user-profile', walletAddress] }),
+            queryClient.invalidateQueries({ queryKey: ['user-memes', walletAddress] }),
+            queryClient.invalidateQueries({ queryKey: ['memes'] }), // For meme cards author info
+            queryClient.refetchQueries({ queryKey: ['user-profile', walletAddress] })
+          ]);
+        }
         
         toast({
           title: "Profile Image Updated",
