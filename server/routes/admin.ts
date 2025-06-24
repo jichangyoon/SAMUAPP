@@ -5,8 +5,15 @@ import { insertContestSchema, type Contest } from "@shared/schema";
 
 const createContestSchema = insertContestSchema.extend({
   title: z.string().min(1, "Contest title is required"),
-  startDate: z.string().datetime(),
-  endDate: z.string().datetime(),
+  startDate: z.string(),
+  endDate: z.string(),
+}).transform((data) => {
+  // 날짜 문자열을 Date 객체로 변환
+  return {
+    ...data,
+    startDate: new Date(data.startDate),
+    endDate: new Date(data.endDate),
+  };
 });
 
 // Get current active contest
@@ -43,11 +50,7 @@ export async function createContest(req: Request, res: Response) {
       return res.status(403).json({ error: "Admin access required" });
     }
 
-    const contest = await storage.createContest({
-      ...validatedData,
-      startDate: new Date(validatedData.startDate),
-      endDate: new Date(validatedData.endDate),
-    });
+    const contest = await storage.createContest(validatedData);
 
     res.json({ contest });
   } catch (error) {
