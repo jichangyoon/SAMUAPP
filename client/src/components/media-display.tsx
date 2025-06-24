@@ -52,11 +52,13 @@ export function MediaDisplay({
   };
   
   const handleVideoClick = (e: React.MouseEvent) => {
-    // If there's an onClick handler, call it, otherwise toggle play/pause
+    // If there's an onClick handler, call it, otherwise toggle controls and play/pause
     if (onClick) {
       onClick();
     } else {
       e.stopPropagation();
+      // Toggle controls visibility for mobile UX
+      setShowVideoControls(!showVideoControls);
       handleVideoPlay();
     }
   };
@@ -99,7 +101,7 @@ export function MediaDisplay({
           Your browser does not support the video tag.
         </video>
         
-        {showControls && (
+        {showControls && showVideoControls && (
           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
             <div className="flex gap-2">
               <Button
