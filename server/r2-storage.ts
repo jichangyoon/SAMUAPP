@@ -71,7 +71,7 @@ export async function uploadToR2(
 export async function deleteFromR2(
   key: string,
   bucketName: string = process.env.R2_BUCKET_NAME!
-): Promise<boolean> {
+): Promise<UploadResult> {
   try {
     const command = new DeleteObjectCommand({
       Bucket: bucketName,
@@ -79,10 +79,18 @@ export async function deleteFromR2(
     });
 
     await r2Client.send(command);
-    return true;
+    console.log('R2 파일 삭제 성공:', key);
+    return {
+      success: true,
+      key: key
+    };
   } catch (error) {
     console.error('R2 삭제 실패:', error);
-    return false;
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      key: key
+    };
   }
 }
 
