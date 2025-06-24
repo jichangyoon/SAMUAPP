@@ -50,12 +50,19 @@ export function Leaderboard() {
     enabled: true,
   });
 
-  // Sort memes by votes for current leaderboard
-  const sortedMemes = [...memes].sort((a, b) => b.votes - a.votes);
+  // Sort memes by votes for current leaderboard - with safety checks
+  const memesArray = Array.isArray(memes?.memes) ? memes.memes : 
+                     Array.isArray(memes) ? memes : [];
+  
+  if (!Array.isArray(memesArray)) {
+    return <div className="text-center py-8 text-muted-foreground">Loading leaderboard...</div>;
+  }
+  
+  const sortedMemes = [...memesArray].sort((a, b) => b.votes - a.votes);
   const topMemes = sortedMemes.slice(0, 10);
 
   // Get top creators with profile images
-  const creatorStats = memes.reduce((acc, meme) => {
+  const creatorStats = memesArray.reduce((acc, meme) => {
     if (!acc[meme.authorUsername]) {
       acc[meme.authorUsername] = {
         username: meme.authorUsername,
