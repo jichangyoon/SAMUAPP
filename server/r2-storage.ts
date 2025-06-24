@@ -28,6 +28,7 @@ export async function uploadToR2(
   folder: string = 'uploads',
   maxSize?: number
 ): Promise<UploadResult> {
+  console.log(`[R2] uploadToR2 function called with folder="${folder}", bucket="${process.env.R2_BUCKET_NAME}"`);
   // Check file size if limit specified
   if (maxSize && file.length > maxSize) {
     return {

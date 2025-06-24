@@ -239,6 +239,7 @@ router.post('/profile', upload.single('file'), async (req, res) => {
 
     // Upload to R2 in profiles/ folder with size limit
     console.log('Profile upload: calling uploadToR2 with folder="profiles"');
+    console.log('Bucket name from env:', process.env.R2_BUCKET_NAME);
     const uploadResult = await uploadToR2(
       req.file.buffer,
       req.file.originalname,
