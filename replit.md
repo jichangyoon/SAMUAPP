@@ -432,6 +432,7 @@ Changelog:
 - June 24, 2025. Fixed Creator modal video thumbnails - replaced img tags with MediaDisplay component in user-info-modal.tsx to properly show video thumbnails in creator detail modal
 - June 24, 2025. Optimized MediaDisplay component - removed unnecessary state, useEffect, and redundant props to simplify video handling logic and improve performance
 - June 24, 2025. Fixed MediaDisplay image sizing - removed hardcoded w-full h-full classes to allow proper parent container size constraints in Profile My Votes section
+- June 24, 2025. Enhanced voting cache invalidation - added votes query invalidation to ensure My Votes section updates immediately after voting
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
