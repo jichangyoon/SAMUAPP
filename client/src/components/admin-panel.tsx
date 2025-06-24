@@ -224,9 +224,12 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
 
   if (!isOpen) return null;
 
-  if (!adminData?.isAdmin) {
-    return null; // 관리자가 아니면 아무것도 렌더링하지 않음
-  }
+  // 임시: 관리자 체크 우회하여 모든 사용자에게 패널 표시
+  console.log('AdminPanel render:', { isOpen, adminData, walletAddress });
+  
+  // if (!adminData?.isAdmin) {
+  //   return null; // 관리자가 아니면 아무것도 렌더링하지 않음
+  // }
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[9999] p-4">

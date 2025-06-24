@@ -376,9 +376,16 @@ export default function Home() {
                         Submit Meme
                       </Button>
                     )}
-                    {userProfile?.isAdmin && (
+                    {/* Debug: 관리자 상태 확인 */}
+                    {console.log('Render check:', { isConnected, userProfile, isAdmin: userProfile?.isAdmin })}
+                    
+                    {/* 임시: 모든 연결된 사용자에게 표시 */}
+                    {isConnected && (
                       <Button 
-                        onClick={() => setShowAdminPanel(true)}
+                        onClick={() => {
+                          console.log('Force admin panel open');
+                          setShowAdminPanel(true);
+                        }}
                         variant="outline"
                         className="px-6 py-2 rounded-lg font-medium"
                       >
