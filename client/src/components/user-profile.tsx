@@ -53,13 +53,31 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
   const walletAddress = solanaWallet && 'address' in solanaWallet ? solanaWallet.address : '';
   const displayAddress = useMemo(() => walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : '', [walletAddress]);
 
-  // Update profile mutation - using API call since Privy doesn't expose updateUser directly
+  // Update profile mutation - saves to PostgreSQL database
   const updateProfileMutation = useMutation({
     mutationFn: async ({ name, image }: { name: string; image: string }) => {
-      // Store profile data in localStorage as a fallback since Privy's updateUser isn't available
+      const response = await fetch(`/api/users/profile/${walletAddress}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          displayName: name,
+          avatarUrl: image
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+      
+      const updatedUser = await response.json();
+      
+      // Also update localStorage for immediate UI feedback
       const profileData = { displayName: name, profileImage: image };
       localStorage.setItem(`privy_profile_${user?.id}`, JSON.stringify(profileData));
-      return profileData;
+      
+      return updatedUser;
     },
     onSuccess: (data) => {
       toast({
@@ -67,9 +85,8 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
         description: "Your profile has been successfully updated.",
       });
       setIsEditing(false);
-      // Update local state to reflect changes immediately
-      setDisplayName(data.displayName);
-      setProfileImage(data.profileImage);
+      setDisplayName(data.displayName || data.username);
+      setProfileImage(data.avatarUrl || '');
       setImagePreview('');
     },
     onError: (error) => {

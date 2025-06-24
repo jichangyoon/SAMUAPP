@@ -66,6 +66,7 @@ export const users = pgTable("users", {
   walletAddress: text("wallet_address").notNull().unique(),
   email: text("email").unique(),
   username: text("username").notNull(),
+  displayName: text("display_name"), // 프로필에서 설정하는 이름
   avatarUrl: text("avatar_url"),
   samuBalance: bigint("samu_balance", { mode: "number" }).notNull().default(0),
   totalVotingPower: bigint("total_voting_power", { mode: "number" }).notNull().default(0),

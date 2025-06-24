@@ -34,7 +34,11 @@ router.get("/profile/:walletAddress", async (req, res) => {
 router.put("/profile/:walletAddress", async (req, res) => {
   try {
     const { walletAddress } = req.params;
-    const updateData = insertUserSchema.partial().parse(req.body);
+    const { displayName, avatarUrl, ...otherData } = req.body;
+    
+    const updateData = insertUserSchema.partial().parse(otherData);
+    if (displayName) updateData.displayName = displayName;
+    if (avatarUrl) updateData.avatarUrl = avatarUrl;
     
     const user = await storage.updateUser(walletAddress, updateData);
     res.json(user);

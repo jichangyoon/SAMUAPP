@@ -6,7 +6,7 @@ export interface IStorage {
   // User operations
   createUser(user: InsertUser): Promise<User>;
   getUserByWallet(walletAddress: string): Promise<User | undefined>;
-  updateUser(walletAddress: string, updates: Partial<InsertUser>): Promise<User>;
+  updateUser(walletAddress: string, updates: Partial<InsertUser & { displayName?: string; avatarUrl?: string }>): Promise<User>;
   getUserMemes(walletAddress: string): Promise<Meme[]>;
   getUserVotes(walletAddress: string): Promise<Vote[]>;
   
