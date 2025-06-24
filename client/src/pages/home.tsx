@@ -23,14 +23,14 @@ import { getSamuTokenBalance, getSolBalance } from "@/lib/solana";
 import type { Meme } from "@shared/schema";
 import samuLogoImg from "@/assets/samu-logo.webp";
 
-const Home = React.memo(() => {
+export default function Home() {
   const [sortBy, setSortBy] = useState("votes");
   const [currentTab, setCurrentTab] = useState("contest");
-  const [viewMode, setViewMode<'card' | 'grid'>('card');
+  const [viewMode, setViewMode] = useState<'card' | 'grid'>('card');
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
   const [showVoteDialog, setShowVoteDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
-  const [isVoting, setIsVoting] = useState(isVoting);
+  const [isVoting, setIsVoting] = useState(false);
   const [samuBalance, setSamuBalance] = useState<number>(0);
   const [solBalance, setSolBalance] = useState<number>(0);
   const [, setLocation] = useLocation();
@@ -680,7 +680,7 @@ const Home = React.memo(() => {
                             <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                               <div className="text-white text-center">
                                 <div className="text-sm font-semibold">#{meme.rank}</div>
-                                <div className="text-xs">{meme.imageUrl} votes</div>
+                                <div className="text-xs">{meme.votes} votes</div>
                               </div>
                             </div>
                           </button>
@@ -992,8 +992,4 @@ const Home = React.memo(() => {
 
     </div>
   );
-});
-
-Home.displayName = 'Home';
-
-export default Home;
+}

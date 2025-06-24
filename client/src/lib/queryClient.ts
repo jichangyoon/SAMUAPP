@@ -51,14 +51,10 @@ export const queryClient = new QueryClient({
       gcTime: 10 * 60 * 1000, // 10분 가비지 컬렉션
       refetchOnReconnect: 'always',
       networkMode: 'online',
-      // 동일한 요청 중복 방지
-      structuralSharing: true,
       retry: (failureCount, error) => {
         // 네트워크 오류만 재시도, 최대 2회
         if (failureCount >= 2) return false;
         if (error?.message?.includes('Failed to fetch')) return true;
-        // 401, 403, 404는 재시도 안함
-        if (error?.message?.includes('401') || error?.message?.includes('403') || error?.message?.includes('404')) return false;
         return false;
       },
       retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000), // 지수 백오프

@@ -202,22 +202,22 @@ const Profile = React.memo(() => {
     }
   }, [userProfile, user?.email?.address]);
 
-  // Listen for external profile updates (from other components) - 메모이제이션으로 최적화
-  const handleProfileUpdate = React.useCallback((event: CustomEvent) => {
-    const { displayName: newName, avatarUrl } = event.detail;
-    if (newName) setDisplayName(newName);
-    if (avatarUrl) setProfileImage(avatarUrl);
-
-    // Force refetch to ensure data consistency
-    queryClient.refetchQueries({ queryKey: ['user-profile', walletAddress] });
-  }, [walletAddress, queryClient]);
-
+  // Listen for external profile updates (from other components)
   useEffect(() => {
+    const handleProfileUpdate = (event: CustomEvent) => {
+      const { displayName: newName, avatarUrl } = event.detail;
+      if (newName) setDisplayName(newName);
+      if (avatarUrl) setProfileImage(avatarUrl);
+
+      // Force refetch to ensure data consistency
+      queryClient.refetchQueries({ queryKey: ['user-profile', walletAddress] });
+    };
+
     window.addEventListener('profileUpdated', handleProfileUpdate as EventListener);
     return () => {
       window.removeEventListener('profileUpdated', handleProfileUpdate as EventListener);
     };
-  }, [handleProfileUpdate]);
+  }, [walletAddress, queryClient]);
 
   // Handle image file selection (preview only, no upload)
   const handleImageChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -362,7 +362,7 @@ const Profile = React.memo(() => {
     setIsSaving(false);
   }, [userProfile, user?.email?.address, imagePreview]);
 
-  // Cleanup on unmount - 모든 blob URL 정리
+  // Cleanup on unmount
   React.useEffect(() => {
     return () => {
       // Clean up any remaining object URLs
@@ -371,14 +371,6 @@ const Profile = React.memo(() => {
       }
     };
   }, [imagePreview]);
-
-  // 컴포넌트 언마운트 시 전체 정리
-  React.useEffect(() => {
-    return () => {
-      // 모든 이벤트 리스너 정리
-      window.removeEventListener('profileUpdated', handleProfileUpdate as EventListener);
-    };
-  }, []);
 
 
 
@@ -480,12 +472,7 @@ const Profile = React.memo(() => {
                 <Avatar className="h-12 w-12">
                   <AvatarImage 
                     src={imagePreview || (profileImage ? `${profileImage}?t=${Date.now()}` : '')} 
-                    key={`${profileImage}-${Date.now()}`}
-                    loading="lazy"
-                    onError={(e) => {
-                      // 이미지 로딩 실패 시 fallback 처리
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
+                    key={`${profileImage}-${Date.now()}`} 
                   />
                   <AvatarFallback className="bg-primary/20 text-primary text-sm">
                     {displayName.slice(0, 2).toUpperCase()}
