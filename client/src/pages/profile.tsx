@@ -33,7 +33,7 @@ const Profile = React.memo(() => {
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
   const walletAddress = selectedWalletAccount?.address || '';
 
-  // User profile data - 캐싱 최적화
+  // User profile data - 글로벌 기본값 사용으로 최적화
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile', walletAddress],
     queryFn: async () => {
@@ -43,11 +43,9 @@ const Profile = React.memo(() => {
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 5 * 60 * 1000, // 5분 캐시
-    gcTime: 10 * 60 * 1000, // 10분 가비지 컬렉션
   });
 
-  // User statistics - 캐싱 최적화
+  // User statistics - 자주 변경되므로 짧은 캐시
   const { data: userStats } = useQuery({
     queryKey: ['user-stats', walletAddress],
     queryFn: async () => {
@@ -60,7 +58,7 @@ const Profile = React.memo(() => {
     staleTime: 2 * 60 * 1000, // 2분 캐시 (통계는 자주 변경됨)
   });
 
-  // User memes - 캐싱 최적화
+  // User memes - 글로벌 기본값 사용
   const { data: userMemes = [] } = useQuery({
     queryKey: ['user-memes', walletAddress],
     queryFn: async () => {
@@ -70,10 +68,9 @@ const Profile = React.memo(() => {
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 5 * 60 * 1000, // 5분 캐시
   });
 
-  // User votes - 캐싱 최적화
+  // User votes - 짧은 캐시로 최신 데이터 유지
   const { data: userVoteHistory = [] } = useQuery({
     queryKey: ['user-votes', walletAddress],
     queryFn: async () => {
@@ -86,7 +83,7 @@ const Profile = React.memo(() => {
     staleTime: 2 * 60 * 1000, // 2분 캐시
   });
 
-  // Balance fetching - 캐싱 및 오류 처리 최적화
+  // Balance fetching - 짧은 캐시로 최신 잔고 유지
   const { data: samuData } = useQuery({
     queryKey: ['samu-balance', walletAddress],
     queryFn: async () => {
@@ -97,9 +94,6 @@ const Profile = React.memo(() => {
     },
     enabled: !!walletAddress,
     staleTime: 60 * 1000, // 1분 캐시 (잔고는 자주 확인)
-    refetchInterval: false,
-    refetchOnWindowFocus: false,
-    retry: 1, // 재시도 1회로 제한
   });
 
   const { data: solData } = useQuery({
@@ -112,9 +106,6 @@ const Profile = React.memo(() => {
     },
     enabled: !!walletAddress,
     staleTime: 60 * 1000, // 1분 캐시
-    refetchInterval: false,
-    refetchOnWindowFocus: false,
-    retry: 1, // 재시도 1회로 제한
   });
 
   // 저장된 프로필 가져오기 - useMemo로 최적화
@@ -367,22 +358,37 @@ const Profile = React.memo(() => {
 
 
 
-  // Calculate statistics from user data
-  const currentSamuBalance = samuData?.balance || 0;
-  const currentSolBalance = solData?.balance || 0;
-  
-  // User statistics calculations
-  const totalMemesCreated = userStats?.totalMemes || 0;
-  const totalVotesReceived = userStats?.totalMemesVotes || 0;
-  const totalVotesCast = userStats?.totalVotesCast || 0;
-  const totalVotingPowerUsed = userStats?.totalVotingPowerUsed || 0;
-  const remainingVotingPower = userStats?.remainingVotingPower || Math.floor(currentSamuBalance * 0.8);
-  const totalVotingPower = userStats?.samuBalance || currentSamuBalance;
-  const contestProgress = 75; // Contest period calculation placeholder
-  
-  // User's memes and votes
-  const myMemes = userMemes || [];
-  const myVotes = userVoteHistory || [];
+  // Calculate statistics from user data - useMemo로 최적화
+  const stats = React.useMemo(() => {
+    const currentSamuBalance = samuData?.balance || 0;
+    const currentSolBalance = solData?.balance || 0;
+    
+    const totalMemesCreated = userStats?.totalMemes || 0;
+    const totalVotesReceived = userStats?.totalMemesVotes || 0;
+    const totalVotesCast = userStats?.totalVotesCast || 0;
+    const totalVotingPowerUsed = userStats?.totalVotingPowerUsed || 0;
+    const remainingVotingPower = userStats?.remainingVotingPower || Math.floor(currentSamuBalance * 0.8);
+    const totalVotingPower = userStats?.samuBalance || currentSamuBalance;
+    const contestProgress = 75; // Contest period calculation placeholder
+    
+    return {
+      currentSamuBalance,
+      currentSolBalance,
+      totalMemesCreated,
+      totalVotesReceived,
+      totalVotesCast,
+      totalVotingPowerUsed,
+      remainingVotingPower,
+      totalVotingPower,
+      contestProgress,
+    };
+  }, [samuData, solData, userStats]);
+
+  // User's memes and votes - useMemo로 최적화
+  const { myMemes, myVotes } = React.useMemo(() => ({
+    myMemes: userMemes || [],
+    myVotes: userVoteHistory || []
+  }), [userMemes, userVoteHistory]);
 
   return (
     <div 
@@ -517,25 +523,25 @@ const Profile = React.memo(() => {
 
             <div className="grid grid-cols-2 gap-2">
               <div className="text-center bg-accent/30 rounded-lg p-2">
-                <div className="text-sm font-bold text-primary">{currentSamuBalance.toLocaleString()}</div>
+                <div className="text-sm font-bold text-primary">{stats.currentSamuBalance.toLocaleString()}</div>
                 <div className="text-xs text-muted-foreground">SAMU</div>
               </div>
               <div className="text-center bg-accent/30 rounded-lg p-2">
-                <div className="text-sm font-bold text-purple-400">{currentSolBalance.toFixed(4)}</div>
+                <div className="text-sm font-bold text-purple-400">{stats.currentSolBalance.toFixed(4)}</div>
                 <div className="text-xs text-muted-foreground">SOL</div>
               </div>
               <div className="text-center bg-accent/30 rounded-lg p-2">
-                <div className="text-sm font-bold text-green-400">{remainingVotingPower.toLocaleString()}</div>
+                <div className="text-sm font-bold text-green-400">{stats.remainingVotingPower.toLocaleString()}</div>
                 <div className="text-xs text-muted-foreground">Voting Power</div>
               </div>
               <div className="text-center bg-accent/30 rounded-lg p-2">
-                <div className="text-sm font-bold text-blue-400">{totalMemesCreated}</div>
+                <div className="text-sm font-bold text-blue-400">{stats.totalMemesCreated}</div>
                 <div className="text-xs text-muted-foreground">Memes</div>
               </div>
             </div>
 
             <div className="text-center bg-accent/30 rounded-lg p-2 mt-2">
-              <div className="text-sm font-bold text-yellow-400">{totalVotesReceived}</div>
+              <div className="text-sm font-bold text-yellow-400">{stats.totalVotesReceived}</div>
               <div className="text-xs text-muted-foreground">Total Votes Received</div>
             </div>
 
@@ -570,8 +576,8 @@ const Profile = React.memo(() => {
               <div className="mt-3">
                 <SendTokens 
                   walletAddress={walletAddress}
-                  samuBalance={currentSamuBalance}
-                  solBalance={currentSolBalance}
+                  samuBalance={stats.currentSamuBalance}
+                  solBalance={stats.currentSolBalance}
                   chainType={selectedWalletAccount?.chainType || 'solana'}
                 />
               </div>
@@ -591,12 +597,12 @@ const Profile = React.memo(() => {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Contest Progress</span>
-                <span className="text-foreground font-medium">{contestProgress}%</span>
+                <span className="text-foreground font-medium">{stats.contestProgress}%</span>
               </div>
               <div className="w-full bg-accent rounded-full h-2">
                 <div 
                   className="bg-primary h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${contestProgress}%` }}
+                  style={{ width: `${stats.contestProgress}%` }}
                 />
               </div>
               <div className="text-sm text-muted-foreground">
@@ -709,11 +715,11 @@ const Profile = React.memo(() => {
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="text-center bg-accent/30 rounded-lg p-3">
-                    <div className="text-lg font-bold text-green-400">{totalVotingPower.toLocaleString()}</div>
+                    <div className="text-lg font-bold text-green-400">{stats.totalVotingPower.toLocaleString()}</div>
                     <div className="text-xs text-muted-foreground">Total Power</div>
                   </div>
                   <div className="text-center bg-accent/30 rounded-lg p-3">
-                    <div className="text-lg font-bold text-red-400">{totalVotingPowerUsed.toLocaleString()}</div>
+                    <div className="text-lg font-bold text-red-400">{stats.totalVotingPowerUsed.toLocaleString()}</div>
                     <div className="text-xs text-muted-foreground">Used Power</div>
                   </div>
                 </div>
@@ -722,11 +728,11 @@ const Profile = React.memo(() => {
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-muted-foreground">Remaining Power</span>
                     <span className="text-sm font-medium text-foreground">
-                      {remainingVotingPower.toLocaleString()} / {totalVotingPower.toLocaleString()}
+                      {stats.remainingVotingPower.toLocaleString()} / {stats.totalVotingPower.toLocaleString()}
                     </span>
                   </div>
                   <Progress 
-                    value={totalVotingPower > 0 ? (remainingVotingPower / totalVotingPower) * 100 : 0} 
+                    value={stats.totalVotingPower > 0 ? (stats.remainingVotingPower / stats.totalVotingPower) * 100 : 0} 
                     className="h-2"
                   />
                 </div>
