@@ -158,7 +158,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
             showControls={false}
             autoPlay={false}
             muted={true}
-            loop={true}
+            loop={false}
             onClick={() => setShowDetailDialog(true)}
           />
         </div>

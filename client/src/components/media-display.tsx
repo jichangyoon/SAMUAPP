@@ -55,14 +55,11 @@ export function MediaDisplay({
     e.preventDefault();
     e.stopPropagation();
     
-    // 모바일에서는 동영상 클릭 시 항상 모달 열기 우선
     if (onClick) {
       onClick();
-      return;
+    } else {
+      setShowVideoControls(!showVideoControls);
     }
-    
-    // 업로드 미리보기 등에서만 컨트롤 토글
-    setShowVideoControls(!showVideoControls);
   };
   
   if (mediaType === 'video') {
@@ -72,54 +69,36 @@ export function MediaDisplay({
           ref={setVideoRef}
           src={src}
           className="w-full h-full object-cover cursor-pointer"
-          autoPlay={autoPlay && showControls}
-          muted={showControls ? muted : true}
-          loop={showControls ? loop : false}
+          autoPlay={autoPlay && showVideoControls}
+          muted={showVideoControls ? muted : true}
+          loop={showVideoControls ? loop : false}
           playsInline
           preload="metadata"
-          poster=""
-          controls={showControls}
+          controls={showVideoControls}
           controlsList="nodownload"
           disablePictureInPicture
           lang="en"
           onClick={handleVideoClick}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
           onLoadedMetadata={() => {
-            // Force thumbnail generation immediately when metadata loads
+            // 썸네일 생성
             if (videoRef && !thumbnailGenerated) {
-              videoRef.currentTime = 0.1; // Seek to 0.1 seconds for thumbnail
+              videoRef.currentTime = 0.1;
               setThumbnailGenerated(true);
             }
           }}
-          onLoadedData={() => {
-            // Backup thumbnail generation
-            if (videoRef && !thumbnailGenerated) {
-              setTimeout(() => {
-                videoRef.currentTime = 0.1;
-                setThumbnailGenerated(true);
-              }, 50);
-            }
-          }}
-        >
-          <source src={src} type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-        
-        {/* 모바일 앱에서는 오버레이 컨트롤 제거 - 네이티브 controls만 사용 */}
-        
-        {/* 모바일용 심플 비디오 표시 */}
-        <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded font-medium">
-          VIDEO
-        </div>
-        
-        {/* 모바일용 플레이 버튼 - 컨트롤이 없을 때만 표시 */}
-        {!showControls && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="bg-black/60 rounded-full p-4">
-              <Play className="h-8 w-8 text-white fill-white" />
+        />
+        {/* 컨트롤이 없을 때만 표시 */}
+        {!showVideoControls && (
+          <>
+            <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded font-medium">
+              VIDEO
             </div>
-          </div>
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="bg-black/60 rounded-full p-4">
+                <Play className="h-8 w-8 text-white fill-white" />
+              </div>
+            </div>
+          </>
         )}
       </div>
     );
