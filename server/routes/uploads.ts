@@ -226,7 +226,7 @@ router.post('/profile', (req, res, next) => {
   console.log('URL:', req.url);
   console.log('Content-Type:', req.headers['content-type']);
   next();
-}, upload.single('file'), async (req, res) => {
+}, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ 
@@ -235,17 +235,33 @@ router.post('/profile', (req, res, next) => {
       });
     }
 
+    const { walletAddress } = req.body;
     console.log('Profile image upload processing:', {
       file: {
         originalname: req.file.originalname,
         size: req.file.size,
         mimetype: req.file.mimetype
-      }
+      },
+      walletAddress
     });
+
+    // Get existing user profile to find old image for cleanup
+    let oldImageUrl = null;
+    if (walletAddress) {
+      try {
+        const { storage } = await import('../storage');
+        const existingUser = await storage.getUserByWallet(walletAddress);
+        if (existingUser?.avatarUrl) {
+          oldImageUrl = existingUser.avatarUrl;
+          console.log('Found existing profile image to delete:', oldImageUrl);
+        }
+      } catch (error) {
+        console.log('No existing user found or error getting user:', error);
+      }
+    }
 
     // Upload to R2 in profiles/ folder with size limit
     console.log('Profile upload: calling uploadToR2 with folder="profiles"');
-    console.log('Bucket name from env:', process.env.R2_BUCKET_NAME);
     const uploadResult = await uploadToR2(
       req.file.buffer,
       req.file.originalname,
@@ -269,6 +285,23 @@ router.post('/profile', (req, res, next) => {
       size: req.file.size,
       expectedFolder: 'profiles'
     });
+
+    // Delete old image if it exists and upload was successful
+    if (oldImageUrl) {
+      try {
+        const oldKey = extractKeyFromUrl(oldImageUrl);
+        if (oldKey) {
+          const deleteResult = await deleteFromR2(oldKey);
+          if (deleteResult.success) {
+            console.log('Successfully deleted old profile image:', oldImageUrl);
+          } else {
+            console.log('Failed to delete old profile image:', deleteResult.error);
+          }
+        }
+      } catch (error) {
+        console.log('Error deleting old profile image:', error);
+      }
+    }
 
     res.json({
       success: true,
