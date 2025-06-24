@@ -100,8 +100,17 @@ export default function Home() {
         profileImage: event.detail.profileImage || event.detail.avatarUrl
       });
       
-      // Then refresh database query for consistency
-      queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] });
+      // Invalidate ALL queries that might contain user profile data
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey;
+          return key.includes('user-profile') || 
+                 key.includes('/api/memes') ||
+                 key.includes('/api/nfts') ||
+                 key.includes('comments') ||
+                 key.includes(walletAddress);
+        }
+      });
     };
 
     window.addEventListener('profileUpdated', handleProfileUpdate as EventListener);

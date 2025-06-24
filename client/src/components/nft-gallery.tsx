@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { usePrivy } from '@privy-io/react-auth';
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,19 @@ export function NftGallery() {
   const [newComment, setNewComment] = useState("");
   const { authenticated, user } = usePrivy();
   const { toast } = useToast();
+  
+  // Listen for profile updates to refresh comments
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      // Refresh all NFT comments to get updated author info
+      queryClient.invalidateQueries({ 
+        predicate: (query) => query.queryKey.includes('comments') 
+      });
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
+  }, []);
 
   // Use static NFT data for instant loading
   const nfts = SAMU_NFTS;

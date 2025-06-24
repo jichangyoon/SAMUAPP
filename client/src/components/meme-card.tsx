@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -23,6 +23,17 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   const [isVoting, setIsVoting] = useState(false);
   const { authenticated, user } = usePrivy();
   const queryClient = useQueryClient();
+  
+  // Listen for profile updates to refresh author info
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      // Refresh memes data to get updated author info
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
+  }, [queryClient]);
 
   // Get wallet using same logic as WalletConnect component - prioritize Solana
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
