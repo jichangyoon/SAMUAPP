@@ -18,7 +18,7 @@ export function MediaDisplay({
   src, 
   alt, 
   className = "", 
-  showControls = true,
+  showControls = false,
   autoPlay = false,
   muted = true,
   loop = true,

@@ -428,6 +428,7 @@ Changelog:
 - June 24, 2025. Implemented mobile-first video architecture - videos show thumbnail with play button in feed, full controls and playback only available in detail modal for better mobile UX
 - June 24, 2025. Fixed mobile video player language settings - added lang="en" attribute and CSS controls to prevent Korean text in video controls
 - June 24, 2025. Optimized MediaDisplay component - removed duplicate state, simplified click handlers, cleaned up unused props and improved code structure
+- June 24, 2025. Fixed MediaDisplay default props - changed showControls default to false to properly show video thumbnails in profile page and meme cards
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
