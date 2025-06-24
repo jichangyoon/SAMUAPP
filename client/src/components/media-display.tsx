@@ -52,12 +52,14 @@ export function MediaDisplay({
   };
   
   const handleVideoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     // onClick이 있으면 모달 열기 (상세보기)
     if (onClick) {
       onClick();
     } else {
       // onClick이 없으면 컨트롤 토글 (업로드 미리보기 등)
-      e.stopPropagation();
       setShowVideoControls(!showVideoControls);
     }
   };
@@ -76,7 +78,7 @@ export function MediaDisplay({
           preload="metadata"
           poster=""
           controls={showVideoControls}
-          onClick={handleVideoClick}
+          onClickCapture={handleVideoClick}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onLoadedMetadata={() => {

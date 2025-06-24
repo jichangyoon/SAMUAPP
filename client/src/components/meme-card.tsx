@@ -150,10 +150,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   return (
     <>
       <Card className="overflow-hidden border-border bg-card">
-        <div 
-          onClick={() => setShowDetailDialog(true)}
-          className="w-full aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-opacity cursor-pointer"
-        >
+        <div className="w-full aspect-square bg-accent flex items-center justify-center">
           <MediaDisplay
             src={meme.imageUrl}
             alt={meme.title}
