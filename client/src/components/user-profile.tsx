@@ -205,6 +205,7 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
 
     // Validate file size (5MB limit for profile images)
     if (file.size > 5 * 1024 * 1024) {
+      console.log('File size validation failed:', file.size);
       toast({
         title: "File too large",
         description: "Please upload an image smaller than 5MB",
@@ -213,11 +214,14 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
       return;
     }
 
+    console.log('Starting R2 upload process...');
+    
     try {
       // Show preview immediately
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
+        console.log('File preview created');
       };
       reader.readAsDataURL(file);
 
@@ -256,6 +260,11 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
         
         // Force refresh user profile data
         queryClient.invalidateQueries({ queryKey: ['/api/users/profile', walletAddress] });
+        
+        toast({
+          title: "Profile Updated",
+          description: "Your profile image has been updated successfully"
+        });
         
         toast({
           title: "Image uploaded",
@@ -300,6 +309,7 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
     } else {
       setDisplayName(user?.email?.address?.split('@')[0] || 'User');
       setProfileImage('');
+      console.log('Profile initialized without database data - waiting for userProfile to load');
     }
     setImagePreview('');
     setIsEditing(false);
