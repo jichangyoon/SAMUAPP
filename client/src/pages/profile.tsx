@@ -148,7 +148,7 @@ const Profile = React.memo(() => {
           queryClient.removeQueries({ queryKey: ['user-profile', walletAddress] }),
           queryClient.removeQueries({ queryKey: ['user-profile-header', walletAddress] }),
           queryClient.removeQueries({ queryKey: [`/api/users/profile/${walletAddress}`] }),
-
+          
           // Invalidate all related queries
           queryClient.invalidateQueries({ 
             predicate: (query) => {

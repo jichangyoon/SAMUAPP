@@ -27,7 +27,7 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const { authenticated, user } = usePrivy();
-
+  
   // Get wallet using same logic as WalletConnect component - prioritize Solana
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
@@ -104,20 +104,20 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       }
 
       const result = await response.json();
-
+  
       return result.fileUrl; // R2 URL is returned directly
     } catch (error: any) {
       clearTimeout(timeoutId);
       console.error('Upload error:', error);
-
+      
       if (error.name === 'AbortError') {
         throw new Error('Upload timeout - file may be too large or connection too slow');
       }
-
+      
       if (error instanceof TypeError && error.message.includes('fetch')) {
         throw new Error('Network connection failed - please check your internet');
       }
-
+      
       throw new Error(error.message || 'Upload failed - please try again');
     }
   };
@@ -135,7 +135,7 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
     setIsUploading(true);
     try {
       const file = values.image[0];
-
+      
       // Test connectivity first
       try {
         const testResponse = await fetch('/api/memes', { method: 'HEAD' });
@@ -145,12 +145,12 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       } catch (connectError) {
         throw new Error('Cannot connect to server. Please check your internet connection.');
       }
-
+      
       // Upload file to server with retry logic
       let imageUrl;
       let uploadAttempts = 0;
       const maxAttempts = 3;
-
+      
       while (uploadAttempts < maxAttempts) {
         try {
           imageUrl = await uploadFile(file);
@@ -164,7 +164,7 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
           await new Promise(resolve => setTimeout(resolve, 1000));
         }
       }
-
+      
       const memeData = {
         title: values.title,
         description: values.description || "",

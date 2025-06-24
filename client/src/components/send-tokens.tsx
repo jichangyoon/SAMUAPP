@@ -109,7 +109,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
             Send Tokens
           </DialogTitle>
         </DialogHeader>
-
+        
         <div className="space-y-4">
           {/* 토큰 타입 선택 */}
           <div className="space-y-2">

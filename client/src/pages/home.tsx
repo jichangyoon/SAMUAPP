@@ -31,7 +31,7 @@ export default function Home() {
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
   const [showVoteDialog, setShowVoteDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
-  const [isVoting, setIsVoting] = useState(isVoting);
+  const [isVoting, setIsVoting] = useState(false);
   const [samuBalance, setSamuBalance] = useState<number>(0);
   const [solBalance, setSolBalance] = useState<number>(0);
   const [, setLocation] = useLocation();
