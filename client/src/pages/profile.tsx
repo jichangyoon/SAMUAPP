@@ -732,7 +732,7 @@ const Profile = React.memo(() => {
                           />
                           <div className="flex-1 min-w-0">
                             <h4 className="font-medium text-foreground text-sm truncate">{meme.title}</h4>
-                            <p className="text-xs text-muted-foreground truncate">by {meme.authorName}</p>
+                            <p className="text-xs text-muted-foreground truncate">by {meme.authorUsername}</p>
                           </div>
                           <Badge variant="secondary" className="text-green-400 text-xs">
                             +{vote.votingPower}

@@ -391,6 +391,7 @@ Changelog:
 - June 24, 2025. Removed unnecessary debug logs from upload system and optimized performance across all components
 - June 24, 2025. Cleaned up redundant code comments and simplified component structure while maintaining existing UI appearance
 - June 24, 2025. Fixed "My Votes" image display issue in Profile page - now properly shows images of all memes user voted on by searching in all memes instead of only user's own memes
+- June 24, 2025. Fixed author name display in "My Votes" section - corrected field reference from authorName to authorUsername to properly show meme creators
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
