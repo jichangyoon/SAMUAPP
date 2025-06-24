@@ -118,25 +118,27 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
   // Update profile mutation - saves to PostgreSQL database
   const updateProfileMutation = useMutation({
     mutationFn: async ({ name, image }: { name: string; image: string }) => {
+      const updateData: any = {};
+      if (name) updateData.displayName = name;
+      if (image) updateData.avatarUrl = image;
+      
       const response = await fetch(`/api/users/profile/${walletAddress}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          displayName: name,
-          avatarUrl: image
-        })
+        body: JSON.stringify(updateData)
       });
       
       if (!response.ok) {
-        throw new Error('Failed to update profile');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update profile');
       }
       
       const updatedUser = await response.json();
       
-      // Also update localStorage for immediate UI feedback
-      const profileData = { displayName: name, profileImage: image };
+      // Update localStorage for immediate UI feedback
+      const profileData = { displayName: name || displayName, profileImage: image || profileImage };
       localStorage.setItem(`privy_profile_${user?.id}`, JSON.stringify(profileData));
       
       return updatedUser;
@@ -221,12 +223,22 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
       }
 
       const result = await response.json();
-      setProfileImage(result.profileUrl);
-
-      toast({
-        title: "Image uploaded",
-        description: "Profile image uploaded successfully",
-      });
+      if (result.success && result.profileUrl) {
+        setProfileImage(result.profileUrl);
+        
+        // Immediately update profile in database
+        updateProfileMutation.mutate({
+          name: displayName,
+          image: result.profileUrl
+        });
+        
+        toast({
+          title: "Image uploaded",
+          description: "Profile image uploaded successfully",
+        });
+      } else {
+        throw new Error('Upload response invalid');
+      }
     } catch (error) {
       console.error('Profile image upload error:', error);
       toast({
