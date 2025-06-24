@@ -144,10 +144,14 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
                       setShowMemeModal(true);
                     }}
                   >
-                    <img
+                    <MediaDisplay
                       src={meme.imageUrl}
                       alt={meme.title}
                       className="w-full aspect-square object-cover rounded-lg"
+                      showControls={false}
+                      autoPlay={false}
+                      muted={true}
+                      loop={false}
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-black/80 text-white p-2 rounded-b-lg">
                       <div className="text-xs font-medium truncate">{meme.title}</div>
