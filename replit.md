@@ -396,6 +396,9 @@ Changelog:
 - June 24, 2025. Added backend pagination API with sorting support (/api/memes?page=1&limit=7&sortBy=votes)
 - June 24, 2025. Enhanced infinite scroll UX with natural loading animations - semi-transparent overlay during loading, staggered fade-in effects for new items, bouncing dots loading indicator
 - June 24, 2025. Fixed Profile page API compatibility issue with new paginated memes endpoint structure
+- June 24, 2025. Added meme deletion functionality to Profile page "My Memes" section with 3-dot menu and confirmation dialog
+- June 24, 2025. Implemented R2 cloud storage cleanup for profile page meme deletion - removes both database entries and cloud files
+- June 24, 2025. Enhanced profile page meme management with proper authentication checks and real-time cache invalidation
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
