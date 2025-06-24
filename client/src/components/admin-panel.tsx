@@ -40,18 +40,59 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
     endDate: ""
   });
 
-  // 기본값 설정
-  React.useEffect(() => {
+  // 한국 시간 기준 날짜/시간 관리
+  const [customTime, setCustomTime] = useState(() => {
     const now = new Date();
-    const defaultStart = now.toISOString().slice(0, 16);
-    const defaultEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16);
-    
-    setNewContest(prev => ({
-      ...prev,
-      startDate: prev.startDate || defaultStart,
-      endDate: prev.endDate || defaultEnd
-    }));
+    const kst = new Date(now.getTime() + (9 * 60 * 60 * 1000)); // UTC+9
+    return {
+      month: kst.getMonth() + 1,
+      day: kst.getDate(),
+      hour: kst.getHours(),
+      minute: Math.floor(kst.getMinutes() / 10) * 10,
+      duration: 7
+    };
+  });
+
+  // 시간 업데이트 함수
+  const updateDateTime = (field: string, value: number) => {
+    setCustomTime(prev => {
+      const updated = { ...prev, [field]: value };
+      
+      // 시작 날짜/시간 계산 (한국 시간)
+      const startKST = new Date(2025, updated.month - 1, updated.day, updated.hour, updated.minute);
+      const startUTC = new Date(startKST.getTime() - (9 * 60 * 60 * 1000)); // UTC로 변환
+      const endUTC = new Date(startUTC.getTime() + (updated.duration * 24 * 60 * 60 * 1000));
+      
+      // ISO 형식으로 변환
+      const startISO = startUTC.toISOString().slice(0, 16);
+      const endISO = endUTC.toISOString().slice(0, 16);
+      
+      setNewContest(prev => ({
+        ...prev,
+        startDate: startISO,
+        endDate: endISO
+      }));
+      
+      return updated;
+    });
+  };
+
+  // 초기 시간 설정
+  React.useEffect(() => {
+    updateDateTime('hour', customTime.hour);
   }, []);
+
+  // 현재 선택된 시간을 한국 시간으로 표시
+  const getKSTDisplay = () => {
+    if (!newContest.startDate || !newContest.endDate) return '';
+    
+    const startUTC = new Date(newContest.startDate);
+    const endUTC = new Date(newContest.endDate);
+    const startKST = new Date(startUTC.getTime() + (9 * 60 * 60 * 1000));
+    const endKST = new Date(endUTC.getTime() + (9 * 60 * 60 * 1000));
+    
+    return `${startKST.toLocaleString('ko-KR')} ~ ${endKST.toLocaleString('ko-KR')}`;
+  };
 
   const walletAddress = user?.linkedAccounts?.find(
     account => account.type === 'wallet' && account.chainType === 'solana'
@@ -273,76 +314,114 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                   <div className="grid grid-cols-1 gap-2">
                     <Button 
                       type="button"
-                      onClick={() => {
-                        const now = new Date();
-                        const startDate = now.toISOString().slice(0, 16);
-                        const endDate = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString().slice(0, 16);
-                        setNewContest(prev => ({ ...prev, startDate, endDate }));
-                      }}
+                      onClick={() => updateDateTime('duration', 1)}
                       variant="outline"
                       className="justify-start text-left"
                     >
-                      📅 24 Hours (Start now, end tomorrow)
+                      📅 24시간 (하루)
                     </Button>
                     
                     <Button 
                       type="button"
-                      onClick={() => {
-                        const now = new Date();
-                        const startDate = now.toISOString().slice(0, 16);
-                        const endDate = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16);
-                        setNewContest(prev => ({ ...prev, startDate, endDate }));
-                      }}
+                      onClick={() => updateDateTime('duration', 3)}
                       variant="outline"
                       className="justify-start text-left"
                     >
-                      📅 3 Days (72 hours)
+                      📅 3일 (72시간)
                     </Button>
                     
                     <Button 
                       type="button"
-                      onClick={() => {
-                        const now = new Date();
-                        const startDate = now.toISOString().slice(0, 16);
-                        const endDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16);
-                        setNewContest(prev => ({ ...prev, startDate, endDate }));
-                      }}
+                      onClick={() => updateDateTime('duration', 7)}
                       variant="outline"
                       className="justify-start text-left"
                     >
-                      📅 1 Week (7 days)
+                      📅 1주일 (7일)
                     </Button>
                   </div>
                 </div>
 
-                {/* Manual Date/Time Input */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="startDate">Start Date & Time</Label>
-                    <input
-                      id="startDate"
-                      type="datetime-local"
-                      value={newContest.startDate}
-                      onChange={(e) => setNewContest(prev => ({ ...prev, startDate: e.target.value }))}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="endDate">End Date & Time</Label>
-                    <input
-                      id="endDate"
-                      type="datetime-local"
-                      value={newContest.endDate}
-                      onChange={(e) => setNewContest(prev => ({ ...prev, endDate: e.target.value }))}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    />
+                {/* Custom Time Picker */}
+                <div className="space-y-4">
+                  <Label>Custom Start Time (Korea Time)</Label>
+                  <div className="grid grid-cols-5 gap-2 p-4 border rounded-lg bg-accent/20">
+                    {/* Month */}
+                    <div className="text-center">
+                      <label className="text-xs font-medium">Month</label>
+                      <select 
+                        value={new Date().getMonth() + 1}
+                        onChange={(e) => updateDateTime('month', parseInt(e.target.value))}
+                        className="w-full h-12 text-center border rounded bg-background"
+                      >
+                        {Array.from({length: 12}, (_, i) => (
+                          <option key={i+1} value={i+1}>{i+1}월</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    {/* Day */}
+                    <div className="text-center">
+                      <label className="text-xs font-medium">Day</label>
+                      <select 
+                        value={new Date().getDate()}
+                        onChange={(e) => updateDateTime('day', parseInt(e.target.value))}
+                        className="w-full h-12 text-center border rounded bg-background"
+                      >
+                        {Array.from({length: 31}, (_, i) => (
+                          <option key={i+1} value={i+1}>{i+1}일</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    {/* Hour */}
+                    <div className="text-center">
+                      <label className="text-xs font-medium">Hour</label>
+                      <select 
+                        value={new Date().getHours()}
+                        onChange={(e) => updateDateTime('hour', parseInt(e.target.value))}
+                        className="w-full h-12 text-center border rounded bg-background"
+                      >
+                        {Array.from({length: 24}, (_, i) => (
+                          <option key={i} value={i}>{i.toString().padStart(2, '0')}시</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    {/* Minute */}
+                    <div className="text-center">
+                      <label className="text-xs font-medium">Min</label>
+                      <select 
+                        value={Math.floor(new Date().getMinutes() / 10) * 10}
+                        onChange={(e) => updateDateTime('minute', parseInt(e.target.value))}
+                        className="w-full h-12 text-center border rounded bg-background"
+                      >
+                        {Array.from({length: 6}, (_, i) => (
+                          <option key={i*10} value={i*10}>{(i*10).toString().padStart(2, '0')}분</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    {/* Duration */}
+                    <div className="text-center">
+                      <label className="text-xs font-medium">Duration</label>
+                      <select 
+                        value={7}
+                        onChange={(e) => updateDateTime('duration', parseInt(e.target.value))}
+                        className="w-full h-12 text-center border rounded bg-background"
+                      >
+                        <option value={1}>1일</option>
+                        <option value={3}>3일</option>
+                        <option value={7}>7일</option>
+                        <option value={14}>14일</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
 
                 {newContest.startDate && newContest.endDate && (
                   <div className="text-sm text-muted-foreground p-3 bg-accent rounded">
-                    Contest will run from {new Date(newContest.startDate).toLocaleString()} 
-                    to {new Date(newContest.endDate).toLocaleString()}
+                    <div className="font-medium text-center">콘테스트 일정 (한국시간)</div>
+                    <div className="text-center mt-1">{getKSTDisplay()}</div>
                   </div>
                 )}
                 
