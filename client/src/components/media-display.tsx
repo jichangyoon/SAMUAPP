@@ -129,8 +129,8 @@ export function MediaDisplay({
           VIDEO
         </div>
         
-        {/* Play button overlay for better mobile UX */}
-        {!isPlaying && (
+        {/* Play button overlay for better mobile UX - only show when controls are hidden */}
+        {!isPlaying && !showControls && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="bg-black/50 rounded-full p-3">
               <Play className="h-6 w-6 text-white fill-white" />
