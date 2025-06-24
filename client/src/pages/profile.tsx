@@ -26,6 +26,7 @@ const Profile = React.memo(() => {
   const [displayName, setDisplayName] = useState("");
   const [profileImage, setProfileImage] = useState("");
   const [imagePreview, setImagePreview] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   // 지갑 주소 가져오기 (홈과 동일한 로직)
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
@@ -216,8 +217,8 @@ const Profile = React.memo(() => {
     };
   }, [walletAddress, queryClient]);
 
-  // Handle image upload to R2 - 메모리 누수 방지 및 최적화
-  const handleImageChange = React.useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle image file selection (preview only, no upload)
+  const handleImageChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -232,7 +233,7 @@ const Profile = React.memo(() => {
       return;
     }
 
-    // Validate file size (3MB limit - 더 엄격하게)
+    // Validate file size (3MB limit)
     if (file.size > 3 * 1024 * 1024) {
       toast({
         title: "File too large",
@@ -242,84 +243,11 @@ const Profile = React.memo(() => {
       return;
     }
 
-    let objectUrl: string | null = null;
-
-    try {
-      // 메모리 효율적인 프리뷰 생성
-      objectUrl = URL.createObjectURL(file);
-      setImagePreview(objectUrl);
-
-      // Upload to R2
-      const formData = new FormData();
-      formData.append('image', file);
-      formData.append('walletAddress', walletAddress);
-
-      // Upload to R2 cloud storage with timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30초 타임아웃
-
-      const response = await fetch('/api/uploads/profile', {
-        method: 'POST',
-        body: formData,
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`Upload failed: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (result.success && result.profileUrl) {
-        // Clear preview URL to prevent memory leak
-        if (objectUrl) {
-          URL.revokeObjectURL(objectUrl);
-          objectUrl = null;
-        }
-        setImagePreview('');
-        
-        // Update profile image
-        setProfileImage(result.profileUrl);
-        
-        // Update database
-        const updateSuccess = await updateProfile(displayName, result.profileUrl);
-        
-        if (updateSuccess) {
-          // Additional comprehensive query invalidation for image updates
-          await Promise.all([
-            queryClient.invalidateQueries({ queryKey: ['user-profile', walletAddress] }),
-            queryClient.invalidateQueries({ queryKey: ['user-memes', walletAddress] }),
-            queryClient.invalidateQueries({ queryKey: ['memes'] }), // For meme cards author info
-            queryClient.refetchQueries({ queryKey: ['user-profile', walletAddress] })
-          ]);
-        }
-        
-        toast({
-          title: "Profile Image Updated",
-          description: "Your profile image has been uploaded successfully"
-        });
-      }
-
-    } catch (error) {
-      // Clean up object URL on error
-      if (objectUrl) {
-        URL.revokeObjectURL(objectUrl);
-      }
-      setImagePreview('');
-      
-      const errorMessage = error instanceof Error && error.name === 'AbortError' 
-        ? "Upload timeout. Please try again." 
-        : "Failed to upload profile image. Please try again.";
-        
-      toast({
-        title: "Upload Failed",
-        description: errorMessage,
-        variant: "destructive"
-      });
-    }
-  }, [displayName, walletAddress, toast, queryClient, updateProfile]);
+    // Create preview only - don't upload yet
+    const objectUrl = URL.createObjectURL(file);
+    setImagePreview(objectUrl);
+    setSelectedFile(file);
+  }, [toast]);
     
 
   // Save profile changes
@@ -333,12 +261,66 @@ const Profile = React.memo(() => {
       return;
     }
 
+    let finalImageUrl = profileImage;
+
+    // Upload image if a new file is selected
+    if (selectedFile) {
+      try {
+        const formData = new FormData();
+        formData.append('image', selectedFile);
+        formData.append('walletAddress', walletAddress);
+
+        // Upload to R2 cloud storage with timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30초 타임아웃
+
+        const response = await fetch('/api/uploads/profile', {
+          method: 'POST',
+          body: formData,
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(`Upload failed: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result.success && result.profileUrl) {
+          finalImageUrl = result.profileUrl;
+          setProfileImage(result.profileUrl);
+        } else {
+          throw new Error('Upload response invalid');
+        }
+
+      } catch (error) {
+        const errorMessage = error instanceof Error && error.name === 'AbortError' 
+          ? "Upload timeout. Please try again." 
+          : "Failed to upload profile image. Please try again.";
+          
+        toast({
+          title: "Upload Failed",
+          description: errorMessage,
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
     // Save profile changes
-    const success = await updateProfile(displayName.trim(), profileImage);
+    const success = await updateProfile(displayName.trim(), finalImageUrl);
     
     if (success) {
       setIsEditing(false);
       setImagePreview('');
+      setSelectedFile(null);
+      
+      // Clean up preview URL
+      if (imagePreview && imagePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(imagePreview);
+      }
       
       toast({
         title: "Profile Updated",
@@ -351,7 +333,7 @@ const Profile = React.memo(() => {
         variant: "destructive"
       });
     }
-  }, [displayName, profileImage, walletAddress, toast, queryClient, updateProfile]);
+  }, [displayName, profileImage, selectedFile, walletAddress, imagePreview, toast, queryClient, updateProfile]);
 
   // Cancel editing - 메모리 정리 포함
   const handleCancelEdit = React.useCallback(() => {
@@ -369,6 +351,7 @@ const Profile = React.memo(() => {
       setProfileImage('');
     }
     setImagePreview('');
+    setSelectedFile(null);
     setIsEditing(false);
   }, [userProfile, user?.email?.address, imagePreview]);
 
