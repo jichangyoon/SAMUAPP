@@ -19,11 +19,41 @@ const upload = multer({
   }
 });
 
-// Get all memes
+// Get all memes with pagination
 router.get("/", async (req, res) => {
   try {
-    const memes = await storage.getMemes();
-    res.json(memes);
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 7;
+    const sortBy = req.query.sortBy as string || 'votes';
+    
+    const allMemes = await storage.getMemes();
+    
+    // Sort memes
+    let sortedMemes = [...allMemes];
+    if (sortBy === 'votes') {
+      sortedMemes.sort((a, b) => b.votes - a.votes);
+    } else if (sortBy === 'latest') {
+      sortedMemes.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+    
+    // Calculate pagination
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedMemes = sortedMemes.slice(startIndex, endIndex);
+    
+    const totalMemes = sortedMemes.length;
+    const hasMore = endIndex < totalMemes;
+    
+    res.json({
+      memes: paginatedMemes,
+      pagination: {
+        page,
+        limit,
+        total: totalMemes,
+        hasMore,
+        totalPages: Math.ceil(totalMemes / limit)
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch memes" });
   }

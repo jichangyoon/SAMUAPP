@@ -40,6 +40,12 @@ export default function Home() {
   const [archiveView, setArchiveView] = useState<'list' | 'contest'>('list');
   const [selectedArchiveContest, setSelectedArchiveContest] = useState<any>(null);
   const [selectedArchiveMeme, setSelectedArchiveMeme] = useState<any>(null);
+  
+  // Infinite scroll state
+  const [page, setPage] = useState(1);
+  const [allMemes, setAllMemes] = useState<Meme[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   // Privy authentication
   const { authenticated, user } = usePrivy();
@@ -200,28 +206,68 @@ export default function Home() {
     }
   }, [balanceData, isConnected]);
 
-  const { data: memes = [], isLoading, refetch } = useQuery<Meme[]>({
-    queryKey: ["/api/memes"],
+  // Calculate page size based on view mode
+  const pageSize = viewMode === 'grid' ? 9 : 7;
+
+  // Reset pagination when view mode or sort changes
+  useEffect(() => {
+    setPage(1);
+    setAllMemes([]);
+    setHasMore(true);
+  }, [viewMode, sortBy]);
+
+  // Fetch memes data with pagination
+  const { data: memesResponse, isLoading, refetch } = useQuery({
+    queryKey: ['/api/memes', { page, limit: pageSize, sortBy }],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: pageSize.toString(),
+        sortBy: sortBy
+      });
+      const response = await fetch(`/api/memes?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch memes');
+      return response.json();
+    },
     enabled: true,
     staleTime: 10 * 1000, // 10초간 캐시 유지
-    refetchInterval: 30 * 1000, // 30초마다 자동 갱신
   });
 
-  // Memoized sorted memes with dependency optimization
-  const sortedMemes = useMemo(() => {
-    if (!memes?.length) return [];
-
-    switch (sortBy) {
-      case "votes":
-        return memes.slice().sort((a, b) => (b.votes || 0) - (a.votes || 0));
-      case "recent":
-        return memes.slice().sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
-      case "author":
-        return memes.slice().sort((a, b) => (a.authorUsername || "").localeCompare(b.authorUsername || ""));
-      default:
-        return memes;
+  // Update memes list when new data arrives
+  useEffect(() => {
+    if (memesResponse?.memes) {
+      if (page === 1) {
+        setAllMemes(memesResponse.memes);
+      } else {
+        setAllMemes(prev => [...prev, ...memesResponse.memes]);
+      }
+      setHasMore(memesResponse.pagination.hasMore);
+      setIsLoadingMore(false);
     }
-  }, [memes, sortBy]);
+  }, [memesResponse, page]);
+
+  // Load more function
+  const loadMore = useCallback(async () => {
+    if (!hasMore || isLoadingMore || isLoading) return;
+    
+    setIsLoadingMore(true);
+    setPage(prev => prev + 1);
+  }, [hasMore, isLoadingMore, isLoading]);
+
+  // Infinite scroll detection
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
+        loadMore();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loadMore]);
+
+  // Use allMemes for display (already sorted by backend)
+  const sortedMemes = allMemes;
 
   // Optimized click handlers with minimal dependencies
   const handleMemeClick = useCallback((meme: Meme) => {
@@ -232,6 +278,10 @@ export default function Home() {
   const handleVoteSuccess = useCallback(() => {
     setShowVoteDialog(false);
     setSelectedMeme(null);
+    // Reset pagination and refetch from beginning
+    setPage(1);
+    setAllMemes([]);
+    setHasMore(true);
     // 투표 관련 캐시만 무효화 - 성능 최적화
     queryClient.invalidateQueries({ 
       predicate: (query) => 
@@ -430,11 +480,17 @@ export default function Home() {
                       </>
                     )}
 
-                    {sortedMemes.length > 0 && (
+                    {/* Infinite scroll loading indicator */}
+                    {isLoadingMore && (
                       <div className="text-center mt-6">
-                        <Button variant="outline" className="bg-accent text-foreground hover:bg-accent/80 border-border">
-                          Load More Memes
-                        </Button>
+                        <div className="animate-spin inline-block w-6 h-6 border-2 border-primary border-t-transparent rounded-full"></div>
+                        <p className="text-sm text-muted-foreground mt-2">Loading more memes...</p>
+                      </div>
+                    )}
+                    
+                    {!hasMore && sortedMemes.length > 0 && (
+                      <div className="text-center mt-6">
+                        <p className="text-sm text-muted-foreground">You've seen all memes!</p>
                       </div>
                     )}
                   </div>
