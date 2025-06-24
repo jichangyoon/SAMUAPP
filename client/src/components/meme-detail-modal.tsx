@@ -59,9 +59,9 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
                   <AvatarImage 
-                    src={(meme as any).authorAvatarUrl} 
+                    src={(meme as any).authorAvatarUrl || (meme as any).author_avatar_url} 
                     alt={meme.authorUsername}
-                    key={(meme as any).authorAvatarUrl}
+                    key={(meme as any).authorAvatarUrl || (meme as any).author_avatar_url}
                   />
                   <AvatarFallback className="bg-gray-700 text-white">
                     {meme.authorUsername.charAt(0).toUpperCase()}
