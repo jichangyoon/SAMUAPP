@@ -55,8 +55,8 @@ export async function uploadToR2(
 
     await r2Client.send(command);
 
-    // 공개 URL 생성 (환경변수 R2_PUBLIC_URL 사용)
-    const publicUrl = `${process.env.R2_PUBLIC_URL}/${key}`;
+    // 공개 URL 생성 - 실제 R2 Public Development URL 사용
+    const publicUrl = `https://pub-6ba1d3b9f0b544138a8d628ffcf407f6.r2.dev/${key}`;
 
     return {
       success: true,
@@ -125,17 +125,26 @@ function getMimeType(extension: string): string {
  */
 export function extractKeyFromUrl(url: string): string | null {
   try {
-    const publicDevUrl = 'https://pub-91c83b692b4477b6dc61a79e70a97.r2.dev';
-    const legacyUrl = process.env.R2_PUBLIC_URL;
+    // 실제 R2 도메인들 - 사용자 제공 도메인 포함
+    const r2Domains = [
+      'https://pub-6ba1d3b9f0b544138a8d628ffcf407f6.r2.dev',
+      'https://e63c3b37166fe8f08158620aabbd1b78.r2.cloudflarestorage.com',
+      'https://pub-91c5838b92b44777b0cdcf1e79e70d97.r2.dev', // 레거시
+      process.env.R2_PUBLIC_URL
+    ].filter(Boolean);
     
-    if (url.startsWith(publicDevUrl)) {
-      return url.replace(`${publicDevUrl}/`, '');
+    for (const domain of r2Domains) {
+      if (url.startsWith(domain!)) {
+        return url.replace(`${domain}/`, '');
+      }
     }
-    if (legacyUrl && url.startsWith(legacyUrl)) {
-      return url.replace(`${legacyUrl}/`, '');
-    }
-    return null;
-  } catch {
+    
+    // 일반적인 URL 파싱도 시도
+    const urlObj = new URL(url);
+    const path = urlObj.pathname;
+    return path.startsWith('/') ? path.slice(1) : path;
+  } catch (error) {
+    console.error('Error extracting key from URL:', error);
     return null;
   }
 }
