@@ -374,6 +374,9 @@ Changelog:
 - June 24, 2025. Synchronized home page header with Profile page using shared database queries instead of mixed localStorage/database sources
 - June 24, 2025. Fixed profile name editing API endpoint - corrected URL path from /api/users/profile to /api/users/profile/:walletAddress
 - June 24, 2025. Enhanced profile update logging for better debugging and error tracking
+- June 24, 2025. Implemented automatic R2 cleanup for profile images - old images are deleted when new ones are uploaded
+- June 24, 2025. Added wallet address tracking to profile upload endpoint for proper image cleanup
+- June 24, 2025. Enhanced profile image upload with automatic storage optimization to prevent accumulation
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```

@@ -170,7 +170,8 @@ const Profile = React.memo(() => {
 
       // Upload to R2
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('image', file);
+      formData.append('walletAddress', walletAddress); // Include wallet address for old image cleanup
 
       console.log('Starting profile image upload to /api/uploads/profile');
       const response = await fetch('/api/uploads/profile', {
