@@ -377,6 +377,7 @@ Changelog:
 - June 24, 2025. Implemented automatic R2 cleanup for profile images - old images are deleted when new ones are uploaded
 - June 24, 2025. Added wallet address tracking to profile upload endpoint for proper image cleanup
 - June 24, 2025. Enhanced profile image upload with automatic storage optimization to prevent accumulation
+- June 24, 2025. Fixed Multer "Unexpected field" error by removing duplicate profile upload endpoints and ensuring consistent field naming
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```

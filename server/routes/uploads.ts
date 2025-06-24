@@ -130,44 +130,7 @@ router.delete("/delete", async (req, res) => {
   }
 });
 
-// Profile image upload endpoint (uses separate profile bucket)
-router.post("/profile", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No profile image uploaded" });
-    }
-
-    // Upload to main bucket with profiles folder
-    const uploadResult = await uploadToR2(
-      req.file.buffer,
-      req.file.originalname,
-      'profiles', // Use profiles folder
-      5 * 1024 * 1024 // 5MB limit for profile images
-    );
-
-    if (!uploadResult.success) {
-      console.error('Profile image R2 upload failed:', uploadResult.error);
-      return res.status(500).json({ 
-        error: "Profile upload failed", 
-        details: uploadResult.error 
-      });
-    }
-    
-    const response = {
-      success: true,
-      profileUrl: uploadResult.url!,
-      key: uploadResult.key!,
-      originalName: req.file.originalname,
-      size: req.file.size
-    };
-
-    console.log('Profile image R2 upload successful:', response);
-    res.json(response);
-  } catch (error: any) {
-    console.error("Profile upload error:", error);
-    res.status(500).json({ error: "Profile upload failed", details: error?.message || 'Unknown error' });
-  }
-});
+// Remove this duplicate - already handled below
 
 // Health check endpoint for R2 connectivity
 router.get("/health", async (req, res) => {
@@ -219,14 +182,8 @@ router.delete('/delete-r2', async (req, res) => {
   }
 });
 
-// Profile image upload endpoint - uploads to profiles/ folder
-router.post('/profile', (req, res, next) => {
-  console.log('=== PROFILE UPLOAD REQUEST RECEIVED ===');
-  console.log('Method:', req.method);
-  console.log('URL:', req.url);
-  console.log('Content-Type:', req.headers['content-type']);
-  next();
-}, upload.single('image'), async (req, res) => {
+// Profile image upload endpoint - uploads to profiles/ folder (MAIN ENDPOINT)
+router.post('/profile', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ 
