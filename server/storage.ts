@@ -8,6 +8,7 @@ export interface IStorage {
   getUserByWallet(walletAddress: string): Promise<User | undefined>;
   getUserByDisplayName(displayName: string): Promise<User | undefined>;
   updateUser(walletAddress: string, updates: Partial<InsertUser & { displayName?: string; avatarUrl?: string }>): Promise<User>;
+  updateUserMemeAuthorInfo(walletAddress: string, newDisplayName: string): Promise<void>;
   getUserMemes(walletAddress: string): Promise<Meme[]>;
   getUserVotes(walletAddress: string): Promise<Vote[]>;
   
