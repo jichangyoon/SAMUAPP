@@ -433,6 +433,8 @@ Changelog:
 - June 24, 2025. Optimized MediaDisplay component - removed unnecessary state, useEffect, and redundant props to simplify video handling logic and improve performance
 - June 24, 2025. Fixed MediaDisplay image sizing - removed hardcoded w-full h-full classes to allow proper parent container size constraints in Profile My Votes section
 - June 24, 2025. Enhanced voting cache invalidation - added votes query invalidation to ensure My Votes section updates immediately after voting
+- June 24, 2025. Optimized Profile page mobile scrolling - implemented proper flex layout with fixed header/tabs and scrollable content areas to prevent overlapping scroll behavior
+- June 24, 2025. Fixed user info modal spacing - reduced gap between profile image and username from space-y-4 to space-y-3 and space-y-2 to space-y-1 for tighter layout
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
