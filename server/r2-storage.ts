@@ -25,9 +25,16 @@ export interface UploadResult {
 export async function uploadToR2(
   file: Buffer,
   originalName: string,
-  bucketName: string = process.env.R2_BUCKET_NAME!,
-  folder: string = 'uploads'
+  folder: string = 'uploads',
+  maxSize?: number
 ): Promise<UploadResult> {
+  // Check file size if limit specified
+  if (maxSize && file.length > maxSize) {
+    return {
+      success: false,
+      error: `File size ${file.length} bytes exceeds limit of ${maxSize} bytes`
+    };
+  }
   try {
     // 고유한 파일명 생성
     const fileExtension = path.extname(originalName);
@@ -39,7 +46,7 @@ export async function uploadToR2(
 
     // R2에 업로드 (ACL 제거 - R2는 버킷 레벨에서 공개 설정)
     const command = new PutObjectCommand({
-      Bucket: bucketName,
+      Bucket: process.env.R2_BUCKET_NAME!,
       Key: key,
       Body: file,
       ContentType: mimeType,

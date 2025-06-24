@@ -74,7 +74,7 @@ router.post("/upload", (req, res, next) => {
     const uploadResult = await uploadToR2(
       req.file.buffer,
       req.file.originalname,
-      process.env.R2_BUCKET_NAME!
+      'uploads'
     );
 
     if (!uploadResult.success) {
@@ -216,6 +216,65 @@ router.delete('/delete-r2', async (req, res) => {
   } catch (error) {
     console.error('Delete R2 file error:', error);
     res.status(500).json({ error: 'Failed to delete file' });
+  }
+});
+
+// Profile image upload endpoint - uploads to profiles/ folder
+router.post('/profile', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'No file provided' 
+      });
+    }
+
+    console.log('Profile image upload processing:', {
+      file: {
+        originalname: req.file.originalname,
+        size: req.file.size,
+        mimetype: req.file.mimetype
+      }
+    });
+
+    // Upload to R2 in profiles/ folder with size limit
+    const uploadResult = await uploadToR2(
+      req.file.buffer,
+      req.file.originalname,
+      'profiles',
+      5 * 1024 * 1024 // 5MB limit for profile images
+    );
+
+    if (!uploadResult.success) {
+      console.error('R2 profile upload failed:', uploadResult.error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to upload profile image to cloud storage'
+      });
+    }
+
+    console.log('R2 profile upload successful:', {
+      success: uploadResult.success,
+      profileUrl: uploadResult.url,
+      key: uploadResult.key,
+      originalName: req.file.originalname,
+      size: req.file.size
+    });
+
+    res.json({
+      success: true,
+      profileUrl: uploadResult.url,
+      key: uploadResult.key,
+      originalName: req.file.originalname,
+      size: req.file.size
+    });
+
+  } catch (error) {
+    console.error('Profile upload error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error during profile upload'
+    });
   }
 });
 
