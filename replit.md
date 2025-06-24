@@ -370,6 +370,8 @@ Changelog:
 - June 24, 2025. Resolved API call syntax error in profile update function - replaced incorrect apiRequest usage with standard fetch API
 - June 24, 2025. Completed Profile page transition from localStorage to PostgreSQL + R2 cloud storage system
 - June 24, 2025. Verified end-to-end profile image workflow: file upload → R2 storage → database update → real-time display
+- June 24, 2025. Fixed header profile display inconsistency - replaced localStorage with database queries for consistent profile images across all pages
+- June 24, 2025. Synchronized home page header with Profile page using shared database queries instead of mixed localStorage/database sources
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```

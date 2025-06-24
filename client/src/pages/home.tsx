@@ -57,30 +57,45 @@ export default function Home() {
   const walletAddress = (selectedWalletAccount as any)?.address || '';
   const isSolana = true; // 항상 Solana
 
+  // User profile data from database
+  const { data: userProfile } = useQuery({
+    queryKey: ['user-profile-header', walletAddress],
+    queryFn: async () => {
+      if (!walletAddress) return null;
+      const res = await fetch(`/api/users/profile/${walletAddress}`);
+      return res.json();
+    },
+    enabled: !!walletAddress && authenticated,
+  });
+
   // Profile state management
   const [profileData, setProfileData] = useState({ displayName: 'User', profileImage: '' });
 
-  // Load profile data when user changes
+  // Load profile data from database, not localStorage
   useEffect(() => {
-    if (authenticated && user?.id) {
-      try {
-        const stored = localStorage.getItem(`profile_${user.id}`);
-        const profile = stored ? JSON.parse(stored) : {};
-        setProfileData({
-          displayName: profile.displayName || 'User',
-          profileImage: profile.profileImage || ''
-        });
-      } catch {
-        setProfileData({ displayName: 'User', profileImage: '' });
-      }
+    if (userProfile) {
+      setProfileData({
+        displayName: userProfile.displayName || user?.email?.address?.split('@')[0] || 'User',
+        profileImage: userProfile.avatarUrl || ''
+      });
+      console.log('Header profile loaded from database:', { displayName: userProfile.displayName, avatarUrl: userProfile.avatarUrl });
+    } else if (authenticated) {
+      setProfileData({
+        displayName: user?.email?.address?.split('@')[0] || 'User',
+        profileImage: ''
+      });
     } else {
       setProfileData({ displayName: 'User', profileImage: '' });
     }
-  }, [authenticated, user?.id]);
+  }, [userProfile, authenticated, user?.email?.address]);
 
-  // Listen for profile updates from profile page
+  // Listen for profile updates from profile page and refresh database query
   useEffect(() => {
     const handleProfileUpdate = (event: CustomEvent) => {
+      // Refresh database query instead of using localStorage data
+      queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] });
+      
+      // Also update local state immediately for responsiveness
       setProfileData({
         displayName: event.detail.displayName,
         profileImage: event.detail.profileImage
@@ -92,7 +107,7 @@ export default function Home() {
     return () => {
       window.removeEventListener('profileUpdated', handleProfileUpdate as EventListener);
     };
-  }, []);
+  }, [queryClient, walletAddress]);
 
   const displayName = authenticated ? profileData.displayName : 'SAMU';
   const profileImage = profileData.profileImage;
