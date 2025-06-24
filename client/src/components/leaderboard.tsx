@@ -53,20 +53,14 @@ export function Leaderboard() {
     refetchInterval: 60000, // Refetch every minute
   });
 
-  // Early return for loading state
-  if (isLoading) {
-    return <div className="text-center py-8 text-muted-foreground">Loading leaderboard...</div>;
-  }
-
   // Extract memes array with proper type checking
   const memesArray: Meme[] = memesResponse?.memes || [];
-  
-  if (!Array.isArray(memesArray) || memesArray.length === 0) {
-    return <div className="text-center py-8 text-muted-foreground">No memes available</div>;
-  }
-  
-  // Optimize meme sorting with useMemo
+
+  // Optimize meme sorting with useMemo (must be before early returns)
   const { sortedMemes, topMemes } = useMemo(() => {
+    if (!Array.isArray(memesArray) || memesArray.length === 0) {
+      return { sortedMemes: [], topMemes: [] };
+    }
     const sorted = [...memesArray].sort((a, b) => b.votes - a.votes);
     return {
       sortedMemes: sorted,
@@ -76,6 +70,9 @@ export function Leaderboard() {
 
   // Optimize creator stats calculation with useMemo
   const creatorStats = useMemo(() => {
+    if (!Array.isArray(memesArray) || memesArray.length === 0) {
+      return {};
+    }
     return memesArray.reduce((acc, meme) => {
       if (!acc[meme.authorUsername]) {
         acc[meme.authorUsername] = {
@@ -105,6 +102,15 @@ export function Leaderboard() {
       .sort((a: any, b: any) => b.totalVotes - a.totalVotes)
       .slice(0, 5);
   }, [creatorStats]);
+
+  // Early return for loading state (after all hooks)
+  if (isLoading) {
+    return <div className="text-center py-8 text-muted-foreground">Loading leaderboard...</div>;
+  }
+  
+  if (!Array.isArray(memesArray) || memesArray.length === 0) {
+    return <div className="text-center py-8 text-muted-foreground">No memes available</div>;
+  }
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
