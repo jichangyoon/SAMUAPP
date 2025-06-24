@@ -899,19 +899,30 @@ export default function Home() {
                   if (!selectedMeme || !walletAddress) return;
                   
                   setIsVoting(true);
+                  
+                  // 즉시 UI 업데이트 (낙관적 업데이트)
+                  const optimisticUpdate = () => {
+                    queryClient.setQueryData(['/api/memes'], (oldData: any) => {
+                      if (!oldData?.memes) return oldData;
+                      return {
+                        ...oldData,
+                        memes: oldData.memes.map((m: any) => 
+                          m.id === selectedMeme.id ? { ...m, votes: m.votes + 1 } : m
+                        )
+                      };
+                    });
+                  };
+
+                  optimisticUpdate();
+                  
                   try {
                     await apiRequest("POST", `/api/memes/${selectedMeme.id}/vote`, {
                       voterWallet: walletAddress,
                       votingPower: 1,
                     });
 
-                    // Immediate cache invalidation for real-time updates
-                    await Promise.all([
-                      refetch(),
-                      queryClient.invalidateQueries({ queryKey: ['/api/memes'] }),
-                      queryClient.invalidateQueries({ queryKey: ['user-memes', walletAddress] }),
-                      queryClient.invalidateQueries({ queryKey: ['user-votes', walletAddress] })
-                    ]);
+                    // 성공 시 실제 데이터로 업데이트
+                    refetch();
 
                     toast({
                       title: "Vote Submitted!",
@@ -921,6 +932,9 @@ export default function Home() {
 
                     handleVoteSuccess();
                   } catch (error: any) {
+                    // 실패 시 원래 상태로 복구
+                    refetch();
+                    
                     toast({
                       title: "Voting Failed",
                       description: error.message || "Failed to submit vote. You may have already voted on this meme.",
