@@ -1,25 +1,22 @@
 import express, { type Request, Response, NextFunction } from "express";
-import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
-// CORS 설정 - 개발/프로덕션 환경 모두 지원
-const corsOptions = {
-  origin: [
-    'http://localhost:3000',
-    'http://localhost:5000', 
-    'https://4def2f81-75c3-4eac-a5fc-a59cb8dbc6bc-00-1vxco4gii0mu8.worf.replit.dev',
-    /\.replit\.dev$/,
-    /\.replit\.app$/
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
-};
+// Add CORS headers for all routes
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
 
-app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 

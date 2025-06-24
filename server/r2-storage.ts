@@ -44,18 +44,13 @@ export async function uploadToR2(
     // MIME 타입 결정
     const mimeType = getMimeType(fileExtension);
 
-    // R2에 업로드 - CORS 헤더 포함
+    // R2에 업로드 (ACL 제거 - R2는 버킷 레벨에서 공개 설정)
     const command = new PutObjectCommand({
       Bucket: process.env.R2_BUCKET_NAME!,
       Key: key,
       Body: file,
       ContentType: mimeType,
       CacheControl: 'public, max-age=31536000', // 1년 캐시
-      Metadata: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, HEAD',
-        'Access-Control-Allow-Headers': 'Content-Type'
-      }
     });
 
     await r2Client.send(command);
