@@ -65,9 +65,18 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
         votingPower,
       });
 
+      // Immediately invalidate all meme-related queries for instant update
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['/api/memes'] }),
+        queryClient.invalidateQueries({ queryKey: ['user-memes', walletAddress] }),
+        queryClient.invalidateQueries({ queryKey: ['user-votes', walletAddress] }),
+        queryClient.invalidateQueries({ queryKey: ['user-stats', walletAddress] })
+      ]);
+
       toast({
         title: "Vote Submitted!",
         description: `Your vote with ${votingPower} voting power has been recorded.`,
+        duration: 1000
       });
 
       setShowVoteDialog(false);
@@ -77,6 +86,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
         title: "Voting Failed",
         description: error.message || "Failed to submit vote. You may have already voted on this meme.",
         variant: "destructive",
+        duration: 1000
       });
     } finally {
       setIsVoting(false);

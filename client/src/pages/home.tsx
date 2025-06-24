@@ -275,20 +275,18 @@ export default function Home() {
     setShowVoteDialog(true);
   }, []);
 
-  const handleVoteSuccess = useCallback(() => {
+  const handleVoteSuccess = useCallback(async () => {
     setShowVoteDialog(false);
     setSelectedMeme(null);
-    // Reset pagination and refetch from beginning
-    setPage(1);
-    setAllMemes([]);
-    setHasMore(true);
-    // 투표 관련 캐시만 무효화 - 성능 최적화
-    queryClient.invalidateQueries({ 
-      predicate: (query) => 
-        query.queryKey.includes('/api/memes') || 
-        (query.queryKey.includes('balances') && query.queryKey.includes(walletAddress))
-    });
-  }, [queryClient, walletAddress]);
+    
+    // Force immediate refetch of current data instead of resetting
+    await Promise.all([
+      refetch(), // Refetch current page data
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'] }),
+      queryClient.invalidateQueries({ queryKey: ['user-memes', walletAddress] }),
+      queryClient.invalidateQueries({ queryKey: ['user-votes', walletAddress] })
+    ]);
+  }, [queryClient, walletAddress, refetch]);
 
   const handleShareClick = useCallback((meme: Meme) => {
     setSelectedMeme(meme);
@@ -897,7 +895,42 @@ export default function Home() {
                 Cancel
               </Button>
               <Button
-                onClick={() => selectedMeme && handleGridVote(selectedMeme)}
+                onClick={async () => {
+                  if (!selectedMeme || !walletAddress) return;
+                  
+                  setIsVoting(true);
+                  try {
+                    await apiRequest("POST", `/api/memes/${selectedMeme.id}/vote`, {
+                      voterWallet: walletAddress,
+                      votingPower: 1,
+                    });
+
+                    // Immediate cache invalidation for real-time updates
+                    await Promise.all([
+                      refetch(),
+                      queryClient.invalidateQueries({ queryKey: ['/api/memes'] }),
+                      queryClient.invalidateQueries({ queryKey: ['user-memes', walletAddress] }),
+                      queryClient.invalidateQueries({ queryKey: ['user-votes', walletAddress] })
+                    ]);
+
+                    toast({
+                      title: "Vote Submitted!",
+                      description: "Your vote has been recorded.",
+                      duration: 1000
+                    });
+
+                    handleVoteSuccess();
+                  } catch (error: any) {
+                    toast({
+                      title: "Voting Failed",
+                      description: error.message || "Failed to submit vote. You may have already voted on this meme.",
+                      variant: "destructive",
+                      duration: 1000
+                    });
+                  } finally {
+                    setIsVoting(false);
+                  }
+                }}
                 disabled={isVoting}
                 className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
               >
