@@ -59,12 +59,12 @@ export function MediaDisplay({
         />
         {!showControls && (
           <>
-            <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded font-medium">
-              VIDEO
+            <div className="absolute top-1 right-1 bg-black/70 text-white text-xs px-1 py-0.5 rounded font-medium text-[10px]">
+              VID
             </div>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="bg-black/60 rounded-full p-4">
-                <Play className="h-8 w-8 text-white fill-white" />
+              <div className="bg-black/60 rounded-full p-1">
+                <Play className="h-3 w-3 text-white fill-white" />
               </div>
             </div>
           </>
@@ -78,7 +78,7 @@ export function MediaDisplay({
     <img
       src={src}
       alt={alt}
-      className={`w-full h-full object-cover ${onClick ? 'cursor-pointer' : ''} ${className}`}
+      className={`object-cover ${onClick ? 'cursor-pointer' : ''} ${className}`}
       onClick={onClick ? (e) => {
         e.preventDefault();
         e.stopPropagation();
