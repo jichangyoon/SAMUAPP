@@ -84,11 +84,7 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
     try {
-      console.log('Starting file upload:', {
-        name: file.name,
-        size: file.size,
-        type: file.type
-      });
+
 
       const response = await fetch('/api/uploads/upload', {
         method: 'POST',
@@ -99,11 +95,7 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
 
       clearTimeout(timeoutId);
 
-      console.log('Upload response:', {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok
-      });
+
 
       if (!response.ok) {
         const errorText = await response.text();

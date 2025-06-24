@@ -63,13 +63,13 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
       setDisplayName(userProfile.displayName || userProfile.username || user?.email?.address?.split('@')[0] || 'User');
       // Only use database avatar URL, completely ignore localStorage for images
       setProfileImage(userProfile.avatarUrl || '');
-      console.log('Profile loaded from database:', { avatarUrl: userProfile.avatarUrl });
+
     } else {
       const stored = getStoredProfile();
       setDisplayName(stored.displayName || user?.email?.address?.split('@')[0] || 'User');
       // Don't load profile image from localStorage - only from database
       setProfileImage('');
-      console.log('No database profile, clearing profile image');
+
     }
   }, [userProfile, user]);
 
@@ -188,14 +188,11 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
 
   // Handle image upload to R2
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('=== HANDLE IMAGE UPLOAD CALLED ===');
-    console.log('Event:', event);
-    console.log('Event target:', event.target);
-    console.log('Files:', event.target.files);
+
     
     const file = event.target.files?.[0];
     if (!file) {
-      console.log('No file selected');
+
       return;
     }
 

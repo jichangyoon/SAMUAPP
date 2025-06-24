@@ -704,67 +704,14 @@ export default function Home() {
         </Tabs>
       </div>
 
-      {/* Archive Meme Detail Drawer */}
+      {/* Archive Meme Detail Modal */}
       {selectedArchiveMeme && (
-        <Drawer open={!!selectedArchiveMeme} onOpenChange={() => setSelectedArchiveMeme(null)}>
-          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
-            <DrawerHeader>
-              <DrawerTitle className="text-foreground">{selectedArchiveMeme.title}</DrawerTitle>
-              <DrawerDescription className="text-muted-foreground">
-                Contest Entry from {selectedArchiveContest?.title}
-              </DrawerDescription>
-            </DrawerHeader>
-
-            <div className="px-4 pb-4 overflow-y-auto flex-1 space-y-4">
-              <div className="aspect-square rounded-lg overflow-hidden">
-                <img 
-                  src={selectedArchiveMeme.imageUrl} 
-                  alt={selectedArchiveMeme.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-sm font-bold text-primary-foreground">
-                    {selectedArchiveMeme.author.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <div className="flex-1">
-                  <div className="font-medium text-foreground">{selectedArchiveMeme.author}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {selectedArchiveMeme.votes.toLocaleString()} votes • #{selectedArchiveMeme.rank} place
-                  </div>
-                </div>
-                {selectedArchiveMeme.rank <= 3 && (
-                  <div className="text-2xl">
-                    {selectedArchiveMeme.rank === 1 ? '🥇' : selectedArchiveMeme.rank === 2 ? '🥈' : '🥉'}
-                  </div>
-                )}
-              </div>
-
-              {selectedArchiveMeme.description && (
-                <div>
-                  <h4 className="font-medium text-foreground mb-2">Description</h4>
-                  <p className="text-muted-foreground">{selectedArchiveMeme.description}</p>
-                </div>
-              )}
-
-              <div className="flex items-center justify-between pt-4 border-t border-border">
-                <div className="text-sm text-muted-foreground">
-                  Final ranking: #{selectedArchiveMeme.rank}
-                </div>
-                <Button
-                  onClick={() => setSelectedArchiveMeme(null)}
-                  variant="outline"
-                  size="sm"
-                >
-                  Close
-                </Button>
-              </div>
-            </div>
-          </DrawerContent>
-        </Drawer>
+        <MemeDetailModal
+          isOpen={!!selectedArchiveMeme}
+          onClose={() => setSelectedArchiveMeme(null)}
+          meme={selectedArchiveMeme}
+          canVote={false}
+        />
       )}
 
       {/* Bottom Navigation */}
