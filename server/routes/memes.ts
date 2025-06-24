@@ -34,6 +34,16 @@ router.post("/", async (req, res) => {
   try {
     const memeData = insertMemeSchema.parse(req.body);
 
+    // Get user profile information to populate author details
+    if (memeData.authorWallet) {
+      const user = await storage.getUserByWallet(memeData.authorWallet);
+      if (user) {
+        // Update meme data with current user profile information
+        memeData.authorUsername = user.displayName || user.username;
+        memeData.authorAvatarUrl = user.avatarUrl || undefined;
+      }
+    }
+
     const meme = await storage.createMeme(memeData);
     res.status(201).json(meme);
   } catch (error) {

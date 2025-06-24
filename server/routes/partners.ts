@@ -22,6 +22,17 @@ router.post("/:partnerId/memes", async (req, res) => {
   try {
     const { partnerId } = req.params;
     const validatedData = insertMemeSchema.parse(req.body);
+    
+    // Get user profile information to populate author details
+    if (validatedData.authorWallet) {
+      const user = await storage.getUserByWallet(validatedData.authorWallet);
+      if (user) {
+        // Update meme data with current user profile information
+        validatedData.authorUsername = user.displayName || user.username;
+        validatedData.authorAvatarUrl = user.avatarUrl || undefined;
+      }
+    }
+    
     const meme = await storage.createPartnerMeme(validatedData, partnerId);
     res.status(201).json(meme);
   } catch (error) {
