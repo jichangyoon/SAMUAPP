@@ -189,8 +189,16 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
 
   // Handle image upload to R2
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('=== HANDLE IMAGE UPLOAD CALLED ===');
+    console.log('Event:', event);
+    console.log('Event target:', event.target);
+    console.log('Files:', event.target.files);
+    
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      console.log('No file selected');
+      return;
+    }
 
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
@@ -242,6 +250,10 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
 
       const result = await response.json();
       console.log('Profile upload API response:', result);
+
+      if (!result.success) {
+        throw new Error(result.error || 'Upload failed');
+      }
       
       if (result.success && result.profileUrl) {
         // Clear localStorage completely for profile images
@@ -368,12 +380,19 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
                     </AvatarFallback>
                   </Avatar>
                   {isEditing && (
-                    <label className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-1 cursor-pointer hover:bg-primary/80">
+                    <label 
+                      className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-1 cursor-pointer hover:bg-primary/80"
+                      onClick={() => console.log('Label clicked for file upload')}
+                    >
                       <Camera className="h-3 w-3" />
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={handleImageUpload}
+                        onChange={(e) => {
+                          console.log('Input onChange triggered');
+                          handleImageUpload(e);
+                        }}
+                        onClick={() => console.log('Input clicked')}
                         className="hidden"
                       />
                     </label>
