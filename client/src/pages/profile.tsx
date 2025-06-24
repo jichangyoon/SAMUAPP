@@ -19,7 +19,7 @@ import { SendTokens } from "@/components/send-tokens";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 
 const Profile = React.memo(() => {
-  const { user } = usePrivy();
+  const { user, authenticated } = usePrivy();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
