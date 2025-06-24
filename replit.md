@@ -421,6 +421,7 @@ Changelog:
 - June 24, 2025. Updated file size limit from 50MB to 5MB for better performance and user experience
 - June 24, 2025. Fixed video playback button overlap issue - removed duplicate play button overlay when native video controls are visible, disabled autoloop in card views
 - June 24, 2025. Updated Leaderboard with MORE button pagination - Current rankings and Top Creators sections now show 10 items by default with expandable MORE button functionality
+- June 24, 2025. Enhanced mobile video controls - implemented tap-to-hide video controls functionality for better mobile UX, controls disappear when tapped and reappear on next tap
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```

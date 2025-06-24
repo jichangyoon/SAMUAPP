@@ -28,6 +28,7 @@ export function MediaDisplay({
   const [isMuted, setIsMuted] = useState(muted);
   const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null);
   const [thumbnailGenerated, setThumbnailGenerated] = useState(false);
+  const [showVideoControls, setShowVideoControls] = useState(true);
   
   const mediaType = getMediaType(src);
   
@@ -73,6 +74,7 @@ export function MediaDisplay({
           playsInline
           preload="metadata"
           poster=""
+          controls={showControls && showVideoControls}
           onClick={handleVideoClick}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
@@ -129,8 +131,8 @@ export function MediaDisplay({
           VIDEO
         </div>
         
-        {/* Play button overlay for better mobile UX - only show when controls are hidden */}
-        {!isPlaying && !showControls && (
+        {/* Play button overlay for better mobile UX - only show when controls are hidden or when video controls are hidden */}
+        {!isPlaying && (!showControls || !showVideoControls) && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="bg-black/50 rounded-full p-3">
               <Play className="h-6 w-6 text-white fill-white" />
