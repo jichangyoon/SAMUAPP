@@ -6,8 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Trophy, Medal, Crown, TrendingUp, Calendar } from "lucide-react";
-import { UserInfoModal } from "@/components/user-info-modal";
-import { MemeDetailModal } from "@/components/meme-detail-modal";
+
 import type { Meme } from "@shared/schema";
 
 // Mock data for past winners (명예의 전당)
@@ -40,10 +39,7 @@ const hallOfFameData = [
 
 export function Leaderboard() {
   const [activeTab, setActiveTab] = useState("current");
-  const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
-  const [selectedUser, setSelectedUser] = useState<{ walletAddress: string; username: string } | null>(null);
-  const [showMemeModal, setShowMemeModal] = useState(false);
-  const [showUserModal, setShowUserModal] = useState(false);
+
 
   const { data: memes = [], isLoading } = useQuery<Meme[]>({
     queryKey: ["/api/memes"],
@@ -125,11 +121,7 @@ export function Leaderboard() {
             </CardHeader>
             <CardContent className="space-y-3">
               {topMemes.map((meme, index) => (
-                <div key={meme.id} className="flex items-center justify-between p-3 bg-accent rounded-lg cursor-pointer hover:bg-accent/80 transition-colors"
-                     onClick={() => {
-                       setSelectedMeme(meme);
-                       setShowMemeModal(true);
-                     }}>
+                <div key={meme.id} className="flex items-center justify-between p-3 bg-accent rounded-lg">
                   <div className="flex items-center space-x-3">
                     <div className="flex items-center justify-center w-8 h-8">
                       {getRankIcon(index + 1)}
@@ -139,16 +131,7 @@ export function Leaderboard() {
                         {meme.title}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        by <span 
-                          className="hover:text-primary underline cursor-pointer"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedUser({ walletAddress: meme.authorWallet, username: meme.authorUsername });
-                            setShowUserModal(true);
-                          }}
-                        >
-                          {meme.authorUsername}
-                        </span>
+                        by {meme.authorUsername}
                       </div>
                     </div>
                   </div>
@@ -181,12 +164,7 @@ export function Leaderboard() {
             </CardHeader>
             <CardContent className="space-y-3">
               {topCreators.map((creator: any, index) => (
-                <div key={creator.username} 
-                     className="flex items-center justify-between p-3 bg-accent rounded-lg cursor-pointer hover:bg-accent/80 transition-colors"
-                     onClick={() => {
-                       setSelectedUser({ walletAddress: creator.walletAddress, username: creator.username });
-                       setShowUserModal(true);
-                     }}>
+                <div key={creator.username} className="flex items-center justify-between p-3 bg-accent rounded-lg">
                   <div className="flex items-center space-x-3">
                     <div className="flex items-center justify-center w-8 h-8">
                       {getRankIcon(index + 1)}
@@ -311,24 +289,7 @@ export function Leaderboard() {
         </TabsContent>
       </Tabs>
 
-      {/* Meme Detail Modal */}
-      {selectedMeme && (
-        <MemeDetailModal
-          isOpen={showMemeModal}
-          onClose={() => setShowMemeModal(false)}
-          meme={selectedMeme}
-        />
-      )}
 
-      {/* User Info Modal */}
-      {selectedUser && (
-        <UserInfoModal
-          isOpen={showUserModal}
-          onClose={() => setShowUserModal(false)}
-          walletAddress={selectedUser.walletAddress}
-          username={selectedUser.username}
-        />
-      )}
     </div>
   );
 }
