@@ -154,7 +154,8 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
       
       // 생성 후 바로 시작
       if (data.contest) {
-        await apiRequest('POST', `/api/users/admin/contests/${data.contest.id}/start`, { userWallet: walletAddress });
+        const startResponse = await apiRequest('POST', `/api/users/admin/contests/${data.contest.id}/start`, { userWallet: walletAddress });
+        await startResponse.json();
       }
       
       return data;
@@ -181,10 +182,8 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
   // Start contest mutation
   const startContestMutation = useMutation({
     mutationFn: async (contestId: number) => {
-      return apiRequest(`/api/users/admin/contests/${contestId}/start`, {
-        method: 'POST',
-        body: JSON.stringify({ userWallet: walletAddress })
-      });
+      const response = await apiRequest('POST', `/api/users/admin/contests/${contestId}/start`, { userWallet: walletAddress });
+      return response.json();
     },
     onSuccess: () => {
       toast({ title: "Contest started successfully" });
@@ -199,10 +198,8 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
   // End contest mutation
   const endContestMutation = useMutation({
     mutationFn: async (contestId: number) => {
-      return apiRequest(`/api/users/admin/contests/${contestId}/end`, {
-        method: 'POST',
-        body: JSON.stringify({ userWallet: walletAddress })
-      });
+      const response = await apiRequest('POST', `/api/users/admin/contests/${contestId}/end`, { userWallet: walletAddress });
+      return response.json();
     },
     onSuccess: (data) => {
       toast({ 
