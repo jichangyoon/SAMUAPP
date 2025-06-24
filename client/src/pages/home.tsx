@@ -46,6 +46,37 @@ export default function Home() {
   const [selectedArchiveContest, setSelectedArchiveContest] = useState<any>(null);
   const [selectedArchiveMeme, setSelectedArchiveMeme] = useState<any>(null);
   
+  // Load archived contests
+  const { data: archivedContests } = useQuery({
+    queryKey: ['/api/archived-contests'],
+    enabled: isConnected,
+  });
+  
+  // Load archived memes for selected contest
+  const { data: archivedMemes } = useQuery({
+    queryKey: ['/api/archived-memes', selectedArchiveContest?.id],
+    enabled: !!selectedArchiveContest?.id,
+  });
+  
+  const loadArchivedContest = async (contestId: number) => {
+    try {
+      const response = await fetch(`/api/archived-memes?contestId=${contestId}`);
+      const data = await response.json();
+      
+      setSelectedArchiveContest({
+        id: contestId,
+        title: archivedContests?.find((c: any) => c.id === contestId)?.title || "Contest",
+        participants: data.archivedMemes?.length || 0,
+        totalVotes: data.archivedMemes?.reduce((sum: number, meme: any) => sum + meme.votes, 0) || 0,
+        status: "Completed",
+        memes: data.archivedMemes || []
+      });
+      setArchiveView('contest');
+    } catch (error) {
+      console.error('Failed to load archived contest:', error);
+    }
+  };
+  
   // Infinite scroll state
   const [page, setPage] = useState(1);
   const [allMemes, setAllMemes] = useState<Meme[]>([]);
@@ -574,35 +605,49 @@ export default function Home() {
                 <div className="space-y-4">
                   <h3 className="text-md font-semibold text-foreground">Previous Contests</h3>
 
-                  <button
-                    onClick={() => {
-                      if (!isConnected) {
-                        toast({
-                          title: "Please login first",
-                          description: "You need to login to view contest archives - our community heritage",
-                          duration: 1000
-                        });
-                        return;
-                      }
-                      setSelectedArchiveContest({
-                        id: 1,
-                        title: "Contest #1 - December 2024",
-                        participants: 50,
-                        totalVotes: 1247,
-                        status: "Completed",
-                        winner: {
-                          name: "SAMU TO MARS",
-                          author: "crypto_legend",
-                          votes: 324
-                        },
-                        secondPlace: "DIAMOND PAWS",
-                        thirdPlace: "PACK LEADER",
-                        memes: [
-                          {
-                            id: 1,
-                            title: "SAMU TO MARS",
-                            author: "crypto_legend",
-                            votes: 324,
+                  {/* Real archived contests from database */}
+                  {archivedContests?.map((contest: any) => (
+                    <button
+                      key={contest.id}
+                      onClick={() => {
+                        if (!isConnected) {
+                          toast({
+                            title: "Please login first",
+                            description: "You need to login to view contest archives - our community heritage",
+                            duration: 1000
+                          });
+                          return;
+                        }
+                        // Load real archived memes for this contest
+                        loadArchivedContest(contest.id);
+                      }}
+                      className="w-full"
+                    >
+                      <Card className={`border-border/50 hover:border-primary/30 transition-colors relative ${!isConnected ? 'opacity-70' : ''}`}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="text-left">
+                              <h4 className="font-semibold text-foreground">
+                                {contest.title} - {new Date(contest.createdAt).toLocaleDateString()}
+                              </h4>
+                              <p className="text-sm text-muted-foreground">
+                                Contest #{contest.id} • {contest.description}
+                                {!isConnected && (
+                                  <span className="text-primary ml-2">• Login to view</span>
+                                )}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-400/20">
+                                {contest.status}
+                              </Badge>
+                              <Archive className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </button>
+                  ))}
                             rank: 1,
                             imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23F7DC6F'/%3E%3Ccircle cx='200' cy='200' r='100' fill='%23E74C3C'/%3E%3Ctext x='200' y='180' text-anchor='middle' font-family='Arial' font-size='24' font-weight='bold' fill='white'%3ESAMU%3C/text%3E%3Ctext x='200' y='220' text-anchor='middle' font-family='Arial' font-size='16' fill='white'%3ETO MARS%3C/text%3E%3C/svg%3E",
                             description: "The ultimate SAMU moon mission meme"
