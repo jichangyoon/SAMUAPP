@@ -9,6 +9,7 @@ export const memes = pgTable("memes", {
   imageUrl: text("image_url").notNull(),
   authorWallet: text("author_wallet").notNull(),
   authorUsername: text("author_username").notNull(),
+  authorAvatarUrl: text("author_avatar_url"),
   votes: bigint("votes", { mode: "number" }).notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });

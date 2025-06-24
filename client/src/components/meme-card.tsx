@@ -166,11 +166,19 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                <span className="text-xs font-bold text-primary-foreground">
-                  {meme.authorUsername.charAt(0).toUpperCase()}
-                </span>
-              </div>
+              {(meme as any).authorAvatarUrl ? (
+                <img 
+                  src={(meme as any).authorAvatarUrl} 
+                  alt={meme.authorUsername}
+                  className="w-6 h-6 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-xs font-bold text-primary-foreground">
+                    {meme.authorUsername.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
               <span className="text-sm text-muted-foreground">{meme.authorUsername}</span>
             </div>
             <div className="text-right">

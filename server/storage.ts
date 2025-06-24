@@ -8,7 +8,7 @@ export interface IStorage {
   getUserByWallet(walletAddress: string): Promise<User | undefined>;
   getUserByDisplayName(displayName: string): Promise<User | undefined>;
   updateUser(walletAddress: string, updates: Partial<InsertUser & { displayName?: string; avatarUrl?: string }>): Promise<User>;
-  updateUserMemeAuthorInfo(walletAddress: string, newDisplayName: string): Promise<void>;
+  updateUserMemeAuthorInfo(walletAddress: string, newDisplayName: string, newAvatarUrl?: string): Promise<void>;
   getUserMemes(walletAddress: string): Promise<Meme[]>;
   getUserVotes(walletAddress: string): Promise<Vote[]>;
   
@@ -419,26 +419,31 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.walletAddress, walletAddress))
       .returning();
     
-    // Update author info in all memes if displayName changed
-    if (updates.displayName) {
-      await this.updateUserMemeAuthorInfo(walletAddress, updates.displayName);
-      console.log('Updated author info in memes for user:', walletAddress, 'to:', updates.displayName);
+    // Update author info in all memes if profile changed
+    if (updates.displayName || updates.avatarUrl) {
+      await this.updateUserMemeAuthorInfo(walletAddress, updates.displayName || '', updates.avatarUrl);
+      console.log('Updated author info in memes for user:', walletAddress, 'name:', updates.displayName, 'avatar:', updates.avatarUrl);
     }
     
     return user;
   }
 
-  async updateUserMemeAuthorInfo(walletAddress: string, newDisplayName: string): Promise<void> {
+  async updateUserMemeAuthorInfo(walletAddress: string, newDisplayName: string, newAvatarUrl?: string): Promise<void> {
     if (!this.db) throw new Error("Database not available");
     
-    // Update author username in all memes created by this user
+    // Prepare update data
+    const updateData: any = {};
+    if (newDisplayName) updateData.authorUsername = newDisplayName;
+    if (newAvatarUrl) updateData.authorAvatarUrl = newAvatarUrl;
+    
+    // Update author info in all memes created by this user
     const result = await this.db
       .update(memes)
-      .set({ authorUsername: newDisplayName })
+      .set(updateData)
       .where(eq(memes.authorWallet, walletAddress))
       .returning();
     
-    console.log('Updated memes count:', result.length, 'for wallet:', walletAddress);
+    console.log('Updated memes count:', result.length, 'for wallet:', walletAddress, 'with data:', updateData);
   }
 
   async getUserMemes(walletAddress: string): Promise<Meme[]> {
