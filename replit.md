@@ -363,6 +363,9 @@ Changelog:
 - June 24, 2025. Fixed R2 cloud storage file deletion system - memes deleted from app now properly remove files from R2 storage
 - June 24, 2025. Enhanced R2 deletion function with proper error handling and detailed logging for successful file cleanup
 - June 24, 2025. Improved URL parsing for R2 key extraction to handle various R2 Public Development URL formats
+- June 24, 2025. Updated R2 configuration to use correct Public Development URL (https://pub-6ba1d3b9f0b544138a8d628ffcf407f6.r2.dev)
+- June 24, 2025. Fixed profile image upload system to properly save files in profiles/ folder with correct R2 domain
+- June 24, 2025. Enhanced URL key extraction to support multiple R2 domains for reliable file deletion across all storage formats
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
