@@ -816,12 +816,12 @@ const Profile = React.memo(() => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="votes" className="space-y-4">
-            <Card className="border-border bg-card">
-              <CardHeader>
+          <TabsContent value="votes" className="flex-1 overflow-hidden">
+            <Card className="border-border bg-card h-full flex flex-col">
+              <CardHeader className="flex-shrink-0">
                 <CardTitle className="text-lg text-foreground">My Votes ({myVotes.length})</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-1 overflow-y-auto">
                 {myVotes.length > 0 ? (
                   <div className="space-y-2">
                     {myVotes.map((vote: any) => {
@@ -863,15 +863,15 @@ const Profile = React.memo(() => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="power" className="space-y-4">
-            <Card className="border-border bg-card">
-              <CardHeader>
+          <TabsContent value="power" className="flex-1 overflow-hidden">
+            <Card className="border-border bg-card h-full flex flex-col">
+              <CardHeader className="flex-shrink-0">
                 <CardTitle className="text-lg text-foreground flex items-center gap-2">
                   <Zap className="h-5 w-5" />
                   Voting Power Details
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="flex-1 overflow-y-auto space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="text-center bg-accent/30 rounded-lg p-3">
                     <div className="text-lg font-bold text-green-400">{stats.totalVotingPower.toLocaleString()}</div>
