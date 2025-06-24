@@ -52,9 +52,9 @@ export function MediaDisplay({
           ref={videoRef}
           src={src}
           className="w-full h-full object-cover cursor-pointer"
-          autoPlay={autoPlay && showVideoControls}
-          muted={showVideoControls ? muted : true}
-          loop={showVideoControls ? loop : false}
+          autoPlay={false}
+          muted={true}
+          loop={false}
           playsInline
           preload="metadata"
           controls={showVideoControls}
