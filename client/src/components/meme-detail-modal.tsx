@@ -77,9 +77,11 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
           <DrawerTitle className="text-xl font-bold text-white">
             {meme.title}
           </DrawerTitle>
-          <DrawerDescription className="text-gray-400">
-            Meme details and information
-          </DrawerDescription>
+          {meme.description && (
+            <DrawerDescription className="text-gray-400">
+              {meme.description}
+            </DrawerDescription>
+          )}
         </DrawerHeader>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
@@ -122,12 +124,7 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
               </div>
             </div>
 
-            {meme.description && (
-              <div>
-                <h3 className="font-semibold text-white mb-2">Description</h3>
-                <p className="text-gray-300">{meme.description}</p>
-              </div>
-            )}
+
 
             <div className="flex items-center gap-2 text-sm text-gray-400">
               <Calendar className="h-4 w-4" />
