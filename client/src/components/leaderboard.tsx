@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -45,9 +45,12 @@ export function Leaderboard() {
   const [showMemeModal, setShowMemeModal] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
 
+  // Optimize query with stale time to reduce unnecessary refetches
   const { data: memesResponse, isLoading } = useQuery({
     queryKey: ["/api/memes"],
     enabled: true,
+    staleTime: 30000, // 30 seconds
+    refetchInterval: 60000, // Refetch every minute
   });
 
   // Early return for loading state
@@ -62,35 +65,46 @@ export function Leaderboard() {
     return <div className="text-center py-8 text-muted-foreground">No memes available</div>;
   }
   
-  const sortedMemes = [...memesArray].sort((a, b) => b.votes - a.votes);
-  const topMemes = sortedMemes.slice(0, 10);
+  // Optimize meme sorting with useMemo
+  const { sortedMemes, topMemes } = useMemo(() => {
+    const sorted = [...memesArray].sort((a, b) => b.votes - a.votes);
+    return {
+      sortedMemes: sorted,
+      topMemes: sorted.slice(0, 10)
+    };
+  }, [memesArray]);
 
-  // Get top creators with profile images
-  const creatorStats = memesArray.reduce((acc, meme) => {
-    if (!acc[meme.authorUsername]) {
-      acc[meme.authorUsername] = {
-        username: meme.authorUsername,
-        walletAddress: meme.authorWallet,
-        avatarUrl: (meme as any).authorAvatarUrl,
-        totalVotes: 0,
-        memeCount: 0,
-        avgVotes: 0
-      };
-    } else {
-      // Update avatar if this meme has a more recent one
-      if ((meme as any).authorAvatarUrl) {
-        acc[meme.authorUsername].avatarUrl = (meme as any).authorAvatarUrl;
+  // Optimize creator stats calculation with useMemo
+  const creatorStats = useMemo(() => {
+    return memesArray.reduce((acc, meme) => {
+      if (!acc[meme.authorUsername]) {
+        acc[meme.authorUsername] = {
+          username: meme.authorUsername,
+          walletAddress: meme.authorWallet,
+          avatarUrl: (meme as any).authorAvatarUrl,
+          totalVotes: 0,
+          memeCount: 0,
+          avgVotes: 0
+        };
+      } else {
+        // Update avatar if this meme has a more recent one
+        if ((meme as any).authorAvatarUrl) {
+          acc[meme.authorUsername].avatarUrl = (meme as any).authorAvatarUrl;
+        }
       }
-    }
-    acc[meme.authorUsername].totalVotes += meme.votes;
-    acc[meme.authorUsername].memeCount += 1;
-    acc[meme.authorUsername].avgVotes = Math.round(acc[meme.authorUsername].totalVotes / acc[meme.authorUsername].memeCount);
-    return acc;
-  }, {} as Record<string, any>);
+      acc[meme.authorUsername].totalVotes += meme.votes;
+      acc[meme.authorUsername].memeCount += 1;
+      acc[meme.authorUsername].avgVotes = Math.round(acc[meme.authorUsername].totalVotes / acc[meme.authorUsername].memeCount);
+      return acc;
+    }, {} as Record<string, any>);
+  }, [memesArray]);
 
-  const topCreators = Object.values(creatorStats)
-    .sort((a: any, b: any) => b.totalVotes - a.totalVotes)
-    .slice(0, 5);
+  // Optimize top creators calculation
+  const topCreators = useMemo(() => {
+    return Object.values(creatorStats)
+      .sort((a: any, b: any) => b.totalVotes - a.totalVotes)
+      .slice(0, 5);
+  }, [creatorStats]);
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
