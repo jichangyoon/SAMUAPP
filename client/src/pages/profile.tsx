@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
-import * as React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
