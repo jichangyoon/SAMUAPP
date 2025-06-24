@@ -32,62 +32,73 @@ const Profile = React.memo(() => {
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
   const walletAddress = selectedWalletAccount?.address || '';
 
-  // User profile data
+  // User profile data - 캐싱 최적화
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile', walletAddress],
     queryFn: async () => {
       if (!walletAddress) return null;
       const res = await fetch(`/api/users/profile/${walletAddress}`);
+      if (!res.ok) throw new Error('Failed to fetch profile');
       return res.json();
     },
     enabled: !!walletAddress,
+    staleTime: 5 * 60 * 1000, // 5분 캐시
+    gcTime: 10 * 60 * 1000, // 10분 가비지 컬렉션
   });
 
-  // User statistics
+  // User statistics - 캐싱 최적화
   const { data: userStats } = useQuery({
     queryKey: ['user-stats', walletAddress],
     queryFn: async () => {
       if (!walletAddress) return null;
       const res = await fetch(`/api/users/${walletAddress}/stats`);
+      if (!res.ok) throw new Error('Failed to fetch stats');
       return res.json();
     },
     enabled: !!walletAddress,
+    staleTime: 2 * 60 * 1000, // 2분 캐시 (통계는 자주 변경됨)
   });
 
-  // User memes
+  // User memes - 캐싱 최적화
   const { data: userMemes = [] } = useQuery({
     queryKey: ['user-memes', walletAddress],
     queryFn: async () => {
       if (!walletAddress) return [];
       const res = await fetch(`/api/users/${walletAddress}/memes`);
+      if (!res.ok) throw new Error('Failed to fetch memes');
       return res.json();
     },
     enabled: !!walletAddress,
+    staleTime: 5 * 60 * 1000, // 5분 캐시
   });
 
-  // User votes
+  // User votes - 캐싱 최적화
   const { data: userVoteHistory = [] } = useQuery({
     queryKey: ['user-votes', walletAddress],
     queryFn: async () => {
       if (!walletAddress) return [];
       const res = await fetch(`/api/users/${walletAddress}/votes`);
+      if (!res.ok) throw new Error('Failed to fetch votes');
       return res.json();
     },
     enabled: !!walletAddress,
+    staleTime: 2 * 60 * 1000, // 2분 캐시
   });
 
-  // Balance fetching with React Query - 중복 요청 방지
+  // Balance fetching - 캐싱 및 오류 처리 최적화
   const { data: samuData } = useQuery({
     queryKey: ['samu-balance', walletAddress],
     queryFn: async () => {
       if (!walletAddress) return { balance: 0 };
       const res = await fetch(`/api/samu-balance/${walletAddress}`);
+      if (!res.ok) throw new Error('Failed to fetch SAMU balance');
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 30000,
+    staleTime: 60 * 1000, // 1분 캐시 (잔고는 자주 확인)
     refetchInterval: false,
     refetchOnWindowFocus: false,
+    retry: 1, // 재시도 1회로 제한
   });
 
   const { data: solData } = useQuery({
@@ -95,12 +106,14 @@ const Profile = React.memo(() => {
     queryFn: async () => {
       if (!walletAddress) return { balance: 0 };
       const res = await fetch(`/api/sol-balance/${walletAddress}`);
+      if (!res.ok) throw new Error('Failed to fetch SOL balance');
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 30000, // 30초 동안 캐시 유지
-    refetchInterval: false, // 자동 갱신 비활성화
-    refetchOnWindowFocus: false, // 창 포커스 시 갱신 비활성화
+    staleTime: 60 * 1000, // 1분 캐시
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    retry: 1, // 재시도 1회로 제한
   });
 
   // 저장된 프로필 가져오기 - useMemo로 최적화
@@ -130,12 +143,10 @@ const Profile = React.memo(() => {
     }
   }, [userProfile, user?.email?.address]);
 
-  // Handle image upload to R2
+  // Handle image upload to R2 - 메모리 누수 방지 및 최적화
   const handleImageChange = React.useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // File validation and upload preparation
 
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
@@ -148,64 +159,72 @@ const Profile = React.memo(() => {
       return;
     }
 
-    // Validate file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
+    // Validate file size (3MB limit - 더 엄격하게)
+    if (file.size > 3 * 1024 * 1024) {
       toast({
         title: "File too large",
-        description: "Please upload an image smaller than 5MB",
+        description: "Please upload an image smaller than 3MB",
         variant: "destructive"
       });
       return;
     }
 
+    let objectUrl: string | null = null;
+
     try {
-      // Show preview immediately
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setImagePreview(result);
-      };
-      reader.readAsDataURL(file);
+      // 메모리 효율적인 프리뷰 생성
+      objectUrl = URL.createObjectURL(file);
+      setImagePreview(objectUrl);
 
       // Upload to R2
       const formData = new FormData();
       formData.append('image', file);
-      formData.append('walletAddress', walletAddress); // Include wallet address for old image cleanup
+      formData.append('walletAddress', walletAddress);
 
-      // Upload to R2 cloud storage
+      // Upload to R2 cloud storage with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30초 타임아웃
+
       const response = await fetch('/api/uploads/profile', {
         method: 'POST',
         body: formData,
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        throw new Error('Profile image upload failed');
+        throw new Error(`Upload failed: ${response.status}`);
       }
 
       const result = await response.json();
 
       if (result.success && result.profileUrl) {
-        // Clear image preview to prevent showing old cached image
+        // Clear preview URL to prevent memory leak
+        if (objectUrl) {
+          URL.revokeObjectURL(objectUrl);
+          objectUrl = null;
+        }
         setImagePreview('');
         
-        // Update profile image with R2 URL
+        // Update profile image
         setProfileImage(result.profileUrl);
         
-        // Update database with new profile data
+        // Update database
         await updateProfile(displayName, result.profileUrl);
         
-        // Force immediate header sync
-        console.log('Dispatching image update event:', { displayName, profileImage: result.profileUrl });
-        window.dispatchEvent(new CustomEvent('profileUpdated', {
-          detail: { 
-            displayName, 
-            profileImage: result.profileUrl,
-            avatarUrl: result.profileUrl
+        // Efficient query invalidation
+        queryClient.invalidateQueries({ 
+          predicate: (query) => {
+            const key = query.queryKey[0] as string;
+            return key.includes('user-profile') && query.queryKey.includes(walletAddress);
           }
-        }));
+        });
         
-        // Force query invalidation for immediate header update
-        queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] });
+        // Dispatch update event
+        window.dispatchEvent(new CustomEvent('profileUpdated', {
+          detail: { displayName, profileImage: result.profileUrl, avatarUrl: result.profileUrl }
+        }));
         
         toast({
           title: "Profile Image Updated",
@@ -214,13 +233,23 @@ const Profile = React.memo(() => {
       }
 
     } catch (error) {
+      // Clean up object URL on error
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+      setImagePreview('');
+      
+      const errorMessage = error instanceof Error && error.name === 'AbortError' 
+        ? "Upload timeout. Please try again." 
+        : "Failed to upload profile image. Please try again.";
+        
       toast({
         title: "Upload Failed",
-        description: "Failed to upload profile image. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     }
-  }, [displayName, toast]);
+  }, [displayName, walletAddress, toast, queryClient, updateProfile]);
 
   // Update profile function
   const updateProfile = async (name: string, imageUrl?: string) => {
@@ -293,8 +322,13 @@ const Profile = React.memo(() => {
     }
   }, [displayName, profileImage, walletAddress, toast, queryClient, updateProfile]);
 
-  // Cancel editing
+  // Cancel editing - 메모리 정리 포함
   const handleCancelEdit = React.useCallback(() => {
+    // Clean up image preview URL if exists
+    if (imagePreview && imagePreview.startsWith('blob:')) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    
     // Reset to database values
     if (userProfile) {
       setDisplayName(userProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
@@ -305,7 +339,17 @@ const Profile = React.memo(() => {
     }
     setImagePreview('');
     setIsEditing(false);
-  }, [userProfile, user?.email?.address]);
+  }, [userProfile, user?.email?.address, imagePreview]);
+
+  // Cleanup on unmount
+  React.useEffect(() => {
+    return () => {
+      // Clean up any remaining object URLs
+      if (imagePreview && imagePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
 
 
