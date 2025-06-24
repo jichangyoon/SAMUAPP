@@ -378,6 +378,8 @@ Changelog:
 - June 24, 2025. Added wallet address tracking to profile upload endpoint for proper image cleanup
 - June 24, 2025. Enhanced profile image upload with automatic storage optimization to prevent accumulation
 - June 24, 2025. Fixed Multer "Unexpected field" error by removing duplicate profile upload endpoints and ensuring consistent field naming
+- June 24, 2025. Optimized application performance - reduced toast duration to 1 second, minimized console logging, improved query cache invalidation with predicates
+- June 24, 2025. Cleaned up redundant API calls and console logs for better production performance
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```

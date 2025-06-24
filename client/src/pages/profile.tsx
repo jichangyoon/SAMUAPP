@@ -123,7 +123,7 @@ const Profile = React.memo(() => {
     if (userProfile) {
       setDisplayName(userProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
       setProfileImage(userProfile.avatarUrl || '');
-      console.log('Profile loaded from database:', { displayName: userProfile.displayName, avatarUrl: userProfile.avatarUrl });
+      // console.log('Profile loaded from database:', { displayName: userProfile.displayName, avatarUrl: userProfile.avatarUrl });
     } else {
       setDisplayName(user?.email?.address?.split('@')[0] || 'User');
       setProfileImage('');
@@ -184,7 +184,6 @@ const Profile = React.memo(() => {
       }
 
       const result = await response.json();
-      console.log('Profile upload API response:', result);
 
       if (result.success && result.profileUrl) {
         // Update profile image with R2 URL
@@ -229,9 +228,12 @@ const Profile = React.memo(() => {
         const result = await response.json();
         console.log('Profile update successful:', result);
         
-        // Invalidate queries to refresh data
-        queryClient.invalidateQueries({ queryKey: ['user-profile', walletAddress] });
-        queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] });
+        // Invalidate all profile-related queries at once
+        queryClient.invalidateQueries({ 
+          predicate: (query) => 
+            query.queryKey.includes('user-profile') && 
+            query.queryKey.includes(walletAddress)
+        });
         
         // Update home page header
         window.dispatchEvent(new CustomEvent('profileUpdated', {

@@ -78,7 +78,7 @@ export default function Home() {
         displayName: userProfile.displayName || user?.email?.address?.split('@')[0] || 'User',
         profileImage: userProfile.avatarUrl || ''
       });
-      console.log('Header profile loaded from database:', { displayName: userProfile.displayName, avatarUrl: userProfile.avatarUrl });
+      // console.log('Header profile loaded from database:', { displayName: userProfile.displayName, avatarUrl: userProfile.avatarUrl });
     } else if (authenticated) {
       setProfileData({
         displayName: user?.email?.address?.split('@')[0] || 'User',
@@ -233,15 +233,11 @@ export default function Home() {
   const handleVoteSuccess = useCallback(() => {
     setShowVoteDialog(false);
     setSelectedMeme(null);
-    // 선택적 캐시 무효화 - 꼭 필요한 것만
+    // 투표 관련 캐시만 무효화 - 성능 최적화
     queryClient.invalidateQueries({ 
-      queryKey: ['/api/memes'],
-      exact: true 
-    });
-    // 투표 파워 캐시도 무효화 (투표 후 변경됨)
-    queryClient.invalidateQueries({
-      queryKey: ['balances', walletAddress],
-      exact: true
+      predicate: (query) => 
+        query.queryKey.includes('/api/memes') || 
+        (query.queryKey.includes('balances') && query.queryKey.includes(walletAddress))
     });
   }, [queryClient, walletAddress]);
 
@@ -478,7 +474,7 @@ export default function Home() {
                         toast({
                           title: "Please login first",
                           description: "You need to login to view contest archives - our community heritage",
-                          duration: 1300
+                          duration: 1000
                         });
                         return;
                       }
