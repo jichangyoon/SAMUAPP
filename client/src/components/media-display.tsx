@@ -125,17 +125,17 @@ export function MediaDisplay({
     );
   }
   
-  // Default to image display
+  // 이미지 표시
   return (
     <img
       src={src}
       alt={alt}
       className={`w-full h-full object-cover ${onClick ? 'cursor-pointer' : ''} ${className}`}
-      onClick={(e) => {
+      onClick={onClick ? (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (onClick) onClick();
-      }}
+        onClick();
+      } : undefined}
       loading="lazy"
     />
   );
