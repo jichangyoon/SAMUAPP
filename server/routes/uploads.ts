@@ -137,11 +137,11 @@ router.post("/profile", upload.single("file"), async (req, res) => {
       return res.status(400).json({ error: "No profile image uploaded" });
     }
 
-    // Upload to profile bucket with profiles folder
+    // Upload to main bucket with profiles folder
     const uploadResult = await uploadToR2(
       req.file.buffer,
       req.file.originalname,
-      "profile", // Use profile bucket
+      process.env.R2_BUCKET_NAME!, // Use main bucket
       "profiles"
     );
 
