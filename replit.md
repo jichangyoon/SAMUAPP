@@ -392,6 +392,10 @@ Changelog:
 - June 24, 2025. Cleaned up redundant code comments and simplified component structure while maintaining existing UI appearance
 - June 24, 2025. Fixed "My Votes" image display issue in Profile page - now properly shows images of all memes user voted on by searching in all memes instead of only user's own memes
 - June 24, 2025. Fixed author name display in "My Votes" section - corrected field reference from authorName to authorUsername to properly show meme creators
+- June 24, 2025. Implemented infinite scroll with view-mode specific pagination - card view loads 7 items, grid view loads 9 items per page
+- June 24, 2025. Added backend pagination API with sorting support (/api/memes?page=1&limit=7&sortBy=votes)
+- June 24, 2025. Enhanced infinite scroll UX with natural loading animations - semi-transparent overlay during loading, staggered fade-in effects for new items, bouncing dots loading indicator
+- June 24, 2025. Fixed Profile page API compatibility issue with new paginated memes endpoint structure
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```

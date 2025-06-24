@@ -404,87 +404,107 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {isLoading ? (
-                      <div className="space-y-4">
-                        {[1, 2, 3].map((i) => (
-                          <Card key={i} className="animate-pulse">
-                            <div className="aspect-square bg-accent" />
-                            <CardContent className="p-4">
-                              <div className="h-4 bg-accent rounded mb-2" />
-                              <div className="h-3 bg-accent rounded w-3/4" />
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    ) : (
-                      <>
-                        {viewMode === 'card' ? (
-                          <div className="space-y-4">
-                            {sortedMemes.map((meme) => (
-                              <MemeCard 
-                                key={meme.id} 
-                                meme={meme} 
-                                onVote={() => refetch()}
-                                canVote={isConnected}
-                              />
-                            ))}
-
-                            {sortedMemes.length === 0 && (
-                              <Card>
-                                <CardContent className="p-8 text-center">
-                                  <p className="text-muted-foreground">No memes submitted yet. Be the first!</p>
-                                </CardContent>
-                              </Card>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="grid grid-cols-3 gap-1">
-                            {sortedMemes.map((meme) => (
-                              <button
-                                key={meme.id}
-                                onClick={() => {
-                                  // We'll create a grid detail view
-                                  setSelectedMeme(meme);
-                                }}
-                                className="aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-opacity relative group"
-                              >
-                                <img
-                                  src={meme.imageUrl}
-                                  alt={meme.title}
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.style.display = 'none';
+                    {/* 메인 콘텐츠 영역 - 로딩 중일 때 반투명 효과 */}
+                    <div className={`transition-opacity duration-300 ${isLoadingMore ? 'opacity-60' : 'opacity-100'}`}>
+                      {isLoading ? (
+                        <div className="space-y-4">
+                          {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                            <Card key={i} className="animate-pulse">
+                              <div className="aspect-square bg-accent" />
+                              <CardContent className="p-4">
+                                <div className="h-4 bg-accent rounded mb-2" />
+                                <div className="h-3 bg-accent rounded w-3/4" />
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      ) : (
+                        <>
+                          {viewMode === 'card' ? (
+                            <div className="space-y-4">
+                              {sortedMemes.map((meme, index) => (
+                                <div 
+                                  key={meme.id}
+                                  className="animate-fade-in"
+                                  style={{ 
+                                    animationDelay: `${index * 50}ms`,
+                                    opacity: 0,
+                                    animation: `fadeIn 0.5s ease-out ${index * 50}ms forwards`
                                   }}
-                                />
-                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                  <div className="text-white text-center">
-                                    <div className="text-sm font-semibold">{meme.votes}</div>
-                                    <div className="text-xs">votes</div>
-                                  </div>
+                                >
+                                  <MemeCard 
+                                    meme={meme} 
+                                    onVote={() => refetch()}
+                                    canVote={isConnected}
+                                  />
                                 </div>
-                              </button>
-                            ))}
+                              ))}
 
-                            {sortedMemes.length === 0 && (
-                              <div className="col-span-3">
+                              {sortedMemes.length === 0 && (
                                 <Card>
                                   <CardContent className="p-8 text-center">
                                     <p className="text-muted-foreground">No memes submitted yet. Be the first!</p>
                                   </CardContent>
                                 </Card>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </>
-                    )}
+                              )}
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-3 gap-1">
+                              {sortedMemes.map((meme, index) => (
+                                <button
+                                  key={meme.id}
+                                  onClick={() => {
+                                    setSelectedMeme(meme);
+                                  }}
+                                  className="aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-all duration-200 relative group animate-fade-in"
+                                  style={{ 
+                                    animationDelay: `${index * 30}ms`,
+                                    opacity: 0,
+                                    animation: `fadeIn 0.4s ease-out ${index * 30}ms forwards`
+                                  }}
+                                >
+                                  <img
+                                    src={meme.imageUrl}
+                                    alt={meme.title}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement;
+                                      target.style.display = 'none';
+                                    }}
+                                  />
+                                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <div className="text-white text-center">
+                                      <div className="text-sm font-semibold">{meme.votes}</div>
+                                      <div className="text-xs">votes</div>
+                                    </div>
+                                  </div>
+                                </button>
+                              ))}
 
-                    {/* Infinite scroll loading indicator */}
+                              {sortedMemes.length === 0 && (
+                                <div className="col-span-3">
+                                  <Card>
+                                    <CardContent className="p-8 text-center">
+                                      <p className="text-muted-foreground">No memes submitted yet. Be the first!</p>
+                                    </CardContent>
+                                  </Card>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+
+                    {/* Infinite scroll loading indicator - 더 부드러운 애니메이션 */}
                     {isLoadingMore && (
-                      <div className="text-center mt-6">
-                        <div className="animate-spin inline-block w-6 h-6 border-2 border-primary border-t-transparent rounded-full"></div>
-                        <p className="text-sm text-muted-foreground mt-2">Loading more memes...</p>
+                      <div className="text-center mt-6 animate-fade-in">
+                        <div className="flex items-center justify-center space-x-2">
+                          <div className="animate-bounce w-2 h-2 bg-primary rounded-full" style={{ animationDelay: '0ms' }}></div>
+                          <div className="animate-bounce w-2 h-2 bg-primary rounded-full" style={{ animationDelay: '150ms' }}></div>
+                          <div className="animate-bounce w-2 h-2 bg-primary rounded-full" style={{ animationDelay: '300ms' }}></div>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-3 animate-pulse">Loading more memes...</p>
                       </div>
                     )}
                     
