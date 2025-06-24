@@ -55,7 +55,7 @@ export async function uploadToR2(
 
     await r2Client.send(command);
 
-    // 공개 URL 생성 - 실제 R2 Public Development URL 사용
+    // 공개 URL 생성 - 올바른 R2 Public Development URL 사용
     const publicUrl = `https://pub-6ba1d3b9f0b544138a8d628ffcf407f6.r2.dev/${key}`;
 
     return {

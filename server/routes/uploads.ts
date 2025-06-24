@@ -258,7 +258,8 @@ router.post('/profile', upload.single('file'), async (req, res) => {
       profileUrl: uploadResult.url,
       key: uploadResult.key,
       originalName: req.file.originalname,
-      size: req.file.size
+      size: req.file.size,
+      expectedFolder: 'profiles'
     });
 
     res.json({
