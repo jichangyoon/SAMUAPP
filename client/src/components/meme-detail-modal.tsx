@@ -18,13 +18,11 @@ interface MemeDetailModalProps {
 const getUserRole = (walletAddress: string, username: string) => {
   // 지갑 주소 기반 역할 설정
   const specialRoles: { [key: string]: string } = {
-    // Admin 역할
-    'xfSWSv7y3SqELDe8Xs5neNCmjULpc6hwhvz5ohSrXa8': 'Admin',
-    // 여기에 다른 Admin 지갑 주소 추가 가능
-    
     // Dev 역할 - 개발자들
-    // 'dev_wallet_address_1': 'Dev',
-    // 'dev_wallet_address_2': 'Dev',
+    'xfSWSv7y3SqELDe8Xs5neNCmjULpc6hwhvz5ohSrXa8': 'Dev',
+    
+    // Admin 역할
+    // 'admin_wallet_address': 'Admin',
     
     // Moderator 역할 - 운영진들  
     // 'mod_wallet_address_1': 'Moderator',
