@@ -135,8 +135,7 @@ const Profile = React.memo(() => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    console.log('=== PROFILE IMAGE UPLOAD STARTED (Profile Page) ===');
-    console.log('File selected:', { name: file.name, size: file.size, type: file.type });
+    // File validation and upload preparation
 
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
@@ -173,7 +172,7 @@ const Profile = React.memo(() => {
       formData.append('image', file);
       formData.append('walletAddress', walletAddress); // Include wallet address for old image cleanup
 
-      console.log('Starting profile image upload to /api/uploads/profile');
+      // Upload to R2 cloud storage
       const response = await fetch('/api/uploads/profile', {
         method: 'POST',
         body: formData,
@@ -205,12 +204,8 @@ const Profile = React.memo(() => {
           }
         }));
         
-        // Force query invalidation for immediate update everywhere
+        // Force query invalidation for immediate header update
         queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] });
-        queryClient.invalidateQueries({ queryKey: [`/api/users/profile/${walletAddress}`] });
-        
-        // Force re-render by clearing cache
-        queryClient.refetchQueries({ queryKey: [`/api/users/profile/${walletAddress}`] });
         
         toast({
           title: "Profile Image Updated",
@@ -219,7 +214,6 @@ const Profile = React.memo(() => {
       }
 
     } catch (error) {
-      console.error('Profile image upload error:', error);
       toast({
         title: "Upload Failed",
         description: "Failed to upload profile image. Please try again.",
@@ -231,7 +225,6 @@ const Profile = React.memo(() => {
   // Update profile function
   const updateProfile = async (name: string, imageUrl?: string) => {
     try {
-      console.log('Updating profile:', { walletAddress, displayName: name, avatarUrl: imageUrl || profileImage });
       
       const response = await fetch(`/api/users/profile/${walletAddress}`, {
         method: 'PUT',
@@ -246,14 +239,12 @@ const Profile = React.memo(() => {
 
       if (response.ok) {
         const result = await response.json();
-        console.log('Profile update successful:', result);
         
         // Invalidate specific profile queries
         queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] });
         queryClient.invalidateQueries({ queryKey: [`/api/users/profile/${walletAddress}`] });
         
-        // Force immediate header update
-        console.log('Dispatching profile update event:', { displayName: name, profileImage: imageUrl || profileImage });
+        // Dispatch profile update event for immediate sync
         window.dispatchEvent(new CustomEvent('profileUpdated', {
           detail: { 
             displayName: name, 
@@ -264,12 +255,9 @@ const Profile = React.memo(() => {
         
         return true;
       } else {
-        const errorData = await response.json();
-        console.error('Profile update failed:', response.status, errorData);
         return false;
       }
     } catch (error) {
-      console.error('Profile update error:', error);
       return false;
     }
   };
@@ -285,7 +273,7 @@ const Profile = React.memo(() => {
       return;
     }
 
-    console.log('Saving profile with name:', displayName.trim());
+    // Save profile changes
     const success = await updateProfile(displayName.trim(), profileImage);
     
     if (success) {

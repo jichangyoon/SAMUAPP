@@ -89,29 +89,22 @@ export default function Home() {
     }
   }, [userProfile, authenticated, user?.email?.address]);
 
-  // Listen for profile updates from profile page and refresh database query
+  // Listen for profile updates from profile page
   useEffect(() => {
     const handleProfileUpdate = (event: CustomEvent) => {
-      console.log('Header received profile update event:', event.detail);
-      
       // Force immediate state update for instant visual feedback
       setProfileData({
         displayName: event.detail.displayName,
         profileImage: event.detail.profileImage || event.detail.avatarUrl
       });
       
-      // Invalidate the specific header profile query
+      // Invalidate queries for immediate sync
       queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] });
-      
-      // Also invalidate memes for author info sync
       queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
     };
 
     window.addEventListener('profileUpdated', handleProfileUpdate as EventListener);
-
-    return () => {
-      window.removeEventListener('profileUpdated', handleProfileUpdate as EventListener);
-    };
+    return () => window.removeEventListener('profileUpdated', handleProfileUpdate as EventListener);
   }, [queryClient, walletAddress]);
 
   const displayName = authenticated ? profileData.displayName : 'SAMU';
