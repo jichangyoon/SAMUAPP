@@ -131,18 +131,6 @@ const Profile = React.memo(() => {
     return { displayName: '', profileImage: '' };
   }, [user?.id]);
 
-  // Load profile data from database, not localStorage
-  useEffect(() => {
-    if (userProfile) {
-      setDisplayName(userProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
-      setProfileImage(userProfile.avatarUrl || '');
-      // console.log('Profile loaded from database:', { displayName: userProfile.displayName, avatarUrl: userProfile.avatarUrl });
-    } else {
-      setDisplayName(user?.email?.address?.split('@')[0] || 'User');
-      setProfileImage('');
-    }
-  }, [userProfile, user?.email?.address]);
-
   // Update profile function
   const updateProfile = React.useCallback(async (name: string, imageUrl?: string) => {
     try {
@@ -182,6 +170,18 @@ const Profile = React.memo(() => {
       return false;
     }
   }, [walletAddress, profileImage, queryClient]);
+
+  // Load profile data from database, not localStorage
+  useEffect(() => {
+    if (userProfile) {
+      setDisplayName(userProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
+      setProfileImage(userProfile.avatarUrl || '');
+      // console.log('Profile loaded from database:', { displayName: userProfile.displayName, avatarUrl: userProfile.avatarUrl });
+    } else {
+      setDisplayName(user?.email?.address?.split('@')[0] || 'User');
+      setProfileImage('');
+    }
+  }, [userProfile, user?.email?.address]);
 
   // Handle image upload to R2 - 메모리 누수 방지 및 최적화
   const handleImageChange = React.useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
