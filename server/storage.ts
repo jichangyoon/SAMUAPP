@@ -39,6 +39,18 @@ export interface IStorage {
   createPartnerVote(vote: InsertVote, partnerId: string): Promise<Vote>;
   hasUserVotedPartner(partnerId: string, memeId: number, voterWallet: string): Promise<boolean>;
   updatePartnerMemeVoteCount(partnerId: string, memeId: number): Promise<void>;
+  
+  // Contest operations
+  getCurrentContest(): Promise<Contest | undefined>;
+  getAllContests(): Promise<Contest[]>;
+  createContest(contest: InsertContest): Promise<Contest>;
+  startContest(contestId: number): Promise<Contest>;
+  endContestAndArchive(contestId: number): Promise<{ contest: Contest; archivedMemes: ArchivedMeme[] }>;
+  isUserAdmin(walletAddress: string): Promise<boolean>;
+  
+  // Archive operations
+  getArchivedMemes(contestId?: number): Promise<ArchivedMeme[]>;
+  getArchivedContests(): Promise<Contest[]>;
 }
 
 export class MemStorage implements IStorage {
