@@ -49,8 +49,8 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
     <Drawer open={isOpen} onOpenChange={onClose}>
       <DrawerContent className="h-[92vh] bg-black text-white border-gray-800">
         <DrawerHeader className="border-b border-gray-800 pb-4">
-          <div className="flex items-center gap-2">
-            <Avatar className="h-16 w-16">
+          <div className="flex items-start gap-3">
+            <Avatar className="h-16 w-16 flex-shrink-0">
               <AvatarImage 
                 src={userProfile?.avatarUrl} 
                 alt={userProfile?.displayName || username}
@@ -60,11 +60,11 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
                 {(userProfile?.displayName || username)?.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0 pt-1">
               <DrawerTitle className="text-xl font-bold text-white">
                 {userProfile?.displayName || username}
               </DrawerTitle>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 mt-1">
                 <DrawerDescription className="text-gray-400 font-mono text-sm">
                   {walletAddress.slice(0, 8)}...{walletAddress.slice(-8)}
                 </DrawerDescription>
