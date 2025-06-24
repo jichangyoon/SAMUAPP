@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { User, Trophy, TrendingUp, Calendar } from "lucide-react";
+import { MemeDetailModal } from "@/components/meme-detail-modal";
+import type { Meme } from "@shared/schema";
 
 interface UserInfoModalProps {
   isOpen: boolean;
@@ -13,6 +16,8 @@ interface UserInfoModalProps {
 }
 
 export function UserInfoModal({ isOpen, onClose, walletAddress, username }: UserInfoModalProps) {
+  const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
+  const [showMemeModal, setShowMemeModal] = useState(false);
   const { data: userProfile } = useQuery({
     queryKey: [`/api/users/profile/${walletAddress}`],
     enabled: isOpen && !!walletAddress,
@@ -112,7 +117,14 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
               <h3 className="text-lg font-semibold text-white mb-3">Created Memes</h3>
               <div className="grid grid-cols-3 gap-2">
                 {userMemes.map((meme: any) => (
-                  <div key={meme.id} className="relative">
+                  <div 
+                    key={meme.id} 
+                    className="relative cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => {
+                      setSelectedMeme(meme);
+                      setShowMemeModal(true);
+                    }}
+                  >
                     <img
                       src={meme.imageUrl}
                       alt={meme.title}
@@ -148,6 +160,15 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
           )}
         </div>
       </DrawerContent>
+
+      {/* Meme Detail Modal */}
+      {selectedMeme && (
+        <MemeDetailModal
+          isOpen={showMemeModal}
+          onClose={() => setShowMemeModal(false)}
+          meme={selectedMeme}
+        />
+      )}
     </Drawer>
   );
 }
