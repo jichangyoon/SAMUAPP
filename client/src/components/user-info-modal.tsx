@@ -49,7 +49,7 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
     <Drawer open={isOpen} onOpenChange={onClose}>
       <DrawerContent className="h-[92vh] bg-black text-white border-gray-800">
         <DrawerHeader className="border-b border-gray-800 pb-4">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <Avatar className="h-16 w-16">
               <AvatarImage 
                 src={userProfile?.avatarUrl} 
@@ -64,7 +64,7 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
               <DrawerTitle className="text-xl font-bold text-white">
                 {userProfile?.displayName || username}
               </DrawerTitle>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-2 mt-0.5">
                 <DrawerDescription className="text-gray-400 font-mono text-sm">
                   {walletAddress.slice(0, 8)}...{walletAddress.slice(-8)}
                 </DrawerDescription>
