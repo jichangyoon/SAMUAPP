@@ -52,10 +52,11 @@ export function MediaDisplay({
   };
   
   const handleVideoClick = (e: React.MouseEvent) => {
-    // 모바일 앱에서는 간단하게 컨트롤만 토글
+    // onClick이 있으면 모달 열기 (상세보기)
     if (onClick) {
       onClick();
     } else {
+      // onClick이 없으면 컨트롤 토글 (업로드 미리보기 등)
       e.stopPropagation();
       setShowVideoControls(!showVideoControls);
     }
