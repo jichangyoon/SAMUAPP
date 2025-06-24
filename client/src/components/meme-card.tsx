@@ -173,7 +173,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
                 <AvatarImage 
                   src={(meme as any).authorAvatarUrl} 
                   alt={meme.authorUsername}
-                  key={(meme as any).authorAvatarUrl}
+                  key={`${meme.id}-${(meme as any).authorAvatarUrl}`}
                 />
                 <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                   {meme.authorUsername.charAt(0).toUpperCase()}
