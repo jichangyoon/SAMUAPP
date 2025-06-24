@@ -73,8 +73,8 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
                   onClick={() => {
                     navigator.clipboard.writeText(walletAddress);
                     toast({
-                      title: "복사됨!",
-                      description: "지갑 주소가 클립보드에 복사되었습니다.",
+                      title: "Copied!",
+                      description: "Wallet address copied to clipboard.",
                     });
                   }}
                   className="h-6 w-6 p-0 text-gray-400 hover:text-white hover:bg-gray-800"
