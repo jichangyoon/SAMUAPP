@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import * as React from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -10,7 +10,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send, Trash2, MoreVertical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
@@ -31,6 +33,9 @@ const Profile = React.memo(() => {
   const [isSaving, setIsSaving] = useState(false);
   const [selectedMeme, setSelectedMeme] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [memeToDelete, setMemeToDelete] = useState<any>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   // 지갑 주소 가져오기 (홈과 동일한 로직)
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
@@ -388,6 +393,52 @@ const Profile = React.memo(() => {
     };
   }, [imagePreview]);
 
+  // Delete meme function
+  const handleDeleteMeme = useCallback(async (meme: any) => {
+    if (!walletAddress) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/memes/${meme.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          authorWallet: walletAddress
+        })
+      });
+
+      if (response.ok) {
+        // Invalidate related queries to refresh the data
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['user-memes', walletAddress] }),
+          queryClient.invalidateQueries({ queryKey: ['memes'] }),
+          queryClient.invalidateQueries({ queryKey: ['user-stats', walletAddress] })
+        ]);
+
+        toast({
+          title: "Meme Deleted",
+          description: "Your meme has been successfully deleted."
+        });
+      } else {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to delete meme');
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast({
+        title: "Delete Failed",
+        description: error instanceof Error ? error.message : "Failed to delete meme. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+      setMemeToDelete(null);
+    }
+  }, [walletAddress, toast, queryClient]);
+
 
 
   // Calculate statistics from user data - useMemo로 최적화
@@ -693,24 +744,57 @@ const Profile = React.memo(() => {
                     {myMemes.map((meme: any) => (
                       <div 
                         key={meme.id} 
-                        className="flex items-center gap-3 p-2 bg-accent/50 rounded-lg cursor-pointer hover:bg-accent/70 transition-colors"
-                        onClick={() => {
-                          setSelectedMeme(meme);
-                          setIsModalOpen(true);
-                        }}
+                        className="flex items-center gap-3 p-2 bg-accent/50 rounded-lg hover:bg-accent/70 transition-colors"
                       >
                         <img 
                           src={meme.imageUrl} 
                           alt={meme.title}
-                          className="w-10 h-10 object-cover rounded"
+                          className="w-10 h-10 object-cover rounded cursor-pointer"
+                          onClick={() => {
+                            setSelectedMeme(meme);
+                            setIsModalOpen(true);
+                          }}
                         />
-                        <div className="flex-1 min-w-0">
+                        <div 
+                          className="flex-1 min-w-0 cursor-pointer"
+                          onClick={() => {
+                            setSelectedMeme(meme);
+                            setIsModalOpen(true);
+                          }}
+                        >
                           <h4 className="font-medium text-foreground text-sm truncate">{meme.title}</h4>
                           <p className="text-xs text-muted-foreground truncate">{meme.description}</p>
                         </div>
                         <Badge variant="secondary" className="text-primary text-xs">
                           {meme.votes}
                         </Badge>
+                        
+                        {/* Delete button */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0 hover:bg-accent"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem 
+                              className="text-destructive focus:text-destructive cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setMemeToDelete(meme);
+                                setShowDeleteDialog(true);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete Meme
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     ))}
                   </div>
@@ -827,6 +911,38 @@ const Profile = React.memo(() => {
           canVote={false}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent className="left-[46%]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Meme?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{memeToDelete?.title}"? This action cannot be undone and will permanently remove the meme and its associated file from cloud storage.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => memeToDelete && handleDeleteMeme(memeToDelete)}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <div className="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></div>
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 });
