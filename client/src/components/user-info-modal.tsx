@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { User, Trophy, TrendingUp, Calendar, Copy } from "lucide-react";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
+import { MediaDisplay } from "@/components/media-display";
 import { useToast } from "@/hooks/use-toast";
 import type { Meme } from "@shared/schema";
 
