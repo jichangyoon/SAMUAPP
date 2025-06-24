@@ -399,6 +399,9 @@ Changelog:
 - June 24, 2025. Added meme deletion functionality to Profile page "My Memes" section with 3-dot menu and confirmation dialog
 - June 24, 2025. Implemented R2 cloud storage cleanup for profile page meme deletion - removes both database entries and cloud files
 - June 24, 2025. Enhanced profile page meme management with proper authentication checks and real-time cache invalidation
+- June 24, 2025. Fixed real-time voting updates - votes now reflect immediately without requiring page refresh
+- June 24, 2025. Improved voting system with instant cache invalidation across all components (MemeCard, MemeDetailModal, home page grid view)
+- June 24, 2025. Enhanced user experience with immediate feedback - voting updates appear instantly with 1-second toast notifications
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
