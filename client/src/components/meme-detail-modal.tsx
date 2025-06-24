@@ -95,7 +95,6 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
               showControls={true}
               autoPlay={false}
               muted={false}
-              loop={true}
             />
           </div>
 

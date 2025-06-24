@@ -146,9 +146,6 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
                       alt={meme.title}
                       className="w-full aspect-square object-cover rounded-lg"
                       showControls={false}
-                      autoPlay={false}
-                      muted={true}
-                      loop={false}
                       onClick={() => {
                         setSelectedMeme(meme);
                         setShowMemeModal(true);

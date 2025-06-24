@@ -430,6 +430,7 @@ Changelog:
 - June 24, 2025. Optimized MediaDisplay component - removed duplicate state, simplified click handlers, cleaned up unused props and improved code structure
 - June 24, 2025. Fixed MediaDisplay default props - changed showControls default to false to properly show video thumbnails in profile page and meme cards
 - June 24, 2025. Fixed Creator modal video thumbnails - replaced img tags with MediaDisplay component in user-info-modal.tsx to properly show video thumbnails in creator detail modal
+- June 24, 2025. Optimized MediaDisplay component - removed unnecessary state, useEffect, and redundant props to simplify video handling logic and improve performance
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```

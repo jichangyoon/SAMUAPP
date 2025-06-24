@@ -758,9 +758,6 @@ const Profile = React.memo(() => {
                             alt={meme.title}
                             className="w-full h-full rounded"
                             showControls={false}
-                            autoPlay={false}
-                            muted={true}
-                            loop={false}
                           />
                         </div>
                         <div 
@@ -843,9 +840,6 @@ const Profile = React.memo(() => {
                             alt={meme.title}
                             className="w-10 h-10 rounded"
                             showControls={false}
-                            autoPlay={false}
-                            muted={true}
-                            loop={true}
                           />
                           <div className="flex-1 min-w-0">
                             <h4 className="font-medium text-foreground text-sm truncate">{meme.title}</h4>

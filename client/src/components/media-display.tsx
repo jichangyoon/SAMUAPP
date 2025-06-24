@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useRef } from "react";
 import { Play } from "lucide-react";
 import { getMediaType } from "@/utils/media-utils";
 
@@ -20,28 +20,17 @@ export function MediaDisplay({
   showControls = false,
   autoPlay = false,
   muted = true,
-  loop = true,
+  loop = false,
   onClick 
 }: MediaDisplayProps) {
-  const [showVideoControls, setShowVideoControls] = useState(showControls);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-
-  // props 변경시 state 업데이트
-  useEffect(() => {
-    setShowVideoControls(showControls);
-  }, [showControls]);
-
   const mediaType = getMediaType(src);
 
-  
   const handleVideoClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
     if (onClick) {
       onClick();
-    } else {
-      setShowVideoControls(!showVideoControls);
     }
   };
   
@@ -52,25 +41,23 @@ export function MediaDisplay({
           ref={videoRef}
           src={src}
           className="w-full h-full object-cover cursor-pointer"
-          autoPlay={false}
-          muted={true}
-          loop={false}
+          autoPlay={autoPlay}
+          muted={muted}
+          loop={loop}
           playsInline
           preload="metadata"
-          controls={showVideoControls}
+          controls={showControls}
           controlsList="nodownload"
           disablePictureInPicture
           lang="en"
           onClick={handleVideoClick}
           onLoadedMetadata={() => {
-            // 썸네일 생성을 위해 첫 프레임으로 이동
-            if (videoRef.current && !showVideoControls) {
+            if (videoRef.current && !showControls) {
               videoRef.current.currentTime = 0.1;
             }
           }}
         />
-        {/* 컨트롤이 없을 때만 표시 */}
-        {!showVideoControls && (
+        {!showControls && (
           <>
             <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded font-medium">
               VIDEO
