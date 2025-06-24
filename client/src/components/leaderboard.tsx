@@ -321,9 +321,37 @@ export function Leaderboard() {
                 </div>
               ))}
               
-              {topCreators.length === 0 && (
+              {displayedCreators.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
                   No creators yet
+                </div>
+              )}
+              
+              {/* More button for creators */}
+              {!showAllCreators && Object.keys(creatorStats || {}).length > 10 && (
+                <div className="flex justify-center pt-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowAllCreators(true)}
+                    className="text-primary border-primary hover:bg-primary hover:text-primary-foreground"
+                  >
+                    <ChevronDown className="h-4 w-4 mr-2" />
+                    MORE ({Object.keys(creatorStats || {}).length - 10} more)
+                  </Button>
+                </div>
+              )}
+              
+              {showAllCreators && Object.keys(creatorStats || {}).length > 10 && (
+                <div className="flex justify-center pt-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowAllCreators(false)}
+                    className="text-muted-foreground"
+                  >
+                    Show Less
+                  </Button>
                 </div>
               )}
             </CardContent>
