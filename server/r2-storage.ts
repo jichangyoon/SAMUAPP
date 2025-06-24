@@ -39,7 +39,10 @@ export async function uploadToR2(
     // 고유한 파일명 생성
     const fileExtension = path.extname(originalName);
     const fileName = `${crypto.randomUUID()}${fileExtension}`;
-    const key = `${folder}/${fileName}`;
+    // folder가 비어있으면 루트에, 있으면 해당 폴더에 저장
+    const key = folder ? `${folder}/${fileName}` : fileName;
+    
+    console.log(`R2 upload: folder="${folder}", key="${key}"`);
 
     // MIME 타입 결정
     const mimeType = getMimeType(fileExtension);

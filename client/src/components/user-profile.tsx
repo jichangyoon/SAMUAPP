@@ -53,15 +53,17 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
   const [nameError, setNameError] = useState('');
   const [nameSuggestions, setNameSuggestions] = useState<string[]>([]);
 
-  // Update local state when userProfile loads
+  // Update local state when userProfile loads - prioritize database over localStorage
   useEffect(() => {
     if (userProfile) {
       setDisplayName(userProfile.displayName || userProfile.username || user?.email?.address?.split('@')[0] || 'User');
+      // Only use database avatar URL, ignore localStorage for images
       setProfileImage(userProfile.avatarUrl || '');
     } else {
       const stored = getStoredProfile();
       setDisplayName(stored.displayName || user?.email?.address?.split('@')[0] || 'User');
-      setProfileImage(stored.profileImage || '');
+      // Don't load profile image from localStorage - only from database
+      setProfileImage('');
     }
   }, [userProfile, user]);
 
