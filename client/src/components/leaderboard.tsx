@@ -45,17 +45,21 @@ export function Leaderboard() {
   const [showMemeModal, setShowMemeModal] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
 
-  const { data: memes = [], isLoading } = useQuery<Meme[]>({
+  const { data: memesResponse, isLoading } = useQuery({
     queryKey: ["/api/memes"],
     enabled: true,
   });
 
-  // Sort memes by votes for current leaderboard - with safety checks
-  const memesArray = Array.isArray(memes?.memes) ? memes.memes : 
-                     Array.isArray(memes) ? memes : [];
-  
-  if (!Array.isArray(memesArray)) {
+  // Early return for loading state
+  if (isLoading) {
     return <div className="text-center py-8 text-muted-foreground">Loading leaderboard...</div>;
+  }
+
+  // Extract memes array with proper type checking
+  const memesArray: Meme[] = memesResponse?.memes || [];
+  
+  if (!Array.isArray(memesArray) || memesArray.length === 0) {
+    return <div className="text-center py-8 text-muted-foreground">No memes available</div>;
   }
   
   const sortedMemes = [...memesArray].sort((a, b) => b.votes - a.votes);
