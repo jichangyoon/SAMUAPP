@@ -30,9 +30,14 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
   const getStoredProfile = () => {
     try {
       const stored = localStorage.getItem(`privy_profile_${user?.id}`);
-      return stored ? JSON.parse(stored) : {};
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // Only return display name, never profile image
+        return { displayName: parsed.displayName || '', profileImage: '' };
+      }
+      return { displayName: '', profileImage: '' };
     } catch {
-      return {};
+      return { displayName: '', profileImage: '' };
     }
   };
 
@@ -141,9 +146,12 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
       
       const updatedUser = await response.json();
       
-      // Update localStorage for display name only, not profile image
-      const profileData = { displayName: name || displayName, profileImage: '' };
+      // Update localStorage for display name only, completely remove profile image
+      const profileData = { displayName: name || displayName };
       localStorage.setItem(`privy_profile_${user?.id}`, JSON.stringify(profileData));
+      
+      // Clear any existing profile image from localStorage
+      localStorage.removeItem(`privy_profile_image_${user?.id}`);
       
       return updatedUser;
     },
@@ -246,6 +254,9 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
         });
         console.log('Database update completed successfully');
         
+        // Force refresh user profile data
+        queryClient.invalidateQueries({ queryKey: ['/api/users/profile', walletAddress] });
+        
         toast({
           title: "Image uploaded",
           description: "Profile image uploaded successfully",
@@ -282,9 +293,14 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
 
   // Reset form when editing is cancelled
   const handleCancelEdit = () => {
-    const storedProfile = getStoredProfile();
-    setDisplayName(storedProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
-    setProfileImage(storedProfile.profileImage || '');
+    // Reset to database values only, ignore localStorage completely
+    if (userProfile) {
+      setDisplayName(userProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
+      setProfileImage(userProfile.avatarUrl || '');
+    } else {
+      setDisplayName(user?.email?.address?.split('@')[0] || 'User');
+      setProfileImage('');
+    }
     setImagePreview('');
     setIsEditing(false);
   };
