@@ -97,7 +97,7 @@ export default function Home() {
         displayName: event.detail.displayName,
         profileImage: event.detail.profileImage || event.detail.avatarUrl
       });
-      
+
       // Invalidate queries for immediate sync
       queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] });
       queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
@@ -173,12 +173,12 @@ export default function Home() {
     queryKey: ['balances', walletAddress],
     queryFn: async () => {
       if (!walletAddress || !isSolana) return { samu: 0, sol: 0 };
-      
+
       const [samuBal, solBal] = await Promise.all([
         getSamuTokenBalance(walletAddress),
         getSolBalance(walletAddress)
       ]);
-      
+
       return { samu: samuBal, sol: solBal };
     },
     enabled: isConnected && !!walletAddress && isSolana,
@@ -590,7 +590,7 @@ export default function Home() {
                   const touch = e.touches[0];
                   const touchStartX = (e.currentTarget as any).touchStartX;
                   const deltaX = touch.clientX - touchStartX;
-                  
+
                   // Only apply transform for right swipe
                   if (deltaX > 0) {
                     const progress = Math.min(deltaX / 150, 1);
@@ -605,11 +605,11 @@ export default function Home() {
                   const touchEndX = touch.clientX;
                   const deltaX = touchEndX - touchStartX;
                   const deltaTime = Date.now() - touchStartTime;
-                  
+
                   // Reset transform
                   (e.currentTarget as HTMLElement).style.transform = 'translateX(0)';
                   (e.currentTarget as HTMLElement).style.opacity = '1';
-                  
+
                   // Swipe right (left to right) to go back with velocity check
                   if (deltaX > 100 && deltaTime < 300) {
                     setArchiveView('list');

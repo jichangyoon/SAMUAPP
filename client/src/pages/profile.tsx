@@ -141,32 +141,42 @@ const Profile = React.memo(() => {
       if (response.ok) {
         const result = await response.json();
 
-        // Comprehensive query invalidation - invalidate ALL profile-related queries
+        // Comprehensive cache clearing and invalidation
         await Promise.all([
-          queryClient.invalidateQueries({ queryKey: ['user-profile', walletAddress] }),
-          queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] }),
-          queryClient.invalidateQueries({ queryKey: [`/api/users/profile/${walletAddress}`] }),
+          // Clear all profile-related queries
+          queryClient.removeQueries({ queryKey: ['user-profile', walletAddress] }),
+          queryClient.removeQueries({ queryKey: ['user-profile-header', walletAddress] }),
+          queryClient.removeQueries({ queryKey: [`/api/users/profile/${walletAddress}`] }),
+          
+          // Invalidate all related queries
           queryClient.invalidateQueries({ 
             predicate: (query) => {
               const key = query.queryKey[0] as string;
-              return key.includes('user-profile') || key.includes(walletAddress);
+              return key.includes('user-profile') || key.includes(walletAddress) || key.includes('memes');
             }
           })
         ]);
 
-        // Force refetch of current profile data
-        queryClient.refetchQueries({ queryKey: ['user-profile', walletAddress] });
+        // Force immediate refetch with no cache
+        await queryClient.refetchQueries({ 
+          queryKey: ['user-profile', walletAddress],
+          type: 'active'
+        });
 
-        // Update local state immediately
+        // Update local state immediately with cache busting
         setDisplayName(name);
-        if (imageUrl) setProfileImage(imageUrl);
+        if (imageUrl) {
+          // Add timestamp to force image reload
+          const imageUrlWithTimestamp = `${imageUrl}?t=${Date.now()}`;
+          setProfileImage(imageUrlWithTimestamp);
+        }
 
         // Dispatch profile update event for immediate sync across app
         window.dispatchEvent(new CustomEvent('profileUpdated', {
           detail: { 
             displayName: name, 
-            profileImage: imageUrl || profileImage,
-            avatarUrl: imageUrl || profileImage
+            profileImage: imageUrl ? `${imageUrl}?t=${Date.now()}` : profileImage,
+            avatarUrl: imageUrl ? `${imageUrl}?t=${Date.now()}` : profileImage
           }
         }));
 
@@ -454,7 +464,10 @@ const Profile = React.memo(() => {
             <div className="flex items-center gap-3 mb-3">
               <div className="relative">
                 <Avatar className="h-12 w-12">
-                  <AvatarImage src={imagePreview || profileImage} key={profileImage} />
+                  <AvatarImage 
+                    src={imagePreview || (profileImage ? `${profileImage}?t=${Date.now()}` : '')} 
+                    key={`${profileImage}-${Date.now()}`} 
+                  />
                   <AvatarFallback className="bg-primary/20 text-primary text-sm">
                     {displayName.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
