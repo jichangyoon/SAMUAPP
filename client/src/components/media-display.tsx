@@ -55,13 +55,14 @@ export function MediaDisplay({
     e.preventDefault();
     e.stopPropagation();
     
-    // onClick이 있으면 모달 열기 (상세보기)
+    // 모바일에서는 동영상 클릭 시 항상 모달 열기 우선
     if (onClick) {
       onClick();
-    } else {
-      // onClick이 없으면 컨트롤 토글 (업로드 미리보기 등)
-      setShowVideoControls(!showVideoControls);
+      return;
     }
+    
+    // 업로드 미리보기 등에서만 컨트롤 토글
+    setShowVideoControls(!showVideoControls);
   };
   
   if (mediaType === 'video') {
@@ -71,13 +72,13 @@ export function MediaDisplay({
           ref={setVideoRef}
           src={src}
           className="w-full h-full object-cover cursor-pointer"
-          autoPlay={autoPlay}
-          muted={isMuted}
-          loop={loop}
+          autoPlay={autoPlay && showControls}
+          muted={showControls ? muted : true}
+          loop={showControls ? loop : false}
           playsInline
           preload="metadata"
           poster=""
-          controls={showVideoControls}
+          controls={showControls}
           onClick={handleVideoClick}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
@@ -109,8 +110,8 @@ export function MediaDisplay({
           VIDEO
         </div>
         
-        {/* 모바일용 심플 플레이 버튼 - 컨트롤이 숨겨져 있을 때만 */}
-        {!isPlaying && !showVideoControls && (
+        {/* 모바일용 플레이 버튼 - 컨트롤이 없을 때만 표시 */}
+        {!showControls && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="bg-black/60 rounded-full p-4">
               <Play className="h-8 w-8 text-white fill-white" />
