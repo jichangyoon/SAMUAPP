@@ -71,24 +71,25 @@ export function MediaDisplay({
           muted={isMuted}
           loop={loop}
           playsInline
-          preload="auto"
+          preload="metadata"
+          poster=""
           onClick={handleVideoClick}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
-          onLoadedData={() => {
-            // Force thumbnail generation by seeking to 1 second for mobile
-            if (videoRef && !isPlaying && !thumbnailGenerated) {
-              setTimeout(() => {
-                videoRef.currentTime = 1;
-                setThumbnailGenerated(true);
-              }, 100);
+          onLoadedMetadata={() => {
+            // Force thumbnail generation immediately when metadata loads
+            if (videoRef && !thumbnailGenerated) {
+              videoRef.currentTime = 0.1; // Seek to 0.1 seconds for thumbnail
+              setThumbnailGenerated(true);
             }
           }}
-          onCanPlay={() => {
-            // Additional thumbnail generation attempt
-            if (videoRef && !isPlaying && !thumbnailGenerated) {
-              videoRef.currentTime = 1;
-              setThumbnailGenerated(true);
+          onLoadedData={() => {
+            // Backup thumbnail generation
+            if (videoRef && !thumbnailGenerated) {
+              setTimeout(() => {
+                videoRef.currentTime = 0.1;
+                setThumbnailGenerated(true);
+              }, 50);
             }
           }}
         >

@@ -417,6 +417,8 @@ Changelog:
 - June 24, 2025. Enhanced upload system to properly handle video files (MP4, MOV, AVI, WebM) with visual indicators and mobile-friendly controls
 - June 24, 2025. Fixed mobile video thumbnail issue - improved preload settings, added thumbnail generation, and enhanced mobile video preview with play button overlay
 - June 24, 2025. Enhanced upload form with video preview support - integrated MediaDisplay component for both image and video file previews during upload process
+- June 24, 2025. Fixed upload form video thumbnail generation - implemented direct video element with metadata preload and currentTime seeking for reliable mobile thumbnails
+- June 24, 2025. Updated file size limit from 50MB to 5MB for better performance and user experience
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```

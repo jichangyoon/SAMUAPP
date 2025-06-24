@@ -60,11 +60,11 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
         return;
       }
 
-      // Validate file size (50MB limit)
-      if (file.size > 50 * 1024 * 1024) {
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
         toast({
           title: "File too large",
-          description: "Please upload a file smaller than 50MB",
+          description: "Please upload a file smaller than 5MB",
           variant: "destructive"
         });
         return;
@@ -234,15 +234,28 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
                       {preview ? (
                         <div className="space-y-4">
                           <div className="max-w-full max-h-48 mx-auto">
-                            <MediaDisplay
-                              src={preview}
-                              alt="Preview"
-                              className="max-w-full max-h-48 rounded-lg"
-                              showControls={selectedFile && getMediaType(selectedFile.name) === 'video'}
-                              autoPlay={false}
-                              muted={true}
-                              loop={false}
-                            />
+                            {selectedFile && getMediaType(selectedFile.name) === 'video' ? (
+                              <video
+                                src={preview}
+                                className="max-w-full max-h-48 rounded-lg"
+                                controls
+                                muted
+                                preload="metadata"
+                                style={{ backgroundColor: '#000' }}
+                                onLoadedMetadata={(e) => {
+                                  const video = e.target as HTMLVideoElement;
+                                  video.currentTime = 0.1; // Generate thumbnail
+                                }}
+                              >
+                                Your browser does not support video playback.
+                              </video>
+                            ) : (
+                              <img
+                                src={preview}
+                                alt="Preview"
+                                className="max-w-full max-h-48 rounded-lg"
+                              />
+                            )}
                           </div>
                           <Button
                             type="button"
@@ -260,7 +273,7 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
                         <>
                           <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
                           <p className="text-muted-foreground text-sm mb-2">
-                            Upload image or video (max 50MB)<br />
+                            Upload image or video (max 5MB)<br />
                             Drag & drop your meme or click to browse
                           </p>
                           <label htmlFor="file-upload" className="cursor-pointer">
