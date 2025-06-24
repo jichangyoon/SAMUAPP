@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { getMediaType } from "@/utils/media-utils";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ export function MediaDisplay({
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(muted);
   const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null);
+  const [thumbnailGenerated, setThumbnailGenerated] = useState(false);
   
   const mediaType = getMediaType(src);
   
@@ -70,10 +71,26 @@ export function MediaDisplay({
           muted={isMuted}
           loop={loop}
           playsInline
-          preload="metadata"
+          preload="auto"
           onClick={handleVideoClick}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
+          onLoadedData={() => {
+            // Force thumbnail generation by seeking to 1 second for mobile
+            if (videoRef && !isPlaying && !thumbnailGenerated) {
+              setTimeout(() => {
+                videoRef.currentTime = 1;
+                setThumbnailGenerated(true);
+              }, 100);
+            }
+          }}
+          onCanPlay={() => {
+            // Additional thumbnail generation attempt
+            if (videoRef && !isPlaying && !thumbnailGenerated) {
+              videoRef.currentTime = 1;
+              setThumbnailGenerated(true);
+            }
+          }}
         >
           <source src={src} type="video/mp4" />
           Your browser does not support the video tag.
@@ -107,9 +124,18 @@ export function MediaDisplay({
         )}
         
         {/* Video indicator badge */}
-        <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-md">
+        <div className="absolute top-1 right-1 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded-sm font-medium">
           VIDEO
         </div>
+        
+        {/* Play button overlay for better mobile UX */}
+        {!isPlaying && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="bg-black/50 rounded-full p-3">
+              <Play className="h-6 w-6 text-white fill-white" />
+            </div>
+          </div>
+        )}
       </div>
     );
   }
