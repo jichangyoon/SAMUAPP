@@ -389,7 +389,7 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async updateUser(walletAddress: string, updates: Partial<InsertUser>): Promise<User> {
+  async updateUser(walletAddress: string, updates: Partial<InsertUser & { displayName?: string; avatarUrl?: string }>): Promise<User> {
     if (!this.db) throw new Error("Database not available");
     
     const [user] = await this.db

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,13 +38,30 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
 
   const storedProfile = getStoredProfile();
 
+  // Fetch user profile from database
+  const { data: userProfile } = useQuery({
+    queryKey: ['/api/users/profile', walletAddress],
+    queryFn: () => walletAddress ? fetch(`/api/users/profile/${walletAddress}`).then(res => res.json()) : null,
+    enabled: !!walletAddress
+  });
+
   // Profile editing states
   const [isEditing, setIsEditing] = useState(false);
-  const [displayName, setDisplayName] = useState(
-    storedProfile.displayName || user?.email?.address?.split('@')[0] || 'User'
-  );
-  const [profileImage, setProfileImage] = useState(storedProfile.profileImage || '');
+  const [displayName, setDisplayName] = useState('');
+  const [profileImage, setProfileImage] = useState('');
   const [imagePreview, setImagePreview] = useState<string>('');
+
+  // Update local state when userProfile loads
+  useEffect(() => {
+    if (userProfile) {
+      setDisplayName(userProfile.displayName || userProfile.username || user?.email?.address?.split('@')[0] || 'User');
+      setProfileImage(userProfile.avatarUrl || '');
+    } else {
+      const stored = getStoredProfile();
+      setDisplayName(stored.displayName || user?.email?.address?.split('@')[0] || 'User');
+      setProfileImage(stored.profileImage || '');
+    }
+  }, [userProfile, user]);
 
   // Solana 지갑 주소만 가져오기
   const solanaWallet = user?.linkedAccounts?.find(account => 
@@ -88,6 +105,9 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
       setDisplayName(data.displayName || data.username);
       setProfileImage(data.avatarUrl || '');
       setImagePreview('');
+      
+      // Invalidate user profile query to refetch updated data
+      queryClient.invalidateQueries({ queryKey: ['/api/users/profile', walletAddress] });
     },
     onError: (error) => {
       console.error('Profile update error:', error);
