@@ -52,14 +52,12 @@ export function MediaDisplay({
   };
   
   const handleVideoClick = (e: React.MouseEvent) => {
-    // If there's an onClick handler, call it, otherwise toggle controls and play/pause
+    // 모바일 앱에서는 간단하게 컨트롤만 토글
     if (onClick) {
       onClick();
     } else {
       e.stopPropagation();
-      // Toggle controls visibility for mobile UX
       setShowVideoControls(!showVideoControls);
-      handleVideoPlay();
     }
   };
   
@@ -76,7 +74,7 @@ export function MediaDisplay({
           playsInline
           preload="metadata"
           poster=""
-          controls={showControls && showVideoControls}
+          controls={showVideoControls}
           onClick={handleVideoClick}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
@@ -101,43 +99,18 @@ export function MediaDisplay({
           Your browser does not support the video tag.
         </video>
         
-        {showControls && showVideoControls && (
-          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-            <div className="flex gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                className="bg-black/50 text-white hover:bg-black/70"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleVideoPlay();
-                }}
-              >
-                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-              </Button>
-              
-              <Button
-                variant="secondary"
-                size="sm"
-                className="bg-black/50 text-white hover:bg-black/70"
-                onClick={handleMuteToggle}
-              >
-                {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-              </Button>
-            </div>
-          </div>
-        )}
+        {/* 모바일 앱에서는 오버레이 컨트롤 제거 - 네이티브 controls만 사용 */}
         
-        {/* Video indicator badge */}
-        <div className="absolute top-1 right-1 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded-sm font-medium">
+        {/* 모바일용 심플 비디오 표시 */}
+        <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded font-medium">
           VIDEO
         </div>
         
-        {/* Play button overlay for better mobile UX - only show when controls are hidden or when video controls are hidden */}
-        {!isPlaying && (!showControls || !showVideoControls) && (
+        {/* 모바일용 심플 플레이 버튼 - 컨트롤이 숨겨져 있을 때만 */}
+        {!isPlaying && !showVideoControls && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="bg-black/50 rounded-full p-3">
-              <Play className="h-6 w-6 text-white fill-white" />
+            <div className="bg-black/60 rounded-full p-4">
+              <Play className="h-8 w-8 text-white fill-white" />
             </div>
           </div>
         )}

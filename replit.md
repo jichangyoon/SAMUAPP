@@ -422,6 +422,7 @@ Changelog:
 - June 24, 2025. Fixed video playback button overlap issue - removed duplicate play button overlay when native video controls are visible, disabled autoloop in card views
 - June 24, 2025. Updated Leaderboard with MORE button pagination - Current rankings and Top Creators sections now show 10 items by default with expandable MORE button functionality
 - June 24, 2025. Enhanced mobile video controls - implemented tap-to-hide video controls functionality for better mobile UX, controls disappear when tapped and reappear on next tap
+- June 24, 2025. Simplified mobile video interface - removed complex overlay controls, using only native video controls with tap-to-toggle for clean mobile app experience
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
