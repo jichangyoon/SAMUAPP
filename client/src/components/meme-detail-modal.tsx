@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowUp, Share2, Twitter, Send, Calendar, Trophy } from "lucide-react";
 import { useState } from "react";
+import { MediaDisplay } from "@/components/media-display";
 import type { Meme } from "@shared/schema";
 
 interface MemeDetailModalProps {
@@ -85,12 +86,16 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
         </DrawerHeader>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
-          {/* Meme Image */}
+          {/* Meme Media */}
           <div className="w-full max-w-md mx-auto">
-            <img
+            <MediaDisplay
               src={meme.imageUrl}
               alt={meme.title}
-              className="w-full rounded-lg object-cover"
+              className="w-full rounded-lg"
+              showControls={true}
+              autoPlay={false}
+              muted={false}
+              loop={true}
             />
           </div>
 

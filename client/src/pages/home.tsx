@@ -7,6 +7,7 @@ import { MemeCard } from "@/components/meme-card";
 import { Leaderboard } from "@/components/leaderboard";
 import { GoodsShop } from "@/components/goods-shop";
 import { NftGallery } from "@/components/nft-gallery";
+import { MediaDisplay } from "@/components/media-display";
 
 import { usePrivy } from '@privy-io/react-auth';
 import { Button } from "@/components/ui/button";

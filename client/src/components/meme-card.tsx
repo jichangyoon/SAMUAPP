@@ -10,6 +10,7 @@ import { ArrowUp, Share2, Twitter, Send, Trash2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserInfoModal } from "@/components/user-info-modal";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
+import { MediaDisplay } from "@/components/media-display";
 import type { Meme } from "@shared/schema";
 
 interface MemeCardProps {
@@ -149,25 +150,21 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   return (
     <>
       <Card className="overflow-hidden border-border bg-card">
-        <button 
+        <div 
           onClick={() => setShowDetailDialog(true)}
-          className="w-full aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-opacity"
+          className="w-full aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-opacity cursor-pointer"
         >
-          <img
+          <MediaDisplay
             src={meme.imageUrl}
             alt={meme.title}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
-              target.nextElementSibling?.classList.remove('hidden');
-            }}
+            className="w-full h-full"
+            showControls={false}
+            autoPlay={false}
+            muted={true}
+            loop={true}
+            onClick={() => setShowDetailDialog(true)}
           />
-          <div className="hidden text-center p-8">
-            <div className="text-4xl mb-2">🖼️</div>
-            <p className="text-muted-foreground">Image failed to load</p>
-          </div>
-        </button>
+        </div>
 
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-3">
