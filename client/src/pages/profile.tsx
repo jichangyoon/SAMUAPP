@@ -126,7 +126,7 @@ const Profile = React.memo(() => {
   // Update profile function
   const updateProfile = React.useCallback(async (name: string, imageUrl?: string) => {
     try {
-      
+
       const response = await fetch(`/api/users/profile/${walletAddress}`, {
         method: 'PUT',
         headers: {
@@ -140,7 +140,7 @@ const Profile = React.memo(() => {
 
       if (response.ok) {
         const result = await response.json();
-        
+
         // Comprehensive query invalidation - invalidate ALL profile-related queries
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: ['user-profile', walletAddress] }),
@@ -153,14 +153,14 @@ const Profile = React.memo(() => {
             }
           })
         ]);
-        
+
         // Force refetch of current profile data
         queryClient.refetchQueries({ queryKey: ['user-profile', walletAddress] });
-        
+
         // Update local state immediately
         setDisplayName(name);
         if (imageUrl) setProfileImage(imageUrl);
-        
+
         // Dispatch profile update event for immediate sync across app
         window.dispatchEvent(new CustomEvent('profileUpdated', {
           detail: { 
@@ -169,7 +169,7 @@ const Profile = React.memo(() => {
             avatarUrl: imageUrl || profileImage
           }
         }));
-        
+
         return true;
       } else {
         return false;
@@ -197,7 +197,7 @@ const Profile = React.memo(() => {
       const { displayName: newName, avatarUrl } = event.detail;
       if (newName) setDisplayName(newName);
       if (avatarUrl) setProfileImage(avatarUrl);
-      
+
       // Force refetch to ensure data consistency
       queryClient.refetchQueries({ queryKey: ['user-profile', walletAddress] });
     };
@@ -239,7 +239,7 @@ const Profile = React.memo(() => {
     setImagePreview(objectUrl);
     setSelectedFile(file);
   }, [toast]);
-    
+
 
   // Save profile changes
   const handleSaveProfile = React.useCallback(async () => {
@@ -290,7 +290,7 @@ const Profile = React.memo(() => {
         const errorMessage = error instanceof Error && error.name === 'AbortError' 
           ? "Upload timeout. Please try again." 
           : "Failed to upload profile image. Please try again.";
-          
+
         toast({
           title: "Upload Failed",
           description: errorMessage,
@@ -302,17 +302,17 @@ const Profile = React.memo(() => {
 
     // Save profile changes
     const success = await updateProfile(displayName.trim(), finalImageUrl);
-    
+
     if (success) {
       setIsEditing(false);
       setImagePreview('');
       setSelectedFile(null);
-      
+
       // Clean up preview URL
       if (imagePreview && imagePreview.startsWith('blob:')) {
         URL.revokeObjectURL(imagePreview);
       }
-      
+
       toast({
         title: "Profile Updated",
         description: "Your profile has been saved successfully."
@@ -332,7 +332,7 @@ const Profile = React.memo(() => {
     if (imagePreview && imagePreview.startsWith('blob:')) {
       URL.revokeObjectURL(imagePreview);
     }
-    
+
     // Reset to database values
     if (userProfile) {
       setDisplayName(userProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
@@ -362,7 +362,7 @@ const Profile = React.memo(() => {
   const stats = React.useMemo(() => {
     const currentSamuBalance = samuData?.balance || 0;
     const currentSolBalance = solData?.balance || 0;
-    
+
     const totalMemesCreated = userStats?.totalMemes || 0;
     const totalVotesReceived = userStats?.totalMemesVotes || 0;
     const totalVotesCast = userStats?.totalVotesCast || 0;
@@ -370,7 +370,7 @@ const Profile = React.memo(() => {
     const remainingVotingPower = userStats?.remainingVotingPower || Math.floor(currentSamuBalance * 0.8);
     const totalVotingPower = userStats?.samuBalance || currentSamuBalance;
     const contestProgress = 75; // Contest period calculation placeholder
-    
+
     return {
       currentSamuBalance,
       currentSolBalance,
@@ -402,7 +402,7 @@ const Profile = React.memo(() => {
         const touch = e.touches[0];
         const touchStartX = (e.currentTarget as any).touchStartX;
         const deltaX = touch.clientX - touchStartX;
-        
+
         // Only apply transform for right swipe
         if (deltaX > 0) {
           const progress = Math.min(deltaX / 150, 1);
@@ -417,11 +417,11 @@ const Profile = React.memo(() => {
         const touchEndX = touch.clientX;
         const deltaX = touchEndX - touchStartX;
         const deltaTime = Date.now() - touchStartTime;
-        
+
         // Reset transform
         (e.currentTarget as HTMLElement).style.transform = 'translateX(0)';
         (e.currentTarget as HTMLElement).style.opacity = '1';
-        
+
         // Swipe right (left to right) to go back with velocity check
         if (deltaX > 100 && deltaTime < 300) {
           navigate("/");
