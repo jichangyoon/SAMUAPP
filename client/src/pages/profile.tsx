@@ -211,16 +211,16 @@ const Profile = React.memo(() => {
   // Update profile function
   const updateProfile = async (name: string, imageUrl?: string) => {
     try {
-      const response = await apiRequest('/api/users/profile', {
+      const response = await fetch('/api/users/profile', {
         method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           walletAddress,
           displayName: name,
           avatarUrl: imageUrl || profileImage
-        }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        })
       });
 
       if (response.ok) {
@@ -232,9 +232,12 @@ const Profile = React.memo(() => {
           detail: { displayName: name, profileImage: imageUrl || profileImage }
         }));
         
+        console.log('Profile database update successful');
         return true;
+      } else {
+        console.error('Profile update failed:', response.status, response.statusText);
+        return false;
       }
-      return false;
     } catch (error) {
       console.error('Profile update error:', error);
       return false;
