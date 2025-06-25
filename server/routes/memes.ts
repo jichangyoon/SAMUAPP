@@ -32,8 +32,9 @@ router.get("/", async (req, res) => {
       // Get memes for specific contest (archived)
       allMemes = await storage.getMemesByContestId(parseInt(contestId));
     } else {
-      // Get current memes (not archived)
+      // Get current memes (not archived) - these are memes with contest_id = null
       allMemes = await storage.getMemes();
+      console.log(`Found ${allMemes.length} current memes with contest_id = null`);
     }
     
     // Sort memes
