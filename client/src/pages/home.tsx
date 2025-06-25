@@ -83,10 +83,14 @@ export default function Home() {
     queryKey: ["/api/admin/archived-contests"],
   });
 
-  // Get NFTs with loading state
-  const { data: nfts = [], isLoading: isLoadingNfts } = useQuery({
+  // Get NFTs with loading state - force loading to show for demo
+  const { data: nfts = [], isLoading: isLoadingNfts, isFetching } = useQuery({
     queryKey: ["/api/nfts"],
+    staleTime: 0, // Always fetch fresh data to show loading
   });
+
+  // Show loading if either loading or fetching
+  const showNftLoading = isLoadingNfts || isFetching;
 
   // User profile data from database
   const { data: userProfile } = useQuery({
@@ -824,7 +828,7 @@ export default function Home() {
           </TabsContent>
 
           <TabsContent value="nfts" className="mt-4 space-y-4 pb-24">
-            {isLoadingNfts ? (
+            {showNftLoading ? (
               <div className="space-y-4">
                 {/* NFT Header */}
                 <Card className="bg-black border-0">
@@ -852,7 +856,7 @@ export default function Home() {
                 </Card>
               </div>
             ) : (
-              <NftGallery />
+              <NftGallery isLoading={showNftLoading} />
             )}
           </TabsContent>
         </Tabs>
