@@ -34,10 +34,7 @@ export function Admin() {
   // Create contest mutation
   const createContestMutation = useMutation({
     mutationFn: async (contestData: typeof newContest) => {
-      return apiRequest("/api/admin/contests", {
-        method: "POST",
-        body: contestData,
-      });
+      return apiRequest("POST", "/api/admin/contests", contestData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/contests"] });
@@ -45,32 +42,40 @@ export function Admin() {
       setNewContest({ title: "", description: "", prizePool: "", startTime: "", endTime: "" });
       toast({ title: "Contest created successfully" });
     },
+    onError: (error) => {
+      console.error("Create contest error:", error);
+      toast({ title: "Failed to create contest", variant: "destructive" });
+    },
   });
 
   // Start contest mutation
   const startContestMutation = useMutation({
     mutationFn: async (contestId: number) => {
-      return apiRequest(`/api/admin/contests/${contestId}/start`, {
-        method: "POST",
-      });
+      return apiRequest("POST", `/api/admin/contests/${contestId}/start`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/contests"] });
       toast({ title: "Contest started successfully" });
+    },
+    onError: (error) => {
+      console.error("Start contest error:", error);
+      toast({ title: "Failed to start contest", variant: "destructive" });
     },
   });
 
   // End contest mutation
   const endContestMutation = useMutation({
     mutationFn: async (contestId: number) => {
-      return apiRequest(`/api/admin/contests/${contestId}/end`, {
-        method: "POST",
-      });
+      return apiRequest("POST", `/api/admin/contests/${contestId}/end`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/contests"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/archived-contests"] });
       toast({ title: "Contest ended and archived successfully" });
+    },
+    onError: (error) => {
+      console.error("End contest error:", error);
+      toast({ title: "Failed to end contest", variant: "destructive" });
     },
   });
 
