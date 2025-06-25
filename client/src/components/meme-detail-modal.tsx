@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowUp, Share2, Twitter, Send, Calendar, Trophy } from "lucide-react";
 import { useState } from "react";
 import { MediaDisplay } from "@/components/media-display";
+import { UserInfoModal } from "@/components/user-info-modal";
 import type { Meme } from "@shared/schema";
 
 interface MemeDetailModalProps {
@@ -54,6 +55,7 @@ const getUserRole = (walletAddress: string, username: string) => {
 
 export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false }: MemeDetailModalProps) {
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
   
 
 
@@ -114,9 +116,13 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <div className="font-semibold text-white">{meme.authorUsername}</div>
+                  <button 
+                    onClick={() => setShowUserModal(true)}
+                    className="font-semibold text-white hover:text-primary transition-colors cursor-pointer text-left"
+                  >
+                    {meme.authorUsername}
+                  </button>
                   <div className="text-sm text-gray-400">{getUserRole(meme.authorWallet, meme.authorUsername)}</div>
-
                 </div>
               </div>
               <div className="text-right">
@@ -188,6 +194,14 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
           </div>
         </DrawerContent>
       </Drawer>
+
+      {/* User Info Modal */}
+      <UserInfoModal
+        isOpen={showUserModal}
+        onClose={() => setShowUserModal(false)}
+        walletAddress={meme.authorWallet}
+        username={meme.authorUsername}
+      />
     </Drawer>
   );
 }
