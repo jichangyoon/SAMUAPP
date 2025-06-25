@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { insertContestSchema } from "@shared/schema";
 import { storage } from "../storage";
+import { contestScheduler } from "../contest-scheduler";
 
 const router = Router();
 
@@ -36,6 +37,15 @@ router.post("/contests", async (req, res) => {
     });
 
     const contest = await storage.createContest(contestData);
+    
+    // Schedule automatic start/end if times are provided
+    if (contestData.startTime) {
+      contestScheduler.scheduleContestStart(contest.id, new Date(contestData.startTime));
+    }
+    if (contestData.endTime) {
+      contestScheduler.scheduleContestEnd(contest.id, new Date(contestData.endTime));
+    }
+    
     res.json(contest);
   } catch (error) {
     console.error("Error creating contest:", error);
@@ -55,6 +65,12 @@ router.post("/contests/:id/start", async (req, res) => {
     }
 
     const contest = await storage.updateContestStatus(contestId, "active");
+    
+    // Schedule automatic end if end time is set
+    if (contest.endTime) {
+      contestScheduler.scheduleContestEnd(contest.id, new Date(contest.endTime));
+    }
+    
     res.json(contest);
   } catch (error) {
     console.error("Error starting contest:", error);
@@ -66,6 +82,9 @@ router.post("/contests/:id/start", async (req, res) => {
 router.post("/contests/:id/end", async (req, res) => {
   try {
     const contestId = parseInt(req.params.id);
+    
+    // Cancel any scheduled actions for this contest
+    contestScheduler.cancelScheduled(contestId);
     
     const archivedContest = await storage.endContestAndArchive(contestId);
     res.json(archivedContest);

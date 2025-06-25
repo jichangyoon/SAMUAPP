@@ -10,6 +10,7 @@ import Home from "@/pages/home";
 import Profile from "@/pages/profile";
 import { Partners } from "@/pages/partners";
 import { PartnerContest } from "@/pages/partner-contest";
+import { Admin } from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 
 // Global error handler for Privy iframe issues
