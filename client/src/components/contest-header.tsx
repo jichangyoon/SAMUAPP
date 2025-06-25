@@ -51,14 +51,6 @@ export function ContestHeader() {
             SAMU Meme Contest
           </h1>
           <div className="flex items-center gap-2">
-            {isAdmin && (
-              <Link href="/admin">
-                <Button size="sm" variant="outline" className="flex items-center gap-1">
-                  <Settings className="h-4 w-4" />
-                  Admin
-                </Button>
-              </Link>
-            )}
             <Badge className={`${contestData.status === "Live" ? "bg-green-500/20 text-green-400" : 
                               contestData.status === "Not Started" ? "bg-yellow-500/20 text-yellow-400" : 
                               "bg-red-500/20 text-red-400"}`}>

@@ -379,6 +379,7 @@ Changelog:
 - June 25, 2025. Implemented admin authentication system using ADMIN_EMAILS environment variable
 - June 25, 2025. Admin button now only appears for authorized users, hidden from regular users
 - June 25, 2025. Enhanced security with email-based admin role verification system
+- June 25, 2025. Removed duplicate admin button from contest header - kept only the purple admin button in wallet section
 - June 25, 2025. Fixed admin panel Active Contests filtering - archived contests no longer appear in active section
 - June 25, 2025. Completed proper separation between active and archived contest management in admin interface
 - June 24, 2025. Fixed profile image storage - now correctly uploads to R2 cloud storage in profiles/ folder
