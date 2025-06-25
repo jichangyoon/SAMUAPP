@@ -381,7 +381,7 @@ Changelog:
 - June 25, 2025. Enhanced security with email-based admin role verification system
 - June 25, 2025. Removed duplicate admin button from contest header - kept only the purple admin button in wallet section
 - June 25, 2025. Cleaned up all test archive data - removed 12 archived contests, 17 archived memes, and related vote data for fresh start
-- June 25, 2025. Improved contest header UI - replaced "Manual Control TBD" with "준비중" for better Korean user experience
+- June 25, 2025. Improved contest header UI - replaced "Manual Control TBD" with "Coming Soon" for better user experience
 - June 25, 2025. Fixed admin panel Active Contests filtering - archived contests no longer appear in active section
 - June 25, 2025. Completed proper separation between active and archived contest management in admin interface
 - June 24, 2025. Fixed profile image storage - now correctly uploads to R2 cloud storage in profiles/ folder
