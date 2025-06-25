@@ -533,7 +533,7 @@ const Profile = React.memo(() => {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
-            <h1 className="text-lg font-bold text-foreground">My Profile</h1>
+            <h1 className="text-lg font-bold text-foreground">{isOwnProfile ? 'My Profile' : `${displayName || 'User'}'s Profile`}</h1>
             <div className="w-16" /> {/* Spacer for centering */}
           </div>
         </div>
@@ -554,7 +554,7 @@ const Profile = React.memo(() => {
                     {displayName.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                {isEditing && user && (
+                {isEditing && user && isOwnProfile && (
                   <label className={`absolute -bottom-0.5 -right-0.5 bg-primary text-primary-foreground rounded-full p-1 ${isSaving ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-primary/80'}`}>
                     <Camera className="h-2.5 w-2.5" />
                     <input
