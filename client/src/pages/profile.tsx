@@ -36,20 +36,11 @@ const Profile = React.memo(() => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [memeToDelete, setMemeToDelete] = useState<any>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  
-  // URL 쿼리 파라미터에서 지갑 주소 확인
-  const urlParams = new URLSearchParams(window.location.search);
-  const targetWalletAddress = urlParams.get('wallet');
-  
-  // 현재 로그인한 유저의 지갑 주소
+  // 지갑 주소 가져오기 (홈과 동일한 로직)
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
-  const currentUserWalletAddress = selectedWalletAccount?.address || '';
-  
-  // 표시할 지갑 주소 결정 (URL 파라미터가 있으면 그것을, 없으면 현재 유저의 지갑)
-  const walletAddress = targetWalletAddress || currentUserWalletAddress;
-  const isOwnProfile = walletAddress === currentUserWalletAddress;
+  const walletAddress = selectedWalletAccount?.address || '';
 
   // User profile data - 글로벌 기본값 사용으로 최적화
   const { data: userProfile } = useQuery({
@@ -533,7 +524,7 @@ const Profile = React.memo(() => {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
-            <h1 className="text-lg font-bold text-foreground">{isOwnProfile ? 'My Profile' : `${displayName || 'User'}'s Profile`}</h1>
+            <h1 className="text-lg font-bold text-foreground">My Profile</h1>
             <div className="w-16" /> {/* Spacer for centering */}
           </div>
         </div>
@@ -554,7 +545,7 @@ const Profile = React.memo(() => {
                     {displayName.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                {isEditing && user && isOwnProfile && (
+                {isEditing && user && (
                   <label className={`absolute -bottom-0.5 -right-0.5 bg-primary text-primary-foreground rounded-full p-1 ${isSaving ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-primary/80'}`}>
                     <Camera className="h-2.5 w-2.5" />
                     <input
