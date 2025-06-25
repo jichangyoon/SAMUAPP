@@ -25,8 +25,16 @@ router.get("/", async (req, res) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 7;
     const sortBy = req.query.sortBy as string || 'votes';
+    const contestId = req.query.contestId as string;
     
-    const allMemes = await storage.getMemes();
+    let allMemes;
+    if (contestId) {
+      // Get memes for specific contest (archived)
+      allMemes = await storage.getMemesByContestId(parseInt(contestId));
+    } else {
+      // Get current memes (not archived)
+      allMemes = await storage.getMemes();
+    }
     
     // Sort memes
     let sortedMemes = [...allMemes];

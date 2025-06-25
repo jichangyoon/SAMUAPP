@@ -16,6 +16,7 @@ export interface IStorage {
   createMeme(meme: InsertMeme): Promise<Meme>;
   getMemes(): Promise<Meme[]>;
   getMemeById(id: number): Promise<Meme | undefined>;
+  getMemesByContestId(contestId: number): Promise<Meme[]>;
   deleteMeme(id: number): Promise<void>;
   
   // Vote operations
@@ -147,6 +148,10 @@ export class MemStorage implements IStorage {
 
   async getMemeById(id: number): Promise<Meme | undefined> {
     return this.memes.get(id);
+  }
+
+  async getMemesByContestId(contestId: number): Promise<Meme[]> {
+    return Array.from(this.memes.values()).filter(meme => meme.contestId === contestId);
   }
 
   async deleteMeme(id: number): Promise<void> {
