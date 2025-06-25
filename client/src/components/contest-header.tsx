@@ -20,8 +20,8 @@ export function ContestHeader() {
 
   const contestData = {
     timeLeft: activeContest?.endTime ? 
-      calculateTimeLeft(new Date(activeContest.endTime)) : "Manual Control",
-    prizePool: activeContest?.prizePool || "TBD",
+      calculateTimeLeft(new Date(activeContest.endTime)) : "준비중",
+    prizePool: activeContest?.prizePool || "준비중",
     totalEntries: 0, // Will be updated with real meme count
     status: activeContest?.status === "active" ? "Live" : 
             activeContest?.status === "draft" ? "Not Started" : "Ended"
