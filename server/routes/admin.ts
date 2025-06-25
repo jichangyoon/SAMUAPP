@@ -5,10 +5,12 @@ import { contestScheduler } from "../contest-scheduler";
 
 const router = Router();
 
-// Get all contests
+// Get all contests (excluding archived ones)
 router.get("/contests", async (req, res) => {
   try {
-    const contests = await storage.getContests();
+    const allContests = await storage.getContests();
+    // Filter out contests that have been archived
+    const contests = allContests.filter(contest => contest.status !== 'archived');
     res.json(contests);
   } catch (error) {
     console.error("Error fetching contests:", error);

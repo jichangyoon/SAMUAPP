@@ -373,6 +373,8 @@ Changelog:
 - June 25, 2025. Fixed UI logic for contest-dependent submissions - Submit button only appears when active contest exists
 - June 25, 2025. Added helpful warning message when users try to submit without active contest
 - June 25, 2025. Prevented code conflicts by properly managing contest state queries and conditional UI rendering
+- June 25, 2025. Fixed admin panel Active Contests filtering - archived contests no longer appear in active section
+- June 25, 2025. Completed proper separation between active and archived contest management in admin interface
 - June 24, 2025. Fixed profile image storage - now correctly uploads to R2 cloud storage in profiles/ folder
 - June 24, 2025. Verified profile image R2 integration - 42KB PNG successfully uploaded and accessible via public URL
 - June 24, 2025. Implemented comprehensive display name uniqueness validation system with real-time availability checking
