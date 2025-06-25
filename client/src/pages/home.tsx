@@ -41,6 +41,7 @@ export default function Home() {
   const [selectedArchiveContest, setSelectedArchiveContest] = useState<any>(null);
   const [selectedArchiveMeme, setSelectedArchiveMeme] = useState<any>(null);
   const [isLoadingContestDetails, setIsLoadingContestDetails] = useState(false);
+  const [showNftLoading, setShowNftLoading] = useState(false);
   
   // Infinite scroll state
   const [page, setPage] = useState(1);
@@ -819,7 +820,14 @@ export default function Home() {
           </TabsContent>
 
           <TabsContent value="nfts" className="mt-4 space-y-4 pb-24">
-            <NftGallery />
+            {showNftLoading ? (
+              <div className="min-h-[50vh] flex flex-col items-center justify-center space-y-4">
+                <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full"></div>
+                <p className="text-muted-foreground">Loading SAMU Wolf Collection...</p>
+              </div>
+            ) : (
+              <NftGallery />
+            )}
           </TabsContent>
         </Tabs>
       </div>
@@ -861,7 +869,11 @@ export default function Home() {
               <span className="text-xs mt-1">Archive</span>
             </button>
             <button
-              onClick={() => setCurrentTab("nfts")}
+              onClick={() => {
+                setCurrentTab("nfts");
+                setShowNftLoading(true);
+                setTimeout(() => setShowNftLoading(false), 1200);
+              }}
               className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors ${
                 currentTab === "nfts" 
                   ? "bg-primary/20 text-primary" 
