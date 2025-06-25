@@ -48,6 +48,17 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
+  // Check if there's an active contest
+  const { data: currentContest } = useQuery({
+    queryKey: ['/api/admin/current-contest'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/current-contest');
+      if (!response.ok) return null;
+      return response.json();
+    },
+    staleTime: 30 * 1000, // 30초간 캐시 유지
+  });
+
   // Privy authentication
   const { authenticated, user } = usePrivy();
   const { toast } = useToast();
@@ -65,10 +76,7 @@ export default function Home() {
   const walletAddress = (selectedWalletAccount as any)?.address || '';
   const isSolana = true; // 항상 Solana
 
-  // Get current contest info
-  const { data: currentContest } = useQuery({
-    queryKey: ["/api/admin/current-contest"],
-  });
+
 
   // Get archived contests
   const { data: archivedContests = [] } = useQuery({
@@ -369,8 +377,8 @@ export default function Home() {
                   {/* Contest Header */}
                   <ContestHeader />
 
-                  {/* Submit Button - Only show when logged in */}
-                  {isConnected && (
+                  {/* Submit Button - Only show when logged in AND there's an active contest */}
+                  {isConnected && currentContest ? (
                     <div className="flex justify-center">
                       <Button 
                         onClick={() => setShowUploadForm(true)}
@@ -380,7 +388,17 @@ export default function Home() {
                         Submit Meme
                       </Button>
                     </div>
-                  )}
+                  ) : isConnected && !currentContest ? (
+                    <div className="flex justify-center">
+                      <Card className="bg-amber-500/10 border-amber-500/20">
+                        <CardContent className="p-4 text-center">
+                          <p className="text-amber-600 dark:text-amber-400 text-sm">
+                            No active contest at the moment. Check back later!
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  ) : null}
 
                   {/* Meme Gallery */}
                   <div>
