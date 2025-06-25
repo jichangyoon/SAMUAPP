@@ -40,6 +40,7 @@ export default function Home() {
   const [archiveView, setArchiveView] = useState<'list' | 'contest'>('list');
   const [selectedArchiveContest, setSelectedArchiveContest] = useState<any>(null);
   const [selectedArchiveMeme, setSelectedArchiveMeme] = useState<any>(null);
+  const [isLoadingContestDetails, setIsLoadingContestDetails] = useState(false);
   
   // Infinite scroll state
   const [page, setPage] = useState(1);
@@ -78,7 +79,7 @@ export default function Home() {
 
 
   // Get archived contests
-  const { data: archivedContests = [] } = useQuery({
+  const { data: archivedContests = [], isLoading: isLoadingArchives } = useQuery({
     queryKey: ["/api/admin/archived-contests"],
   });
 
@@ -579,7 +580,14 @@ export default function Home() {
                 <div className="space-y-4">
                   <h3 className="text-md font-semibold text-foreground">Previous Contests</h3>
 
-                  {archivedContests.length === 0 ? (
+                  {isLoadingArchives ? (
+                    <Card className="border-border/50">
+                      <CardContent className="p-8 text-center">
+                        <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-3"></div>
+                        <p className="text-muted-foreground">Loading contests...</p>
+                      </CardContent>
+                    </Card>
+                  ) : archivedContests.length === 0 ? (
                     <Card className="border-border/50">
                       <CardContent className="p-8 text-center">
                         <Archive className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
@@ -600,6 +608,8 @@ export default function Home() {
                             });
                             return;
                           }
+                          
+                          setIsLoadingContestDetails(true);
                           
                           try {
                             // Fetch contest memes

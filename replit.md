@@ -387,6 +387,7 @@ Changelog:
 - June 25, 2025. Added clickable profile picture in UserInfoModal - opens full-size image view modal for better profile picture viewing
 - June 25, 2025. Enhanced archive contest display - added contest description below title for better context and information
 - June 25, 2025. Completed comprehensive code cleanup and optimization - removed sample data, console logs, and unused imports
+- June 25, 2025. Added loading states to Archive section - fixed micro-lag when loading Previous Contests with visual loading indicators
 - June 25, 2025. Fixed admin panel Active Contests filtering - archived contests no longer appear in active section
 - June 25, 2025. Completed proper separation between active and archived contest management in admin interface
 - June 24, 2025. Fixed profile image storage - now correctly uploads to R2 cloud storage in profiles/ folder
