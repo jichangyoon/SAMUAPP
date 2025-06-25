@@ -811,6 +811,33 @@ export class DatabaseStorage implements IStorage {
       console.log("No memes found for contest, creating empty archive");
     }
 
+    // Move all contest files to archive in R2 storage
+    if (contestMemes.length > 0) {
+      const { moveToArchive, extractKeyFromUrl } = await import('./r2-storage');
+      
+      console.log(`Starting R2 archive process for contest ${contestId} with ${contestMemes.length} files`);
+      
+      for (const meme of contestMemes) {
+        if (meme.imageUrl) {
+          const key = extractKeyFromUrl(meme.imageUrl);
+          if (key) {
+            console.log(`Moving file to archive: ${key} -> archives/contest-${contestId}/`);
+            const result = await moveToArchive(key, contestId);
+            if (result.success && result.url) {
+              // Update meme with new archived URL
+              await this.db
+                .update(memes)
+                .set({ imageUrl: result.url })
+                .where(eq(memes.id, meme.id));
+              console.log(`Updated meme ${meme.id} with archived URL: ${result.url}`);
+            } else {
+              console.error(`Failed to move file ${key}:`, result.error);
+            }
+          }
+        }
+      }
+    }
+
     // Calculate stats
     const totalMemes = contestMemes.length;
     const totalVotes = contestMemes.reduce((sum, meme) => sum + meme.votes, 0);
@@ -851,6 +878,8 @@ export class DatabaseStorage implements IStorage {
         .set({ contestId: contestId })
         .where(eq(memes.contestId, null));
     }
+
+    console.log(`Contest ${contestId} archived with ${totalMemes} files moved to archives/contest-${contestId}/`);
 
     return archivedContest;
   }

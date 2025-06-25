@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand, CopyObjectCommand } from '@aws-sdk/client-s3';
 import crypto from 'crypto';
 import path from 'path';
 
@@ -156,5 +156,67 @@ export function extractKeyFromUrl(url: string): string | null {
   } catch (error) {
     console.error('Error extracting key from URL:', error);
     return null;
+  }
+}
+
+/**
+ * 파일을 아카이브 폴더로 이동
+ */
+export async function moveToArchive(
+  sourceKey: string,
+  contestId: number
+): Promise<UploadResult> {
+  try {
+    if (!process.env.R2_ACCOUNT_ID || !process.env.R2_ACCESS_KEY_ID || !process.env.R2_SECRET_ACCESS_KEY) {
+      throw new Error('R2 credentials not configured');
+    }
+
+    const s3Client = new S3Client({
+      region: 'auto',
+      endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+      credentials: {
+        accessKeyId: process.env.R2_ACCESS_KEY_ID,
+        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+      },
+    });
+
+    const bucketName = process.env.R2_BUCKET_NAME || 'samu-storage';
+    
+    // 새로운 아카이브 키 생성
+    const fileName = sourceKey.split('/').pop() || sourceKey;
+    const archiveKey = `archives/contest-${contestId}/${fileName}`;
+
+    console.log(`Moving file from ${sourceKey} to ${archiveKey}`);
+
+    // 파일 복사
+    await s3Client.send(new CopyObjectCommand({
+      Bucket: bucketName,
+      CopySource: `${bucketName}/${sourceKey}`,
+      Key: archiveKey,
+      MetadataDirective: 'COPY'
+    }));
+
+    // 원본 파일 삭제
+    await s3Client.send(new DeleteObjectCommand({
+      Bucket: bucketName,
+      Key: sourceKey
+    }));
+
+    const publicUrl = process.env.R2_PUBLIC_URL || `https://${bucketName}.r2.dev`;
+    const newUrl = `${publicUrl}/${archiveKey}`;
+
+    console.log(`File successfully moved to archive: ${newUrl}`);
+
+    return {
+      success: true,
+      url: newUrl,
+      key: archiveKey
+    };
+  } catch (error) {
+    console.error('Error moving file to archive:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
   }
 }
