@@ -20,7 +20,7 @@ export function ContestHeader() {
 
   const contestData = {
     timeLeft: activeContest?.endTime ? 
-      calculateTimeLeft(new Date(activeContest.endTime)) : "Upcoming",
+      calculateTimeLeft(new Date(activeContest.endTime)) : "Soon",
     prizePool: activeContest?.prizePool || "TBA",
     totalEntries: 0, // Will be updated with real meme count
     status: activeContest?.status === "active" ? "Live" : 
