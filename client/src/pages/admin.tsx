@@ -7,11 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Play, Square, Archive, Plus, Clock, Trophy } from "lucide-react";
+import { Play, Square, Archive, Plus, Clock, Trophy, ArrowLeft } from "lucide-react";
 import type { Contest, ArchivedContest } from "@shared/schema";
+import { useLocation } from "wouter";
 
 export function Admin() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newContest, setNewContest] = useState({
     title: "",
@@ -109,9 +111,19 @@ export function Admin() {
     <div className="min-h-screen bg-background text-foreground p-4">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
-        <div className="text-center py-8">
-          <h1 className="text-3xl font-bold text-primary mb-2">Contest Admin Panel</h1>
-          <p className="text-muted-foreground">Manage SAMU meme contests</p>
+        <div className="relative py-8">
+          <Button
+            variant="ghost"
+            onClick={() => setLocation("/")}
+            className="absolute left-0 top-8 text-foreground hover:text-primary"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Home
+          </Button>
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-primary mb-2">Contest Admin Panel</h1>
+            <p className="text-muted-foreground">Manage SAMU meme contests</p>
+          </div>
         </div>
 
         {/* Create Contest Section */}
