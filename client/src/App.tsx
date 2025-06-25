@@ -41,6 +41,7 @@ const Router = React.memo(() => {
       <Route path="/partner/:partnerId">
         {(params) => <PartnerContest partnerId={params.partnerId} />}
       </Route>
+      <Route path="/admin" component={Admin} />
       <Route component={NotFound} />
     </Switch>
   );
