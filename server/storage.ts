@@ -511,6 +511,16 @@ export class DatabaseStorage implements IStorage {
     return meme;
   }
 
+  async getMemesByContestId(contestId: number): Promise<Meme[]> {
+    if (!this.db) throw new Error("Database not available");
+    
+    return await this.db
+      .select()
+      .from(memes)
+      .where(eq(memes.contestId, contestId))
+      .orderBy(desc(memes.votes));
+  }
+
   async deleteMeme(id: number): Promise<void> {
     if (!this.db) throw new Error("Database not available");
     
