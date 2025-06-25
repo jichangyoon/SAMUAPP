@@ -207,11 +207,11 @@ export function Admin() {
                       <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                         <div>
                           <span className="text-muted-foreground">Start: </span>
-                          <span>{contest.startTime ? new Date(contest.startTime).toLocaleString() : "Manual"}</span>
+                          <span>{contest.startTime ? new Date(contest.startTime).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : "Manual"}</span>
                         </div>
                         <div>
                           <span className="text-muted-foreground">End: </span>
-                          <span>{contest.endTime ? new Date(contest.endTime).toLocaleString() : "Manual"}</span>
+                          <span>{contest.endTime ? new Date(contest.endTime).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : "Manual"}</span>
                         </div>
                       </div>
 

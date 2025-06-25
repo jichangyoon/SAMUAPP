@@ -21,7 +21,8 @@ class ContestScheduler {
 
       for (const contest of activeContests) {
         if (contest.endTime && new Date() >= new Date(contest.endTime)) {
-          console.log(`Auto-ending contest ${contest.id}: ${contest.title}`);
+          const endTimeKST = new Date(contest.endTime).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+          console.log(`Auto-ending contest ${contest.id}: ${contest.title} (ended at ${endTimeKST} KST)`);
           await storage.endContestAndArchive(contest.id);
           console.log(`Contest ${contest.id} has been automatically archived`);
         }
