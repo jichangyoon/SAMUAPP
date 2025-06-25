@@ -1,4 +1,4 @@
-import { memes, votes, nfts, nftComments, partnerMemes, partnerVotes, users, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type NftComment, type InsertNftComment, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser } from "@shared/schema";
+import { memes, votes, nfts, nftComments, partnerMemes, partnerVotes, users, contests, archivedContests, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type NftComment, type InsertNftComment, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest } from "@shared/schema";
 import { getDatabase } from "./db";
 import { eq, and, desc } from "drizzle-orm";
 
@@ -39,6 +39,15 @@ export interface IStorage {
   createPartnerVote(vote: InsertVote, partnerId: string): Promise<Vote>;
   hasUserVotedPartner(partnerId: string, memeId: number, voterWallet: string): Promise<boolean>;
   updatePartnerMemeVoteCount(partnerId: string, memeId: number): Promise<void>;
+  
+  // Contest operations
+  createContest(contest: InsertContest): Promise<Contest>;
+  getContests(): Promise<Contest[]>;
+  getContestById(id: number): Promise<Contest | undefined>;
+  updateContestStatus(id: number, status: string): Promise<Contest>;
+  endContestAndArchive(contestId: number): Promise<ArchivedContest>;
+  getArchivedContests(): Promise<ArchivedContest[]>;
+  getCurrentActiveContest(): Promise<Contest | undefined>;
 }
 
 export class MemStorage implements IStorage {

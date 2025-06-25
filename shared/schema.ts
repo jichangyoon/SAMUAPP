@@ -1,9 +1,22 @@
-import { pgTable, text, serial, integer, bigint, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, bigint, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+export const contests = pgTable("contests", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: text("status").notNull().default("draft"), // draft, active, ended, archived
+  startTime: timestamp("start_time"),
+  endTime: timestamp("end_time"),
+  prizePool: text("prize_pool"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const memes = pgTable("memes", {
   id: serial("id").primaryKey(),
+  contestId: integer("contest_id"), // null for current contest, specific ID for archived contests
   title: text("title").notNull(),
   description: text("description"),
   imageUrl: text("image_url").notNull(),
@@ -12,6 +25,23 @@ export const memes = pgTable("memes", {
   authorAvatarUrl: text("author_avatar_url"),
   votes: bigint("votes", { mode: "number" }).notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const archivedContests = pgTable("archived_contests", {
+  id: serial("id").primaryKey(),
+  originalContestId: integer("original_contest_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  totalMemes: integer("total_memes").notNull().default(0),
+  totalVotes: bigint("total_votes", { mode: "number" }).notNull().default(0),
+  totalParticipants: integer("total_participants").notNull().default(0),
+  winnerMemeId: integer("winner_meme_id"),
+  secondMemeId: integer("second_meme_id"),
+  thirdMemeId: integer("third_meme_id"),
+  prizePool: text("prize_pool"),
+  startTime: timestamp("start_time").notNull(),
+  endTime: timestamp("end_time").notNull(),
+  archivedAt: timestamp("archived_at").notNull().defaultNow(),
 });
 
 export const votes = pgTable("votes", {
@@ -113,6 +143,17 @@ export const insertUserSchema = createInsertSchema(users).omit({
   updatedAt: true,
 });
 
+export const insertContestSchema = createInsertSchema(contests).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertArchivedContestSchema = createInsertSchema(archivedContests).omit({
+  id: true,
+  archivedAt: true,
+});
+
 export type InsertMeme = z.infer<typeof insertMemeSchema>;
 export type Meme = typeof memes.$inferSelect;
 export type InsertVote = z.infer<typeof insertVoteSchema>;
@@ -127,3 +168,7 @@ export type InsertPartnerVote = z.infer<typeof insertPartnerVoteSchema>;
 export type PartnerVote = typeof partnerVotes.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type InsertContest = z.infer<typeof insertContestSchema>;
+export type Contest = typeof contests.$inferSelect;
+export type InsertArchivedContest = z.infer<typeof insertArchivedContestSchema>;
+export type ArchivedContest = typeof archivedContests.$inferSelect;
