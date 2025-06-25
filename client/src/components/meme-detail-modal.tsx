@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowUp, Share2, Twitter, Send, Calendar, Trophy } from "lucide-react";
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { MediaDisplay } from "@/components/media-display";
 import type { Meme } from "@shared/schema";
 
@@ -54,6 +55,7 @@ const getUserRole = (walletAddress: string, username: string) => {
 
 export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false }: MemeDetailModalProps) {
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [, setLocation] = useLocation();
   
 
 
@@ -114,9 +116,16 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <div className="font-semibold text-white">{meme.authorUsername}</div>
+                  <button 
+                    onClick={() => {
+                      onClose();
+                      setLocation(`/profile?wallet=${meme.authorWallet}`);
+                    }}
+                    className="font-semibold text-white hover:text-primary transition-colors text-left"
+                  >
+                    {meme.authorUsername}
+                  </button>
                   <div className="text-sm text-gray-400">{getUserRole(meme.authorWallet, meme.authorUsername)}</div>
-
                 </div>
               </div>
               <div className="text-right">
