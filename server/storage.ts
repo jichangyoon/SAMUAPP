@@ -806,7 +806,7 @@ export class DatabaseStorage implements IStorage {
     const contestMemes = await this.db
       .select()
       .from(memes)
-      .where(eq(memes.contestId, null))
+      .where(isNull(memes.contestId))
       .orderBy(desc(memes.votes));
 
     // Allow ending contest even with no memes
