@@ -8,6 +8,7 @@ import { Leaderboard } from "@/components/leaderboard";
 import { GoodsShop } from "@/components/goods-shop";
 import { NftGallery } from "@/components/nft-gallery";
 import { MediaDisplay } from "@/components/media-display";
+import { MemeDetailModal } from "@/components/meme-detail-modal";
 
 import { usePrivy } from '@privy-io/react-auth';
 import { Button } from "@/components/ui/button";
@@ -17,11 +18,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Image, Users, Plus, Lock } from "lucide-react";
-import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { getSamuTokenBalance, getSolBalance } from "@/lib/solana";
 import type { Meme } from "@shared/schema";
 import samuLogoImg from "@/assets/samu-logo.webp";
 
