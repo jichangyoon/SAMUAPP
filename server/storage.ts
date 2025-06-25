@@ -789,20 +789,21 @@ export class DatabaseStorage implements IStorage {
       .where(eq(memes.contestId, null))
       .orderBy(desc(memes.votes));
 
+    // Allow ending contest even with no memes
     if (contestMemes.length === 0) {
-      throw new Error("No memes found for contest");
+      console.log("No memes found for contest, creating empty archive");
     }
 
     // Calculate stats
     const totalMemes = contestMemes.length;
     const totalVotes = contestMemes.reduce((sum, meme) => sum + meme.votes, 0);
-    const uniqueParticipants = new Set(contestMemes.map(meme => meme.authorWallet)).size;
+    const uniqueParticipants = contestMemes.length > 0 ? new Set(contestMemes.map(meme => meme.authorWallet)).size : 0;
 
-    // Get top 3 memes
+    // Get top 3 memes (handle empty contest)
     const sortedMemes = contestMemes.sort((a, b) => b.votes - a.votes);
-    const winnerMemeId = sortedMemes[0]?.id;
-    const secondMemeId = sortedMemes[1]?.id;
-    const thirdMemeId = sortedMemes[2]?.id;
+    const winnerMemeId = sortedMemes[0]?.id || null;
+    const secondMemeId = sortedMemes[1]?.id || null;
+    const thirdMemeId = sortedMemes[2]?.id || null;
 
     // Archive the contest
     const [archivedContest] = await this.db
@@ -826,11 +827,13 @@ export class DatabaseStorage implements IStorage {
     // Update contest status to archived
     await this.updateContestStatus(contestId, "archived");
 
-    // Move current memes to archived contest
-    await this.db
-      .update(memes)
-      .set({ contestId: contestId })
-      .where(eq(memes.contestId, null));
+    // Move current memes to archived contest (only if there are memes)
+    if (contestMemes.length > 0) {
+      await this.db
+        .update(memes)
+        .set({ contestId: contestId })
+        .where(eq(memes.contestId, null));
+    }
 
     return archivedContest;
   }
