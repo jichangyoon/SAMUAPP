@@ -809,6 +809,8 @@ export class DatabaseStorage implements IStorage {
       .where(isNull(memes.contestId))
       .orderBy(desc(memes.votes));
 
+    console.log(`Found ${contestMemes.length} memes to archive for contest ${contestId}`);
+    
     // Allow ending contest even with no memes
     if (contestMemes.length === 0) {
       console.log("No memes found for contest, creating empty archive");
