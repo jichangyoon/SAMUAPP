@@ -647,11 +647,14 @@ export default function Home() {
                               description: "Please try again later",
                               duration: 3000
                             });
+                          } finally {
+                            setIsLoadingContestDetails(false);
                           }
                         }}
                         className="w-full"
+                        disabled={isLoadingContestDetails}
                       >
-                        <Card className={`border-border/50 hover:border-primary/30 transition-colors relative ${!isConnected ? 'opacity-70' : ''}`}>
+                        <Card className={`border-border/50 hover:border-primary/30 transition-colors relative ${!isConnected ? 'opacity-70' : ''} ${isLoadingContestDetails ? 'opacity-50 cursor-not-allowed' : ''}`}>
                           <CardContent className="p-4">
                             <div className="flex items-center justify-between">
                               <div className="text-left">
@@ -664,13 +667,19 @@ export default function Home() {
                                 </p>
                               </div>
                               <div className="flex items-center gap-2">
-                                <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-400/20">
-                                  Completed
-                                </Badge>
-                                {!isConnected && (
-                                  <Badge variant="outline" className="text-primary border-primary/50">
-                                    🔒
-                                  </Badge>
+                                {isLoadingContestDetails ? (
+                                  <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                                ) : (
+                                  <>
+                                    <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-400/20">
+                                      Completed
+                                    </Badge>
+                                    {!isConnected && (
+                                      <Badge variant="outline" className="text-primary border-primary/50">
+                                        🔒
+                                      </Badge>
+                                    )}
+                                  </>
                                 )}
                               </div>
                             </div>
