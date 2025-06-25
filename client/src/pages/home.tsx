@@ -612,6 +612,7 @@ export default function Home() {
                             setSelectedArchiveContest({
                               id: contest.originalContestId,
                               title: contest.title,
+                              description: contest.description,
                               participants: contest.totalParticipants,
                               totalVotes: contest.totalVotes,
                               status: "Completed",
@@ -727,9 +728,14 @@ export default function Home() {
                     <Card className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-400/20">
                       <CardContent className="p-4">
                         <div className="text-center">
-                          <h2 className="text-lg font-bold text-purple-400 mb-2">
+                          <h2 className="text-lg font-bold text-purple-400 mb-1">
                             {selectedArchiveContest.title}
                           </h2>
+                          {selectedArchiveContest.description && (
+                            <p className="text-sm text-purple-300/80 mb-3">
+                              {selectedArchiveContest.description}
+                            </p>
+                          )}
                           <div className="grid grid-cols-3 gap-4 text-sm items-center">
                             <div>
                               <div className="text-purple-300 font-semibold">{selectedArchiveContest.participants}</div>
