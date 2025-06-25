@@ -1,6 +1,6 @@
 import { memes, votes, nfts, nftComments, partnerMemes, partnerVotes, users, contests, archivedContests, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type NftComment, type InsertNftComment, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest } from "@shared/schema";
 import { getDatabase } from "./db";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, isNull } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -493,14 +493,14 @@ export class DatabaseStorage implements IStorage {
   async getMemes(): Promise<Meme[]> {
     if (!this.db) throw new Error("Database not available");
     
-    // Get memes that are not archived (contestId = null)
+    // Get memes that are not archived (contestId IS NULL)
     const result = await this.db
       .select()
       .from(memes)
-      .where(eq(memes.contestId, null))
+      .where(isNull(memes.contestId))
       .orderBy(desc(memes.createdAt));
     
-    console.log(`getMemes() found ${result.length} memes with contest_id = null`);
+    console.log(`getMemes() found ${result.length} memes with contest_id IS NULL`);
     return result;
   }
 
@@ -879,7 +879,7 @@ export class DatabaseStorage implements IStorage {
       await this.db
         .update(memes)
         .set({ contestId: contestId })
-        .where(eq(memes.contestId, null));
+        .where(isNull(memes.contestId));
     }
 
     console.log(`Contest ${contestId} archived with ${totalMemes} files moved to archives/contest-${contestId}/`);
