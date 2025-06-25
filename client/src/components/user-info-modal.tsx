@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { User, Trophy, TrendingUp, Calendar, Copy } from "lucide-react";
+import { User, Trophy, TrendingUp, Calendar, Copy, X } from "lucide-react";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { MediaDisplay } from "@/components/media-display";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +21,7 @@ interface UserInfoModalProps {
 export function UserInfoModal({ isOpen, onClose, walletAddress, username }: UserInfoModalProps) {
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
   const [showMemeModal, setShowMemeModal] = useState(false);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
   const { toast } = useToast();
   const { data: userProfile } = useQuery({
     queryKey: [`/api/users/profile/${walletAddress}`],
@@ -50,16 +51,22 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
       <DrawerContent className="h-[92vh] bg-black text-white border-gray-800">
         <DrawerHeader className="border-b border-gray-800 pb-4">
           <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16">
-              <AvatarImage 
-                src={userProfile?.avatarUrl} 
-                alt={userProfile?.displayName || username}
-                key={userProfile?.avatarUrl}
-              />
-              <AvatarFallback className="bg-gray-800 text-white">
-                {(userProfile?.displayName || username)?.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <button 
+              onClick={() => userProfile?.avatarUrl && setShowAvatarModal(true)}
+              className="cursor-pointer"
+              disabled={!userProfile?.avatarUrl}
+            >
+              <Avatar className="h-16 w-16">
+                <AvatarImage 
+                  src={userProfile?.avatarUrl} 
+                  alt={userProfile?.displayName || username}
+                  key={userProfile?.avatarUrl}
+                />
+                <AvatarFallback className="bg-gray-800 text-white">
+                  {(userProfile?.displayName || username)?.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </button>
             <div className="min-w-0">
               <DrawerTitle className="text-xl font-bold text-white">
                 {userProfile?.displayName || username}
@@ -190,6 +197,38 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
           meme={selectedMeme}
         />
       )}
+
+      {/* Avatar Full View Modal */}
+      <Drawer open={showAvatarModal} onOpenChange={setShowAvatarModal}>
+        <DrawerContent className="h-[92vh] bg-black text-white border-gray-800">
+          <DrawerHeader className="border-b border-gray-800 pb-4">
+            <div className="flex items-center justify-between">
+              <DrawerTitle className="text-xl font-bold text-white">
+                Profile Picture
+              </DrawerTitle>
+              <Button
+                onClick={() => setShowAvatarModal(false)}
+                variant="ghost"
+                size="sm"
+                className="text-gray-400 hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+          </DrawerHeader>
+
+          <div className="flex-1 flex items-center justify-center p-4">
+            <div className="w-full max-w-md">
+              <img 
+                src={userProfile?.avatarUrl} 
+                alt={userProfile?.displayName || username}
+                className="w-full h-auto rounded-lg"
+                style={{ maxHeight: '70vh', objectFit: 'contain' }}
+              />
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </Drawer>
   );
 }
