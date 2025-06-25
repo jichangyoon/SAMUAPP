@@ -1,15 +1,44 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Trophy, Settings } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
+import { usePrivy } from "@privy-io/react-auth";
+import type { Contest } from "@shared/schema";
 
 export function ContestHeader() {
-  // Mock contest data - in a real app this would come from an API
+  const { user } = usePrivy();
+  
+  // Check if user is admin (you can modify this logic based on your admin system)
+  const isAdmin = user?.email?.address === 'admin@samu.com' || user?.linkedAccounts?.[0]?.address === 'xfSWSv7y3SqELDe8Xs5neNCmjULpc6hwhvz5ohSrXa8';
+  
+  // Fetch current active contest
+  const { data: activeContest } = useQuery<Contest>({
+    queryKey: ["/api/admin/current-contest"],
+  });
+
   const contestData = {
-    timeLeft: "2d 14h",
-    prizePool: "10,000",
-    totalEntries: 47,
-    status: "Live"
+    timeLeft: activeContest?.endTime ? 
+      calculateTimeLeft(new Date(activeContest.endTime)) : "Manual Control",
+    prizePool: activeContest?.prizePool || "TBD",
+    totalEntries: 0, // Will be updated with real meme count
+    status: activeContest?.status === "active" ? "Live" : 
+            activeContest?.status === "draft" ? "Not Started" : "Ended"
   };
+
+  function calculateTimeLeft(endTime: Date): string {
+    const now = new Date();
+    const diff = endTime.getTime() - now.getTime();
+    
+    if (diff <= 0) return "Ended";
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    if (days > 0) return `${days}d ${hours}h`;
+    return `${hours}h`;
+  }
 
   return (
     <Card className="border-border bg-card">
@@ -19,9 +48,21 @@ export function ContestHeader() {
             <Trophy className="h-5 w-5 mr-2" />
             SAMU Meme Contest
           </h1>
-          <Badge className="bg-primary text-primary-foreground">
-            {contestData.status}
-          </Badge>
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Link href="/admin">
+                <Button size="sm" variant="outline" className="flex items-center gap-1">
+                  <Settings className="h-4 w-4" />
+                  Admin
+                </Button>
+              </Link>
+            )}
+            <Badge className={`${contestData.status === "Live" ? "bg-green-500/20 text-green-400" : 
+                              contestData.status === "Not Started" ? "bg-yellow-500/20 text-yellow-400" : 
+                              "bg-red-500/20 text-red-400"}`}>
+              {contestData.status}
+            </Badge>
+          </div>
         </div>
         
         <p className="text-muted-foreground text-sm mb-3">

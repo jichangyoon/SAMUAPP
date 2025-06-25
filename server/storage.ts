@@ -720,6 +720,129 @@ export class DatabaseStorage implements IStorage {
       .set({ votes: totalVotes })
       .where(and(eq(partnerMemes.partnerId, partnerId), eq(partnerMemes.id, memeId)));
   }
+
+  // Contest operations
+  async createContest(insertContest: InsertContest): Promise<Contest> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [contest] = await this.db
+      .insert(contests)
+      .values(insertContest)
+      .returning();
+    return contest;
+  }
+
+  async getContests(): Promise<Contest[]> {
+    if (!this.db) throw new Error("Database not available");
+    
+    return await this.db
+      .select()
+      .from(contests)
+      .orderBy(desc(contests.createdAt));
+  }
+
+  async getContestById(id: number): Promise<Contest | undefined> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [contest] = await this.db
+      .select()
+      .from(contests)
+      .where(eq(contests.id, id));
+    return contest;
+  }
+
+  async updateContestStatus(id: number, status: string): Promise<Contest> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [contest] = await this.db
+      .update(contests)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(contests.id, id))
+      .returning();
+    return contest;
+  }
+
+  async getCurrentActiveContest(): Promise<Contest | undefined> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [contest] = await this.db
+      .select()
+      .from(contests)
+      .where(eq(contests.status, "active"))
+      .limit(1);
+    return contest;
+  }
+
+  async endContestAndArchive(contestId: number): Promise<ArchivedContest> {
+    if (!this.db) throw new Error("Database not available");
+    
+    // Get contest details
+    const contest = await this.getContestById(contestId);
+    if (!contest) {
+      throw new Error("Contest not found");
+    }
+
+    // Get all memes for this contest (current memes are contestId = null)
+    const contestMemes = await this.db
+      .select()
+      .from(memes)
+      .where(eq(memes.contestId, null))
+      .orderBy(desc(memes.votes));
+
+    if (contestMemes.length === 0) {
+      throw new Error("No memes found for contest");
+    }
+
+    // Calculate stats
+    const totalMemes = contestMemes.length;
+    const totalVotes = contestMemes.reduce((sum, meme) => sum + meme.votes, 0);
+    const uniqueParticipants = new Set(contestMemes.map(meme => meme.authorWallet)).size;
+
+    // Get top 3 memes
+    const sortedMemes = contestMemes.sort((a, b) => b.votes - a.votes);
+    const winnerMemeId = sortedMemes[0]?.id;
+    const secondMemeId = sortedMemes[1]?.id;
+    const thirdMemeId = sortedMemes[2]?.id;
+
+    // Archive the contest
+    const [archivedContest] = await this.db
+      .insert(archivedContests)
+      .values({
+        originalContestId: contestId,
+        title: contest.title,
+        description: contest.description,
+        totalMemes,
+        totalVotes,
+        totalParticipants: uniqueParticipants,
+        winnerMemeId,
+        secondMemeId,
+        thirdMemeId,
+        prizePool: contest.prizePool,
+        startTime: contest.startTime || contest.createdAt,
+        endTime: new Date(),
+      })
+      .returning();
+
+    // Update contest status to archived
+    await this.updateContestStatus(contestId, "archived");
+
+    // Move current memes to archived contest
+    await this.db
+      .update(memes)
+      .set({ contestId: contestId })
+      .where(eq(memes.contestId, null));
+
+    return archivedContest;
+  }
+
+  async getArchivedContests(): Promise<ArchivedContest[]> {
+    if (!this.db) throw new Error("Database not available");
+    
+    return await this.db
+      .select()
+      .from(archivedContests)
+      .orderBy(desc(archivedContests.archivedAt));
+  }
 }
 
 // Use DatabaseStorage if database is available, otherwise fallback to MemStorage
