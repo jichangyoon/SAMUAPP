@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Image, Users, Plus } from "lucide-react";
+import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Image, Users, Plus, Lock } from "lucide-react";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
@@ -562,116 +562,95 @@ export default function Home() {
                 <div className="space-y-4">
                   <h3 className="text-md font-semibold text-foreground">Previous Contests</h3>
 
-                  <button
-                    onClick={() => {
-                      if (!isConnected) {
-                        toast({
-                          title: "Please login first",
-                          description: "You need to login to view contest archives - our community heritage",
-                          duration: 1000
-                        });
-                        return;
-                      }
-                      setSelectedArchiveContest({
-                        id: 1,
-                        title: "Contest #1 - December 2024",
-                        participants: 50,
-                        totalVotes: 1247,
-                        status: "Completed",
-                        winner: {
-                          name: "SAMU TO MARS",
-                          author: "crypto_legend",
-                          votes: 324
-                        },
-                        secondPlace: "DIAMOND PAWS",
-                        thirdPlace: "PACK LEADER",
-                        memes: [
-                          {
-                            id: 1,
-                            title: "SAMU TO MARS",
-                            author: "crypto_legend",
-                            votes: 324,
-                            rank: 1,
-                            imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23F7DC6F'/%3E%3Ccircle cx='200' cy='200' r='100' fill='%23E74C3C'/%3E%3Ctext x='200' y='180' text-anchor='middle' font-family='Arial' font-size='24' font-weight='bold' fill='white'%3ESAMU%3C/text%3E%3Ctext x='200' y='220' text-anchor='middle' font-family='Arial' font-size='16' fill='white'%3ETO MARS%3C/text%3E%3C/svg%3E",
-                            description: "The ultimate SAMU moon mission meme"
-                          },
-                          {
-                            id: 2,
-                            title: "DIAMOND PAWS",
-                            author: "gem_hands",
-                            votes: 287,
-                            rank: 2,
-                            imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%23667BC6'/%3E%3Cpolygon points='200,100 250,150 200,200 150,150' fill='%2300BFFF'/%3E%3Ctext x='200' y='260' text-anchor='middle' font-family='Arial' font-size='20' font-weight='bold' fill='white'%3EDIAMOND%3C/text%3E%3Ctext x='200' y='290' text-anchor='middle' font-family='Arial' font-size='20' font-weight='bold' fill='white'%3EPAWS%3C/text%3E%3C/svg%3E",
-                            description: "Diamond hands, diamond paws"
-                          },
-                          {
-                            id: 3,
-                            title: "PACK LEADER",
-                            author: "wolf_alpha",
-                            votes: 245,
-                            rank: 3,
-                            imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%238B4513'/%3E%3Ccircle cx='200' cy='180' r='60' fill='%23D2691E'/%3E%3Cpath d='M170 160 L200 140 L230 160 L220 180 L180 180 Z' fill='%23654321'/%3E%3Ctext x='200' y='280' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='white'%3EPACK LEADER%3C/text%3E%3C/svg%3E",
-                            description: "Leading the pack to victory"
-                          },
-                          {
-                            id: 4,
-                            title: "HODL STRONG",
-                            author: "diamond_wolf",
-                            votes: 198,
-                            rank: 4,
-                            imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%232C3E50'/%3E%3Crect x='100' y='150' width='200' height='100' fill='%23F39C12'/%3E%3Ctext x='200' y='190' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold'%3EHODL%3C/text%3E%3Ctext x='200' y='220' text-anchor='middle' font-family='Arial' font-size='16' font-weight='bold'%3ESTRONG%3C/text%3E%3C/svg%3E",
-                            description: "Never selling, always holding"
-                          },
-                          {
-                            id: 5,
-                            title: "MOON WOLF",
-                            author: "lunar_pack",
-                            votes: 156,
-                            rank: 5,
-                            imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%231a1a2e'/%3E%3Ccircle cx='150' cy='100' r='40' fill='%23f5f5f5'/%3E%3Ccircle cx='250' cy='200' r='50' fill='%23654321'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='%23f5f5f5'%3EMOON WOLF%3C/text%3E%3C/svg%3E",
-                            description: "Howling at the crypto moon"
-                          },
-                          {
-                            id: 6,
-                            title: "ALPHA GAINS",
-                            author: "profit_hunter",
-                            votes: 134,
-                            rank: 6,
-                            imageUrl: "data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='400' fill='%2327ae60'/%3E%3Cpath d='M200 100 L300 200 L250 250 L200 200 L150 250 L100 200 Z' fill='%23f1c40f'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial' font-size='18' font-weight='bold' fill='white'%3EALPHA GAINS%3C/text%3E%3C/svg%3E",
-                            description: "Always making alpha gains"
-                          }
-                        ]
-                      });
-                      setArchiveView('contest');
-                    }}
-                    className="w-full"
-                  >
-                    <Card className={`border-border/50 hover:border-primary/30 transition-colors relative ${!isConnected ? 'opacity-70' : ''}`}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="text-left">
-                            <h4 className="font-semibold text-foreground">Contest #1 - December 2024</h4>
-                            <p className="text-sm text-muted-foreground">
-                              50 participants • 1,247 votes
-                              {!isConnected && (
-                                <span className="text-primary ml-2">• Login to view</span>
-                              )}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-400/20">
-                              Completed
-                            </Badge>
-                            {!isConnected && (
-                              <Badge variant="outline" className="text-primary border-primary/50">
-                                🔒
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
+                  {archivedContests.length === 0 ? (
+                    <Card className="border-border/50">
+                      <CardContent className="p-8 text-center">
+                        <Archive className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                        <p className="text-muted-foreground">No archived contests yet</p>
+                        <p className="text-sm text-muted-foreground/70">Completed contests will appear here</p>
                       </CardContent>
                     </Card>
-                  </button>
+                  ) : (
+                    archivedContests.map((contest: any) => (
+                      <button
+                        key={contest.id}
+                        onClick={async () => {
+                          if (!isConnected) {
+                            toast({
+                              title: "Please login first",
+                              description: "You need to login to view contest archives - our community heritage",
+                              duration: 1000
+                            });
+                            return;
+                          }
+                          
+                          try {
+                            // Fetch contest memes
+                            const response = await fetch(`/api/memes?contestId=${contest.originalContestId}`);
+                            const memesData = await response.json();
+                            
+                            const memes = memesData.memes || [];
+                            
+                            setSelectedArchiveContest({
+                              id: contest.originalContestId,
+                              title: contest.title,
+                              participants: contest.totalParticipants,
+                              totalVotes: contest.totalVotes,
+                              status: "Completed",
+                              winner: {
+                                name: memes.length > 0 ? memes[0].title : "Unknown",
+                                author: memes.length > 0 ? memes[0].authorUsername : "Unknown",
+                                votes: memes.length > 0 ? memes[0].votes : 0
+                              },
+                              secondPlace: memes.length > 1 ? memes[1].title : "Unknown",
+                              thirdPlace: memes.length > 2 ? memes[2].title : "Unknown",
+                              memes: memes.map((meme: any, index: number) => ({
+                                ...meme,
+                                rank: index + 1,
+                                imageUrl: meme.imageUrl,
+                                author: meme.authorUsername
+                              }))
+                            });
+                            setArchiveView('contest');
+                          } catch (error) {
+                            console.error('Failed to load contest memes:', error);
+                            toast({
+                              title: "Error loading contest data",
+                              description: "Please try again later",
+                              duration: 3000
+                            });
+                          }
+                        }}
+                        className="w-full"
+                      >
+                        <Card className={`border-border/50 hover:border-primary/30 transition-colors relative ${!isConnected ? 'opacity-70' : ''}`}>
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="text-left">
+                                <h4 className="font-semibold text-foreground">{contest.title}</h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {contest.totalParticipants} participants • {contest.totalVotes} votes
+                                  {!isConnected && (
+                                    <span className="text-primary ml-2">• Login to view</span>
+                                  )}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-400/20">
+                                  Completed
+                                </Badge>
+                                {!isConnected && (
+                                  <Badge variant="outline" className="text-primary border-primary/50">
+                                    🔒
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </button>
+                    ))
+                  )}
                 </div>
               </div>
             ) : (
