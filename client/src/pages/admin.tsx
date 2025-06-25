@@ -7,13 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Play, Square, Archive, Plus, Clock, Trophy, ArrowLeft } from "lucide-react";
+import { Play, Square, Archive, Plus, Clock, Trophy } from "lucide-react";
 import type { Contest, ArchivedContest } from "@shared/schema";
-import { useLocation } from "wouter";
 
 export function Admin() {
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newContest, setNewContest] = useState({
     title: "",
@@ -108,55 +106,10 @@ export function Admin() {
   }
 
   return (
-    <div 
-      className="min-h-screen bg-background text-foreground p-4"
-      onTouchStart={(e) => {
-        const touch = e.touches[0];
-        (e.currentTarget as any).touchStartX = touch.clientX;
-        (e.currentTarget as any).touchStartTime = Date.now();
-      }}
-      onTouchMove={(e) => {
-        const touch = e.touches[0];
-        const touchStartX = (e.currentTarget as any).touchStartX;
-        const deltaX = touch.clientX - touchStartX;
-
-        // Only apply transform for right swipe
-        if (deltaX > 0) {
-          const progress = Math.min(deltaX / 150, 1);
-          (e.currentTarget as HTMLElement).style.transform = `translateX(${deltaX * 0.3}px)`;
-          (e.currentTarget as HTMLElement).style.opacity = String(1 - progress * 0.2);
-        }
-      }}
-      onTouchEnd={(e) => {
-        const touch = e.changedTouches[0];
-        const touchStartX = (e.currentTarget as any).touchStartX;
-        const touchStartTime = (e.currentTarget as any).touchStartTime;
-        const touchEndX = touch.clientX;
-        const deltaX = touchEndX - touchStartX;
-        const deltaTime = Date.now() - touchStartTime;
-
-        // Reset transform
-        (e.currentTarget as HTMLElement).style.transform = 'translateX(0)';
-        (e.currentTarget as HTMLElement).style.opacity = '1';
-
-        // Swipe right (left to right) to go back with velocity check
-        if (deltaX > 100 && deltaTime < 300) {
-          setLocation('/');
-        }
-      }}
-    >
+    <div className="min-h-screen bg-background text-foreground p-4">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
-        <div className="text-center py-8 relative">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setLocation('/')}
-            className="absolute left-0 top-8 text-foreground hover:text-primary px-2 py-1 text-xs h-6"
-          >
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Back
-          </Button>
+        <div className="text-center py-8">
           <h1 className="text-3xl font-bold text-primary mb-2">Contest Admin Panel</h1>
           <p className="text-muted-foreground">Manage SAMU meme contests</p>
         </div>
