@@ -10,8 +10,8 @@ export const contests = pgTable("contests", {
   startTime: timestamp("start_time"),
   endTime: timestamp("end_time"),
   prizePool: text("prize_pool"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const memes = pgTable("memes", {

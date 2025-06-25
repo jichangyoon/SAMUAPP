@@ -10,11 +10,8 @@ import type { Contest } from "@shared/schema";
 export function ContestHeader() {
   const { user, authenticated } = usePrivy();
   
-  // Temporarily show admin button for all users for testing
-  const isAdmin = true; // Change this back to proper authentication later
-  
-  // Debug: Log user info to console
-  console.log('User info:', { authenticated, user, isAdmin });
+  // Check if user is admin - allow authenticated users to access admin panel
+  const isAdmin = authenticated;
   
   // Fetch current active contest
   const { data: activeContest } = useQuery<Contest>({
