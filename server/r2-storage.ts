@@ -28,7 +28,7 @@ export async function uploadToR2(
   folder: string = 'uploads',
   maxSize?: number
 ): Promise<UploadResult> {
-  console.log(`[R2] uploadToR2 function called with folder="${folder}", bucket="${process.env.R2_BUCKET_NAME}"`);
+
   // Check file size if limit specified
   if (maxSize && file.length > maxSize) {
     return {
@@ -48,8 +48,6 @@ export async function uploadToR2(
     } else {
       key = fileName; // 루트에 저장
     }
-    
-    console.log(`R2 upload debug: bucket="${process.env.R2_BUCKET_NAME}", folder="${folder}", key="${key}", fileName="${fileName}"`);
 
     // MIME 타입 결정
     const mimeType = getMimeType(fileExtension);
@@ -96,7 +94,7 @@ export async function deleteFromR2(
     });
 
     await r2Client.send(command);
-    console.log('R2 파일 삭제 성공:', key);
+    
     return {
       success: true,
       key: key

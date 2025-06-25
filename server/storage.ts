@@ -393,7 +393,6 @@ export class DatabaseStorage implements IStorage {
     // Update author info in all memes if profile changed
     if (updates.displayName || updates.avatarUrl) {
       await this.updateUserMemeAuthorInfo(walletAddress, updates.displayName || '', updates.avatarUrl);
-      console.log('Updated author info in memes for user:', walletAddress, 'name:', updates.displayName, 'avatar:', updates.avatarUrl);
     }
     
     return user;
@@ -413,8 +412,6 @@ export class DatabaseStorage implements IStorage {
       .set(updateData)
       .where(eq(memes.authorWallet, walletAddress))
       .returning();
-    
-    console.log('Updated memes count:', result.length, 'for wallet:', walletAddress, 'with data:', updateData);
   }
 
   async getUserMemes(walletAddress: string): Promise<Meme[]> {
@@ -457,7 +454,6 @@ export class DatabaseStorage implements IStorage {
       .where(isNull(memes.contestId))
       .orderBy(desc(memes.createdAt));
     
-    console.log(`getMemes() found ${result.length} memes with contest_id IS NULL`);
     return result;
   }
 
@@ -766,12 +762,7 @@ export class DatabaseStorage implements IStorage {
       .where(isNull(memes.contestId))
       .orderBy(desc(memes.votes));
 
-    console.log(`Found ${contestMemes.length} memes to archive for contest ${contestId}`);
-    
     // Allow ending contest even with no memes
-    if (contestMemes.length === 0) {
-      console.log("No memes found for contest, creating empty archive");
-    }
 
     // Move all contest files to archive in R2 storage
     if (contestMemes.length > 0) {
