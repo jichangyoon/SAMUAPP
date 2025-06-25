@@ -118,7 +118,7 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
                 <div>
                   <button 
                     onClick={() => setShowUserModal(true)}
-                    className="font-semibold text-white hover:text-primary transition-colors cursor-pointer text-left"
+                    className="font-semibold text-white cursor-pointer text-left"
                   >
                     {meme.authorUsername}
                   </button>

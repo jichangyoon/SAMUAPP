@@ -383,6 +383,7 @@ Changelog:
 - June 25, 2025. Cleaned up all test archive data - removed 12 archived contests, 17 archived memes, and related vote data for fresh start
 - June 25, 2025. Improved contest header UI - replaced "Manual Control TBD" with "Soon" and "TBA" for better user experience
 - June 25, 2025. Added clickable user profiles in meme detail modal - clicking author name opens UserInfoModal for better user interaction
+- June 25, 2025. Removed hover effects from mobile interface - optimized for touch interaction instead of mouse hover
 - June 25, 2025. Fixed admin panel Active Contests filtering - archived contests no longer appear in active section
 - June 25, 2025. Completed proper separation between active and archived contest management in admin interface
 - June 24, 2025. Fixed profile image storage - now correctly uploads to R2 cloud storage in profiles/ folder
