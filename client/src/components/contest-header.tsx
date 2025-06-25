@@ -8,10 +8,13 @@ import { usePrivy } from "@privy-io/react-auth";
 import type { Contest } from "@shared/schema";
 
 export function ContestHeader() {
-  const { user } = usePrivy();
+  const { user, authenticated } = usePrivy();
   
-  // Check if user is admin (you can modify this logic based on your admin system)
-  const isAdmin = user?.email?.address === 'admin@samu.com' || user?.linkedAccounts?.[0]?.address === 'xfSWSv7y3SqELDe8Xs5neNCmjULpc6hwhvz5ohSrXa8';
+  // Temporarily show admin button for all users for testing
+  const isAdmin = true; // Change this back to proper authentication later
+  
+  // Debug: Log user info to console
+  console.log('User info:', { authenticated, user, isAdmin });
   
   // Fetch current active contest
   const { data: activeContest } = useQuery<Contest>({
