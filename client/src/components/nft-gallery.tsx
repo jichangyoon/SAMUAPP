@@ -11,11 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { NftComment } from "@shared/schema";
 import { SAMU_NFTS, type StaticNft } from "@/data/nft-data";
 
-interface NftGalleryProps {
-  isLoading?: boolean;
-}
-
-export function NftGallery({ isLoading = false }: NftGalleryProps) {
+export function NftGallery() {
   const [selectedNft, setSelectedNft] = useState<StaticNft | null>(null);
   const [newComment, setNewComment] = useState("");
   const { authenticated, user } = usePrivy();
@@ -36,6 +32,7 @@ export function NftGallery({ isLoading = false }: NftGalleryProps) {
 
   // Use static NFT data for instant loading
   const nfts = SAMU_NFTS;
+  const isLoading = false;
 
   // Fetch comments for selected NFT
   const { data: comments = [] } = useQuery<NftComment[]>({

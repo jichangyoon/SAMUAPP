@@ -83,15 +83,6 @@ export default function Home() {
     queryKey: ["/api/admin/archived-contests"],
   });
 
-  // Get NFTs with loading state - force loading to show for demo
-  const { data: nfts = [], isLoading: isLoadingNfts, isFetching } = useQuery({
-    queryKey: ["/api/nfts"],
-    staleTime: 0, // Always fetch fresh data to show loading
-  });
-
-  // Show loading if either loading or fetching
-  const showNftLoading = isLoadingNfts || isFetching;
-
   // User profile data from database
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile-header', walletAddress],
@@ -828,36 +819,7 @@ export default function Home() {
           </TabsContent>
 
           <TabsContent value="nfts" className="mt-4 space-y-4 pb-24">
-            {showNftLoading ? (
-              <div className="space-y-4">
-                {/* NFT Header */}
-                <Card className="bg-black border-0">
-                  <CardContent className="p-4 text-center">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <Image className="h-5 w-5 text-[hsl(50,85%,75%)]" />
-                      <h2 className="text-xl font-bold text-[hsl(50,85%,75%)]">SAMU Wolf Collection</h2>
-                    </div>
-                    <p className="text-sm text-[hsl(50,85%,75%)]/90">
-                      164 unique SAMU Wolf NFTs with legendary traits
-                    </p>
-                  </CardContent>
-                </Card>
-
-                {/* Loading State */}
-                <Card className="border-border/50">
-                  <CardContent className="p-8 text-center">
-                    <div className="animate-spin h-12 w-12 border-3 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-                    <p className="text-lg font-medium text-foreground mb-2">Loading NFT Collection</p>
-                    <p className="text-sm text-muted-foreground">Fetching 164 SAMU Wolf NFTs...</p>
-                    <div className="mt-4 w-full bg-muted rounded-full h-2">
-                      <div className="bg-primary h-2 rounded-full animate-pulse" style={{ width: "45%" }}></div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            ) : (
-              <NftGallery isLoading={showNftLoading} />
-            )}
+            <NftGallery />
           </TabsContent>
         </Tabs>
       </div>
