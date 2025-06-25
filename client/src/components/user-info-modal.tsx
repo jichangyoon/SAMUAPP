@@ -60,7 +60,7 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
                 {(userProfile?.displayName || username)?.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1">
+            <div className="min-w-0">
               <DrawerTitle className="text-xl font-bold text-white">
                 {userProfile?.displayName || username}
               </DrawerTitle>
