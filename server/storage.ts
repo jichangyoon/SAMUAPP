@@ -493,12 +493,20 @@ export class DatabaseStorage implements IStorage {
   async getMemes(): Promise<Meme[]> {
     if (!this.db) throw new Error("Database not available");
     
-    // Only show memes that are not archived (contestId is null = current contest)
-    return await this.db
-      .select()
-      .from(memes)
-      .where(eq(memes.contestId, null))
-      .orderBy(desc(memes.createdAt));
+    // Get current active contest
+    const activeContest = await this.getCurrentActiveContest();
+    
+    if (activeContest) {
+      // Show memes for current active contest (contestId = null are current submissions)
+      return await this.db
+        .select()
+        .from(memes)
+        .where(eq(memes.contestId, null))
+        .orderBy(desc(memes.createdAt));
+    } else {
+      // No active contest, return empty array
+      return [];
+    }
   }
 
   async getMemeById(id: number): Promise<Meme | undefined> {
