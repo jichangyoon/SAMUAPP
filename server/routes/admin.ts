@@ -2,8 +2,26 @@ import { Router } from "express";
 import { insertContestSchema } from "@shared/schema";
 import { storage } from "../storage";
 import { contestScheduler } from "../contest-scheduler";
+import { config } from "../config";
 
 const router = Router();
+
+// Check if user is admin
+router.post("/check-admin", async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.json({ isAdmin: false });
+    }
+    
+    const isAdmin = config.ADMIN_EMAILS.includes(email.toLowerCase());
+    res.json({ isAdmin });
+  } catch (error) {
+    console.error("Error checking admin status:", error);
+    res.status(500).json({ error: "Failed to check admin status" });
+  }
+});
 
 // Get all contests (excluding archived ones)
 router.get("/contests", async (req, res) => {

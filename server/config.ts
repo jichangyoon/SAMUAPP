@@ -19,4 +19,7 @@ export const config = {
   
   // Voting
   VOTING_RESET_INTERVAL: 24 * 60 * 60 * 1000, // 24시간 (밀리초)
+  
+  // Admin
+  ADMIN_EMAILS: process.env.ADMIN_EMAILS?.split(',').map(email => email.trim()) || [],
 } as const;

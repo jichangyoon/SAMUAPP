@@ -375,6 +375,12 @@ Changelog:
 - June 25, 2025. Prevented code conflicts by properly managing contest state queries and conditional UI rendering
 - June 25, 2025. Fixed admin panel Active Contests filtering - archived contests no longer appear in active section
 - June 25, 2025. Completed proper separation between active and archived contest management in admin interface
+- June 25, 2025. Added "Back to Home" button to admin panel for improved navigation
+- June 25, 2025. Implemented admin authentication system using ADMIN_EMAILS environment variable
+- June 25, 2025. Admin button now only appears for authorized users, hidden from regular users
+- June 25, 2025. Enhanced security with email-based admin role verification system
+- June 25, 2025. Fixed admin panel Active Contests filtering - archived contests no longer appear in active section
+- June 25, 2025. Completed proper separation between active and archived contest management in admin interface
 - June 24, 2025. Fixed profile image storage - now correctly uploads to R2 cloud storage in profiles/ folder
 - June 24, 2025. Verified profile image R2 integration - 42KB PNG successfully uploaded and accessible via public URL
 - June 24, 2025. Implemented comprehensive display name uniqueness validation system with real-time availability checking
