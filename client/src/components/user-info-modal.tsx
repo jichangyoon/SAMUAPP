@@ -23,6 +23,14 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
   const [showMemeModal, setShowMemeModal] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const { toast } = useToast();
+
+  const showStatsToast = (statType: string, description: string) => {
+    toast({
+      title: statType,
+      description: description,
+      duration: 2000,
+    });
+  };
   const { data: userProfile } = useQuery({
     queryKey: [`/api/users/profile/${walletAddress}`],
     enabled: isOpen && !!walletAddress,
@@ -97,7 +105,10 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {/* Stats Cards */}
           <div className="grid grid-cols-2 gap-4">
-            <Card className="bg-gray-900 border-gray-800">
+            <Card 
+              className="bg-gray-900 border-gray-800 cursor-pointer hover:bg-gray-800 transition-colors"
+              onClick={() => showStatsToast("Memes Created", "전체 제출한 밈의 개수입니다. 각 밈은 투표를 받아 점수를 얻을 수 있습니다.")}
+            >
               <CardContent className="p-4 text-center">
                 <div className="flex items-center justify-center mb-2">
                   <Trophy className="h-5 w-5 text-yellow-400" />
@@ -107,7 +118,10 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
               </CardContent>
             </Card>
 
-            <Card className="bg-gray-900 border-gray-800">
+            <Card 
+              className="bg-gray-900 border-gray-800 cursor-pointer hover:bg-gray-800 transition-colors"
+              onClick={() => showStatsToast("Total Votes", "이 사용자의 모든 밈이 받은 총 투표 수입니다. 높을수록 인기가 많다는 뜻입니다.")}
+            >
               <CardContent className="p-4 text-center">
                 <div className="flex items-center justify-center mb-2">
                   <TrendingUp className="h-5 w-5 text-green-400" />
@@ -117,7 +131,10 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
               </CardContent>
             </Card>
 
-            <Card className="bg-gray-900 border-gray-800">
+            <Card 
+              className="bg-gray-900 border-gray-800 cursor-pointer hover:bg-gray-800 transition-colors"
+              onClick={() => showStatsToast("Votes Cast", "이 사용자가 다른 밈에 투표한 총 횟수입니다. 활발한 참여도를 나타냅니다.")}
+            >
               <CardContent className="p-4 text-center">
                 <div className="flex items-center justify-center mb-2">
                   <User className="h-5 w-5 text-blue-400" />
@@ -127,7 +144,10 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
               </CardContent>
             </Card>
 
-            <Card className="bg-gray-900 border-gray-800">
+            <Card 
+              className="bg-gray-900 border-gray-800 cursor-pointer hover:bg-gray-800 transition-colors"
+              onClick={() => showStatsToast("Avg Votes", "밈 하나당 평균적으로 받은 투표 수입니다. 일관성 있는 품질을 나타냅니다.")}
+            >
               <CardContent className="p-4 text-center">
                 <div className="flex items-center justify-center mb-2">
                   <Calendar className="h-5 w-5 text-purple-400" />
