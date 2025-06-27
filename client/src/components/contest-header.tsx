@@ -42,18 +42,18 @@ export function ContestHeader() {
     const now = new Date();
     const diff = endTime.getTime() - now.getTime();
     
-    if (diff <= 0) return "종료됨";
+    if (diff <= 0) return "Contest Ended";
     
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
     
-    if (days > 1) return `${days}일 ${hours}시간`;
-    if (days === 1) return `${days}일 ${hours}시간 ${minutes}분`;
-    if (hours > 0) return `${hours}시간 ${minutes}분 ${seconds}초`;
-    if (minutes > 0) return `${minutes}분 ${seconds}초`;
-    return `${seconds}초`;
+    if (days > 1) return `${days}d ${hours}h`;
+    if (days === 1) return `${days}d ${hours}h ${minutes}m`;
+    if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
+    if (minutes > 0) return `${minutes}m ${seconds}s`;
+    return `${seconds}s`;
   }
 
   return (
@@ -73,18 +73,20 @@ export function ContestHeader() {
           </div>
         </div>
         
-        <p className="text-muted-foreground text-sm mb-3">
+        <p className="text-muted-foreground text-sm mb-4">
           Submit your best SAMU memes and vote with your voting power. The most voted meme wins!
         </p>
         
-        <div className="grid grid-cols-3 gap-3 text-center">
-          <div className="bg-accent rounded-lg p-2">
-            <div className="text-lg font-bold text-foreground">
-              {contestData.timeLeft}
-            </div>
-            <div className="text-xs text-muted-foreground">Time Left</div>
+        {/* Time Left - Full width at top */}
+        <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-3 mb-4 text-center">
+          <div className="text-2xl font-bold text-green-400">
+            {contestData.timeLeft}
           </div>
-          
+          <div className="text-sm text-green-300/80">Time Remaining</div>
+        </div>
+        
+        {/* Prize Pool and Entries - Bottom row */}
+        <div className="grid grid-cols-2 gap-3 text-center">
           <div className="bg-accent rounded-lg p-2">
             <div className="text-lg font-bold text-primary">
               {contestData.prizePool}
