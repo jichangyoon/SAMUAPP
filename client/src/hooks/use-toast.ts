@@ -162,10 +162,11 @@ function toast({ ...props }: Toast) {
     },
   })
 
-  // Auto dismiss after delay
+  // Auto dismiss after delay - use duration prop if provided, otherwise use default
+  const dismissDelay = props.duration || TOAST_AUTO_DISMISS_DELAY
   setTimeout(() => {
     dismiss()
-  }, TOAST_AUTO_DISMISS_DELAY)
+  }, dismissDelay)
 
   return {
     id: id,
