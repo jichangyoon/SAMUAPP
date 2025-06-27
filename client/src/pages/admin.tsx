@@ -226,12 +226,12 @@ export function Admin() {
                       
                       <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                         <div>
-                          <span className="text-muted-foreground">Start: </span>
-                          <span>{contest.startTime ? new Date(contest.startTime).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : "Manual"}</span>
+                          <span className="text-muted-foreground">Duration: </span>
+                          <span>{contest.durationDays || 7}일</span>
                         </div>
                         <div>
-                          <span className="text-muted-foreground">End: </span>
-                          <span>{contest.endTime ? new Date(contest.endTime).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : "Manual"}</span>
+                          <span className="text-muted-foreground">Status: </span>
+                          <span>{contest.startTime ? "시작됨" : "시작 대기 중"}</span>
                         </div>
                       </div>
 

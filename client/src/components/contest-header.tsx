@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import type { Contest } from "@shared/schema";
 
 export function ContestHeader() {
   const { user, authenticated } = usePrivy();
+  const [currentTime, setCurrentTime] = useState(new Date());
   
   // Check if user is admin - allow authenticated users to access admin panel
   const isAdmin = authenticated;
@@ -17,6 +19,15 @@ export function ContestHeader() {
   const { data: activeContest } = useQuery<Contest>({
     queryKey: ["/api/admin/current-contest"],
   });
+
+  // 1초마다 현재 시간 업데이트
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   const contestData = {
     timeLeft: activeContest?.endTime ? 
@@ -31,15 +42,18 @@ export function ContestHeader() {
     const now = new Date();
     const diff = endTime.getTime() - now.getTime();
     
-    if (diff <= 0) return "Ended";
+    if (diff <= 0) return "종료됨";
     
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
     
-    if (days > 0) return `${days}일 ${hours}시간`;
-    if (hours > 0) return `${hours}시간 ${minutes}분`;
-    return `${minutes}분`;
+    if (days > 1) return `${days}일 ${hours}시간`;
+    if (days === 1) return `${days}일 ${hours}시간 ${minutes}분`;
+    if (hours > 0) return `${hours}시간 ${minutes}분 ${seconds}초`;
+    if (minutes > 0) return `${minutes}분 ${seconds}초`;
+    return `${seconds}초`;
   }
 
   return (

@@ -68,7 +68,6 @@ router.post("/contests", async (req, res) => {
 router.post("/contests/:id/start", async (req, res) => {
   try {
     const contestId = parseInt(req.params.id);
-    const { durationDays = 7 } = req.body; // 기본값 7일
     
     // Check if there's already an active contest
     const activeContest = await storage.getCurrentActiveContest();
@@ -76,19 +75,25 @@ router.post("/contests/:id/start", async (req, res) => {
       return res.status(400).json({ error: "Another contest is already active" });
     }
 
+    // 콘테스트 정보 가져오기
+    const contest = await storage.getContestById(contestId);
+    if (!contest) {
+      return res.status(404).json({ error: "Contest not found" });
+    }
+
     // 시작 시간을 현재 시간으로 설정
     const startTime = new Date();
-    // 종료 시간을 시작 시간 + durationDays로 계산
+    // 종료 시간을 시작 시간 + durationDays로 계산 (기본 7일)
+    const durationDays = contest.durationDays || 7;
     const endTime = new Date(startTime.getTime() + (durationDays * 24 * 60 * 60 * 1000));
 
     // 콘테스트 시작 및 시간 설정
-    const contest = await storage.updateContestStatus(contestId, "active");
+    const updatedContest = await storage.updateContestStatus(contestId, "active");
     
-    // startTime과 endTime 업데이트 (스키마가 허용한다면)
-    // 여기서는 일단 스케줄러로 자동 종료 설정
-    contestScheduler.scheduleContestEnd(contest.id, endTime);
+    // 자동 종료 스케줄링
+    contestScheduler.scheduleContestEnd(updatedContest.id, endTime);
     
-    res.json({ ...contest, startTime, endTime });
+    res.json({ ...updatedContest, startTime, endTime });
   } catch (error) {
     console.error("Error starting contest:", error);
     res.status(500).json({ error: "Failed to start contest" });
