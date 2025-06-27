@@ -165,14 +165,9 @@ export default function Home() {
       setSelectedMeme(null);
       refetch(); // Refresh the memes list
       
-      // Invalidate user stats cache for the meme author to update vote counts
+      // Only invalidate the specific meme author's stats cache
       queryClient.invalidateQueries({ 
-        predicate: (query) => 
-          query.queryKey[0] === 'user-stats' || 
-          query.queryKey[0] === 'user-memes' ||
-          (Array.isArray(query.queryKey) && query.queryKey.some(key => 
-            typeof key === 'string' && key.includes('/stats')
-          ))
+        queryKey: ['user-stats', meme.authorWallet]
       });
     } catch (error: any) {
       toast({
