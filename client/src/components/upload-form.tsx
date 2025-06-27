@@ -155,34 +155,8 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
     try {
       const file = values.image[0];
       
-      // Test connectivity first
-      try {
-        const testResponse = await fetch('/api/memes', { method: 'HEAD' });
-        if (!testResponse.ok) {
-          throw new Error('Server connection failed');
-        }
-      } catch (connectError) {
-        throw new Error('Cannot connect to server. Please check your internet connection.');
-      }
-      
-      // Upload file to server with retry logic
-      let imageUrl;
-      let uploadAttempts = 0;
-      const maxAttempts = 3;
-      
-      while (uploadAttempts < maxAttempts) {
-        try {
-          imageUrl = await uploadFile(file);
-          break;
-        } catch (uploadError) {
-          uploadAttempts++;
-          if (uploadAttempts >= maxAttempts) {
-            throw uploadError;
-          }
-          // Wait before retry
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      }
+      // Upload file to server
+      const imageUrl = await uploadFile(file);
       
       const memeData = {
         title: values.title,
