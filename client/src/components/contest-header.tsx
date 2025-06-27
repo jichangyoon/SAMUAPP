@@ -30,8 +30,8 @@ export function ContestHeader() {
   }, []);
 
   const contestData = {
-    timeLeft: activeContest?.endTime ? 
-      calculateTimeLeft(new Date(activeContest.endTime)) : "Soon",
+    timeLeft: activeContest?.endTime && activeContest?.status === "active" ? 
+      calculateTimeLeft(new Date(activeContest.endTime)) : null,
     prizePool: activeContest?.prizePool || "TBA",
     totalEntries: 0, // Will be updated with real meme count
     status: activeContest?.status === "active" ? "Live" : 
@@ -77,13 +77,15 @@ export function ContestHeader() {
           Submit your best SAMU memes and vote with your voting power. The most voted meme wins!
         </p>
         
-        {/* Time Left - Full width at top */}
-        <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-3 mb-4 text-center">
-          <div className="text-2xl font-bold text-green-400">
-            {contestData.timeLeft}
+        {/* Time Left - Only show if contest is active */}
+        {contestData.timeLeft && (
+          <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-2 mb-4 text-center">
+            <div className="text-lg font-bold text-green-400">
+              {contestData.timeLeft}
+            </div>
+            <div className="text-xs text-green-300/80">Time Remaining</div>
           </div>
-          <div className="text-sm text-green-300/80">Time Remaining</div>
-        </div>
+        )}
         
         {/* Prize Pool and Entries - Bottom row */}
         <div className="grid grid-cols-2 gap-3 text-center">
