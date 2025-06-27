@@ -28,7 +28,7 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
     toast({
       title: statType,
       description: description,
-      duration: 2000,
+      duration: 1500,
     });
   };
   const { data: userProfile } = useQuery({
