@@ -52,20 +52,11 @@ router.post("/contests", async (req, res) => {
   try {
     const contestData = insertContestSchema.parse({
       ...req.body,
-      startTime: req.body.startTime ? new Date(req.body.startTime) : null,
-      endTime: req.body.endTime ? new Date(req.body.endTime) : null,
+      startTime: null, // 콘테스트는 수동으로 시작
+      endTime: null,   // endTime은 시작할 때 설정
     });
 
     const contest = await storage.createContest(contestData);
-    
-    // Schedule automatic start/end if times are provided
-    if (contestData.startTime) {
-      contestScheduler.scheduleContestStart(contest.id, new Date(contestData.startTime));
-    }
-    if (contestData.endTime) {
-      contestScheduler.scheduleContestEnd(contest.id, new Date(contestData.endTime));
-    }
-    
     res.json(contest);
   } catch (error) {
     console.error("Error creating contest:", error);
@@ -77,6 +68,7 @@ router.post("/contests", async (req, res) => {
 router.post("/contests/:id/start", async (req, res) => {
   try {
     const contestId = parseInt(req.params.id);
+    const { durationDays = 7 } = req.body; // 기본값 7일
     
     // Check if there's already an active contest
     const activeContest = await storage.getCurrentActiveContest();
@@ -84,14 +76,19 @@ router.post("/contests/:id/start", async (req, res) => {
       return res.status(400).json({ error: "Another contest is already active" });
     }
 
+    // 시작 시간을 현재 시간으로 설정
+    const startTime = new Date();
+    // 종료 시간을 시작 시간 + durationDays로 계산
+    const endTime = new Date(startTime.getTime() + (durationDays * 24 * 60 * 60 * 1000));
+
+    // 콘테스트 시작 및 시간 설정
     const contest = await storage.updateContestStatus(contestId, "active");
     
-    // Schedule automatic end if end time is set
-    if (contest.endTime) {
-      contestScheduler.scheduleContestEnd(contest.id, new Date(contest.endTime));
-    }
+    // startTime과 endTime 업데이트 (스키마가 허용한다면)
+    // 여기서는 일단 스케줄러로 자동 종료 설정
+    contestScheduler.scheduleContestEnd(contest.id, endTime);
     
-    res.json(contest);
+    res.json({ ...contest, startTime, endTime });
   } catch (error) {
     console.error("Error starting contest:", error);
     res.status(500).json({ error: "Failed to start contest" });

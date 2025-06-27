@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Play, Square, Archive, Plus, Clock, Trophy, ArrowLeft } from "lucide-react";
@@ -19,8 +20,7 @@ export function Admin() {
     title: "",
     description: "",
     prizePool: "",
-    startTime: "",
-    endTime: ""
+    durationDays: 7 // 기본 7일
   });
 
   // Fetch current contests
@@ -41,7 +41,7 @@ export function Admin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/contests"] });
       setShowCreateForm(false);
-      setNewContest({ title: "", description: "", prizePool: "", startTime: "", endTime: "" });
+      setNewContest({ title: "", description: "", prizePool: "", durationDays: 7 });
       toast({ title: "Contest created successfully" });
     },
     onError: (error) => {
@@ -156,23 +156,26 @@ export function Admin() {
                   value={newContest.prizePool}
                   onChange={(e) => setNewContest(prev => ({ ...prev, prizePool: e.target.value }))}
                 />
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm text-muted-foreground">Start Time (optional)</label>
-                    <Input
-                      type="datetime-local"
-                      value={newContest.startTime}
-                      onChange={(e) => setNewContest(prev => ({ ...prev, startTime: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">End Time (optional)</label>
-                    <Input
-                      type="datetime-local"
-                      value={newContest.endTime}
-                      onChange={(e) => setNewContest(prev => ({ ...prev, endTime: e.target.value }))}
-                    />
-                  </div>
+                <div>
+                  <label className="text-sm text-muted-foreground mb-2 block">콘테스트 기간</label>
+                  <Select
+                    value={newContest.durationDays.toString()}
+                    onValueChange={(value) => setNewContest(prev => ({ ...prev, durationDays: parseInt(value) }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="기간을 선택하세요" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1일</SelectItem>
+                      <SelectItem value="3">3일</SelectItem>
+                      <SelectItem value="7">7일 (1주일)</SelectItem>
+                      <SelectItem value="14">14일 (2주일)</SelectItem>
+                      <SelectItem value="30">30일 (1달)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    콘테스트는 시작 버튼을 누른 시점부터 선택한 기간 동안 진행됩니다
+                  </p>
                 </div>
                 <div className="flex gap-2">
                   <Button 

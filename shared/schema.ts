@@ -10,6 +10,7 @@ export const contests = pgTable("contests", {
   startTime: timestamp("start_time"),
   endTime: timestamp("end_time"),
   prizePool: text("prize_pool"),
+  durationDays: integer("duration_days").default(7), // 콘테스트 기간 (일 단위)
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
