@@ -781,7 +781,9 @@ export default function Home() {
 
                     {/* All Memes Grid */}
                     <div className="space-y-4">
-                      <h3 className="font-semibold text-foreground">All Contest Entries</h3>
+                      <h3 className="font-semibold text-foreground">
+                        All Contest Entries ({selectedArchiveContest.memes.length})
+                      </h3>
                       <div className="grid grid-cols-3 gap-2">
                         {selectedArchiveContest.memes.map((meme: any) => (
                           <button
