@@ -252,4 +252,5 @@ router.post('/profile', upload.single('image'), async (req, res) => {
   }
 });
 
+export { router as uploadsRouter };
 export default router;
