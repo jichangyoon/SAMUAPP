@@ -164,6 +164,16 @@ export default function Home() {
 
       setSelectedMeme(null);
       refetch(); // Refresh the memes list
+      
+      // Invalidate user stats cache for the meme author to update vote counts
+      queryClient.invalidateQueries({ 
+        predicate: (query) => 
+          query.queryKey[0] === 'user-stats' || 
+          query.queryKey[0] === 'user-memes' ||
+          (Array.isArray(query.queryKey) && query.queryKey.some(key => 
+            typeof key === 'string' && key.includes('/stats')
+          ))
+      });
     } catch (error: any) {
       toast({
         title: "Voting Failed",
