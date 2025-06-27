@@ -88,12 +88,12 @@ router.post("/contests/:id/start", async (req, res) => {
     const endTime = new Date(startTime.getTime() + (durationDays * 24 * 60 * 60 * 1000));
 
     // 콘테스트 시작 및 시간 설정
-    const updatedContest = await storage.updateContestStatus(contestId, "active");
+    const updatedContest = await storage.updateContestTimes(contestId, startTime, endTime);
     
     // 자동 종료 스케줄링
     contestScheduler.scheduleContestEnd(updatedContest.id, endTime);
     
-    res.json({ ...updatedContest, startTime, endTime });
+    res.json(updatedContest);
   } catch (error) {
     console.error("Error starting contest:", error);
     res.status(500).json({ error: "Failed to start contest" });

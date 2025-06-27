@@ -46,6 +46,7 @@ export interface IStorage {
   getContests(): Promise<Contest[]>;
   getContestById(id: number): Promise<Contest | undefined>;
   updateContestStatus(id: number, status: string): Promise<Contest>;
+  updateContestTimes(id: number, startTime: Date, endTime: Date): Promise<Contest>;
   endContestAndArchive(contestId: number): Promise<ArchivedContest>;
   getArchivedContests(): Promise<ArchivedContest[]>;
   getCurrentActiveContest(): Promise<Contest | undefined>;
@@ -730,6 +731,22 @@ export class DatabaseStorage implements IStorage {
     const [contest] = await this.db
       .update(contests)
       .set({ status, updatedAt: new Date() })
+      .where(eq(contests.id, id))
+      .returning();
+    return contest;
+  }
+
+  async updateContestTimes(id: number, startTime: Date, endTime: Date): Promise<Contest> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [contest] = await this.db
+      .update(contests)
+      .set({ 
+        status: "active",
+        startTime, 
+        endTime, 
+        updatedAt: new Date() 
+      })
       .where(eq(contests.id, id))
       .returning();
     return contest;
