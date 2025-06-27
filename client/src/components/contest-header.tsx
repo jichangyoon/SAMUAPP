@@ -79,10 +79,10 @@ export function ContestHeader() {
         
         {/* Time Left - Full width at top */}
         <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-3 mb-4 text-center">
-          <div className="text-lg font-bold text-green-400">
+          <div className="text-2xl font-bold text-green-400">
             {contestData.timeLeft}
           </div>
-          <div className="text-xs text-green-300/80">Time Remaining</div>
+          <div className="text-sm text-green-300/80">Time Remaining</div>
         </div>
         
         {/* Prize Pool and Entries - Bottom row */}
