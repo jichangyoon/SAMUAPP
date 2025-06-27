@@ -107,7 +107,7 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
           <div className="grid grid-cols-2 gap-4">
             <Card 
               className="bg-gray-900 border-gray-800 cursor-pointer hover:bg-gray-800 transition-colors"
-              onClick={() => showStatsToast("Memes Created", "전체 제출한 밈의 개수입니다. 각 밈은 투표를 받아 점수를 얻을 수 있습니다.")}
+              onClick={() => showStatsToast("Memes Created", "Total number of memes submitted by this user. Each meme can receive votes to earn points.")}
             >
               <CardContent className="p-4 text-center">
                 <div className="flex items-center justify-center mb-2">
@@ -120,7 +120,7 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
 
             <Card 
               className="bg-gray-900 border-gray-800 cursor-pointer hover:bg-gray-800 transition-colors"
-              onClick={() => showStatsToast("Total Votes", "이 사용자의 모든 밈이 받은 총 투표 수입니다. 높을수록 인기가 많다는 뜻입니다.")}
+              onClick={() => showStatsToast("Total Votes", "Total votes received by all of this user's memes. Higher numbers indicate greater popularity.")}
             >
               <CardContent className="p-4 text-center">
                 <div className="flex items-center justify-center mb-2">
@@ -133,7 +133,7 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
 
             <Card 
               className="bg-gray-900 border-gray-800 cursor-pointer hover:bg-gray-800 transition-colors"
-              onClick={() => showStatsToast("Votes Cast", "이 사용자가 다른 밈에 투표한 총 횟수입니다. 활발한 참여도를 나타냅니다.")}
+              onClick={() => showStatsToast("Votes Cast", "Total number of votes this user has given to other memes. Shows community engagement level.")}
             >
               <CardContent className="p-4 text-center">
                 <div className="flex items-center justify-center mb-2">
@@ -146,7 +146,7 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
 
             <Card 
               className="bg-gray-900 border-gray-800 cursor-pointer hover:bg-gray-800 transition-colors"
-              onClick={() => showStatsToast("Avg Votes", "밈 하나당 평균적으로 받은 투표 수입니다. 일관성 있는 품질을 나타냅니다.")}
+              onClick={() => showStatsToast("Avg Votes", "Average votes received per meme. Indicates consistent quality and appeal of content.")}
             >
               <CardContent className="p-4 text-center">
                 <div className="flex items-center justify-center mb-2">
