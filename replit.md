@@ -476,6 +476,9 @@ Changelog:
 - June 24, 2025. Optimized MediaDisplay component - removed unnecessary state, useEffect, and redundant props to simplify video handling logic and improve performance
 - June 24, 2025. Fixed MediaDisplay image sizing - removed hardcoded w-full h-full classes to allow proper parent container size constraints in Profile My Votes section
 - June 24, 2025. Enhanced voting cache invalidation - added votes query invalidation to ensure My Votes section updates immediately after voting
+- June 27, 2025. Improved contest time management system - replaced complex datetime inputs with simple dropdown selection (1-30 days)
+- June 27, 2025. Enhanced contest header UI - moved countdown to top with green color scheme and English text to prevent overflow issues
+- June 27, 2025. Fixed DrawerDescription import error in user-info-modal component for proper modal functionality
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
