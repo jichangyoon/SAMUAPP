@@ -20,6 +20,24 @@ export function ContestHeader() {
     queryKey: ["/api/admin/current-contest"],
   });
 
+  // Fetch current memes count for active contest
+  const { data: memesResponse } = useQuery({
+    queryKey: ['/api/memes'],
+    staleTime: 30 * 1000, // 30초 캐시
+  });
+
+  // Calculate entries count based on contest status
+  const getCurrentEntriesCount = () => {
+    if (!activeContest || activeContest.status !== "active") {
+      return 0; // No active contest = 0 entries
+    }
+    // Active contest: count memes with contestId matching active contest OR null (current contest memes)
+    const memes = (memesResponse as any)?.memes || [];
+    return memes.filter((meme: any) => 
+      meme.contestId === activeContest.id || meme.contestId === null
+    ).length;
+  };
+
   // 1초마다 현재 시간 업데이트
   useEffect(() => {
     const timer = setInterval(() => {
@@ -33,7 +51,7 @@ export function ContestHeader() {
     timeLeft: activeContest?.endTime && activeContest?.status === "active" ? 
       calculateTimeLeft(new Date(activeContest.endTime)) : null,
     prizePool: activeContest?.prizePool || "TBA",
-    totalEntries: 0, // Will be updated with real meme count
+    totalEntries: getCurrentEntriesCount(),
     status: activeContest?.status === "active" ? "Live" : 
             activeContest?.status === "draft" ? "Not Started" : "Ended"
   };
