@@ -81,6 +81,12 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
   };
 
   const uploadFile = async (file: File): Promise<string> => {
+    console.log('Starting file upload:', {
+      name: file.name,
+      size: file.size,
+      type: file.type
+    });
+
     const formData = new FormData();
     formData.append('file', file);
 
@@ -89,7 +95,7 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
     try {
-
+      console.log('Sending upload request to /api/uploads/upload');
 
       const response = await fetch('/api/uploads/upload', {
         method: 'POST',
@@ -99,8 +105,11 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       });
 
       clearTimeout(timeoutId);
-
-
+      console.log('Upload response received:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -109,7 +118,12 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       }
 
       const result = await response.json();
+      console.log('Upload result:', result);
   
+      if (!result.fileUrl) {
+        throw new Error('No file URL received from server');
+      }
+
       return result.fileUrl; // R2 URL is returned directly
     } catch (error: any) {
       clearTimeout(timeoutId);
