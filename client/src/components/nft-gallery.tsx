@@ -14,8 +14,17 @@ import { SAMU_NFTS, type StaticNft } from "@/data/nft-data";
 export function NftGallery() {
   const [selectedNft, setSelectedNft] = useState<StaticNft | null>(null);
   const [newComment, setNewComment] = useState("");
+  const [loading, setLoading] = useState(true);
   const { authenticated, user } = usePrivy();
   const { toast } = useToast();
+
+  // Simulate loading for better UX
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
   
   // Listen for profile updates to refresh comments
   useEffect(() => {
@@ -110,12 +119,24 @@ export function NftGallery() {
 
 
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="p-4 space-y-4">
         <div className="text-center">
-          <h2 className="text-xl font-bold text-foreground mb-2">SAMU Wolf Collection</h2>
-          <p className="text-muted-foreground">Loading NFTs...</p>
+          <h2 className="text-xl font-bold text-[hsl(50,85%,75%)] mb-2">SAMU Wolf Collection</h2>
+          <p className="text-[hsl(50,85%,75%)]/90 mb-4">Loading NFTs...</p>
+          <div className="flex justify-center space-x-1">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="w-2 h-2 bg-[hsl(50,85%,75%)] rounded-full animate-bounce"
+                style={{
+                  animationDelay: `${i * 0.2}s`,
+                  animationDuration: '1s'
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
     );
