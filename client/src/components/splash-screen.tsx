@@ -30,18 +30,19 @@ export function SplashScreen({ onComplete, preloadComplete = false }: SplashScre
 
   if (!isVisible) {
     return (
-      <div className="fixed inset-0 bg-black z-50 flex items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none">
+      <div className="fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none" 
+           style={{ background: 'hsl(50, 85%, 75%)' }}>
         <div className="text-center">
           <img
             src={samuLogo}
             alt="SAMU"
-            className="w-24 h-24 mx-auto mb-4 animate-pulse"
+            className="w-32 h-32 mx-auto mb-6 animate-pulse"
           />
-          <h1 className="text-2xl font-bold text-yellow-400 mb-2">SAMU</h1>
+          <h1 className="text-3xl font-bold text-black mb-4">SAMU</h1>
           <div className="flex justify-center space-x-1">
-            <div className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce"></div>
-            <div className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-            <div className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            <div className="w-3 h-3 bg-black rounded-full animate-bounce"></div>
+            <div className="w-3 h-3 bg-black rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+            <div className="w-3 h-3 bg-black rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
           </div>
         </div>
       </div>
@@ -49,18 +50,19 @@ export function SplashScreen({ onComplete, preloadComplete = false }: SplashScre
   }
 
   return (
-    <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center" 
+         style={{ background: 'hsl(50, 85%, 75%)' }}>
       <div className="text-center">
         <img
           src={samuLogo}
           alt="SAMU"
-          className="w-24 h-24 mx-auto mb-4 animate-pulse"
+          className="w-32 h-32 mx-auto mb-6 animate-pulse"
         />
-        <h1 className="text-2xl font-bold text-yellow-400 mb-2">SAMU</h1>
+        <h1 className="text-3xl font-bold text-black mb-4">SAMU</h1>
         <div className="flex justify-center space-x-1">
-          <div className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce"></div>
-          <div className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-          <div className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+          <div className="w-3 h-3 bg-black rounded-full animate-bounce"></div>
+          <div className="w-3 h-3 bg-black rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+          <div className="w-3 h-3 bg-black rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
         </div>
       </div>
     </div>
