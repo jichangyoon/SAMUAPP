@@ -111,27 +111,34 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     try {
       console.log('Starting Solana transfer via Privy (exact documentation method):', { recipientAddress, amount, walletAddress });
       
-      // Import Solana Web3.js (정확히 문서대로)
-      const { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } = await import('@solana/web3.js');
+      // Import Solana Web3.js including VersionedTransaction
+      const { Connection, Transaction, VersionedTransaction, TransactionMessage, SystemProgram, PublicKey, LAMPORTS_PER_SOL } = await import('@solana/web3.js');
       
-      // Configure your connection to point to the correct Solana network (문서 37-38라인)
+      // Configure connection
       const connection = new Connection('https://api.mainnet-beta.solana.com');
       
-      // Create your transaction (문서 40-41라인 정확히) - Privy가 blockhash 자동 처리
-      const transaction = new Transaction(); // or new VersionedTransaction()
+      // Get latest blockhash for VersionedTransaction
+      console.log('Getting blockhash for VersionedTransaction...');
+      const { blockhash } = await connection.getLatestBlockhash();
       
-      // Add your instructions to the transaction (문서 42라인)
-      transaction.add(
-        SystemProgram.transfer({
-          fromPubkey: new PublicKey(walletAddress),
-          toPubkey: new PublicKey(recipientAddress),
-          lamports: Math.floor(amount * LAMPORTS_PER_SOL),
-        })
-      );
+      // Create VersionedTransaction (Privy's preferred method)
+      const messageV0 = new TransactionMessage({
+        payerKey: new PublicKey(walletAddress),
+        recentBlockhash: blockhash,
+        instructions: [
+          SystemProgram.transfer({
+            fromPubkey: new PublicKey(walletAddress),
+            toPubkey: new PublicKey(recipientAddress),
+            lamports: Math.floor(amount * LAMPORTS_PER_SOL),
+          })
+        ],
+      }).compileToV0Message();
+      
+      const transaction = new VersionedTransaction(messageV0);
 
-      console.log('Transaction created, sending via Privy exactly as documented...');
+      console.log('VersionedTransaction created, sending via Privy...');
 
-      // Send the transaction (문서 45-48라인 정확히)
+      // Send the VersionedTransaction
       const receipt = await sendTransaction({
         transaction: transaction,
         connection: connection
