@@ -22,9 +22,16 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [isOpen, setIsOpen] = useState(false);
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
-  const [tokenType, setTokenType] = useState("SAMU");
+  const [tokenType, setTokenType] = useState("SOL");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { sendTransaction } = useSendTransaction();
+
+  // SAMU token mint address (mainnet)
+  const SAMU_TOKEN_MINT = new PublicKey("EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF");
+  
+  // Solana RPC connection
+  const connection = new Connection('https://api.mainnet-beta.solana.com');
 
   const handleSend = async () => {
     if (!recipient || !amount) {
