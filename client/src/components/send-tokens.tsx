@@ -114,19 +114,11 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       // Import Solana Web3.js (정확히 문서대로)
       const { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } = await import('@solana/web3.js');
       
-      // Configure connection to point to the correct Solana network (문서 38라인)
+      // Configure your connection to point to the correct Solana network (문서 37-38라인)
       const connection = new Connection('https://api.mainnet-beta.solana.com');
       
-      // Get recent blockhash FIRST (Solana 필수 요구사항)
-      console.log('Getting recent blockhash...');
-      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-      console.log('Got blockhash:', blockhash);
-      
-      // Create your transaction with required blockhash (문서 41라인)
-      const transaction = new Transaction({
-        recentBlockhash: blockhash,
-        feePayer: new PublicKey(walletAddress)
-      });
+      // Create your transaction (문서 40-41라인 정확히) - Privy가 blockhash 자동 처리
+      const transaction = new Transaction(); // or new VersionedTransaction()
       
       // Add your instructions to the transaction (문서 42라인)
       transaction.add(
