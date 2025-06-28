@@ -114,10 +114,10 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       // Privy 문서에서 제공한 정확한 방식
       const { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } = await import('@solana/web3.js');
       
-      // Configure connection to point to the correct Solana network
+      // Simple connection setup as per Privy documentation
       const connection = new Connection('https://api.mainnet-beta.solana.com');
       
-      // Create your transaction (legacy Transaction)
+      // Create transaction without blockhash (Privy will handle this)
       const transaction = new Transaction();
       
       // Add your instructions to the transaction
