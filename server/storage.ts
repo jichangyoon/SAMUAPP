@@ -857,10 +857,52 @@ export class DatabaseStorage implements IStorage {
   async getArchivedContests(): Promise<ArchivedContest[]> {
     if (!this.db) throw new Error("Database not available");
     
-    return await this.db
+    const archived = await this.db
       .select()
       .from(archivedContests)
       .orderBy(desc(archivedContests.archivedAt));
+
+    // Enrich with winner meme details
+    const enrichedContests = await Promise.all(
+      archived.map(async (contest) => {
+        let winnerMeme = null;
+        let secondMeme = null;
+        let thirdMeme = null;
+
+        if (contest.winnerMemeId) {
+          const [winner] = await this.db!
+            .select()
+            .from(memes)
+            .where(eq(memes.id, contest.winnerMemeId));
+          winnerMeme = winner || null;
+        }
+
+        if (contest.secondMemeId) {
+          const [second] = await this.db!
+            .select()
+            .from(memes)
+            .where(eq(memes.id, contest.secondMemeId));
+          secondMeme = second || null;
+        }
+
+        if (contest.thirdMemeId) {
+          const [third] = await this.db!
+            .select()
+            .from(memes)
+            .where(eq(memes.id, contest.thirdMemeId));
+          thirdMeme = third || null;
+        }
+
+        return {
+          ...contest,
+          winnerMeme,
+          secondMeme,
+          thirdMeme
+        };
+      })
+    );
+
+    return enrichedContests;
   }
 }
 

@@ -122,24 +122,17 @@ export function Leaderboard() {
       .sort((a: any, b: any) => new Date(b.archivedAt).getTime() - new Date(a.archivedAt).getTime())
       .slice(0, 10) // Show top 10 archived contests
       .map((contest: any) => {
-        // Safely check for memes array
-        const memes = contest.memes || [];
-        
-        // Find the winner (meme with highest votes)
-        const winner = memes.length > 0 
-          ? memes.reduce((prev: any, current: any) => 
-              (prev.votes > current.votes) ? prev : current
-            )
-          : null;
+        // Use the enriched winner meme data from the backend
+        const winnerMeme = contest.winnerMeme;
           
         return {
           id: contest.id,
           contestTitle: contest.title,
-          title: winner?.title || 'No entries',
-          author: winner?.authorUsername || 'Unknown',
-          votes: winner?.votes || 0,
+          title: winnerMeme?.title || 'No entries',
+          author: winnerMeme?.authorUsername || 'Unknown',
+          votes: winnerMeme?.votes || 0,
           contestDate: new Date(contest.archivedAt).toLocaleDateString(),
-          totalEntries: memes.length,
+          totalEntries: contest.totalMemes || 0,
           totalVotes: contest.totalVotes || 0
         };
       });
@@ -444,14 +437,14 @@ export function Leaderboard() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-3 bg-accent rounded-lg">
                   <div className="text-2xl font-bold text-primary">
-                    {memesArray.length + (hallOfFameData?.length || 0)}
+                    {memesArray.length + (archivedContests?.reduce((sum: number, contest: any) => sum + (contest.totalMemes || 0), 0) || 0)}
                   </div>
                   <div className="text-sm text-muted-foreground">Total Memes</div>
                 </div>
                 <div className="text-center p-3 bg-accent rounded-lg">
                   <div className="text-2xl font-bold text-primary">
                     {(memesArray.reduce((sum, meme) => sum + meme.votes, 0) + 
-                      (hallOfFameData?.reduce((sum: number, contest: any) => sum + (contest.totalVotes || 0), 0) || 0)
+                      (archivedContests?.reduce((sum: number, contest: any) => sum + (contest.totalVotes || 0), 0) || 0)
                     ).toLocaleString()}
                   </div>
                   <div className="text-sm text-muted-foreground">Total Votes</div>
