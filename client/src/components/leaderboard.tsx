@@ -122,9 +122,12 @@ export function Leaderboard() {
       .sort((a: any, b: any) => new Date(b.archivedAt).getTime() - new Date(a.archivedAt).getTime())
       .slice(0, 10) // Show top 10 archived contests
       .map((contest: any) => {
+        // Safely check for memes array
+        const memes = contest.memes || [];
+        
         // Find the winner (meme with highest votes)
-        const winner = contest.memes.length > 0 
-          ? contest.memes.reduce((prev: any, current: any) => 
+        const winner = memes.length > 0 
+          ? memes.reduce((prev: any, current: any) => 
               (prev.votes > current.votes) ? prev : current
             )
           : null;
@@ -136,8 +139,8 @@ export function Leaderboard() {
           author: winner?.authorUsername || 'Unknown',
           votes: winner?.votes || 0,
           contestDate: new Date(contest.archivedAt).toLocaleDateString(),
-          totalEntries: contest.memes.length,
-          totalVotes: contest.totalVotes
+          totalEntries: memes.length,
+          totalVotes: contest.totalVotes || 0
         };
       });
   }, [archivedContests]);
