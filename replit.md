@@ -483,6 +483,8 @@ Changelog:
 - June 28, 2025. Optimized user statistics tooltip duration to 4 seconds while maintaining 1.2s for other toasts
 - June 28, 2025. Added contest entry count display next to "All Contest Entries" in archive contest detail pages
 - June 28, 2025. Implemented image preloading system for critical assets (partner logos, goods shop, NFT gallery) to reduce 0.5s loading delays in future native app builds
+- June 28, 2025. Added comprehensive splash screen with SAMU logo, 2-second minimum display time, and coordinated preload completion detection
+- June 28, 2025. Implemented real Hall of Fame functionality using actual archived contest data instead of mock data - shows contest winners, dates, vote counts, and participant statistics
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```

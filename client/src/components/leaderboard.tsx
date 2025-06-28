@@ -114,6 +114,34 @@ export function Leaderboard() {
     };
   }, [memesArray, showAllCreators]);
 
+  // Process archived contests for Hall of Fame
+  const hallOfFameData = useMemo(() => {
+    if (!archivedContests || !Array.isArray(archivedContests)) return [];
+    
+    return archivedContests
+      .sort((a: any, b: any) => new Date(b.archivedAt).getTime() - new Date(a.archivedAt).getTime())
+      .slice(0, 10) // Show top 10 archived contests
+      .map((contest: any) => {
+        // Find the winner (meme with highest votes)
+        const winner = contest.memes.length > 0 
+          ? contest.memes.reduce((prev: any, current: any) => 
+              (prev.votes > current.votes) ? prev : current
+            )
+          : null;
+          
+        return {
+          id: contest.id,
+          contestTitle: contest.title,
+          title: winner?.title || 'No entries',
+          author: winner?.authorUsername || 'Unknown',
+          votes: winner?.votes || 0,
+          contestDate: new Date(contest.archivedAt).toLocaleDateString(),
+          totalEntries: contest.memes.length,
+          totalVotes: contest.totalVotes
+        };
+      });
+  }, [archivedContests]);
+
   // Top creators for Hall of Fame tab
   const topCreators = useMemo(() => {
     return Object.values(creatorStats || {})
@@ -351,41 +379,54 @@ export function Leaderboard() {
               <p className="text-sm text-muted-foreground">Past contest winners</p>
             </CardHeader>
             <CardContent className="space-y-3">
-              {hallOfFameData.map((winner, index) => (
-                <div key={winner.id} className="p-4 border border-primary/20 bg-primary/5 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <Trophy className="h-4 w-4 text-yellow-400" />
-                      <Badge className="bg-primary text-primary-foreground text-xs">
-                        {index === 0 ? "Latest Winner" : "Past Winner"}
-                      </Badge>
-                    </div>
-                    <div className="text-xs text-muted-foreground flex items-center">
-                      <Calendar className="h-3 w-3 mr-1" />
-                      {winner.contestDate}
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-bold text-foreground mb-1">
-                        {winner.title}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        by {winner.author}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-primary">
-                        {winner.votes.toLocaleString()}
-                      </div>
-                      <div className="text-xs text-green-400 font-semibold">
-                        Prize: {winner.prize}
-                      </div>
-                    </div>
-                  </div>
+              {archiveLoading ? (
+                <div className="text-center py-4 text-muted-foreground">
+                  Loading contest history...
                 </div>
-              ))}
+              ) : hallOfFameData.length === 0 ? (
+                <div className="text-center py-4 text-muted-foreground">
+                  No completed contests yet
+                </div>
+              ) : (
+                hallOfFameData.map((winner: any, index: number) => (
+                  <div key={winner.id} className="p-4 border border-primary/20 bg-primary/5 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-2">
+                        <Trophy className="h-4 w-4 text-yellow-400" />
+                        <Badge className="bg-primary text-primary-foreground text-xs">
+                          {index === 0 ? "Latest Winner" : "Past Winner"}
+                        </Badge>
+                      </div>
+                      <div className="text-xs text-muted-foreground flex items-center">
+                        <Calendar className="h-3 w-3 mr-1" />
+                        {winner.contestDate}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-bold text-foreground mb-1 text-sm">
+                          {winner.contestTitle}
+                        </div>
+                        <div className="text-xs text-muted-foreground mb-1">
+                          Winner: "{winner.title}" by {winner.author}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {winner.totalEntries} entries
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-primary">
+                          {winner.votes.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          winning votes
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
           
@@ -400,13 +441,15 @@ export function Leaderboard() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-3 bg-accent rounded-lg">
                   <div className="text-2xl font-bold text-primary">
-                    {memesArray.length + hallOfFameData.length}
+                    {memesArray.length + (hallOfFameData?.length || 0)}
                   </div>
                   <div className="text-sm text-muted-foreground">Total Memes</div>
                 </div>
                 <div className="text-center p-3 bg-accent rounded-lg">
                   <div className="text-2xl font-bold text-primary">
-                    {memesArray.reduce((sum, meme) => sum + meme.votes, 0).toLocaleString()}
+                    {(memesArray.reduce((sum, meme) => sum + meme.votes, 0) + 
+                      (hallOfFameData?.reduce((sum: number, contest: any) => sum + (contest.totalVotes || 0), 0) || 0)
+                    ).toLocaleString()}
                   </div>
                   <div className="text-sm text-muted-foreground">Total Votes</div>
                 </div>
