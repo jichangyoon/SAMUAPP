@@ -114,17 +114,37 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       // Import Solana Web3.js
       const { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } = await import('@solana/web3.js');
       
-      // Use a different RPC endpoint to avoid 403 errors
-      const connection = new Connection('https://rpc.ankr.com/solana', 'confirmed');
+      // Use free public RPC endpoints
+      const rpcEndpoints = [
+        'https://api.mainnet-beta.solana.com',
+        'https://solana-api.projectserum.com',
+        'https://rpc.ankr.com/solana'
+      ];
       
-      // Get latest blockhash (REQUIRED for Solana transactions)
-      console.log('Fetching latest blockhash...');
-      const { blockhash } = await connection.getLatestBlockhash();
-      console.log('Got blockhash:', blockhash);
+      let connection;
+      let recentBlockhash;
+      
+      for (const endpoint of rpcEndpoints) {
+        try {
+          console.log(`Trying RPC endpoint: ${endpoint}`);
+          connection = new Connection(endpoint, 'confirmed');
+          const result = await connection.getLatestBlockhash();
+          recentBlockhash = result.blockhash;
+          console.log(`Successfully connected to ${endpoint}, blockhash: ${recentBlockhash}`);
+          break;
+        } catch (rpcError: any) {
+          console.warn(`RPC ${endpoint} failed:`, rpcError.message);
+          continue;
+        }
+      }
+      
+      if (!connection || !recentBlockhash) {
+        throw new Error('All RPC endpoints failed - unable to connect to Solana network');
+      }
       
       // Create transaction with required blockhash
       const transaction = new Transaction({
-        recentBlockhash: blockhash,
+        recentBlockhash: recentBlockhash,
         feePayer: new PublicKey(walletAddress)
       });
       
