@@ -479,6 +479,10 @@ Changelog:
 - June 27, 2025. Improved contest time management system - replaced complex datetime inputs with simple dropdown selection (1-30 days)
 - June 27, 2025. Enhanced contest header UI - moved countdown to top with green color scheme and English text to prevent overflow issues
 - June 27, 2025. Fixed DrawerDescription import error in user-info-modal component for proper modal functionality
+- June 28, 2025. Fixed toast duration system - custom duration parameters now properly respected instead of hardcoded 1200ms
+- June 28, 2025. Optimized user statistics tooltip duration to 4 seconds while maintaining 1.2s for other toasts
+- June 28, 2025. Added contest entry count display next to "All Contest Entries" in archive contest detail pages
+- June 28, 2025. Implemented image preloading system for critical assets (partner logos, goods shop, NFT gallery) to reduce 0.5s loading delays in future native app builds
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
