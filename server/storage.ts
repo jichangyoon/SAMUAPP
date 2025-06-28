@@ -869,15 +869,12 @@ export class DatabaseStorage implements IStorage {
         let secondMeme = null;
         let thirdMeme = null;
 
-        console.log(`Processing contest ${contest.id} with winnerMemeId: ${contest.winnerMemeId}`);
-
         if (contest.winnerMemeId) {
           const [winner] = await this.db!
             .select()
             .from(memes)
             .where(eq(memes.id, contest.winnerMemeId));
           winnerMeme = winner || null;
-          console.log(`Found winner meme:`, winnerMeme?.title);
         }
 
         if (contest.secondMemeId) {
@@ -903,17 +900,10 @@ export class DatabaseStorage implements IStorage {
           thirdMeme
         };
         
-        console.log(`Enriched contest ${contest.id}:`, { 
-          title: contest.title, 
-          winnerTitle: winnerMeme?.title,
-          winnerAuthor: winnerMeme?.authorUsername 
-        });
-
         return enriched;
       })
     );
 
-    console.log(`Returning ${enrichedContests.length} enriched contests with winner data`);
     return enrichedContests;
   }
 }
