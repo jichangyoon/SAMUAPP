@@ -12,7 +12,7 @@ import { Partners } from "@/pages/partners";
 import { PartnerContest } from "@/pages/partner-contest";
 import { Admin } from "@/pages/admin";
 import NotFound from "@/pages/not-found";
-
+import { SplashScreen } from "@/components/splash-screen";
 
 // Global error handler for Privy iframe issues
 window.addEventListener('error', (event) => {
@@ -50,36 +50,58 @@ const Router = React.memo(() => {
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
+  const [preloadComplete, setPreloadComplete] = useState(false);
 
   // Set dark mode as default and preload images
   useEffect(() => {
     document.documentElement.classList.add('dark');
     
-    // Simple 1.2s loading delay without complex preloading
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 1200);
+    // Preload critical images for instant loading
+    const preloadImages = async () => {
+      const imagesToPreload = [
+        // Partner logos
+        '/src/assets/wagus-logo.webp',
+        '/src/assets/doctorbird-logo.webp',
+        // Goods shop image
+        '/src/assets/samu-shirt.webp',
+        // SAMU logo
+        '/src/assets/samu-logo.webp'
+      ];
+      
+      // Preload NFT images (first 20 for immediate visibility)
+      for (let i = 1; i <= 20; i++) {
+        imagesToPreload.push(`/assets/nfts/${i}.webp`);
+      }
+      
+      // Load all images with Promise.all to wait for completion
+      const imagePromises = imagesToPreload.map(src => {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = resolve;
+          img.onerror = resolve; // Continue even if some images fail
+          img.src = src;
+        });
+      });
+      
+      try {
+        await Promise.all(imagePromises);
+        setPreloadComplete(true);
+      } catch (error) {
+        // Continue even if preload fails
+        setPreloadComplete(true);
+      }
+    };
     
-    return () => clearTimeout(timer);
+    preloadImages();
   }, []);
 
-  // Show simple splash screen on first load
+  // Show splash screen on first load
   if (showSplash) {
     return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
-        <div className="flex space-x-1">
-          {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className="w-3 h-3 bg-yellow-400 rounded-full animate-bounce"
-              style={{
-                animationDelay: `${i * 0.2}s`,
-                animationDuration: '1s'
-              }}
-            />
-          ))}
-        </div>
-      </div>
+      <SplashScreen 
+        onComplete={() => setShowSplash(false)} 
+        preloadComplete={preloadComplete}
+      />
     );
   }
 
@@ -94,6 +116,7 @@ function App() {
         loginMethods: ['email'],
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
+          noPromptOnMfaRequired: false,
           solana: {
             createOnLogin: 'users-without-wallets',
           },
