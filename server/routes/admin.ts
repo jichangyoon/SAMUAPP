@@ -127,4 +127,17 @@ router.get("/current-contest", async (req, res) => {
   }
 });
 
+// Get archived contests with winner details
+router.get("/archived-contests", async (req, res) => {
+  try {
+    console.log("Fetching archived contests...");
+    const archivedContests = await storage.getArchivedContests();
+    console.log(`Found ${archivedContests.length} archived contests`);
+    res.json(archivedContests);
+  } catch (error) {
+    console.error("Error fetching archived contests:", error);
+    res.status(500).json({ error: "Failed to fetch archived contests" });
+  }
+});
+
 export default router;
