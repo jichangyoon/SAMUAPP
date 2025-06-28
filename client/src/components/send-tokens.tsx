@@ -114,39 +114,11 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       // Import Solana Web3.js
       const { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } = await import('@solana/web3.js');
       
-      // Use free public RPC endpoints
-      const rpcEndpoints = [
-        'https://api.mainnet-beta.solana.com',
-        'https://solana-api.projectserum.com',
-        'https://rpc.ankr.com/solana'
-      ];
+      // Privy 내장 연결 사용 (RPC 접근 제한 우회)
+      console.log('Using Privy built-in Solana connection...');
       
-      let connection;
-      let recentBlockhash;
-      
-      for (const endpoint of rpcEndpoints) {
-        try {
-          console.log(`Trying RPC endpoint: ${endpoint}`);
-          connection = new Connection(endpoint, 'confirmed');
-          const result = await connection.getLatestBlockhash();
-          recentBlockhash = result.blockhash;
-          console.log(`Successfully connected to ${endpoint}, blockhash: ${recentBlockhash}`);
-          break;
-        } catch (rpcError: any) {
-          console.warn(`RPC ${endpoint} failed:`, rpcError.message);
-          continue;
-        }
-      }
-      
-      if (!connection || !recentBlockhash) {
-        throw new Error('All RPC endpoints failed - unable to connect to Solana network');
-      }
-      
-      // Create transaction with required blockhash
-      const transaction = new Transaction({
-        recentBlockhash: recentBlockhash,
-        feePayer: new PublicKey(walletAddress)
-      });
+      // 트랜잭션 생성 (Privy가 blockhash와 fee payer를 자동 처리)
+      const transaction = new Transaction();
       
       // Add transfer instruction
       transaction.add(
@@ -159,10 +131,9 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
 
       console.log('Transaction created, calling Privy sendTransaction...');
 
-      // Send via Privy (correct Solana embedded wallet usage)
+      // Send via Privy (내장 연결 사용)
       const receipt = await sendTransaction({
-        transaction,
-        connection
+        transaction
       });
 
       console.log("Real Solana transaction completed:", receipt.signature);
