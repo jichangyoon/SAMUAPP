@@ -12,7 +12,7 @@ import { Partners } from "@/pages/partners";
 import { PartnerContest } from "@/pages/partner-contest";
 import { Admin } from "@/pages/admin";
 import NotFound from "@/pages/not-found";
-import { SplashScreen } from "@/components/splash-screen";
+
 
 // Global error handler for Privy iframe issues
 window.addEventListener('error', (event) => {
@@ -60,17 +60,17 @@ function App() {
     const preloadImages = async () => {
       const imagesToPreload = [
         // Partner logos
-        '/src/assets/wagus-logo.webp',
-        '/src/assets/doctorbird-logo.webp',
+        '/client/src/assets/wagus.webp',
+        '/client/src/assets/doctorbird.webp',
         // Goods shop image
-        '/src/assets/samu-shirt.webp',
+        '/client/src/assets/shirt.webp',
         // SAMU logo
-        '/src/assets/samu-logo.webp'
+        '/client/src/assets/samu-logo.webp'
       ];
       
       // Preload NFT images (first 20 for immediate visibility)
       for (let i = 1; i <= 20; i++) {
-        imagesToPreload.push(`/assets/nfts/${i}.webp`);
+        imagesToPreload.push(`/client/src/assets/nfts/${i}.webp`);
       }
       
       // Load all images with Promise.all to wait for completion
@@ -95,13 +95,48 @@ function App() {
     preloadImages();
   }, []);
 
+  // Auto-hide splash after preload completes with minimum 2s display
+  useEffect(() => {
+    if (preloadComplete && showSplash) {
+      const timer = setTimeout(() => {
+        setShowSplash(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [preloadComplete, showSplash]);
+
   // Show splash screen on first load
   if (showSplash) {
+
     return (
-      <SplashScreen 
-        onComplete={() => setShowSplash(false)} 
-        preloadComplete={preloadComplete}
-      />
+      <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50">
+        <div className="mb-8">
+          <div className="w-32 h-32 bg-yellow-400 rounded-full flex items-center justify-center text-black text-4xl font-bold">
+            SAMU
+          </div>
+        </div>
+        <div className="w-64 h-2 bg-gray-800 rounded-full overflow-hidden mb-4">
+          <div 
+            className="h-full bg-gradient-to-r from-yellow-400 to-yellow-600 transition-all duration-300 ease-out"
+            style={{ width: preloadComplete ? '100%' : '25%' }}
+          />
+        </div>
+        <p className="text-yellow-400 text-sm font-medium">
+          {preloadComplete ? 'Ready!' : 'Loading critical assets...'}
+        </p>
+        <div className="flex space-x-1 mt-4">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce"
+              style={{
+                animationDelay: `${i * 0.2}s`,
+                animationDuration: '1s'
+              }}
+            />
+          ))}
+        </div>
+      </div>
     );
   }
 
@@ -116,7 +151,6 @@ function App() {
         loginMethods: ['email'],
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
-          noPromptOnMfaRequired: false,
           solana: {
             createOnLogin: 'users-without-wallets',
           },
