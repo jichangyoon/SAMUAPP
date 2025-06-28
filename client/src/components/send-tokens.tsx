@@ -7,9 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Send, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { isSolanaAddress } from "@/lib/solana";
-import { useSendTransaction } from '@privy-io/react-auth/solana';
-import { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { createTransferInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 interface SendTokensProps {
   walletAddress: string;
@@ -22,16 +19,9 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [isOpen, setIsOpen] = useState(false);
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
-  const [tokenType, setTokenType] = useState("SOL");
+  const [tokenType, setTokenType] = useState("SAMU");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { sendTransaction } = useSendTransaction();
-
-  // SAMU token mint address (mainnet)
-  const SAMU_TOKEN_MINT = new PublicKey("EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF");
-  
-  // Solana RPC connection
-  const connection = new Connection('https://api.mainnet-beta.solana.com');
 
   const handleSend = async () => {
     if (!recipient || !amount) {
