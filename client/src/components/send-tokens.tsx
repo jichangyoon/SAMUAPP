@@ -7,6 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Send, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { isSolanaAddress } from "@/lib/solana";
+import { useSendTransaction } from '@privy-io/react-auth/solana';
+import { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { createTransferInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 interface SendTokensProps {
   walletAddress: string;
