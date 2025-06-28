@@ -7,7 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Send, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { isSolanaAddress } from "@/lib/solana";
-import { useSendTransaction, useSignTransaction } from '@privy-io/react-auth/solana';
+import { useSendTransaction } from '@privy-io/react-auth/solana';
+import { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { createTransferInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 interface SendTokensProps {
   walletAddress: string;
@@ -23,11 +25,6 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [tokenType, setTokenType] = useState("SAMU");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { sendTransaction } = useSendTransaction();
-  const { signTransaction } = useSignTransaction();
-
-  // SAMU 토큰 민트 주소 (실제 SAMU 토큰 주소)
-  const SAMU_MINT_ADDRESS = "EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF";
 
   const handleSend = async () => {
     if (!recipient || !amount) {
@@ -73,145 +70,26 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     setIsLoading(true);
 
     try {
-      let result;
-      if (tokenType === "SOL") {
-        // SOL 전송
-        result = await sendSOL(recipient, amountNum);
-      } else {
-        // SAMU 토큰 전송
-        result = await sendSAMU(recipient, amountNum);
-      }
+      // 실제 송금 구현은 향후 추가 (Solana Web3.js 사용)
+      // 현재는 UI만 구현
+      await new Promise(resolve => setTimeout(resolve, 2000)); // 시뮬레이션
 
-      // 전송 성공 메시지 표시
-      const isProductionReady = (result as any).note && (result as any).note.includes('Production-ready');
-      
       toast({
-        title: "Transfer Completed!",
-        description: isProductionReady 
-          ? `${amount} ${tokenType} transferred to ${recipient.slice(0, 8)}...${recipient.slice(-8)} | Signature: ${result.signature.slice(0, 8)}...`
-          : `Successfully sent ${amount} ${tokenType} to ${recipient.slice(0, 8)}...${recipient.slice(-8)}`,
-        duration: 4000,
+        title: "Transaction Simulated",
+        description: `Would send ${amount} ${tokenType} to ${recipient.slice(0, 8)}...`,
       });
 
       setRecipient("");
       setAmount("");
       setIsOpen(false);
     } catch (error) {
-      console.error('Transaction error:', error);
       toast({
         title: "Transaction Failed",
-        description: error instanceof Error ? error.message : "Failed to send tokens. Please try again.",
+        description: "Failed to send tokens. Please try again.",
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const sendSOL = async (recipientAddress: string, amount: number) => {
-    try {
-      console.log('Attempting Privy sendTransaction without explicit connection:', { recipientAddress, amount, walletAddress });
-      
-      // Privy 문서 정확히 따르되, connection 없이 시도
-      const { Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } = await import('@solana/web3.js');
-
-      // Create transaction exactly as documented
-      const transaction = new Transaction();
-      transaction.add(
-        SystemProgram.transfer({
-          fromPubkey: new PublicKey(walletAddress),
-          toPubkey: new PublicKey(recipientAddress),
-          lamports: Math.floor(amount * LAMPORTS_PER_SOL),
-        })
-      );
-
-      // Privy 문서 확인: connection 필수 파라미터임이 확인됨
-      console.log('Connection parameter is required by Privy - proceeding to simulation mode...');
-      throw new Error('Connection required by Privy SDK');
-      
-    } catch (error: any) {
-      console.error('Privy sendTransaction without connection failed:', error);
-      
-      // connection 필수인 경우 최소한의 connection으로 재시도
-      try {
-        console.log('Retrying with Privy default connection...');
-        const { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } = await import('@solana/web3.js');
-        
-        // Helius 무료 RPC로 실제 트랜잭션 시도
-        const connection = new Connection('https://mainnet.helius-rpc.com/?api-key=27b20c52-1c23-4eac-996d-a6f4debb95b6', {
-          commitment: 'confirmed',
-          disableRetryOnRateLimit: true
-        });
-
-        const transaction = new Transaction();
-        transaction.add(
-          SystemProgram.transfer({
-            fromPubkey: new PublicKey(walletAddress),
-            toPubkey: new PublicKey(recipientAddress),
-            lamports: Math.floor(amount * LAMPORTS_PER_SOL),
-          })
-        );
-
-        const receipt = await sendTransaction({
-          transaction: transaction,
-          connection: connection
-        });
-
-        console.log("Privy transaction with minimal connection successful:", receipt.signature);
-        return receipt;
-        
-      } catch (secondError: any) {
-        console.error('Helius RPC transaction failed - details:', {
-          message: secondError.message,
-          code: secondError.code,
-          data: secondError.data,
-          stack: secondError.stack
-        });
-        
-        // 시뮬레이션 폴백
-        console.log('Using simulation due to RPC limitations...');
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        return {
-          signature: generateSolanaSignature(),
-          success: true,
-          note: 'Simulated - production deployment will use proper RPC access'
-        };
-      }
-    }
-  };
-
-  // 실제 Solana 시그니처 형식 생성
-  const generateSolanaSignature = () => {
-    const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-    let signature = '';
-    for (let i = 0; i < 88; i++) {
-      signature += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return signature;
-  };
-
-  const sendSAMU = async (recipientAddress: string, amount: number) => {
-    console.log('Initiating SAMU token transfer:', { recipientAddress, amount, walletAddress });
-    
-    try {
-      // SAMU SPL 토큰 전송 프로세스 시뮬레이션
-      console.log('Processing SAMU token transfer through SPL token program...');
-      await new Promise(resolve => setTimeout(resolve, 4000)); // SPL 토큰은 더 복잡하므로 조금 더 긴 시간
-      
-      // 실제 트랜잭션 시그니처 형식 생성
-      const signature = generateSolanaSignature();
-      
-      console.log('SAMU token transfer completed successfully:', signature);
-      
-      return {
-        signature,
-        success: true,
-        note: 'Production-ready SAMU token transfer completed - SPL token integration fully functional'
-      };
-      
-    } catch (error: any) {
-      console.error('SAMU transfer error:', error);
-      throw new Error('SAMU token transfer failed. Please check your token balance and try again.');
     }
   };
 
@@ -308,7 +186,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
 
           {/* 주의사항 */}
           <div className="text-xs text-muted-foreground bg-accent/20 rounded p-2">
-            <strong>Note:</strong> Token transfer simulation is fully functional. Production blockchain integration will be enabled with environment optimization.
+            <strong>Note:</strong> This is currently a UI prototype. Actual token transfers will be implemented with Solana Web3.js integration.
           </div>
         </div>
       </DialogContent>
