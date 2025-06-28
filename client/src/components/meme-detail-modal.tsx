@@ -109,7 +109,6 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
                     src={(meme as any).authorAvatarUrl} 
                     alt={meme.authorUsername}
                     key={`${meme.id}-${(meme as any).authorAvatarUrl}`}
-
                   />
                   <AvatarFallback className="bg-gray-700 text-white">
                     {meme.authorUsername.charAt(0).toUpperCase()}

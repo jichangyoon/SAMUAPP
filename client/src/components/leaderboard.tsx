@@ -11,8 +11,6 @@ import { UserInfoModal } from "@/components/user-info-modal";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import type { Meme } from "@shared/schema";
 
-// Get Hall of Fame data from archived contests
-
 export function Leaderboard() {
   const [activeTab, setActiveTab] = useState("current");
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
@@ -134,26 +132,10 @@ export function Leaderboard() {
           contestDate: new Date(contest.archivedAt).toLocaleDateString(),
           totalEntries: contest.totalMemes || 0,
           totalVotes: contest.totalVotes || 0,
-          winnerMeme: winnerMeme // 이 부분 추가!
+          winnerMeme: winnerMeme
         };
       });
   }, [archivedContests]);
-
-  // Top creators for Hall of Fame tab
-  const topCreators = useMemo(() => {
-    return Object.values(creatorStats || {})
-      .sort((a: any, b: any) => b.totalVotes - a.totalVotes)
-      .slice(0, 5);
-  }, [creatorStats]);
-
-  // Early return for loading state (after all hooks)
-  if (isLoading) {
-    return <div className="text-center py-8 text-muted-foreground">Loading leaderboard...</div>;
-  }
-  
-  if (!Array.isArray(memesArray) || memesArray.length === 0) {
-    return <div className="text-center py-8 text-muted-foreground">No memes available</div>;
-  }
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
@@ -164,6 +146,7 @@ export function Leaderboard() {
     }
   };
 
+  // Loading state
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -177,6 +160,11 @@ export function Leaderboard() {
         ))}
       </div>
     );
+  }
+  
+  // Empty state
+  if (!Array.isArray(memesArray) || memesArray.length === 0) {
+    return <div className="text-center py-8 text-muted-foreground">No memes available</div>;
   }
 
   return (
