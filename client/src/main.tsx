@@ -2,6 +2,9 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
+// Solana Web3.js polyfills
+(window as any).global = window;
+
 // 메모리 효율적인 전역 오류 핸들러
 const IGNORED_PATTERNS = ['Privy', 'iframe', 'wallet', 'fetch', 'Failed to fetch'];
 
