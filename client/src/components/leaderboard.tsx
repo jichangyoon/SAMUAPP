@@ -385,7 +385,16 @@ export function Leaderboard() {
                 </div>
               ) : (
                 hallOfFameData.map((winner: any, index: number) => (
-                  <div key={winner.id} className="p-4 border border-primary/20 bg-primary/5 rounded-lg">
+                  <div 
+                    key={winner.id} 
+                    className="p-4 border border-primary/20 bg-primary/5 rounded-lg cursor-pointer hover:bg-primary/10 transition-colors"
+                    onClick={() => {
+                      if (winner.winnerMeme) {
+                        setSelectedMeme(winner.winnerMeme);
+                        setShowMemeModal(true);
+                      }
+                    }}
+                  >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-2">
                         <Trophy className="h-4 w-4 text-yellow-400" />
