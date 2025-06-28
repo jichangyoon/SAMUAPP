@@ -117,8 +117,16 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       // Use a different RPC endpoint to avoid 403 errors
       const connection = new Connection('https://rpc.ankr.com/solana', 'confirmed');
       
-      // Create basic transaction
-      const transaction = new Transaction();
+      // Get latest blockhash (REQUIRED for Solana transactions)
+      console.log('Fetching latest blockhash...');
+      const { blockhash } = await connection.getLatestBlockhash();
+      console.log('Got blockhash:', blockhash);
+      
+      // Create transaction with required blockhash
+      const transaction = new Transaction({
+        recentBlockhash: blockhash,
+        feePayer: new PublicKey(walletAddress)
+      });
       
       // Add transfer instruction
       transaction.add(
