@@ -493,6 +493,11 @@ Changelog:
 - June 28, 2025. Added comprehensive SendTokens component with balance validation, address verification, and transaction simulation
 - June 28, 2025. Configured token transfer UI with support for both SOL and SAMU tokens, including proper decimals handling and user-friendly error messages
 - June 28, 2025. Identified Buffer polyfill dependency issue requiring vite.config.ts modification for production Solana Web3.js integration
+- June 28, 2025. Resolved Buffer polyfill compatibility by implementing browser-compatible polyfill in index.html
+- June 28, 2025. Enhanced SOL transfer function with proper blockhash fetching and transaction configuration for Privy compatibility
+- June 28, 2025. Successfully achieved Privy wallet UI popup for real SOL transactions - confirmed transaction preparation working
+- June 28, 2025. Fixed transaction preparation errors by adding latest blockhash and proper fee payer configuration
+- June 28, 2025. Implemented fallback simulation mode for cases where transaction preparation fails due to network issues
 
 ## CHECKPOINT - June 20, 2025 (오전 7:27)
 ```
