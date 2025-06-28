@@ -3,21 +3,30 @@ import samuLogo from '../assets/samu-logo.webp';
 
 interface SplashScreenProps {
   onComplete: () => void;
+  preloadComplete?: boolean;
 }
 
-export function SplashScreen({ onComplete }: SplashScreenProps) {
+export function SplashScreen({ onComplete, preloadComplete = false }: SplashScreenProps) {
   const [isVisible, setIsVisible] = useState(true);
+  const [minTimeElapsed, setMinTimeElapsed] = useState(false);
 
   useEffect(() => {
-    // Show splash for minimum 2 seconds
+    // Ensure minimum 2 seconds display time
     const timer = setTimeout(() => {
-      setIsVisible(false);
-      // Allow fade out animation to complete
-      setTimeout(onComplete, 300);
+      setMinTimeElapsed(true);
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [onComplete]);
+  }, []);
+
+  useEffect(() => {
+    // Complete splash when both conditions are met
+    if (minTimeElapsed && preloadComplete) {
+      setIsVisible(false);
+      // Allow fade out animation to complete
+      setTimeout(onComplete, 300);
+    }
+  }, [minTimeElapsed, preloadComplete, onComplete]);
 
   if (!isVisible) {
     return (

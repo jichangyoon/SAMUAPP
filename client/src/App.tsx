@@ -50,13 +50,14 @@ const Router = React.memo(() => {
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
+  const [preloadComplete, setPreloadComplete] = useState(false);
 
   // Set dark mode as default and preload images
   useEffect(() => {
     document.documentElement.classList.add('dark');
     
     // Preload critical images for instant loading
-    const preloadImages = () => {
+    const preloadImages = async () => {
       const imagesToPreload = [
         // Partner logos
         '/src/assets/wagus-logo.webp',
@@ -72,10 +73,23 @@ function App() {
         imagesToPreload.push(`/assets/nfts/${i}.webp`);
       }
       
-      imagesToPreload.forEach(src => {
-        const img = new Image();
-        img.src = src;
+      // Load all images with Promise.all to wait for completion
+      const imagePromises = imagesToPreload.map(src => {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = resolve;
+          img.onerror = resolve; // Continue even if some images fail
+          img.src = src;
+        });
       });
+      
+      try {
+        await Promise.all(imagePromises);
+        setPreloadComplete(true);
+      } catch (error) {
+        // Continue even if preload fails
+        setPreloadComplete(true);
+      }
     };
     
     preloadImages();
@@ -83,7 +97,12 @@ function App() {
 
   // Show splash screen on first load
   if (showSplash) {
-    return <SplashScreen onComplete={() => setShowSplash(false)} />;
+    return (
+      <SplashScreen 
+        onComplete={() => setShowSplash(false)} 
+        preloadComplete={preloadComplete}
+      />
+    );
   }
 
   return (
