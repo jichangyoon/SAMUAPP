@@ -161,7 +161,12 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
         return receipt;
         
       } catch (secondError: any) {
-        console.error('Both attempts failed:', secondError);
+        console.error('Helius RPC transaction failed - details:', {
+          message: secondError.message,
+          code: secondError.code,
+          data: secondError.data,
+          stack: secondError.stack
+        });
         
         // 시뮬레이션 폴백
         console.log('Using simulation due to RPC limitations...');
