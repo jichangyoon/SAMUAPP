@@ -117,8 +117,16 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       // Configure connection to point to the correct Solana network (문서 38라인)
       const connection = new Connection('https://api.mainnet-beta.solana.com');
       
-      // Create your transaction (문서 41라인)
-      const transaction = new Transaction();
+      // Get recent blockhash FIRST (Solana 필수 요구사항)
+      console.log('Getting recent blockhash...');
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+      console.log('Got blockhash:', blockhash);
+      
+      // Create your transaction with required blockhash (문서 41라인)
+      const transaction = new Transaction({
+        recentBlockhash: blockhash,
+        feePayer: new PublicKey(walletAddress)
+      });
       
       // Add your instructions to the transaction (문서 42라인)
       transaction.add(
