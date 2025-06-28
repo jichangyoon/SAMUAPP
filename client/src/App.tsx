@@ -48,9 +48,34 @@ const Router = React.memo(() => {
 });
 
 function App() {
-  // Set dark mode as default
+  // Set dark mode as default and preload images
   useEffect(() => {
     document.documentElement.classList.add('dark');
+    
+    // Preload critical images for instant loading
+    const preloadImages = () => {
+      const imagesToPreload = [
+        // Partner logos
+        '/src/assets/wagus-logo.webp',
+        '/src/assets/doctorbird-logo.webp',
+        // Goods shop image
+        '/src/assets/samu-shirt.webp',
+        // SAMU logo
+        '/src/assets/samu-logo.webp'
+      ];
+      
+      // Preload NFT images (first 20 for immediate visibility)
+      for (let i = 1; i <= 20; i++) {
+        imagesToPreload.push(`/assets/nfts/${i}.webp`);
+      }
+      
+      imagesToPreload.forEach(src => {
+        const img = new Image();
+        img.src = src;
+      });
+    };
+    
+    preloadImages();
   }, []);
 
   return (
