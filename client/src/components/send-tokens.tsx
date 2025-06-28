@@ -109,18 +109,18 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
 
   const sendSOL = async (recipientAddress: string, amount: number) => {
     try {
-      console.log('Starting real Solana transfer via Privy:', { recipientAddress, amount, walletAddress });
+      console.log('Starting Solana transfer via Privy (exact documentation method):', { recipientAddress, amount, walletAddress });
       
-      // Import Solana Web3.js
+      // Import Solana Web3.js (정확히 문서대로)
       const { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } = await import('@solana/web3.js');
       
-      // Privy 내장 연결 사용 (RPC 접근 제한 우회)
-      console.log('Using Privy built-in Solana connection...');
+      // Configure connection to point to the correct Solana network (문서 38라인)
+      const connection = new Connection('https://api.mainnet-beta.solana.com');
       
-      // 트랜잭션 생성 (Privy가 blockhash와 fee payer를 자동 처리)
+      // Create your transaction (문서 41라인)
       const transaction = new Transaction();
       
-      // Add transfer instruction
+      // Add your instructions to the transaction (문서 42라인)
       transaction.add(
         SystemProgram.transfer({
           fromPubkey: new PublicKey(walletAddress),
@@ -129,37 +129,22 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
         })
       );
 
-      console.log('Transaction created, calling Privy sendTransaction...');
+      console.log('Transaction created, sending via Privy exactly as documented...');
 
-      // Send via Privy (내장 연결 사용)
+      // Send the transaction (문서 45-48라인 정확히)
       const receipt = await sendTransaction({
-        transaction
+        transaction: transaction,
+        connection: connection
       });
 
-      console.log("Real Solana transaction completed:", receipt.signature);
+      console.log("Transaction sent with signature:", receipt.signature);
       return receipt;
       
     } catch (error: any) {
-      console.error('Solana transfer failed:', error);
+      console.error('Privy sendTransaction failed:', error);
+      console.error('Full error object:', error);
       
-      // 상세 에러 로깅
-      console.error('Error details:', {
-        message: error.message,
-        code: error.code,
-        name: error.name
-      });
-      
-      // Buffer나 RPC 문제인 경우 폴백
-      if (error.message?.includes('Buffer') || error.message?.includes('403') || error.message?.includes('RPC') || error.message?.includes('Failed to prepare')) {
-        console.log('Using fallback simulation due to technical limitations');
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        return {
-          signature: generateSolanaSignature(),
-          success: true,
-          note: 'Transfer simulated - real Solana integration requires additional configuration'
-        };
-      }
-      
+      // 정확한 에러만 로깅, 폴백 제거
       throw error;
     }
   };
