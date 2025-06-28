@@ -133,7 +133,8 @@ export function Leaderboard() {
           votes: winnerMeme?.votes || 0,
           contestDate: new Date(contest.archivedAt).toLocaleDateString(),
           totalEntries: contest.totalMemes || 0,
-          totalVotes: contest.totalVotes || 0
+          totalVotes: contest.totalVotes || 0,
+          winnerMeme: winnerMeme // 이 부분 추가!
         };
       });
   }, [archivedContests]);

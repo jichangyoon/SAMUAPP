@@ -74,7 +74,7 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
   };
 
   return (
-    <Drawer open={isOpen} onOpenChange={onClose}>
+    <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DrawerContent className="h-[92vh] bg-black text-white border-gray-800">
         <DrawerHeader className="border-b border-gray-800 pb-4">
           <DrawerTitle className="text-xl font-bold text-white">
