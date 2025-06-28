@@ -11,33 +11,7 @@ import { UserInfoModal } from "@/components/user-info-modal";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import type { Meme } from "@shared/schema";
 
-// Mock data for past winners (명예의 전당)
-const hallOfFameData = [
-  {
-    id: 1,
-    title: "SAMU TO MARS",
-    author: "crypto_legend",
-    votes: 15420,
-    contestDate: "2024-12-01",
-    prize: "5,000 SAMU"
-  },
-  {
-    id: 2,
-    title: "PACK LEADER",
-    author: "wolf_alpha",
-    votes: 12850,
-    contestDate: "2024-11-15",
-    prize: "3,000 SAMU"
-  },
-  {
-    id: 3,
-    title: "DIAMOND HODLER",
-    author: "gem_hands",
-    votes: 11200,
-    contestDate: "2024-11-01",
-    prize: "2,000 SAMU"
-  }
-];
+// Get Hall of Fame data from archived contests
 
 export function Leaderboard() {
   const [activeTab, setActiveTab] = useState("current");
@@ -77,6 +51,14 @@ export function Leaderboard() {
     staleTime: 30000, // 30초 캐시 (적당한 균형)
     refetchInterval: 60000, // 1분마다 갱신
     refetchOnWindowFocus: false, // 창 포커스시 자동 갱신 비활성화
+  });
+
+  // Fetch archived contests for Hall of Fame
+  const { data: archivedContests, isLoading: archiveLoading } = useQuery({
+    queryKey: ['/api/admin/archived-contests'],
+    queryFn: () => fetch('/api/admin/archived-contests').then(res => res.json()),
+    staleTime: 30000,
+    gcTime: 300000
   });
 
   // Extract memes array with proper type checking
