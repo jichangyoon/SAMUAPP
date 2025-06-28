@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-// Solana Web3.js polyfills
+// 브라우저 호환성 설정
 (window as any).global = window;
 
 // 메모리 효율적인 전역 오류 핸들러

@@ -18,10 +18,14 @@
   </head>
   <body>
     <div id="root"></div>
+    <script src="https://unpkg.com/buffer@6.0.3/index.js"></script>
     <script>
       // Buffer polyfill for Solana Web3.js
       if (typeof global === 'undefined') {
         var global = globalThis;
+      }
+      if (typeof window !== 'undefined' && typeof window.Buffer === 'undefined') {
+        window.Buffer = buffer.Buffer;
       }
     </script>
     <script type="module" src="/src/main.tsx"></script>
