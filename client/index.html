@@ -19,25 +19,39 @@
   <body>
     <div id="root"></div>
     <script>
-      // 브라우저 환경을 위한 Buffer polyfill
+      // 완전한 Buffer polyfill for Solana Web3.js
       if (typeof global === 'undefined') {
         var global = globalThis;
       }
       
-      // 간단한 Buffer polyfill 구현
+      // Buffer polyfill using TextEncoder/TextDecoder
       if (typeof window !== 'undefined' && typeof window.Buffer === 'undefined') {
-        window.Buffer = {
-          from: function(data, encoding) {
-            if (encoding === 'hex') {
-              return new Uint8Array(data.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-            }
+        window.Buffer = class Buffer extends Uint8Array {
+          constructor(data, encoding) {
             if (typeof data === 'string') {
-              return new TextEncoder().encode(data);
+              const encoder = new TextEncoder();
+              super(encoder.encode(data));
+            } else if (typeof data === 'number') {
+              super(data);
+            } else {
+              super(data || 0);
             }
-            return new Uint8Array(data);
-          },
-          alloc: function(size) {
-            return new Uint8Array(size);
+          }
+          
+          static from(data, encoding) {
+            return new Buffer(data, encoding);
+          }
+          
+          static alloc(size) {
+            return new Buffer(size);
+          }
+          
+          toString(encoding) {
+            if (encoding === 'hex') {
+              return Array.from(this, byte => byte.toString(16).padStart(2, '0')).join('');
+            }
+            const decoder = new TextDecoder();
+            return decoder.decode(this);
           }
         };
       }
