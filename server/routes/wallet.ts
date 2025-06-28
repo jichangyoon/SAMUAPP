@@ -19,7 +19,7 @@ router.get("/samu-balance/:wallet", async (req, res) => {
 
     const SAMU_TOKEN_MINT = 'EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF';
     const RPC_ENDPOINTS = [
-      'https://rpc.helius.xyz/?api-key=',         // Helius 무료 RPC 테스트
+      'https://mainnet.helius-rpc.com/?api-key=27b20c52-1c23-4eac-996d-a6f4debb95b6', // Helius 무료 RPC
       'https://api.mainnet-beta.solana.com',      // Solana 공식 RPC
       'https://rpc.ankr.com/solana'               // Ankr 무료 RPC
     ];
@@ -83,7 +83,7 @@ router.get('/sol-balance/:walletAddress', async (req, res) => {
     }
 
     const RPC_ENDPOINTS = [
-      'https://rpc.helius.xyz/?api-key=',         // Helius 무료 RPC 테스트
+      'https://mainnet.helius-rpc.com/?api-key=27b20c52-1c23-4eac-996d-a6f4debb95b6', // Helius 무료 RPC
       'https://api.mainnet-beta.solana.com',      // Solana 공식 RPC
       'https://rpc.ankr.com/solana'               // Ankr 무료 RPC
     ];
@@ -136,7 +136,7 @@ router.get('/voting-power/:walletAddress', async (req, res) => {
       // Get SAMU balance to initialize voting power
       const SAMU_TOKEN_MINT = 'EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF';
       const RPC_ENDPOINTS = [
-        'https://rpc.helius.xyz/?api-key=',         // Helius 무료 RPC 테스트
+        'https://mainnet.helius-rpc.com/?api-key=27b20c52-1c23-4eac-996d-a6f4debb95b6', // Helius 무료 RPC
         'https://api.mainnet-beta.solana.com',      // Solana 공식 RPC
         'https://rpc.ankr.com/solana'               // Ankr 무료 RPC
       ];

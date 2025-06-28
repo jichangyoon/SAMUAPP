@@ -137,8 +137,8 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
         console.log('Retrying with Privy default connection...');
         const { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } = await import('@solana/web3.js');
         
-        // Privy가 자체적으로 처리할 수 있는 최소 connection
-        const connection = new Connection('https://api.mainnet-beta.solana.com', {
+        // Helius 무료 RPC로 실제 트랜잭션 시도
+        const connection = new Connection('https://mainnet.helius-rpc.com/?api-key=27b20c52-1c23-4eac-996d-a6f4debb95b6', {
           commitment: 'confirmed',
           disableRetryOnRateLimit: true
         });
