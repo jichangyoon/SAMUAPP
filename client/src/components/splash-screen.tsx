@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import samuLogo from '@assets/samu-logo.webp';
+import samuLogo from '../assets/samu-logo.webp';
 
 interface SplashScreenProps {
   onComplete: () => void;
