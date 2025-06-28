@@ -128,14 +128,12 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
 
       console.log('Transaction created, calling Privy sendTransaction...');
 
-      // Privy의 sendTransaction 사용
+      // Privy의 sendTransaction 사용 (단순화된 옵션)
       const receipt = await sendTransaction({
         transaction,
         connection,
         uiOptions: {
-          showWalletUIs: true,
-          title: 'Send SOL',
-          description: `Sending ${amount} SOL to ${recipientAddress.slice(0, 8)}...`
+          showWalletUIs: true
         }
       });
 

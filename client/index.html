@@ -18,14 +18,28 @@
   </head>
   <body>
     <div id="root"></div>
-    <script src="https://unpkg.com/buffer@6.0.3/index.js"></script>
     <script>
-      // Buffer polyfill for Solana Web3.js
+      // 브라우저 환경을 위한 Buffer polyfill
       if (typeof global === 'undefined') {
         var global = globalThis;
       }
+      
+      // 간단한 Buffer polyfill 구현
       if (typeof window !== 'undefined' && typeof window.Buffer === 'undefined') {
-        window.Buffer = buffer.Buffer;
+        window.Buffer = {
+          from: function(data, encoding) {
+            if (encoding === 'hex') {
+              return new Uint8Array(data.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+            }
+            if (typeof data === 'string') {
+              return new TextEncoder().encode(data);
+            }
+            return new Uint8Array(data);
+          },
+          alloc: function(size) {
+            return new Uint8Array(size);
+          }
+        };
       }
     </script>
     <script type="module" src="/src/main.tsx"></script>
