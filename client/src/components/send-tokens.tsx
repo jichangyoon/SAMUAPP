@@ -29,12 +29,12 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   // SAMU 토큰 컨트랙트 주소 (실제 SAMU 토큰 주소)
   const SAMU_TOKEN_ADDRESS = "EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF";
   
-  // 안정적인 RPC 연결을 위한 폴백 엔드포인트
+  // 메인넷 전용 RPC 엔드포인트
   const RPC_ENDPOINTS = [
     'https://api.mainnet-beta.solana.com',
     'https://rpc.ankr.com/solana',
     'https://solana-mainnet.g.alchemy.com/v2/demo',
-    'https://api.devnet.solana.com'  // 폴백으로 devnet 추가
+    'https://mainnet.helius-rpc.com/?api-key=public'
   ];
   
   // 다중 RPC 엔드포인트 시도
