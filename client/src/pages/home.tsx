@@ -931,7 +931,7 @@ export default function Home() {
       {/* Grid View Vote Confirmation Drawer */}
       {selectedMeme && (
         <Drawer open={showVoteDialog} onOpenChange={setShowVoteDialog}>
-          <DrawerContent className="bg-card border-border h-[95vh]">
+          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
             <DrawerHeader>
               <DrawerTitle className="text-foreground">Confirm Your Vote</DrawerTitle>
               <DrawerDescription className="text-muted-foreground">
@@ -1023,7 +1023,7 @@ export default function Home() {
       {/* Share Drawer */}
       {selectedMeme && (
         <Drawer open={showShareDialog} onOpenChange={setShowShareDialog}>
-          <DrawerContent className="bg-card border-border h-[95vh]">
+          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
             <DrawerHeader>
               <DrawerTitle className="text-foreground">Share Meme</DrawerTitle>
               <DrawerDescription className="text-muted-foreground">
@@ -1059,7 +1059,7 @@ export default function Home() {
 
       {/* Upload Form Drawer */}
       <Drawer open={showUploadForm} onOpenChange={setShowUploadForm}>
-        <DrawerContent className="bg-card border-border h-[95vh]">
+        <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
           <DrawerHeader>
             <DrawerTitle className="text-foreground">Submit New Meme</DrawerTitle>
             <DrawerDescription className="text-muted-foreground">
