@@ -141,6 +141,13 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
           })
         );
 
+        // 트랜잭션 유효성 검사
+        console.log("트랜잭션 생성 완료:", {
+          blockhash,
+          instructions: transaction.instructions.length,
+          feePayer: transaction.feePayer?.toString()
+        });
+
         // 실제 트랜잭션 수수료 계산
         try {
           const fee = await connection.getFeeForMessage(transaction.compileMessage());
@@ -149,18 +156,61 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
           console.log("수수료 계산 실패, 기본값 사용");
         }
 
-        // 실제 트랜잭션 전송
-        const receipt = await sendTransaction({
-          transaction,
-          connection
+        // 실제 트랜잭션 전송 - Privy Solana 방식
+        console.log("트랜잭션 전송 시도...", {
+          fromPubkey: fromPubkey.toString(),
+          toPubkey: toPubkey.toString(),
+          lamports: Math.floor(lamports)
         });
 
-        toast({
-          title: "Transaction Successful!",
-          description: `Sent ${amount} SOL to ${recipient.slice(0, 8)}...`,
+        // Privy 공식 방식 - Transaction 객체 직접 전달
+        console.log("실제 잔고 확인:", {
+          solBalance,
+          amountNum,
+          estimatedFee,
+          total: amountNum + estimatedFee,
+          sufficient: (amountNum + estimatedFee) <= solBalance
         });
 
-        console.log("Transaction signature:", receipt.signature);
+        try {
+          const receipt = await sendTransaction({
+            transaction,
+            connection,
+            uiOptions: {
+              showWalletUIs: true  // 사용자에게 확인 UI 표시
+            }
+          });
+
+          toast({
+            title: "Transaction Successful!",
+            description: `Sent ${amount} SOL to ${recipient.slice(0, 8)}...`,
+          });
+
+          console.log("Transaction signature:", receipt.signature);
+          
+        } catch (sendError: any) {
+          console.error("실제 전송 오류:", sendError);
+          console.error("오류 상세:", {
+            message: sendError?.message,
+            code: sendError?.code,
+            details: sendError?.details,
+            stack: sendError?.stack
+          });
+          
+          let errorMessage = "Network error. Please try again.";
+          if (sendError?.message?.includes('insufficient')) {
+            errorMessage = "Insufficient SOL balance for transaction + fees";
+          } else if (sendError?.message?.includes('blockhash')) {
+            errorMessage = "Transaction expired. Please try again.";
+          }
+          
+          toast({
+            title: "Transaction Failed",
+            description: errorMessage,
+            variant: "destructive"
+          });
+          return;
+        }
         
       } else if (tokenType === "SAMU") {
         // SAMU 토큰 전송은 추후 구현
