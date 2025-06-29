@@ -94,10 +94,48 @@ export function SendTokensSimple({ walletAddress, solBalance, samuBalance, onClo
           })
         );
 
-        // 메인넷 연결
-        const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+        // 메인넷 연결 (폴백 RPC 엔드포인트들)
+        const rpcEndpoints = [
+          'https://api.mainnet-beta.solana.com',
+          'https://solana-api.projectserum.com',
+          'https://rpc.ankr.com/solana',
+          'https://solana-mainnet.rpc.extrnode.com'
+        ];
+        
+        let connection: Connection | null = null;
+        let workingEndpoint = '';
+        
+        // 작동하는 RPC 엔드포인트 찾기
+        for (const endpoint of rpcEndpoints) {
+          try {
+            console.log(`RPC 엔드포인트 테스트: ${endpoint}`);
+            const testConnection = new Connection(endpoint, 'confirmed');
+            await testConnection.getLatestBlockhash('confirmed');
+            connection = testConnection;
+            workingEndpoint = endpoint;
+            console.log(`✓ 성공한 RPC: ${endpoint}`);
+            break;
+          } catch (rpcError) {
+            console.log(`✗ 실패한 RPC: ${endpoint}`);
+          }
+        }
+        
+        if (!connection) {
+          throw new Error('No working RPC endpoint found');
+        }
 
         console.log("Privy로 전송 중...");
+        
+        // 트랜잭션에 최신 블록해시와 수수료 지불자 설정
+        const latestBlockhash = await connection.getLatestBlockhash('confirmed');
+        transaction.recentBlockhash = latestBlockhash.blockhash;
+        transaction.feePayer = fromPubkey;
+        
+        console.log("트랜잭션 준비 완료:", {
+          blockhash: transaction.recentBlockhash,
+          feePayer: transaction.feePayer.toString(),
+          instructions: transaction.instructions.length
+        });
         
         const receipt = await sendTransaction({
           transaction,
@@ -124,12 +162,24 @@ export function SendTokensSimple({ walletAddress, solBalance, samuBalance, onClo
 
     } catch (error: any) {
       console.error("Transaction error:", error);
+      console.error("Error details:", {
+        message: error?.message,
+        code: error?.code,
+        stack: error?.stack,
+        cause: error?.cause
+      });
       
       let errorMessage = "Transaction failed. Please try again.";
-      if (error?.message?.includes('User')) {
+      if (error?.message?.includes('User') || error?.message?.includes('cancelled')) {
         errorMessage = "Transaction cancelled by user";
       } else if (error?.message?.includes('insufficient')) {
         errorMessage = "Insufficient balance for transaction";
+      } else if (error?.message?.includes('blockhash')) {
+        errorMessage = "Network error - please try again";
+      } else if (error?.message?.includes('Connection')) {
+        errorMessage = "Connection error - check network";
+      } else if (error?.code) {
+        errorMessage = `Error ${error.code}: ${error.message}`;
       }
       
       toast({
