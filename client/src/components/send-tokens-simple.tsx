@@ -94,41 +94,34 @@ export function SendTokensSimple({ walletAddress, solBalance, samuBalance, onClo
           })
         );
 
-        // 메인넷 연결 (폴백 RPC 엔드포인트들)
-        const rpcEndpoints = [
-          'https://api.mainnet-beta.solana.com',
-          'https://solana-api.projectserum.com',
-          'https://rpc.ankr.com/solana',
-          'https://solana-mainnet.rpc.extrnode.com'
-        ];
+        console.log("서버 프록시를 통해 블록해시 가져오는 중...");
         
-        let connection: Connection | null = null;
-        let workingEndpoint = '';
-        
-        // 작동하는 RPC 엔드포인트 찾기
-        for (const endpoint of rpcEndpoints) {
-          try {
-            console.log(`RPC 엔드포인트 테스트: ${endpoint}`);
-            const testConnection = new Connection(endpoint, 'confirmed');
-            await testConnection.getLatestBlockhash('confirmed');
-            connection = testConnection;
-            workingEndpoint = endpoint;
-            console.log(`✓ 성공한 RPC: ${endpoint}`);
-            break;
-          } catch (rpcError) {
-            console.log(`✗ 실패한 RPC: ${endpoint}`);
-          }
-        }
-        
-        if (!connection) {
-          throw new Error('No working RPC endpoint found');
+        // 서버 프록시를 통한 블록해시 획득
+        const blockHashResponse = await fetch('/api/solana-rpc', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            method: 'getLatestBlockhash',
+            params: ['confirmed']
+          })
+        });
+
+        if (!blockHashResponse.ok) {
+          throw new Error(`서버 프록시 연결 실패: ${blockHashResponse.status}`);
         }
 
-        console.log("Privy로 전송 중...");
+        const blockHashData = await blockHashResponse.json();
+        if (blockHashData.error) {
+          throw new Error(`RPC 에러: ${blockHashData.error.message}`);
+        }
+
+        const blockhash = blockHashData.result.blockhash;
+        console.log("서버 프록시로 블록해시 획득:", blockhash);
         
-        // 트랜잭션에 최신 블록해시와 수수료 지불자 설정
-        const latestBlockhash = await connection.getLatestBlockhash('confirmed');
-        transaction.recentBlockhash = latestBlockhash.blockhash;
+        // 트랜잭션에 블록해시와 수수료 지불자 설정
+        transaction.recentBlockhash = blockhash;
         transaction.feePayer = fromPubkey;
         
         console.log("트랜잭션 준비 완료:", {
@@ -137,9 +130,14 @@ export function SendTokensSimple({ walletAddress, solBalance, samuBalance, onClo
           instructions: transaction.instructions.length
         });
         
+        // 더미 Connection (Privy가 실제 전송을 처리)
+        const dummyConnection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+        
+        console.log("Privy로 전송 중...");
+        
         const receipt = await sendTransaction({
           transaction,
-          connection,
+          connection: dummyConnection,
           uiOptions: {
             showWalletUIs: true
           }
