@@ -65,7 +65,9 @@ function App() {
         // Goods shop image
         '/src/assets/samu-shirt.webp',
         // SAMU logo
-        '/src/assets/samu-logo.webp'
+        '/src/assets/samu-logo.webp',
+        // Splash screen logo
+        '/src/assets/splash-logo.webp'
       ];
       
       // Preload NFT images (first 20 for immediate visibility)
