@@ -19,19 +19,12 @@
   <body>
     <div id="root"></div>
     <script>
-      // Buffer polyfill for browser compatibility
+      // Global polyfills for Solana compatibility
       if (typeof global === 'undefined') {
         var global = globalThis;
       }
-      // Polyfill for Buffer
-      if (typeof window !== 'undefined') {
-        window.global = window;
-        window.Buffer = window.Buffer || {
-          from: function(data) { return new Uint8Array(data); },
-          alloc: function(size) { return new Uint8Array(size); },
-          isBuffer: function() { return false; }
-        };
-      }
+      global.global = global;
+      global.process = global.process || { env: {} };
     </script>
     <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
