@@ -31,14 +31,14 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   
   // 안정적인 RPC 연결을 위한 폴백 엔드포인트
   const RPC_ENDPOINTS = [
-    'https://api.mainnet-beta.solana.com',
-    'https://rpc.ankr.com/solana',
-    'https://solana-api.projectserum.com'
+    'https://rpc.ankr.com/solana',  // 더 안정적인 엔드포인트를 우선 순위로
+    'https://solana-mainnet.g.alchemy.com/v2/demo',
+    'https://api.mainnet-beta.solana.com'
   ];
   
   const getConnection = () => {
     // 첫 번째 엔드포인트 사용 (향후 폴백 로직 추가 가능)
-    return new Connection(RPC_ENDPOINTS[0]);
+    return new Connection(RPC_ENDPOINTS[0], 'confirmed');
   };
 
   const handleSend = async () => {
@@ -130,8 +130,20 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
         const connection = getConnection();
         console.log("2. RPC 연결 확인:", connection.rpcEndpoint);
         
-        const { blockhash } = await connection.getLatestBlockhash();
-        console.log("3. 블록해시 획득:", blockhash);
+        let blockhash: string;
+        try {
+          const blockHashInfo = await connection.getLatestBlockhash('finalized');
+          blockhash = blockHashInfo.blockhash;
+          console.log("3. 블록해시 획득:", blockhash);
+        } catch (blockchainError: any) {
+          console.error("블록해시 획득 실패:", blockchainError);
+          toast({
+            title: "Network Connection Failed",
+            description: "Cannot connect to Solana network. Please try again.",
+            variant: "destructive"
+          });
+          return;
+        }
         
         const transaction = new Transaction();
         transaction.recentBlockhash = blockhash;
