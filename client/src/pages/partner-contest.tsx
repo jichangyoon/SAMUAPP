@@ -378,7 +378,7 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
       {/* Grid View Meme Detail Drawer */}
       {selectedMeme && (
         <Drawer open={!!selectedMeme} onOpenChange={() => setSelectedMeme(null)}>
-          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+          <DrawerContent className="bg-card border-border h-[98vh]">
             <DrawerHeader>
               <DrawerTitle className="text-foreground">{selectedMeme.title}</DrawerTitle>
             </DrawerHeader>

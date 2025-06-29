@@ -166,7 +166,7 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
 
       {/* Share Dialog */}
       <Drawer open={showShareDialog} onOpenChange={setShowShareDialog}>
-        <DrawerContent className="bg-black border-gray-800 max-h-[92vh] h-[50vh]">
+        <DrawerContent className="bg-black border-gray-800 h-[98vh]">
           <DrawerHeader>
             <DrawerTitle className="text-white">Share Meme</DrawerTitle>
             <DrawerDescription className="text-gray-400">
