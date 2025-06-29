@@ -42,6 +42,19 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   };
 
   const handleSend = async () => {
+    // Buffer 폴리필 확인 및 설정
+    if (typeof (globalThis as any).Buffer === 'undefined') {
+      console.log('Buffer 폴리필 재설정 중...');
+      try {
+        const { Buffer } = await import('buffer');
+        (globalThis as any).Buffer = Buffer;
+        (globalThis as any).global = globalThis;
+        (globalThis as any).process = { env: {}, browser: true };
+      } catch (error) {
+        console.warn('Buffer 폴리필 실패, 기본 구현 사용');
+      }
+    }
+
     if (!recipient || !amount) {
       toast({
         title: "Missing Information",
