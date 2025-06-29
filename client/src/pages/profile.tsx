@@ -11,11 +11,12 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from "@/components/ui/drawer";
 import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send, Trash2, MoreVertical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
-import { SendTokens } from "@/components/send-tokens";
+import { SendTokensSimple } from "@/components/send-tokens-simple";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { MediaDisplay } from "@/components/media-display";
 
@@ -678,12 +679,29 @@ const Profile = React.memo(() => {
             {/* 송금 기능 */}
             {walletAddress && user && (
               <div className="mt-3">
-                <SendTokens 
-                  walletAddress={walletAddress}
-                  samuBalance={stats.currentSamuBalance}
-                  solBalance={stats.currentSolBalance}
-                  chainType={selectedWalletAccount?.chainType || 'solana'}
-                />
+                <Drawer>
+                  <DrawerTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full bg-primary/10 border-primary/30 hover:bg-primary/20"
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      Send Tokens
+                    </Button>
+                  </DrawerTrigger>
+                  <DrawerContent className="h-[92vh]">
+                    <div className="p-6">
+                      <h2 className="text-lg font-semibold mb-4">Send Tokens</h2>
+                      <SendTokensSimple
+                        walletAddress={walletAddress}
+                        solBalance={stats.currentSolBalance}
+                        samuBalance={stats.currentSamuBalance}
+                        onClose={() => {}}
+                      />
+                    </div>
+                  </DrawerContent>
+                </Drawer>
               </div>
             )}
           </CardContent>
