@@ -3,6 +3,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useSendTransaction } from "@privy-io/react-auth/solana";
+import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 
 interface SendSolProps {
   walletAddress: string;
@@ -16,6 +18,7 @@ function SendSolSimple({ walletAddress, solBalance, onClose }: SendSolProps) {
   const [isLoading, setIsLoading] = useState(false);
   
   const { toast } = useToast();
+  const { sendTransaction } = useSendTransaction();
 
   const handleSend = async () => {
     if (!recipient || !amount) {
@@ -63,11 +66,34 @@ function SendSolSimple({ walletAddress, solBalance, onClose }: SendSolProps) {
     try {
       console.log("SOL 전송 시도:", { from: walletAddress, to: recipient, amount: amountNum });
       
-      // 간단한 알림만 표시 (실제 전송 기능은 추후 구현)
-      toast({
-        title: "SOL Transfer Feature",
-        description: "SOL transfer functionality will be available soon. Currently in development for mainnet.",
+      // 트랜잭션 생성
+      const fromPubkey = new PublicKey(walletAddress);
+      const toPubkey = new PublicKey(recipient);
+      
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey,
+          toPubkey,
+          lamports: Math.floor(amountNum * LAMPORTS_PER_SOL)
+        })
+      );
+      
+      console.log("Privy sendTransaction 호출 중...");
+      
+      // Privy로 전송 (블록해시는 Privy가 자동 처리)
+      const result = await sendTransaction(transaction, {
+        uiOptions: {
+          showWalletUIs: true
+        }
       });
+      
+      toast({
+        title: "Transaction Successful!",
+        description: `Successfully sent ${amount} SOL to ${recipient.slice(0, 8)}...`,
+      });
+      
+      console.log("Transaction result:", result);
+      onClose();
 
     } catch (error: any) {
       console.error("전송 실패:", error);
