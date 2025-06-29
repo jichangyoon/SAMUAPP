@@ -7,9 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Send, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { isSolanaAddress } from "@/lib/solana";
-import { usePrivy } from "@privy-io/react-auth";
-import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { TOKEN_PROGRAM_ID, createTransferInstruction, getAssociatedTokenAddress, getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
 
 interface SendTokensProps {
   walletAddress: string;
@@ -25,19 +22,12 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [tokenType, setTokenType] = useState("SAMU");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { user, sendTransaction } = usePrivy();
-
-  // SAMU 토큰 민트 주소
-  const SAMU_TOKEN_MINT = "EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF";
-  
-  // RPC 연결 설정
-  const connection = new Connection("https://api.mainnet-beta.solana.com");
 
   const handleSend = async () => {
     if (!recipient || !amount) {
       toast({
-        title: "정보 누락",
-        description: "받는 주소와 금액을 입력해주세요",
+        title: "Missing Information",
+        description: "Please enter recipient address and amount",
         variant: "destructive"
       });
       return;
@@ -46,8 +36,8 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     const amountNum = parseFloat(amount);
     if (isNaN(amountNum) || amountNum <= 0) {
       toast({
-        title: "잘못된 금액",
-        description: "올바른 금액을 입력해주세요",
+        title: "Invalid Amount",
+        description: "Please enter a valid amount",
         variant: "destructive"
       });
       return;
@@ -57,8 +47,8 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     const maxBalance = tokenType === "SAMU" ? samuBalance : solBalance;
     if (amountNum > maxBalance) {
       toast({
-        title: "잔고 부족",
-        description: `${tokenType} 잔고가 부족합니다`,
+        title: "Insufficient Balance",
+        description: `You don't have enough ${tokenType}`,
         variant: "destructive"
       });
       return;
@@ -67,18 +57,8 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     // Solana 주소 검증
     if (chainType === 'solana' && !isSolanaAddress(recipient)) {
       toast({
-        title: "잘못된 주소",
-        description: "올바른 Solana 주소를 입력해주세요",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // 사용자 확인 없이는 전송 불가
-    if (!user) {
-      toast({
-        title: "인증 필요",
-        description: "토큰 전송을 위해 로그인이 필요합니다",
+        title: "Invalid Address",
+        description: "Please enter a valid Solana address",
         variant: "destructive"
       });
       return;
@@ -87,119 +67,23 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     setIsLoading(true);
 
     try {
-      const fromPublicKey = new PublicKey(walletAddress);
-      const toPublicKey = new PublicKey(recipient);
-
-      let transaction: Transaction;
-      let signature: string;
-
-      if (tokenType === "SOL") {
-        // SOL 전송
-        const lamports = Math.floor(amountNum * LAMPORTS_PER_SOL);
-        
-        transaction = new Transaction().add(
-          SystemProgram.transfer({
-            fromPubkey: fromPublicKey,
-            toPubkey: toPublicKey,
-            lamports: lamports,
-          })
-        );
-      } else {
-        // SAMU 토큰 전송
-        const tokenMint = new PublicKey(SAMU_TOKEN_MINT);
-        
-        // 소수점 9자리까지 지원 (SAMU 토큰 decimals)
-        const tokenAmount = Math.floor(amountNum * Math.pow(10, 9));
-        
-        // 송신자와 수신자의 토큰 계정 주소 계산
-        const fromTokenAccount = await getAssociatedTokenAddress(
-          tokenMint,
-          fromPublicKey
-        );
-        
-        const toTokenAccount = await getAssociatedTokenAddress(
-          tokenMint,
-          toPublicKey
-        );
-
-        // 수신자의 토큰 계정이 존재하는지 확인하고 없으면 생성
-        try {
-          await connection.getAccountInfo(toTokenAccount);
-        } catch (error) {
-          // 토큰 계정이 없으면 생성 지시 추가
-          transaction = new Transaction().add(
-            await getOrCreateAssociatedTokenAccount(
-              connection,
-              fromPublicKey,
-              tokenMint,
-              toPublicKey
-            ).then(() => 
-              createTransferInstruction(
-                fromTokenAccount,
-                toTokenAccount,
-                fromPublicKey,
-                tokenAmount,
-                [],
-                TOKEN_PROGRAM_ID
-              )
-            )
-          );
-        }
-
-        if (!transaction) {
-          // 토큰 계정이 이미 존재하는 경우 직접 전송
-          transaction = new Transaction().add(
-            createTransferInstruction(
-              fromTokenAccount,
-              toTokenAccount,
-              fromPublicKey,
-              tokenAmount,
-              [],
-              TOKEN_PROGRAM_ID
-            )
-          );
-        }
-      }
-
-      // 최신 블록해시 가져오기
-      const { blockhash } = await connection.getLatestBlockhash();
-      transaction.recentBlockhash = blockhash;
-      transaction.feePayer = fromPublicKey;
-
-      // Privy를 통한 트랜잭션 전송
-      signature = await sendTransaction(transaction, connection);
-
-      // 트랜잭션 확인 대기 (최대 30초)
-      await connection.confirmTransaction(signature, 'confirmed');
+      // 실제 송금 구현은 향후 추가 (Solana Web3.js 사용)
+      // 현재는 UI만 구현
+      await new Promise(resolve => setTimeout(resolve, 2000)); // 시뮬레이션
 
       toast({
-        title: "전송 완료",
-        description: `${amount} ${tokenType}이 성공적으로 전송되었습니다`,
-        duration: 3000
+        title: "Transaction Simulated",
+        description: `Would send ${amount} ${tokenType} to ${recipient.slice(0, 8)}...`,
       });
 
       setRecipient("");
       setAmount("");
       setIsOpen(false);
-
-    } catch (error: any) {
-      console.error("Token transfer error:", error);
-      
-      let errorMessage = "토큰 전송에 실패했습니다";
-      
-      if (error.message?.includes("insufficient funds")) {
-        errorMessage = "잔고가 부족합니다";
-      } else if (error.message?.includes("invalid")) {
-        errorMessage = "잘못된 주소이거나 토큰 계정입니다";
-      } else if (error.message?.includes("timeout")) {
-        errorMessage = "네트워크 연결 시간이 초과되었습니다";
-      }
-
+    } catch (error) {
       toast({
-        title: "전송 실패",
-        description: errorMessage,
-        variant: "destructive",
-        duration: 4000
+        title: "Transaction Failed",
+        description: "Failed to send tokens. Please try again.",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
@@ -215,7 +99,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
           className="w-full bg-primary/10 border-primary/30 hover:bg-primary/20"
         >
           <Send className="h-4 w-4 mr-2" />
-          토큰 전송
+          Send Tokens
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
