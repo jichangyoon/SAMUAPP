@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import splashLogo from '../assets/splash-logo.webp';
+import samuLogo from '../assets/samu-logo.webp';
 
 interface SplashScreenProps {
   onComplete: () => void;
@@ -9,7 +9,6 @@ interface SplashScreenProps {
 export function SplashScreen({ onComplete, preloadComplete = false }: SplashScreenProps) {
   const [isVisible, setIsVisible] = useState(true);
   const [minTimeElapsed, setMinTimeElapsed] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     // Ensure minimum 2 seconds display time
@@ -21,48 +20,49 @@ export function SplashScreen({ onComplete, preloadComplete = false }: SplashScre
   }, []);
 
   useEffect(() => {
-    // Complete splash when all conditions are met
-    if (minTimeElapsed && preloadComplete && imageLoaded) {
+    // Complete splash when both conditions are met
+    if (minTimeElapsed && preloadComplete) {
       setIsVisible(false);
       // Allow fade out animation to complete
       setTimeout(onComplete, 300);
     }
-  }, [minTimeElapsed, preloadComplete, imageLoaded, onComplete]);
+  }, [minTimeElapsed, preloadComplete, onComplete]);
 
   if (!isVisible) {
     return (
-      <div className="fixed inset-0 z-50 transition-opacity duration-300 opacity-0 pointer-events-none">
-        <img
-          src={splashLogo}
-          alt="SAMU Splash Screen"
-          className="w-full h-full object-cover"
-          onLoad={() => setImageLoaded(true)}
-        />
-      </div>
-    );
-  }
-
-  // Show loading screen until image is loaded
-  if (!imageLoaded) {
-    return (
-      <div className="fixed inset-0 z-50 bg-yellow-300">
-        <img
-          src={splashLogo}
-          alt="SAMU Splash Screen"
-          className="w-full h-full object-cover opacity-0"
-          onLoad={() => setImageLoaded(true)}
-        />
+      <div className="fixed inset-0 bg-black z-50 flex items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none">
+        <div className="text-center">
+          <img
+            src={samuLogo}
+            alt="SAMU"
+            className="w-24 h-24 mx-auto mb-4 animate-pulse"
+          />
+          <h1 className="text-2xl font-bold text-yellow-400 mb-2">SAMU</h1>
+          <div className="flex justify-center space-x-1">
+            <div className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+            <div className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-50">
-      <img
-        src={splashLogo}
-        alt="SAMU Splash Screen"
-        className="w-full h-full object-cover"
-      />
+    <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+      <div className="text-center">
+        <img
+          src={samuLogo}
+          alt="SAMU"
+          className="w-24 h-24 mx-auto mb-4 animate-pulse"
+        />
+        <h1 className="text-2xl font-bold text-yellow-400 mb-2">SAMU</h1>
+        <div className="flex justify-center space-x-1">
+          <div className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce"></div>
+          <div className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+          <div className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+        </div>
+      </div>
     </div>
   );
 }
