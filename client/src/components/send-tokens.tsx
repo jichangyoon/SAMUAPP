@@ -124,13 +124,22 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
         // SOL 전송
         const lamports = amountNum * LAMPORTS_PER_SOL;
         
+        console.log("1. SOL 전송 시작:", { amount: amountNum, lamports });
+        
         // 최근 블록해시 가져오기
         const connection = getConnection();
-        const { blockhash } = await connection.getLatestBlockhash();
+        console.log("2. RPC 연결 확인:", connection.rpcEndpoint);
         
-        const transaction = new Transaction({
-          recentBlockhash: blockhash,
-          feePayer: fromPubkey
+        const { blockhash } = await connection.getLatestBlockhash();
+        console.log("3. 블록해시 획득:", blockhash);
+        
+        const transaction = new Transaction();
+        transaction.recentBlockhash = blockhash;
+        transaction.feePayer = fromPubkey;
+        
+        console.log("4. 트랜잭션 기본 설정:", {
+          feePayer: transaction.feePayer.toString(),
+          recentBlockhash: transaction.recentBlockhash
         });
         
         transaction.add(
@@ -141,11 +150,9 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
           })
         );
 
-        // 트랜잭션 유효성 검사
-        console.log("트랜잭션 생성 완료:", {
-          blockhash,
+        console.log("5. 트랜잭션 완성:", {
           instructions: transaction.instructions.length,
-          feePayer: transaction.feePayer?.toString()
+          instruction: transaction.instructions[0]
         });
 
         // 실제 트랜잭션 수수료 계산
