@@ -28,7 +28,18 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
 
   // SAMU 토큰 컨트랙트 주소 (실제 SAMU 토큰 주소)
   const SAMU_TOKEN_ADDRESS = "EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF";
-  const connection = new Connection('https://api.mainnet-beta.solana.com');
+  
+  // 안정적인 RPC 연결을 위한 폴백 엔드포인트
+  const RPC_ENDPOINTS = [
+    'https://api.mainnet-beta.solana.com',
+    'https://rpc.ankr.com/solana',
+    'https://solana-api.projectserum.com'
+  ];
+  
+  const getConnection = () => {
+    // 첫 번째 엔드포인트 사용 (향후 폴백 로직 추가 가능)
+    return new Connection(RPC_ENDPOINTS[0]);
+  };
 
   const handleSend = async () => {
     if (!recipient || !amount) {
@@ -50,9 +61,18 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       return;
     }
 
-    // 잔고 확인
+    // 잔고 확인 (SOL의 경우 거래 수수료 고려)
     const maxBalance = tokenType === "SAMU" ? samuBalance : solBalance;
-    if (amountNum > maxBalance) {
+    const minRequiredForSol = tokenType === "SOL" ? 0.001 : 0; // SOL 거래 시 최소 0.001 SOL 수수료 보장
+    
+    if (tokenType === "SOL" && (amountNum + minRequiredForSol) > maxBalance) {
+      toast({
+        title: "Insufficient Balance",
+        description: `Need at least ${(amountNum + minRequiredForSol).toFixed(4)} SOL (including fees)`,
+        variant: "destructive"
+      });
+      return;
+    } else if (tokenType === "SAMU" && amountNum > maxBalance) {
       toast({
         title: "Insufficient Balance",
         description: `You don't have enough ${tokenType}`,
@@ -85,11 +105,19 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
 
       const fromPubkey = new PublicKey(walletAddress);
       const toPubkey = new PublicKey(recipient);
-      const transaction = new Transaction();
-
+      
       if (tokenType === "SOL") {
         // SOL 전송
         const lamports = amountNum * LAMPORTS_PER_SOL;
+        
+        // 최근 블록해시 가져오기
+        const connection = getConnection();
+        const { blockhash } = await connection.getLatestBlockhash();
+        
+        const transaction = new Transaction({
+          recentBlockhash: blockhash,
+          feePayer: fromPubkey
+        });
         
         transaction.add(
           SystemProgram.transfer({
@@ -127,9 +155,23 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       setIsOpen(false);
     } catch (error) {
       console.error("Transaction error:", error);
+      
+      let errorMessage = "Failed to send tokens. Please try again.";
+      if (error instanceof Error) {
+        if (error.message.includes("insufficient")) {
+          errorMessage = "Insufficient balance for transaction and fees.";
+        } else if (error.message.includes("blockhash")) {
+          errorMessage = "Network error. Please try again.";
+        } else if (error.message.includes("rejected")) {
+          errorMessage = "Transaction was rejected.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "Transaction Failed",
-        description: error instanceof Error ? error.message : "Failed to send tokens. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
