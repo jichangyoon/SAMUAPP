@@ -16,7 +16,7 @@ import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Cop
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
-import { SendTokensSimple } from "@/components/send-tokens-simple";
+import SendSolSimple from "@/components/send-sol-simple";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { MediaDisplay } from "@/components/media-display";
 
@@ -700,10 +700,9 @@ const Profile = React.memo(() => {
                           </Button>
                         </DrawerClose>
                       </div>
-                      <SendTokensSimple
+                      <SendSolSimple
                         walletAddress={walletAddress}
                         solBalance={stats.currentSolBalance}
-                        samuBalance={stats.currentSamuBalance}
                         onClose={() => {}}
                       />
                     </div>
