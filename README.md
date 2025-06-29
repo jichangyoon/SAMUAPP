@@ -1,96 +1,137 @@
-# SAMU Meme Contest Platform
+# SAMU Meme Contest App
 
-SAMU 밈 콘테스트 플랫폼 - 모바일 최적화된 웹 애플리케이션
+Web3 밈 컨테스트 플랫폼 - Solana 블록체인과 팬텀 지갑 연동
 
-## 주요 기능
+## 기능
 
-- 🎭 밈 업로드 및 콘테스트 참여
-- 🗳️ SAMU 토큰 기반 투표 시스템
-- 👤 Privy 통합 인증 (이메일/소셜)
-- 📱 모바일 최적화 UI/UX
-- 🏆 콘테스트 아카이브 및 Hall of Fame
-- 🎨 NFT 갤러리 (164개 SAMU Wolf 컬렉션)
-- 🛒 굿즈샵 (Hall of Fame 디자인)
-- 🤝 파트너 콘테스트 시스템
+- 팬텀 지갑 연결 및 SAMU 토큰 잔액 조회
+- 밈 업로드 및 토큰 기반 투표
+- 상품 구매 시스템 (Hall of Fame)
+- 모바일 앱 지원 (Android/iOS)
 
-## 개발 환경
+## 모바일 앱 빌드
+
+### 빠른 빌드
+```bash
+# Linux/Mac
+./build-mobile.sh
+
+# Windows  
+build-mobile.bat
+```
+
+### 수동 빌드
+```bash
+npm install
+npm run build
+npx cap sync android
+cd android && ./gradlew assembleDebug
+```
+
+### APK 설치
+1. `android/app/build/outputs/apk/debug/app-debug.apk` 파일을 안드로이드 기기로 전송
+2. 안드로이드 설정에서 "알 수 없는 소스에서 앱 설치" 허용
+3. APK 파일 실행하여 설치
+
+## GitHub Actions 자동 빌드
+
+### 저장소 설정
+1. GitHub에서 새 저장소 생성
+2. `samu-mobile-project.tar.gz` 다운로드 및 압축 해제
+3. 파일들을 저장소에 업로드
 
 ```bash
-# 의존성 설치
-npm install
+git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git
+cd YOUR_REPO
+tar -xzf samu-mobile-project.tar.gz
+cp -R samu-mobile-project/. .
+git add .
+git commit -m "SAMU mobile app"
+git push origin main
+```
 
-# 개발 서버 시작
+### APK 자동 생성
+- **푸시시 자동 빌드**: main 브랜치에 푸시하면 자동으로 APK 생성
+- **수동 빌드**: GitHub Actions 탭에서 "Run workflow" 클릭
+- **다운로드**: Actions > Artifacts 또는 Releases 탭에서 APK 다운로드
+
+### 로컬 빌드 (선택사항)
+```bash
+# 빠른 빌드
+./build-mobile.sh  # Linux/Mac
+build-mobile.bat   # Windows
+
+# 수동 빌드  
+npm install
+npm run build
+npx cap sync android
+cd android && ./gradlew assembleDebug
+```
+
+## 요구사항
+- GitHub 계정
+- Node.js 20.x (로컬 빌드시)
+- Java 17 (로컬 빌드시)
+
+## Quick Start
+
+### Web Development
+```bash
+npm install
 npm run dev
 ```
 
-## 빌드 및 배포
-
+### Mobile App Build
 ```bash
-# 프로덕션 빌드
-npm run build
+# Sync web assets to mobile
+npx cap sync android
 
-# 프로덕션 서버 실행
-npm start
+# Open in Android Studio
+npx cap open android
+
+# Or build APK directly
+cd android && ./gradlew assembleDebug
 ```
 
-## 기술 스택
+## Deployment
 
-### Frontend
-- **React 18** - UI 프레임워크
-- **TypeScript** - 타입 안전성
-- **Tailwind CSS** - 스타일링
-- **Radix UI** - 컴포넌트 라이브러리
-- **TanStack Query** - 상태 관리
-- **Wouter** - 라우팅
+### Automatic APK Build
+GitHub Actions automatically builds APK files on every push to main branch.
 
-### Backend
-- **Express.js** - 서버 프레임워크
-- **PostgreSQL** - 데이터베이스
-- **Drizzle ORM** - 데이터베이스 ORM
-- **Cloudflare R2** - 파일 스토리지
+1. Push code to GitHub
+2. Check Actions tab for build progress
+3. Download APK from build artifacts
+4. Install on Android device
 
-### Web3 Integration
-- **Privy** - 인증 시스템
-- **Solana Web3.js** - 블록체인 연동
-- **SAMU Token** - 투표 파워
+### Google Play Store
+See `DEPLOYMENT.md` for complete app store deployment guide.
 
-## 프로젝트 구조
+## Project Structure
 
 ```
-├── client/          # React 프론트엔드
-│   ├── src/
-│   │   ├── components/  # UI 컴포넌트
-│   │   ├── pages/      # 페이지 컴포넌트
-│   │   └── lib/        # 유틸리티
-├── server/          # Express.js 백엔드
-│   ├── routes/      # API 라우트
-│   └── storage.ts   # 데이터베이스 인터페이스
-├── shared/          # 공유 타입 및 스키마
-└── dist/           # 빌드 결과물
+├── client/          # React frontend
+├── server/          # Express.js backend  
+├── shared/          # Shared types and schemas
+├── android/         # Capacitor Android project
+├── .github/         # GitHub Actions workflows
+└── DEPLOYMENT.md    # Complete deployment guide
 ```
 
-## 환경 변수
+## SAMU Token Integration
 
-필요한 환경 변수들:
-
-```env
-DATABASE_URL=postgresql://...
-PRIVY_APP_ID=your_privy_app_id
-PRIVY_APP_SECRET=your_privy_app_secret
-R2_ACCOUNT_ID=your_r2_account_id
-R2_ACCESS_KEY_ID=your_r2_access_key
-R2_SECRET_ACCESS_KEY=your_r2_secret_key
-R2_BUCKET_NAME=your_bucket_name
-R2_PUBLIC_URL=https://your-r2-domain.com
-ADMIN_EMAILS=admin@example.com,admin2@example.com
-```
-
-## SAMU Token 정보
-
-- **Contract Address**: `EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF`
+- **Contract**: `EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF`
 - **Network**: Solana Mainnet
 - **Voting Power**: 1 SAMU = 1 Vote
+- **Wallet**: Phantom integration with mobile deep linking
 
-## 라이센스
+## Contributing
 
-MIT License
+1. Fork the repository
+2. Create feature branch
+3. Commit changes
+4. Push to branch
+5. Create Pull Request
+
+## License
+
+MIT License - see LICENSE file for details
