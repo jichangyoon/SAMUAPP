@@ -7,8 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Send, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { isSolanaAddress } from "@/lib/solana";
-import { useSendTransaction } from '@privy-io/react-auth/solana';
-import { Connection, Transaction, PublicKey, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 interface SendTokensProps {
   walletAddress: string;
@@ -21,25 +19,9 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [isOpen, setIsOpen] = useState(false);
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
-  const [tokenType, setTokenType] = useState("SOL");
+  const [tokenType, setTokenType] = useState("SAMU");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { sendTransaction } = useSendTransaction();
-
-  // SAMU 토큰 컨트랙트 주소 (실제 SAMU 토큰 주소)
-  const SAMU_TOKEN_ADDRESS = "EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF";
-  
-  // 안정적인 RPC 연결을 위한 폴백 엔드포인트
-  const RPC_ENDPOINTS = [
-    'https://api.mainnet-beta.solana.com',
-    'https://rpc.ankr.com/solana',
-    'https://solana-api.projectserum.com'
-  ];
-  
-  const getConnection = () => {
-    // 첫 번째 엔드포인트 사용 (향후 폴백 로직 추가 가능)
-    return new Connection(RPC_ENDPOINTS[0]);
-  };
 
   const handleSend = async () => {
     if (!recipient || !amount) {
@@ -61,18 +43,9 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       return;
     }
 
-    // 잔고 확인 (SOL의 경우 거래 수수료 고려)
+    // 잔고 확인
     const maxBalance = tokenType === "SAMU" ? samuBalance : solBalance;
-    const minRequiredForSol = tokenType === "SOL" ? 0.001 : 0; // SOL 거래 시 최소 0.001 SOL 수수료 보장
-    
-    if (tokenType === "SOL" && (amountNum + minRequiredForSol) > maxBalance) {
-      toast({
-        title: "Insufficient Balance",
-        description: `Need at least ${(amountNum + minRequiredForSol).toFixed(4)} SOL (including fees)`,
-        variant: "destructive"
-      });
-      return;
-    } else if (tokenType === "SAMU" && amountNum > maxBalance) {
+    if (amountNum > maxBalance) {
       toast({
         title: "Insufficient Balance",
         description: `You don't have enough ${tokenType}`,
@@ -94,84 +67,22 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     setIsLoading(true);
 
     try {
-      if (chainType !== 'solana') {
-        toast({
-          title: "Not Supported",
-          description: "Only Solana transactions are supported",
-          variant: "destructive"
-        });
-        return;
-      }
+      // 실제 송금 구현은 향후 추가 (Solana Web3.js 사용)
+      // 현재는 UI만 구현
+      await new Promise(resolve => setTimeout(resolve, 2000)); // 시뮬레이션
 
-      const fromPubkey = new PublicKey(walletAddress);
-      const toPubkey = new PublicKey(recipient);
-      
-      if (tokenType === "SOL") {
-        // SOL 전송
-        const lamports = amountNum * LAMPORTS_PER_SOL;
-        
-        // 최근 블록해시 가져오기
-        const connection = getConnection();
-        const { blockhash } = await connection.getLatestBlockhash();
-        
-        const transaction = new Transaction({
-          recentBlockhash: blockhash,
-          feePayer: fromPubkey
-        });
-        
-        transaction.add(
-          SystemProgram.transfer({
-            fromPubkey,
-            toPubkey,
-            lamports: Math.floor(lamports)
-          })
-        );
-
-        // 실제 트랜잭션 전송
-        const receipt = await sendTransaction({
-          transaction,
-          connection
-        });
-
-        toast({
-          title: "Transaction Successful!",
-          description: `Sent ${amount} SOL to ${recipient.slice(0, 8)}...`,
-        });
-
-        console.log("Transaction signature:", receipt.signature);
-        
-      } else if (tokenType === "SAMU") {
-        // SAMU 토큰 전송은 추후 구현
-        toast({
-          title: "Feature in Development",
-          description: "SAMU token transfers coming soon. SOL transfers are available now.",
-          variant: "destructive"
-        });
-        return;
-      }
+      toast({
+        title: "Transaction Simulated",
+        description: `Would send ${amount} ${tokenType} to ${recipient.slice(0, 8)}...`,
+      });
 
       setRecipient("");
       setAmount("");
       setIsOpen(false);
     } catch (error) {
-      console.error("Transaction error:", error);
-      
-      let errorMessage = "Failed to send tokens. Please try again.";
-      if (error instanceof Error) {
-        if (error.message.includes("insufficient")) {
-          errorMessage = "Insufficient balance for transaction and fees.";
-        } else if (error.message.includes("blockhash")) {
-          errorMessage = "Network error. Please try again.";
-        } else if (error.message.includes("rejected")) {
-          errorMessage = "Transaction was rejected.";
-        } else {
-          errorMessage = error.message;
-        }
-      }
-      
       toast({
         title: "Transaction Failed",
-        description: errorMessage,
+        description: "Failed to send tokens. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -272,7 +183,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
 
           {/* 주의사항 */}
           <div className="text-xs text-muted-foreground bg-accent/20 rounded p-2">
-            <strong>Active:</strong> Real SOL transfers are now enabled on Solana mainnet. SAMU token transfers coming soon. Double-check recipient address before sending.
+            <strong>Note:</strong> This is currently a UI prototype. Actual token transfers will be implemented with Solana Web3.js integration.
           </div>
         </div>
       </DialogContent>

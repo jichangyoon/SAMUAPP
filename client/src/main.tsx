@@ -2,12 +2,6 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-// Buffer 폴리필 설정
-import { Buffer } from 'buffer';
-(globalThis as any).Buffer = Buffer;
-(globalThis as any).global = globalThis;
-(globalThis as any).process = { env: {} };
-
 // 메모리 효율적인 전역 오류 핸들러
 const IGNORED_PATTERNS = ['Privy', 'iframe', 'wallet', 'fetch', 'Failed to fetch'];
 
