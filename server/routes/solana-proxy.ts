@@ -15,6 +15,13 @@ export async function proxySolanaRPC(req: Request, res: Response) {
     return res.status(400).json({ error: 'Method is required' });
   }
 
+  // getLatestBlockhash에 대한 특별 처리
+  let rpcParams = params || [];
+  if (method === 'getLatestBlockhash') {
+    // Solana RPC는 commitment 수준을 객체로 요구
+    rpcParams = [{ commitment: 'confirmed' }];
+  }
+
   // 여러 RPC 엔드포인트를 순차적으로 시도
   for (const endpoint of MAINNET_RPC_ENDPOINTS) {
     try {
@@ -29,7 +36,7 @@ export async function proxySolanaRPC(req: Request, res: Response) {
           jsonrpc: '2.0',
           id: 1,
           method,
-          params: params || []
+          params: rpcParams
         })
       });
 

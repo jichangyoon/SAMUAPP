@@ -94,46 +94,10 @@ export function SendTokensSimple({ walletAddress, solBalance, samuBalance, onClo
           })
         );
 
-        console.log("서버 프록시를 통해 블록해시 가져오는 중...");
+        console.log("Privy로 SOL 전송 중...");
         
-        // 서버 프록시를 통한 블록해시 획득
-        const blockHashResponse = await fetch('/api/solana-rpc', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            method: 'getLatestBlockhash',
-            params: ['confirmed']
-          })
-        });
-
-        if (!blockHashResponse.ok) {
-          throw new Error(`서버 프록시 연결 실패: ${blockHashResponse.status}`);
-        }
-
-        const blockHashData = await blockHashResponse.json();
-        if (blockHashData.error) {
-          throw new Error(`RPC 에러: ${blockHashData.error.message}`);
-        }
-
-        const blockhash = blockHashData.result.blockhash;
-        console.log("서버 프록시로 블록해시 획득:", blockhash);
-        
-        // 트랜잭션에 블록해시와 수수료 지불자 설정
-        transaction.recentBlockhash = blockhash;
-        transaction.feePayer = fromPubkey;
-        
-        console.log("트랜잭션 준비 완료:", {
-          blockhash: transaction.recentBlockhash,
-          feePayer: transaction.feePayer.toString(),
-          instructions: transaction.instructions.length
-        });
-        
-        // 더미 Connection (Privy가 실제 전송을 처리)
+        // Privy가 자동으로 블록해시와 수수료를 처리하도록 함
         const dummyConnection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
-        
-        console.log("Privy로 전송 중...");
         
         const receipt = await sendTransaction({
           transaction,
