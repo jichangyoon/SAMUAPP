@@ -222,7 +222,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
       </Card>
 
       <Drawer open={showVoteDialog} onOpenChange={setShowVoteDialog}>
-        <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+        <DrawerContent className="bg-card border-border h-[95vh]">
           <DrawerHeader>
             <DrawerTitle className="text-foreground">Confirm Your Vote</DrawerTitle>
             <DrawerDescription className="text-muted-foreground">
@@ -274,7 +274,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
 
       {/* Share Drawer */}
       <Drawer open={showShareDialog} onOpenChange={setShowShareDialog}>
-        <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+        <DrawerContent className="bg-card border-border h-[95vh]">
           <DrawerHeader>
             <DrawerTitle className="text-foreground">Share Meme</DrawerTitle>
             <DrawerDescription className="text-muted-foreground">
@@ -309,7 +309,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
 
       {/* Delete Confirmation Drawer */}
       <Drawer open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+        <DrawerContent className="bg-card border-border h-[95vh]">
           <DrawerHeader>
             <DrawerTitle className="text-foreground">Delete Meme</DrawerTitle>
             <DrawerDescription className="text-muted-foreground">

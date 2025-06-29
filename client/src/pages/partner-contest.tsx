@@ -440,7 +440,7 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
       {/* Vote Confirmation Drawer */}
       {selectedMeme && (
         <Drawer open={showVoteDialog} onOpenChange={setShowVoteDialog}>
-          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+          <DrawerContent className="bg-card border-border h-[95vh]">
             <DrawerHeader>
               <DrawerTitle className="text-foreground">Confirm Your Vote</DrawerTitle>
               <DrawerDescription className="text-muted-foreground">
@@ -484,7 +484,7 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
       {/* Share Drawer */}
       {selectedMeme && (
         <Drawer open={showShareDialog} onOpenChange={setShowShareDialog}>
-          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+          <DrawerContent className="bg-card border-border h-[95vh]">
             <DrawerHeader>
               <DrawerTitle className="text-foreground">Share Meme</DrawerTitle>
               <DrawerDescription className="text-muted-foreground">
@@ -520,7 +520,7 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
 
       {/* Upload Form Drawer */}
       <Drawer open={showUploadForm} onOpenChange={setShowUploadForm}>
-        <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+        <DrawerContent className="bg-card border-border h-[95vh]">
           <DrawerHeader>
             <DrawerTitle className="text-foreground">Submit to {partner.name} Contest</DrawerTitle>
             <DrawerDescription className="text-muted-foreground">

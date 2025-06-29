@@ -122,7 +122,7 @@ export function GoodsShop() {
 
       {/* Product Detail Drawer */}
       <Drawer open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
-        <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+        <DrawerContent className="bg-card border-border h-[95vh]">
           <DrawerHeader>
             <DrawerTitle className="text-foreground">{selectedItem?.name}</DrawerTitle>
           </DrawerHeader>
