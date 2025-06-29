@@ -63,12 +63,13 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
 
     // 잔고 확인 (SOL의 경우 거래 수수료 고려)
     const maxBalance = tokenType === "SAMU" ? samuBalance : solBalance;
-    const minRequiredForSol = tokenType === "SOL" ? 0.001 : 0; // SOL 거래 시 최소 0.001 SOL 수수료 보장
+    // 솔라나 기본 트랜잭션 수수료는 약 0.000005 SOL이지만 안전하게 0.0001 SOL로 설정
+    const estimatedFee = tokenType === "SOL" ? 0.0001 : 0; 
     
-    if (tokenType === "SOL" && (amountNum + minRequiredForSol) > maxBalance) {
+    if (tokenType === "SOL" && (amountNum + estimatedFee) > maxBalance) {
       toast({
         title: "Insufficient Balance",
-        description: `Need at least ${(amountNum + minRequiredForSol).toFixed(4)} SOL (including fees)`,
+        description: `Need at least ${(amountNum + estimatedFee).toFixed(4)} SOL (including ~${estimatedFee} SOL fee)`,
         variant: "destructive"
       });
       return;
@@ -126,6 +127,14 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
             lamports: Math.floor(lamports)
           })
         );
+
+        // 실제 트랜잭션 수수료 계산
+        try {
+          const fee = await connection.getFeeForMessage(transaction.compileMessage());
+          console.log(`실제 트랜잭션 수수료: ${fee.value / LAMPORTS_PER_SOL} SOL (${fee.value} lamports)`);
+        } catch (feeError) {
+          console.log("수수료 계산 실패, 기본값 사용");
+        }
 
         // 실제 트랜잭션 전송
         const receipt = await sendTransaction({
