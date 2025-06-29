@@ -11,12 +11,11 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from "@/components/ui/drawer";
 import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send, Trash2, MoreVertical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
-import SendSolSimple from "@/components/send-sol-simple";
+import { SendTokens } from "@/components/send-tokens";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { MediaDisplay } from "@/components/media-display";
 
@@ -679,35 +678,12 @@ const Profile = React.memo(() => {
             {/* 송금 기능 */}
             {walletAddress && user && (
               <div className="mt-3">
-                <Drawer>
-                  <DrawerTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full bg-primary/10 border-primary/30 hover:bg-primary/20"
-                    >
-                      <Send className="h-4 w-4 mr-2" />
-                      Send Tokens
-                    </Button>
-                  </DrawerTrigger>
-                  <DrawerContent className="h-[60vh] min-h-[400px] max-h-[500px] overflow-y-auto">
-                    <div className="p-4 pb-8">
-                      <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-lg font-semibold">Send Tokens</h2>
-                        <DrawerClose asChild>
-                          <Button variant="ghost" size="sm">
-                            ✕
-                          </Button>
-                        </DrawerClose>
-                      </div>
-                      <SendSolSimple
-                        walletAddress={walletAddress}
-                        solBalance={stats.currentSolBalance}
-                        onClose={() => {}}
-                      />
-                    </div>
-                  </DrawerContent>
-                </Drawer>
+                <SendTokens 
+                  walletAddress={walletAddress}
+                  samuBalance={stats.currentSamuBalance}
+                  solBalance={stats.currentSolBalance}
+                  chainType={selectedWalletAccount?.chainType || 'solana'}
+                />
               </div>
             )}
           </CardContent>

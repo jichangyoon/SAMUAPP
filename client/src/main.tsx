@@ -2,23 +2,11 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-// Buffer 폴리필 설정 강화
-(async () => {
-  try {
-    const { Buffer } = await import('buffer');
-    if (typeof globalThis.Buffer === 'undefined') {
-      (globalThis as any).Buffer = Buffer;
-    }
-    if (typeof (globalThis as any).global === 'undefined') {
-      (globalThis as any).global = globalThis;
-    }
-    if (typeof (globalThis as any).process === 'undefined') {
-      (globalThis as any).process = { env: {}, browser: true };
-    }
-  } catch (error) {
-    console.warn('Buffer polyfill 로드 실패, HTML 폴리필 사용');
-  }
-})();
+// Buffer 폴리필 설정
+import { Buffer } from 'buffer';
+(globalThis as any).Buffer = Buffer;
+(globalThis as any).global = globalThis;
+(globalThis as any).process = { env: {} };
 
 // 메모리 효율적인 전역 오류 핸들러
 const IGNORED_PATTERNS = ['Privy', 'iframe', 'wallet', 'fetch', 'Failed to fetch'];

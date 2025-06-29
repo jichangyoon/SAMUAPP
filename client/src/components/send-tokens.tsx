@@ -28,26 +28,9 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
 
   // SAMU 토큰 컨트랙트 주소 (실제 SAMU 토큰 주소)
   const SAMU_TOKEN_ADDRESS = "EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF";
-  
-  // 직접 메인넷 연결 (Privy가 내부적으로 RPC 처리)
-  const getConnection = () => {
-    return new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
-  };
+  const connection = new Connection('https://api.mainnet-beta.solana.com');
 
   const handleSend = async () => {
-    // Buffer 폴리필 확인 및 설정
-    if (typeof (globalThis as any).Buffer === 'undefined') {
-      console.log('Buffer 폴리필 재설정 중...');
-      try {
-        const { Buffer } = await import('buffer');
-        (globalThis as any).Buffer = Buffer;
-        (globalThis as any).global = globalThis;
-        (globalThis as any).process = { env: {}, browser: true };
-      } catch (error) {
-        console.warn('Buffer 폴리필 실패, 기본 구현 사용');
-      }
-    }
-
     if (!recipient || !amount) {
       toast({
         title: "Missing Information",
@@ -67,19 +50,9 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       return;
     }
 
-    // 잔고 확인 (SOL의 경우 거래 수수료 고려)
+    // 잔고 확인
     const maxBalance = tokenType === "SAMU" ? samuBalance : solBalance;
-    // 솔라나 기본 트랜잭션 수수료는 약 0.000005 SOL이지만 안전하게 0.0001 SOL로 설정
-    const estimatedFee = tokenType === "SOL" ? 0.0001 : 0; 
-    
-    if (tokenType === "SOL" && (amountNum + estimatedFee) > maxBalance) {
-      toast({
-        title: "Insufficient Balance",
-        description: `Need at least ${(amountNum + estimatedFee).toFixed(4)} SOL (including ~${estimatedFee} SOL fee)`,
-        variant: "destructive"
-      });
-      return;
-    } else if (tokenType === "SAMU" && amountNum > maxBalance) {
+    if (amountNum > maxBalance) {
       toast({
         title: "Insufficient Balance",
         description: `You don't have enough ${tokenType}`,
@@ -112,39 +85,11 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
 
       const fromPubkey = new PublicKey(walletAddress);
       const toPubkey = new PublicKey(recipient);
-      
+      const transaction = new Transaction();
+
       if (tokenType === "SOL") {
         // SOL 전송
         const lamports = amountNum * LAMPORTS_PER_SOL;
-        
-        console.log("1. SOL 전송 시작:", { amount: amountNum, lamports });
-        
-        // 서버 프록시를 통한 블록해시 획득
-        let blockhash: string;
-        
-        try {
-          console.log("2. 서버 프록시로 블록해시 요청...");
-          const blockHashInfo = await getLatestBlockhashViaProxy();
-          blockhash = blockHashInfo.blockhash;
-          console.log("3. 서버 프록시로 블록해시 획득 성공:", blockhash);
-        } catch (proxyError: any) {
-          console.error("서버 프록시 연결 실패:", proxyError);
-          toast({
-            title: "Network Connection Failed", 
-            description: "Cannot connect to Solana network via server. Please try again.",
-            variant: "destructive"
-          });
-          return;
-        }
-        
-        const transaction = new Transaction();
-        transaction.recentBlockhash = blockhash;
-        transaction.feePayer = fromPubkey;
-        
-        console.log("4. 트랜잭션 기본 설정:", {
-          feePayer: transaction.feePayer.toString(),
-          recentBlockhash: transaction.recentBlockhash
-        });
         
         transaction.add(
           SystemProgram.transfer({
@@ -154,83 +99,18 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
           })
         );
 
-        console.log("5. 트랜잭션 완성:", {
-          instructions: transaction.instructions.length,
-          instruction: transaction.instructions[0]
+        // 실제 트랜잭션 전송
+        const receipt = await sendTransaction({
+          transaction,
+          connection
         });
 
-        // 실제 트랜잭션 수수료 계산
-        try {
-          const tempConnection = new Connection('https://api.mainnet-beta.solana.com');
-          const fee = await tempConnection.getFeeForMessage(transaction.compileMessage());
-          if (fee.value !== null) {
-            console.log(`실제 트랜잭션 수수료: ${fee.value / LAMPORTS_PER_SOL} SOL (${fee.value} lamports)`);
-          } else {
-            console.log("수수료 계산 결과가 null, 기본값 사용");
-          }
-        } catch (feeError) {
-          console.log("수수료 계산 실패, 기본값 사용");
-        }
-
-        // 실제 트랜잭션 전송 - Privy Solana 방식
-        console.log("트랜잭션 전송 시도...", {
-          fromPubkey: fromPubkey.toString(),
-          toPubkey: toPubkey.toString(),
-          lamports: Math.floor(lamports)
+        toast({
+          title: "Transaction Successful!",
+          description: `Sent ${amount} SOL to ${recipient.slice(0, 8)}...`,
         });
 
-        // Privy 공식 방식 - Transaction 객체 직접 전달
-        console.log("실제 잔고 확인:", {
-          solBalance,
-          amountNum,
-          estimatedFee,
-          total: amountNum + estimatedFee,
-          sufficient: (amountNum + estimatedFee) <= solBalance
-        });
-
-        // Privy sendTransaction은 실제 Connection 객체가 필요
-        // 대안: 메인넷 Connection 직접 생성 (블록해시만 서버에서 가져옴)
-        const directConnection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
-        
-        try {
-          const receipt = await sendTransaction({
-            transaction,
-            connection: directConnection,
-            uiOptions: {
-              showWalletUIs: true  // 사용자에게 확인 UI 표시
-            }
-          });
-
-          toast({
-            title: "Transaction Successful!",
-            description: `Sent ${amount} SOL to ${recipient.slice(0, 8)}...`,
-          });
-
-          console.log("Transaction signature:", receipt.signature);
-          
-        } catch (sendError: any) {
-          console.error("실제 전송 오류:", sendError);
-          console.error("오류 상세:", {
-            message: sendError?.message,
-            code: sendError?.code,
-            details: sendError?.details,
-            stack: sendError?.stack
-          });
-          
-          let errorMessage = "Network error. Please try again.";
-          if (sendError?.message?.includes('insufficient')) {
-            errorMessage = "Insufficient SOL balance for transaction + fees";
-          } else if (sendError?.message?.includes('blockhash')) {
-            errorMessage = "Transaction expired. Please try again.";
-          }
-          
-          toast({
-            title: "Transaction Failed",
-            description: errorMessage,
-            variant: "destructive"
-          });
-          return;
-        }
+        console.log("Transaction signature:", receipt.signature);
         
       } else if (tokenType === "SAMU") {
         // SAMU 토큰 전송은 추후 구현
@@ -247,23 +127,9 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       setIsOpen(false);
     } catch (error) {
       console.error("Transaction error:", error);
-      
-      let errorMessage = "Failed to send tokens. Please try again.";
-      if (error instanceof Error) {
-        if (error.message.includes("insufficient")) {
-          errorMessage = "Insufficient balance for transaction and fees.";
-        } else if (error.message.includes("blockhash")) {
-          errorMessage = "Network error. Please try again.";
-        } else if (error.message.includes("rejected")) {
-          errorMessage = "Transaction was rejected.";
-        } else {
-          errorMessage = error.message;
-        }
-      }
-      
       toast({
         title: "Transaction Failed",
-        description: errorMessage,
+        description: error instanceof Error ? error.message : "Failed to send tokens. Please try again.",
         variant: "destructive"
       });
     } finally {
