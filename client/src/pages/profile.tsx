@@ -692,7 +692,14 @@ const Profile = React.memo(() => {
                   </DrawerTrigger>
                   <DrawerContent className="h-[92vh]">
                     <div className="p-6">
-                      <h2 className="text-lg font-semibold mb-4">Send Tokens</h2>
+                      <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-lg font-semibold">Send Tokens</h2>
+                        <DrawerClose asChild>
+                          <Button variant="ghost" size="sm">
+                            ✕
+                          </Button>
+                        </DrawerClose>
+                      </div>
                       <SendTokensSimple
                         walletAddress={walletAddress}
                         solBalance={stats.currentSolBalance}

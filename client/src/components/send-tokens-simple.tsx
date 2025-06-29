@@ -194,7 +194,7 @@ export function SendTokensSimple({ walletAddress, solBalance, samuBalance, onClo
         >
           {isLoading ? "Sending..." : "Send Tokens"}
         </Button>
-        <Button variant="outline" onClick={onClose}>
+        <Button variant="outline" onClick={onClose} disabled={isLoading}>
           Cancel
         </Button>
       </div>
