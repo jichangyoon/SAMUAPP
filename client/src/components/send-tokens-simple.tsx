@@ -191,7 +191,7 @@ export function SendTokensSimple({ walletAddress, solBalance, samuBalance, onClo
   };
 
   return (
-    <div className="space-y-6">
+    <div className="send-tokens-form space-y-4">
       <div className="space-y-2">
         <Label htmlFor="tokenType">Token Type</Label>
         <Select value={tokenType} onValueChange={(value: "SOL" | "SAMU") => setTokenType(value)}>
@@ -234,7 +234,13 @@ export function SendTokensSimple({ walletAddress, solBalance, samuBalance, onClo
         </p>
       </div>
 
-      <div className="flex gap-3">
+      <div className="text-xs text-yellow-600 bg-yellow-50 p-2 rounded mb-3">
+        <strong>Active:</strong> Real SOL transfers are now enabled on Solana mainnet. 
+        SAMU token transfers coming soon. Double-check recipient address before sending.
+      </div>
+
+      {/* 키보드가 가리지 않도록 고정된 버튼 */}
+      <div className="send-tokens-buttons flex gap-3">
         <Button 
           onClick={handleSend} 
           disabled={isLoading}
@@ -245,11 +251,6 @@ export function SendTokensSimple({ walletAddress, solBalance, samuBalance, onClo
         <Button variant="outline" onClick={onClose} disabled={isLoading}>
           Cancel
         </Button>
-      </div>
-
-      <div className="text-xs text-yellow-600 bg-yellow-50 p-3 rounded">
-        <strong>Active:</strong> Real SOL transfers are now enabled on Solana mainnet. 
-        SAMU token transfers coming soon. Double-check recipient address before sending.
       </div>
     </div>
   );

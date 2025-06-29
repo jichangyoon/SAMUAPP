@@ -84,3 +84,34 @@
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
   }
 }
+
+/* Mobile keyboard handling for drawers */
+@media (max-width: 768px) {
+  [data-vaul-drawer] {
+    height: 80vh !important;
+    max-height: 600px !important;
+  }
+  
+  /* iOS Safari specific adjustments */
+  @supports (-webkit-appearance: none) {
+    [data-vaul-drawer] {
+      height: 70vh !important;
+      max-height: 500px !important;
+    }
+  }
+  
+  /* Ensure buttons stay visible */
+  .send-tokens-form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  
+  .send-tokens-buttons {
+    margin-top: auto;
+    padding-top: 1rem;
+    background: var(--background);
+    position: sticky;
+    bottom: 0;
+  }
+}

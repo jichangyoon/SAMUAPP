@@ -690,8 +690,8 @@ const Profile = React.memo(() => {
                       Send Tokens
                     </Button>
                   </DrawerTrigger>
-                  <DrawerContent className="h-[92vh]">
-                    <div className="p-6">
+                  <DrawerContent className="h-[60vh] min-h-[400px] max-h-[500px] overflow-y-auto">
+                    <div className="p-4 pb-8">
                       <div className="flex justify-between items-center mb-4">
                         <h2 className="text-lg font-semibold">Send Tokens</h2>
                         <DrawerClose asChild>
