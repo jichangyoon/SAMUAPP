@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Send, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { isSolanaAddress } from "@/lib/solana";
+import { useSendTransaction } from '@privy-io/react-auth/solana';
+import { Connection, Transaction, PublicKey, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 interface SendTokensProps {
   walletAddress: string;
@@ -19,12 +21,14 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [isOpen, setIsOpen] = useState(false);
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
-  const [tokenType, setTokenType] = useState("SAMU");
+  const [tokenType, setTokenType] = useState("SOL");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { sendTransaction } = useSendTransaction();
 
   // SAMU 토큰 컨트랙트 주소 (실제 SAMU 토큰 주소)
   const SAMU_TOKEN_ADDRESS = "EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF";
+  const connection = new Connection('https://api.mainnet-beta.solana.com');
 
   const handleSend = async () => {
     if (!recipient || !amount) {
@@ -70,22 +74,62 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     setIsLoading(true);
 
     try {
-      // 실제 송금 구현은 향후 추가 (Buffer 호환성 문제 해결 후)
-      // 현재는 UI 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (chainType !== 'solana') {
+        toast({
+          title: "Not Supported",
+          description: "Only Solana transactions are supported",
+          variant: "destructive"
+        });
+        return;
+      }
 
-      toast({
-        title: "Transaction Prepared",
-        description: `Ready to send ${amount} ${tokenType} to ${recipient.slice(0, 8)}... (실제 전송은 Buffer 호환성 해결 후 구현)`,
-      });
+      const fromPubkey = new PublicKey(walletAddress);
+      const toPubkey = new PublicKey(recipient);
+      const transaction = new Transaction();
+
+      if (tokenType === "SOL") {
+        // SOL 전송
+        const lamports = amountNum * LAMPORTS_PER_SOL;
+        
+        transaction.add(
+          SystemProgram.transfer({
+            fromPubkey,
+            toPubkey,
+            lamports: Math.floor(lamports)
+          })
+        );
+
+        // 실제 트랜잭션 전송
+        const receipt = await sendTransaction({
+          transaction,
+          connection
+        });
+
+        toast({
+          title: "Transaction Successful!",
+          description: `Sent ${amount} SOL to ${recipient.slice(0, 8)}...`,
+        });
+
+        console.log("Transaction signature:", receipt.signature);
+        
+      } else if (tokenType === "SAMU") {
+        // SAMU 토큰 전송은 추후 구현
+        toast({
+          title: "Feature in Development",
+          description: "SAMU token transfers coming soon. SOL transfers are available now.",
+          variant: "destructive"
+        });
+        return;
+      }
 
       setRecipient("");
       setAmount("");
       setIsOpen(false);
     } catch (error) {
+      console.error("Transaction error:", error);
       toast({
         title: "Transaction Failed",
-        description: "Failed to send tokens. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to send tokens. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -186,7 +230,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
 
           {/* 주의사항 */}
           <div className="text-xs text-muted-foreground bg-accent/20 rounded p-2">
-            <strong>Status:</strong> Token transfer UI is ready. Real blockchain transactions will be enabled after resolving Buffer compatibility issues with Solana Web3.js library.
+            <strong>Active:</strong> Real SOL transfers are now enabled on Solana mainnet. SAMU token transfers coming soon. Double-check recipient address before sending.
           </div>
         </div>
       </DialogContent>
