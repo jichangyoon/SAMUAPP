@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import samuLogo from '../assets/samu-logo.webp';
+import splashLogo from '../assets/splash-logo.webp';
 
 interface SplashScreenProps {
   onComplete: () => void;
@@ -30,15 +30,13 @@ export function SplashScreen({ onComplete, preloadComplete = false }: SplashScre
 
   if (!isVisible) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none" 
-           style={{ background: 'hsl(50, 85%, 75%)' }}>
-        <div className="text-center">
-          <img
-            src={samuLogo}
-            alt="SAMU"
-            className="w-32 h-32 mx-auto mb-6 animate-pulse"
-          />
-          <h1 className="text-3xl font-bold text-black mb-4">SAMU</h1>
+      <div className="fixed inset-0 z-50 transition-opacity duration-300 opacity-0 pointer-events-none">
+        <img
+          src={splashLogo}
+          alt="SAMU Splash Screen"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2">
           <div className="flex justify-center space-x-1">
             <div className="w-3 h-3 bg-black rounded-full animate-bounce"></div>
             <div className="w-3 h-3 bg-black rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -50,15 +48,13 @@ export function SplashScreen({ onComplete, preloadComplete = false }: SplashScre
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" 
-         style={{ background: 'hsl(50, 85%, 75%)' }}>
-      <div className="text-center">
-        <img
-          src={samuLogo}
-          alt="SAMU"
-          className="w-32 h-32 mx-auto mb-6 animate-pulse"
-        />
-        <h1 className="text-3xl font-bold text-black mb-4">SAMU</h1>
+    <div className="fixed inset-0 z-50">
+      <img
+        src={splashLogo}
+        alt="SAMU Splash Screen"
+        className="w-full h-full object-cover"
+      />
+      <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2">
         <div className="flex justify-center space-x-1">
           <div className="w-3 h-3 bg-black rounded-full animate-bounce"></div>
           <div className="w-3 h-3 bg-black rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
