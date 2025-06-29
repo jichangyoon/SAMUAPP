@@ -10,6 +10,7 @@ import partnersRouter from "./routes/partners";
 import uploadsRouter from "./routes/uploads";
 import usersRouter from "./routes/users";
 import adminRouter from "./routes/admin";
+import { proxySolanaRPC } from "./routes/solana-proxy";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Serve attached_assets as static files under /assets
@@ -29,6 +30,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api/users", usersRouter);
   app.use("/api/admin", adminRouter);
   app.use("/api", walletRouter);
+  
+  // Solana RPC 프록시
+  app.post("/api/solana-rpc", proxySolanaRPC);
 
   const httpServer = createServer(app);
   return httpServer;

@@ -29,31 +29,9 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   // SAMU 토큰 컨트랙트 주소 (실제 SAMU 토큰 주소)
   const SAMU_TOKEN_ADDRESS = "EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF";
   
-  // 메인넷 전용 RPC 엔드포인트
-  const RPC_ENDPOINTS = [
-    'https://api.mainnet-beta.solana.com',
-    'https://rpc.ankr.com/solana',
-    'https://solana-mainnet.g.alchemy.com/v2/demo',
-    'https://mainnet.helius-rpc.com/?api-key=public'
-  ];
-  
-  // 다중 RPC 엔드포인트 시도
-  const getConnectionWithFallback = async (): Promise<Connection> => {
-    for (let i = 0; i < RPC_ENDPOINTS.length; i++) {
-      try {
-        const connection = new Connection(RPC_ENDPOINTS[i], 'confirmed');
-        // 연결 테스트
-        await connection.getLatestBlockhash('finalized');
-        console.log(`RPC 연결 성공: ${RPC_ENDPOINTS[i]}`);
-        return connection;
-      } catch (error) {
-        console.warn(`RPC ${RPC_ENDPOINTS[i]} 실패:`, error);
-        if (i === RPC_ENDPOINTS.length - 1) {
-          throw new Error('모든 RPC 엔드포인트 연결 실패');
-        }
-      }
-    }
-    throw new Error('모든 RPC 엔드포인트 연결 실패');
+  // 직접 메인넷 연결 (Privy가 내부적으로 RPC 처리)
+  const getConnection = () => {
+    return new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
   };
 
   const handleSend = async () => {
@@ -141,22 +119,19 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
         
         console.log("1. SOL 전송 시작:", { amount: amountNum, lamports });
         
-        // 다중 RPC 엔드포인트로 안정적인 연결 시도
-        let connection: Connection;
+        // 서버 프록시를 통한 블록해시 획득
         let blockhash: string;
         
         try {
-          console.log("2. RPC 연결 시도 중...");
-          connection = await getConnectionWithFallback();
-          
-          const blockHashInfo = await connection.getLatestBlockhash('finalized');
+          console.log("2. 서버 프록시로 블록해시 요청...");
+          const blockHashInfo = await getLatestBlockhashViaProxy();
           blockhash = blockHashInfo.blockhash;
-          console.log("3. 블록해시 획득 성공:", blockhash);
-        } catch (connectionError: any) {
-          console.error("RPC 연결 완전 실패:", connectionError);
+          console.log("3. 서버 프록시로 블록해시 획득 성공:", blockhash);
+        } catch (proxyError: any) {
+          console.error("서버 프록시 연결 실패:", proxyError);
           toast({
             title: "Network Connection Failed", 
-            description: "Cannot connect to any Solana RPC. Please check your internet connection.",
+            description: "Cannot connect to Solana network via server. Please try again.",
             variant: "destructive"
           });
           return;
@@ -186,7 +161,8 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
 
         // 실제 트랜잭션 수수료 계산
         try {
-          const fee = await connection.getFeeForMessage(transaction.compileMessage());
+          const tempConnection = new Connection('https://api.mainnet-beta.solana.com');
+          const fee = await tempConnection.getFeeForMessage(transaction.compileMessage());
           if (fee.value !== null) {
             console.log(`실제 트랜잭션 수수료: ${fee.value / LAMPORTS_PER_SOL} SOL (${fee.value} lamports)`);
           } else {
@@ -212,10 +188,14 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
           sufficient: (amountNum + estimatedFee) <= solBalance
         });
 
+        // Privy sendTransaction은 실제 Connection 객체가 필요
+        // 대안: 메인넷 Connection 직접 생성 (블록해시만 서버에서 가져옴)
+        const directConnection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+        
         try {
           const receipt = await sendTransaction({
             transaction,
-            connection,
+            connection: directConnection,
             uiOptions: {
               showWalletUIs: true  // 사용자에게 확인 UI 표시
             }
