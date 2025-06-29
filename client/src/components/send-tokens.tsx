@@ -7,6 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Send, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { isSolanaAddress } from "@/lib/solana";
+import { useSendTransaction } from '@privy-io/react-auth/solana';
+import { Connection, Transaction, PublicKey, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress, createTransferInstruction, createAssociatedTokenAccountInstruction, getAccount } from '@solana/spl-token';
+import { Buffer } from 'buffer';
 
 interface SendTokensProps {
   walletAddress: string;
@@ -22,6 +26,13 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [tokenType, setTokenType] = useState("SAMU");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { sendTransaction } = useSendTransaction();
+
+  // SAMU 토큰 컨트랙트 주소 (실제 SAMU 토큰 주소)
+  const SAMU_TOKEN_ADDRESS = "EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF";
+  
+  // Solana 메인넷 연결
+  const connection = new Connection('https://api.mainnet-beta.solana.com');
 
   const handleSend = async () => {
     if (!recipient || !amount) {
@@ -67,22 +78,94 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     setIsLoading(true);
 
     try {
-      // 실제 송금 구현은 향후 추가 (Solana Web3.js 사용)
-      // 현재는 UI만 구현
-      await new Promise(resolve => setTimeout(resolve, 2000)); // 시뮬레이션
+      if (chainType !== 'solana') {
+        toast({
+          title: "Not Supported",
+          description: "Only Solana transactions are supported",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const fromPubkey = new PublicKey(walletAddress);
+      const toPubkey = new PublicKey(recipient);
+      const transaction = new Transaction();
+
+      if (tokenType === "SOL") {
+        // SOL 전송
+        const lamports = amountNum * LAMPORTS_PER_SOL;
+        
+        transaction.add(
+          SystemProgram.transfer({
+            fromPubkey,
+            toPubkey,
+            lamports: Math.floor(lamports)
+          })
+        );
+      } else if (tokenType === "SAMU") {
+        // SAMU 토큰 전송
+        const mintPubkey = new PublicKey(SAMU_TOKEN_ADDRESS);
+        
+        // 발신자와 수신자의 토큰 계정 주소 계산
+        const fromTokenAccount = await getAssociatedTokenAddress(
+          mintPubkey,
+          fromPubkey
+        );
+        
+        const toTokenAccount = await getAssociatedTokenAddress(
+          mintPubkey,
+          toPubkey
+        );
+
+        // 수신자 토큰 계정이 존재하는지 확인
+        try {
+          await getAccount(connection, toTokenAccount);
+        } catch (error) {
+          // 토큰 계정이 없으면 생성
+          transaction.add(
+            createAssociatedTokenAccountInstruction(
+              fromPubkey, // payer
+              toTokenAccount, // associated token account
+              toPubkey, // wallet address
+              mintPubkey // token mint
+            )
+          );
+        }
+
+        // SAMU는 9 decimals을 사용
+        const transferAmount = Math.floor(amountNum * Math.pow(10, 9));
+        
+        transaction.add(
+          createTransferInstruction(
+            fromTokenAccount,
+            toTokenAccount,
+            fromPubkey,
+            transferAmount
+          )
+        );
+      }
+
+      // 실제 트랜잭션 전송
+      const receipt = await sendTransaction({
+        transaction,
+        connection
+      });
 
       toast({
-        title: "Transaction Simulated",
-        description: `Would send ${amount} ${tokenType} to ${recipient.slice(0, 8)}...`,
+        title: "Transaction Successful!",
+        description: `Sent ${amount} ${tokenType} to ${recipient.slice(0, 8)}...`,
       });
+
+      console.log("Transaction signature:", receipt.signature);
 
       setRecipient("");
       setAmount("");
       setIsOpen(false);
     } catch (error) {
+      console.error("Transaction error:", error);
       toast({
         title: "Transaction Failed",
-        description: "Failed to send tokens. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to send tokens. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -183,7 +266,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
 
           {/* 주의사항 */}
           <div className="text-xs text-muted-foreground bg-accent/20 rounded p-2">
-            <strong>Note:</strong> This is currently a UI prototype. Actual token transfers will be implemented with Solana Web3.js integration.
+            <strong>Important:</strong> This will send real tokens on Solana mainnet. Double-check the recipient address and amount before confirming.
           </div>
         </div>
       </DialogContent>
