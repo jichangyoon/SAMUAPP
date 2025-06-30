@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Send, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePrivy } from "@privy-io/react-auth";
 
 interface SendTokensProps {
   walletAddress: string;
@@ -21,6 +22,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [tokenType, setTokenType] = useState("SAMU");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = usePrivy();
 
   const handleSend = async () => {
     if (!recipient || !amount) {
@@ -96,7 +98,8 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
         body: JSON.stringify({
           walletAddress,
           transactionBase64: transaction,
-          tokenType
+          tokenType,
+          privyUserId: user?.id
         })
       });
 

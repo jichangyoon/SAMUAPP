@@ -115,7 +115,7 @@ router.post('/create-samu-transfer', async (req, res) => {
 // Send transaction via Privy API
 router.post('/send', async (req, res) => {
   try {
-    const { walletAddress, transactionBase64, tokenType } = req.body;
+    const { walletAddress, transactionBase64, tokenType, privyUserId } = req.body;
 
     if (!walletAddress || !transactionBase64) {
       return res.status(400).json({ error: 'Missing required parameters' });
