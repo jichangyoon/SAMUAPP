@@ -105,8 +105,20 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       
       console.log('Transaction ready from backend (blockhash already set)');
       console.log('Wallet address for signing:', walletAddress);
+      console.log('Transaction details:', {
+        instructions: transaction.instructions.length,
+        signatures: transaction.signatures.length,
+        recentBlockhash: transaction.recentBlockhash
+      });
       
       // Privy useSendTransaction으로 실제 전송
+      console.log('Calling sendTransaction with params:', {
+        hasTransaction: !!transaction,
+        hasConnection: !!connection,
+        address: walletAddress,
+        connectionEndpoint: connection.rpcEndpoint
+      });
+      
       const receipt = await sendTransaction({
         transaction: transaction,
         connection: connection,
