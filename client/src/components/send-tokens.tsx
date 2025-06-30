@@ -96,13 +96,22 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       const transactionBytes = Uint8Array.from(atob(transactionBase64), c => c.charCodeAt(0));
       
       console.log('Sending transaction with Privy useSendTransaction...');
+      console.log('Transaction bytes length:', transactionBytes.length);
+      console.log('Transaction bytes sample:', Array.from(transactionBytes.slice(0, 20)));
       
       // Privy useSendTransaction으로 전송 (올바른 파라미터 형식)
-      const receipt = await sendTransaction(transactionBytes, {
-        skipPreflight: false
-      });
+      try {
+        const receipt = await sendTransaction(transactionBytes, {
+          skipPreflight: false
+        });
 
-      console.log('Transaction sent successfully:', receipt);
+        console.log('Transaction sent successfully:', receipt);
+      } catch (sendError) {
+        console.error('Privy sendTransaction error details:', sendError);
+        console.error('Error message:', sendError.message);
+        console.error('Error stack:', sendError.stack);
+        throw sendError;
+      }
       
       toast({
         title: "Transaction Successful!",
