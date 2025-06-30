@@ -51,6 +51,13 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       })
     );
 
+    // Fee payer 설정
+    transaction.feePayer = fromPubkey;
+    
+    // Recent blockhash 설정
+    const { blockhash } = await connection.getLatestBlockhash('confirmed');
+    transaction.recentBlockhash = blockhash;
+
     return transaction;
   };
 
@@ -90,6 +97,13 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
         transferAmount
       )
     );
+
+    // Fee payer 설정
+    transaction.feePayer = fromPubkey;
+    
+    // Recent blockhash 설정
+    const { blockhash } = await connection.getLatestBlockhash('confirmed');
+    transaction.recentBlockhash = blockhash;
 
     return transaction;
   };
@@ -170,9 +184,10 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
         if (simulation.value.err) {
           throw new Error(`Transaction simulation failed: ${JSON.stringify(simulation.value.err)}`);
         }
-      } catch (simError) {
+      } catch (simError: any) {
         console.error("Simulation error:", simError);
-        throw new Error(`Transaction validation failed: ${simError}`);
+        console.error("Simulation error details:", simError?.message, simError?.logs);
+        throw new Error(`Transaction validation failed: ${simError?.message || simError}`);
       }
 
       console.log("Simulation successful, sending via Privy...");
