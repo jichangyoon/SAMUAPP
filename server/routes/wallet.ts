@@ -19,8 +19,8 @@ router.get("/samu-balance/:wallet", async (req, res) => {
 
     const SAMU_TOKEN_MINT = 'EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF';
     const RPC_ENDPOINTS = [
-      'https://solana-mainnet.g.alchemy.com/v2/demo',
-      'https://solana-mainnet.g.alchemy.com/v2/demo'
+      'https://api.mainnet-beta.solana.com',
+      'https://rpc.ankr.com/solana'
     ];
 
     // Try multiple endpoints for reliability
@@ -82,8 +82,8 @@ router.get('/sol-balance/:walletAddress', async (req, res) => {
     }
 
     const RPC_ENDPOINTS = [
-      'https://solana-mainnet.g.alchemy.com/v2/demo',
-      'https://solana-mainnet.g.alchemy.com/v2/demo'
+      'https://api.mainnet-beta.solana.com',
+      'https://rpc.ankr.com/solana'
     ];
 
     for (const endpoint of RPC_ENDPOINTS) {
@@ -134,8 +134,8 @@ router.get('/voting-power/:walletAddress', async (req, res) => {
       // Get SAMU balance to initialize voting power
       const SAMU_TOKEN_MINT = 'EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF';
       const RPC_ENDPOINTS = [
-        'https://solana-mainnet.g.alchemy.com/v2/demo',
-        'https://solana-mainnet.g.alchemy.com/v2/demo'
+        'https://api.mainnet-beta.solana.com',
+        'https://rpc.ankr.com/solana'
       ];
 
       let samuBalance = 0;

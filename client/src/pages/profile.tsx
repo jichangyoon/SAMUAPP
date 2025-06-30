@@ -445,8 +445,6 @@ const Profile = React.memo(() => {
   const stats = React.useMemo(() => {
     const currentSamuBalance = samuData?.balance || 0;
     const currentSolBalance = solData?.balance || 0;
-    
-
 
     const totalMemesCreated = userStats?.totalMemes || 0;
     const totalVotesReceived = userStats?.totalMemesVotes || 0;

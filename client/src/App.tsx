@@ -1,5 +1,3 @@
-// Buffer polyfill setup is handled in main.tsx
-
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -115,26 +113,14 @@ function App() {
           theme: 'dark',
           accentColor: '#fbbf24',
         },
-        loginMethods: ['email', 'wallet'],
+        loginMethods: ['email'],
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
+          noPromptOnMfaRequired: false,
           solana: {
             createOnLogin: 'users-without-wallets',
           },
-        },
-        externalWallets: {
-          solana: {
-            connectionOptions: {
-              skipPreflight: true,
-            },
-          },
-        },
-        solanaClusters: [
-          {
-            name: 'mainnet-beta',
-            rpcUrl: 'https://api.mainnet-beta.solana.com'
-          }
-        ]
+        }
       }}
     >
       <QueryClientProvider client={queryClient}>

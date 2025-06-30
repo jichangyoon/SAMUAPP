@@ -1,5 +1,3 @@
-// Buffer polyfill is now set in index.html before this script loads
-
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
