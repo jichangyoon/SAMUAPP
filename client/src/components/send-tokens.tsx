@@ -21,6 +21,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [tokenType, setTokenType] = useState("SAMU");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { sendTransaction } = useSendTransaction();
 
   const handleSend = async () => {
     if (!recipient || !amount) {
@@ -66,35 +67,43 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     setIsLoading(true);
 
     try {
-      // 백엔드에서 트랜잭션 생성
-      const endpoint = tokenType === 'SOL' ? 'create-sol-transfer' : 'create-samu-transfer';
+      // Solana 메인넷 연결
+      const connection = new Connection('https://api.mainnet-beta.solana.com');
       
-      const response = await fetch(`/api/transactions/${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fromAddress: walletAddress,
-          toAddress: recipient,
-          amount: amountNum
-        })
-      });
+      if (tokenType === 'SOL') {
+        // SOL 전송
+        const transaction = new Transaction().add(
+          SystemProgram.transfer({
+            fromPubkey: new PublicKey(walletAddress),
+            toPubkey: new PublicKey(recipient),
+            lamports: Math.floor(amountNum * LAMPORTS_PER_SOL)
+          })
+        );
 
-      if (!response.ok) {
-        throw new Error('Failed to create transaction');
+        // Privy를 사용해서 실제 전송
+        const receipt = await sendTransaction({
+          transaction: transaction,
+          connection: connection
+        });
+
+        console.log("Transaction sent with signature:", receipt.signature);
+        
+        toast({
+          title: "Transaction Successful!",
+          description: `Sent ${amountNum.toLocaleString()} SOL to ${recipient.slice(0, 8)}...${recipient.slice(-8)}`,
+          duration: 5000
+        });
+        
+      } else {
+        // SAMU 토큰 전송은 현재 미구현
+        toast({
+          title: "SAMU Transfer",
+          description: "SAMU token transfer is not yet implemented. Only SOL transfers are supported.",
+          variant: "destructive",
+          duration: 5000
+        });
+        return;
       }
-
-      const { transaction } = await response.json();
-      
-      // 트랜잭션이 성공적으로 생성됨
-      console.log('Transaction created successfully:', transaction.slice(0, 50) + '...');
-      
-      toast({
-        title: "Transaction Ready!",
-        description: `Transaction prepared for ${amountNum.toLocaleString()} ${tokenType} to ${recipient.slice(0, 8)}...${recipient.slice(-8)}`,
-        duration: 5000
-      });
       
       // 성공 후 폼 초기화
       setRecipient("");
