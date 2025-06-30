@@ -8,6 +8,7 @@ import { Send, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { isSolanaAddress } from "@/lib/solana";
 import { useSendTransaction } from '@privy-io/react-auth/solana';
+import { usePrivy } from '@privy-io/react-auth';
 import { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { createTransferInstruction, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, getAccount } from '@solana/spl-token';
 
@@ -25,6 +26,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [tokenType, setTokenType] = useState("SAMU");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { ready, authenticated, user } = usePrivy();
   const { sendTransaction } = useSendTransaction();
 
   // SAMU 토큰 민트 주소
@@ -93,6 +95,16 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   };
 
   const handleSend = async () => {
+    // Privy 상태 확인
+    if (!ready || !authenticated || !user) {
+      toast({
+        title: "Wallet Not Ready",
+        description: "Please wait for wallet to initialize or log in again",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!recipient || !amount) {
       toast({
         title: "Missing Information",
@@ -136,13 +148,19 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     setIsLoading(true);
 
     try {
+      console.log("Starting transaction...", { tokenType, recipient, amountNum, walletAddress });
+      
       let transaction;
       
       if (tokenType === "SOL") {
+        console.log("Creating SOL transfer transaction...");
         transaction = await createSolTransferTransaction(recipient, amountNum);
       } else {
+        console.log("Creating SAMU token transfer transaction...");
         transaction = await createTokenTransferTransaction(recipient, amountNum);
       }
+
+      console.log("Transaction created, sending via Privy...");
 
       // Privy의 sendTransaction 사용
       const receipt = await sendTransaction({
@@ -150,16 +168,17 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
         connection: connection,
         uiOptions: {
           showWalletUIs: true // 확인 모달 표시
-        }
+        },
+        address: walletAddress // 명시적으로 지갑 주소 지정
       });
+
+      console.log("Transaction successful:", receipt);
 
       toast({
         title: "Transaction Successful!",
         description: `Sent ${amountNum.toLocaleString()} ${tokenType} to ${recipient.slice(0, 8)}...${recipient.slice(-8)}`,
         duration: 5000
       });
-
-      console.log("Transaction signature:", receipt.signature);
       
       // 성공 후 폼 초기화
       setRecipient("");
@@ -167,9 +186,19 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       setIsOpen(false);
     } catch (error: any) {
       console.error("Transaction error:", error);
+      
+      let errorMessage = "Please try again";
+      if (error?.message?.includes("User exited")) {
+        errorMessage = "Transaction was cancelled by user";
+      } else if (error?.message?.includes("insufficient")) {
+        errorMessage = "Insufficient balance for transaction";
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
       toast({
         title: "Transaction Failed",
-        description: error?.message || "Please try again",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
