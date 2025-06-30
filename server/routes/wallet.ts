@@ -18,7 +18,9 @@ router.get("/samu-balance/:wallet", async (req, res) => {
     }
 
     const SAMU_TOKEN_MINT = 'EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF';
+    const HELIUS_API_KEY = process.env.VITE_HELIUS_API_KEY;
     const RPC_ENDPOINTS = [
+      `https://rpc.helius.xyz/?api-key=${HELIUS_API_KEY}`,
       'https://api.mainnet-beta.solana.com',
       'https://rpc.ankr.com/solana'
     ];
@@ -81,7 +83,9 @@ router.get('/sol-balance/:walletAddress', async (req, res) => {
       return res.json({ balance: 0 });
     }
 
+    const HELIUS_API_KEY = process.env.VITE_HELIUS_API_KEY;
     const RPC_ENDPOINTS = [
+      `https://rpc.helius.xyz/?api-key=${HELIUS_API_KEY}`,
       'https://api.mainnet-beta.solana.com',
       'https://rpc.ankr.com/solana'
     ];
@@ -133,7 +137,9 @@ router.get('/voting-power/:walletAddress', async (req, res) => {
     if (!votingPower) {
       // Get SAMU balance to initialize voting power
       const SAMU_TOKEN_MINT = 'EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF';
+      const HELIUS_API_KEY = process.env.VITE_HELIUS_API_KEY;
       const RPC_ENDPOINTS = [
+        `https://rpc.helius.xyz/?api-key=${HELIUS_API_KEY}`,
         'https://api.mainnet-beta.solana.com',
         'https://rpc.ankr.com/solana'
       ];
