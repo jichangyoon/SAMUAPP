@@ -18,12 +18,52 @@
   </head>
   <body>
     <div id="root"></div>
-    <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.js"></script>
     <script>
-      // Ensure Buffer is available globally
-      if (typeof Buffer === 'undefined' && typeof window.buffer !== 'undefined') {
-        window.Buffer = window.buffer.Buffer;
-      }
+      // Complete Buffer polyfill for browser compatibility
+      (function() {
+        if (typeof Buffer === 'undefined') {
+          window.Buffer = class Buffer extends Uint8Array {
+            constructor(data, encoding = 'utf8') {
+              if (typeof data === 'number') {
+                super(data);
+                this.fill(0);
+              } else if (typeof data === 'string') {
+                const encoder = new TextEncoder();
+                const bytes = encoder.encode(data);
+                super(bytes);
+              } else if (data instanceof ArrayBuffer || data instanceof Uint8Array) {
+                super(data);
+              } else if (Array.isArray(data)) {
+                super(data);
+              } else {
+                super(0);
+              }
+            }
+            
+            static from(data, encoding = 'utf8') {
+              return new Buffer(data, encoding);
+            }
+            
+            static alloc(size, fill = 0) {
+              const buf = new Buffer(size);
+              buf.fill(fill);
+              return buf;
+            }
+            
+            static isBuffer(obj) {
+              return obj instanceof Buffer;
+            }
+            
+            toString(encoding = 'utf8') {
+              if (encoding === 'hex') {
+                return Array.from(this, byte => byte.toString(16).padStart(2, '0')).join('');
+              }
+              const decoder = new TextDecoder(encoding);
+              return decoder.decode(this);
+            }
+          };
+        }
+      })();
     </script>
     <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
