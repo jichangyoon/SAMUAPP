@@ -4,9 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { useSendTransaction, useSignTransaction } from '@privy-io/react-auth/solana';
+import { useSendTransaction } from '@privy-io/react-auth/solana';
 import { usePrivy } from '@privy-io/react-auth';
-import { Connection } from '@solana/web3.js';
 
 interface SendTokensProps {
   walletAddress: string;
@@ -23,7 +22,6 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   
   const { toast } = useToast();
   const { sendTransaction } = useSendTransaction();
-  const { signTransaction } = useSignTransaction();
   const { user } = usePrivy();
 
   const validateSolanaAddress = (address: string): boolean => {
