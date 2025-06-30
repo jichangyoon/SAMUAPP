@@ -118,12 +118,25 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
         amount: amountNum
       });
       
-      // Privy useSendTransaction으로 전송 (문서 정확한 방식)
-      const receipt = await sendTransaction({
-        transaction,
-        connection,
-        address: walletAddress
-      });
+      // Method 1: Privy useSendTransaction (올바른 매개변수 형식)
+      let receipt;
+      try {
+        console.log('Trying Method 1: useSendTransaction...');
+        receipt = await sendTransaction(transaction);
+      } catch (sendError) {
+        console.log('Method 1 failed, trying Method 2: signTransaction + RPC...');
+        
+        // Method 2: signTransaction + 직접 RPC 전송
+        const signedTx = await signTransaction(transaction);
+        console.log('Transaction signed successfully');
+        
+        // 직접 RPC로 전송
+        const connection = new Connection('https://solana-mainnet.g.alchemy.com/v2/demo');
+        const txId = await connection.sendRawTransaction(signedTx.serialize());
+        console.log('Transaction sent via RPC:', txId);
+        
+        receipt = { signature: txId };
+      }
       
       console.log('Transaction sent successfully:', receipt);
       
