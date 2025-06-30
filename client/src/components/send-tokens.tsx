@@ -80,13 +80,13 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       const result = await response.json();
       console.log('Backend API response:', result);
       
-      if (!result.success) {
+      if (!response.ok || !result.success) {
         throw new Error(result.error || 'Transaction failed');
       }
       
       toast({
-        title: "Transaction Successful!",
-        description: `${result.note} - Hash: ${result.hash.slice(0, 12)}...`,
+        title: "Transaction Ready!",
+        description: `${result.message} - Ready for Privy signing`,
         duration: 5000
       });
       

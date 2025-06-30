@@ -482,6 +482,7 @@ router.post('/create-transaction', async (req, res) => {
     console.log('Transaction created successfully for Privy useSendTransaction, size:', transactionBytes.length);
     
     res.json({
+      success: true,
       transactionBase64,
       message: 'Transaction ready for Privy useSendTransaction',
       estimatedFee: 5000 // lamports
