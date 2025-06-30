@@ -270,7 +270,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
 
           {/* 주의사항 */}
           <div className="text-xs text-muted-foreground bg-accent/20 rounded p-2">
-            <strong>Note:</strong> This is currently a UI prototype. Actual token transfers will be implemented with Solana Web3.js integration.
+            <strong>Note:</strong> Real blockchain transactions will be executed. Double-check recipient address and amount before sending.
           </div>
         </div>
       </DialogContent>
