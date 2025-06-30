@@ -22,7 +22,6 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [tokenType, setTokenType] = useState("SAMU");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { sendTransaction } = useSendTransaction();
 
   const handleSend = async () => {
     if (!recipient || !amount) {
@@ -68,7 +67,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     setIsLoading(true);
 
     try {
-      // 백엔드에서 트랜잭션 생성
+      // 백엔드에서 트랜잭션 생성 및 전송
       const endpoint = tokenType === 'SOL' ? 'create-sol-transfer' : 'create-samu-transfer';
       
       const response = await fetch(`/api/transactions/${endpoint}`, {
@@ -89,7 +88,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
 
       const { transaction } = await response.json();
 
-      // 백엔드에서 받은 base64 트랜잭션을 사용해서 전송
+      // 백엔드 API를 통해 Privy로 전송
       const result = await fetch('/api/transactions/send', {
         method: 'POST',
         headers: {
@@ -103,10 +102,12 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       });
 
       if (!result.ok) {
-        throw new Error('Transaction failed');
+        const errorData = await result.json();
+        throw new Error(errorData.error || 'Transaction failed');
       }
 
       const txResult = await result.json();
+      console.log('Transaction result:', txResult);
 
       toast({
         title: "Transaction Successful!",
