@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Send, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePrivy } from "@privy-io/react-auth";
-import { useSendTransaction, useWallets } from "@privy-io/react-auth/solana";
+import { useSendTransaction } from "@privy-io/react-auth/solana";
 
 interface SendTokensProps {
   walletAddress: string;
@@ -25,7 +25,6 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const { toast } = useToast();
   const { user } = usePrivy();
   const { sendTransaction } = useSendTransaction();
-  const { wallets } = useWallets();
 
   const handleSend = async () => {
     if (!recipient || !amount) {
@@ -130,23 +129,15 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       console.log('Sending transaction with Privy useSendTransaction...');
       console.log('Wallet address:', walletAddress);
       console.log('User ID:', user?.id);
-      console.log('Available wallets:', wallets);
-      console.log('User linked accounts:', user?.linkedAccounts);
+      console.log('User authenticated:', !!user);
+      console.log('Transaction ready, attempting to send...');
       
-      // 지갑 상태 확인
-      const solanaWallet = wallets.find(w => w.chainType === 'solana');
-      if (!solanaWallet) {
-        throw new Error('No Solana wallet found. Please connect a Solana wallet first.');
-      }
-      
-      console.log('Using Solana wallet:', solanaWallet);
-      
-      // Privy useSendTransaction으로 전송 (문서에 따른 올바른 방식)
+      // Privy useSendTransaction으로 전송 - embedded wallet 자동 선택
       const receipt = await sendTransaction({
         transaction: transaction,
         connection: connection,
         uiOptions: {
-          showWalletUIs: true
+          showWalletUIs: false  // UI를 숨겨서 자동 처리 시도
         }
       });
 

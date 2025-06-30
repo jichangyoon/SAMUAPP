@@ -115,11 +115,18 @@ function App() {
           theme: 'dark',
           accentColor: '#fbbf24',
         },
-        loginMethods: ['email'],
+        loginMethods: ['email', 'wallet'],
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
           solana: {
             createOnLogin: 'users-without-wallets',
+          },
+        },
+        externalWallets: {
+          solana: {
+            connectionOptions: {
+              skipPreflight: true,
+            },
           },
         },
         solanaClusters: [
