@@ -4,8 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { useSendTransaction } from '@privy-io/react-auth/solana';
+import { useSendTransaction, useSignTransaction } from '@privy-io/react-auth/solana';
 import { usePrivy } from '@privy-io/react-auth';
+import { Connection } from '@solana/web3.js';
 
 interface SendTokensProps {
   walletAddress: string;
@@ -22,6 +23,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   
   const { toast } = useToast();
   const { sendTransaction } = useSendTransaction();
+  const { signTransaction } = useSignTransaction();
   const { user } = usePrivy();
 
   const validateSolanaAddress = (address: string): boolean => {
@@ -137,9 +139,17 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       
     } catch (error: any) {
       console.error('Transaction error:', error);
+      console.error('Error details:', {
+        message: error?.message,
+        cause: error?.cause,
+        stack: error?.stack,
+        name: error?.name,
+        type: typeof error,
+        keys: Object.keys(error || {})
+      });
       toast({
-        title: "Transaction Failed",
-        description: error.message || "An error occurred while sending the transaction",
+        title: "Transaction Failed", 
+        description: error?.message || "User exited before wallet could be connected",
         variant: "destructive"
       });
     } finally {
