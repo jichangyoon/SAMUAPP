@@ -53,8 +53,8 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       return;
     }
 
-    // Solana 주소 검증
-    if (chainType === 'solana' && !isSolanaAddress(recipient)) {
+    // Solana 주소 검증 (간단한 길이 체크)
+    if (chainType === 'solana' && (recipient.length < 32 || recipient.length > 44)) {
       toast({
         title: "Invalid Address",
         description: "Please enter a valid Solana address",
