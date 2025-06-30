@@ -51,13 +51,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       })
     );
 
-    // Fee payer 설정
-    transaction.feePayer = fromPubkey;
-    
-    // Recent blockhash 설정
-    const { blockhash } = await connection.getLatestBlockhash('confirmed');
-    transaction.recentBlockhash = blockhash;
-
+    // Privy가 자동으로 fee payer와 blockhash를 처리합니다
     return transaction;
   };
 
@@ -88,7 +82,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     }
 
     // 토큰 전송 instruction 추가
-    const transferAmount = Math.floor(amountTokens * Math.pow(10, 6)); // SAMU는 6 decimals
+    const transferAmount = BigInt(Math.floor(amountTokens * Math.pow(10, 6))); // SAMU는 6 decimals, BigInt 사용
     transaction.add(
       createTransferInstruction(
         fromTokenAccount,
@@ -98,13 +92,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       )
     );
 
-    // Fee payer 설정
-    transaction.feePayer = fromPubkey;
-    
-    // Recent blockhash 설정
-    const { blockhash } = await connection.getLatestBlockhash('confirmed');
-    transaction.recentBlockhash = blockhash;
-
+    // Privy가 자동으로 fee payer와 blockhash를 처리합니다
     return transaction;
   };
 
@@ -192,12 +180,12 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
 
       console.log("Simulation successful, sending via Privy...");
 
-      // Privy의 sendTransaction 사용 (UI 모달 비활성화)
+      // Privy의 sendTransaction 사용 (문서 권장 설정)
       const receipt = await sendTransaction({
         transaction: transaction,
         connection: connection,
         uiOptions: {
-          showWalletUIs: false // UI 모달 비활성화로 프로그래밍 방식 처리
+          showWalletUIs: true // 확인 모달 표시
         },
         address: walletAddress // 명시적으로 지갑 주소 지정
       });
