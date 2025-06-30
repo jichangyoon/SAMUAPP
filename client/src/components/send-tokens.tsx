@@ -21,7 +21,6 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [tokenType, setTokenType] = useState("SAMU");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { sendTransaction } = useSendTransaction();
 
   const handleSend = async () => {
     if (!recipient || !amount) {
