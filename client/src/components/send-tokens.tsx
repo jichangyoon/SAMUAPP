@@ -103,10 +103,14 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       const transaction = Transaction.from(transactionBuffer);
       const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
       
-      // Privy useSendTransaction으로 실제 전송
+      // Privy useSendTransaction으로 실제 전송 (address 파라미터 필수)
       const receipt = await sendTransaction({
         transaction: transaction,
-        connection: connection
+        connection: connection,
+        address: walletAddress,  // embedded wallet의 경우 명시적 지정 필요
+        uiOptions: {
+          showWalletUIs: true
+        }
       });
       
       console.log('Transaction sent successfully:', receipt);
