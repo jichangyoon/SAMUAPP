@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Send, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { isSolanaAddress } from "@/lib/solana";
-import { useSendTransaction } from '@privy-io/react-auth/solana';
 
 interface SendTokensProps {
   walletAddress: string;
@@ -23,7 +22,6 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [tokenType, setTokenType] = useState("SAMU");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { sendTransaction } = useSendTransaction();
 
   const handleSend = async () => {
     if (!recipient || !amount) {
@@ -69,22 +67,21 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     setIsLoading(true);
 
     try {
-      // 실제 송금 구현은 향후 추가 (Solana Web3.js 사용)
-      // 현재는 UI만 구현
-      await new Promise(resolve => setTimeout(resolve, 2000)); // 시뮬레이션
-
+      // 실제 전송 로직은 여기에 구현됩니다
       toast({
         title: "Transaction Simulated",
-        description: `Would send ${amount} ${tokenType} to ${recipient.slice(0, 8)}...`,
+        description: `Would send ${amountNum.toLocaleString()} ${tokenType} to ${recipient.slice(0, 8)}...${recipient.slice(-8)}`,
+        duration: 3000
       });
-
+      
+      // 성공 후 폼 초기화
       setRecipient("");
       setAmount("");
       setIsOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Transaction Failed",
-        description: "Failed to send tokens. Please try again.",
+        description: error?.message || "Please try again",
         variant: "destructive"
       });
     } finally {
