@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Send, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePrivy } from "@privy-io/react-auth";
+import { useSendTransaction } from "@privy-io/react-auth/solana";
 
 interface SendTokensProps {
   walletAddress: string;
@@ -23,6 +24,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user } = usePrivy();
+  const { sendTransaction } = useSendTransaction();
 
   const handleSend = async () => {
     if (!recipient || !amount) {
@@ -68,41 +70,74 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     setIsLoading(true);
 
     try {
-      // Buffer 오류 방지를 위해 백엔드에서 트랜잭션 처리
-      console.log('Using backend API for token transfer...');
+      // Privy useSendTransaction으로 실제 토큰 전송
+      console.log('Creating transaction using Privy useSendTransaction...');
       
-      const endpoint = `/api/transactions/privy-send`;
+      const { 
+        Connection, 
+        PublicKey, 
+        SystemProgram, 
+        Transaction,
+        LAMPORTS_PER_SOL 
+      } = await import('@solana/web3.js');
       
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fromAddress: walletAddress,
-          toAddress: recipient,
-          amount: amountNum,
-          tokenType: tokenType,
-          privyUserId: user?.id
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to send transaction');
-      }
-
-      const result = await response.json();
-      console.log('Transaction result:', result);
+      const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
       
-      if (result.success) {
-        toast({
-          title: "Transaction Successful!",
-          description: `Sent ${amountNum.toLocaleString()} ${tokenType} to ${recipient.slice(0, 8)}...${recipient.slice(-8)}`,
-          duration: 5000
+      // 트랜잭션 직접 생성
+      const fromPubkey = new PublicKey(walletAddress);
+      const toPubkey = new PublicKey(recipient);
+      
+      let instruction;
+      if (tokenType === 'SOL') {
+        // SOL 전송
+        const lamports = Math.floor(amountNum * LAMPORTS_PER_SOL);
+        instruction = SystemProgram.transfer({
+          fromPubkey,
+          toPubkey,
+          lamports
         });
       } else {
-        throw new Error(result.error || 'Transaction failed');
+        // SAMU 토큰 전송 (SPL 토큰)
+        const { 
+          createTransferInstruction, 
+          getAssociatedTokenAddress, 
+          TOKEN_PROGRAM_ID 
+        } = await import('@solana/spl-token');
+        
+        const SAMU_TOKEN_MINT = 'EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF';
+        const mintPubkey = new PublicKey(SAMU_TOKEN_MINT);
+        
+        const fromTokenAccount = await getAssociatedTokenAddress(mintPubkey, fromPubkey);
+        const toTokenAccount = await getAssociatedTokenAddress(mintPubkey, toPubkey);
+        
+        const tokenAmount = Math.floor(amountNum * Math.pow(10, 6)); // SAMU has 6 decimals
+        
+        instruction = createTransferInstruction(
+          fromTokenAccount,
+          toTokenAccount,
+          fromPubkey,
+          tokenAmount,
+          [],
+          TOKEN_PROGRAM_ID
+        );
       }
+      
+      // 트랜잭션 생성
+      const transaction = new Transaction().add(instruction);
+      
+      // Privy useSendTransaction으로 실제 전송
+      const receipt = await sendTransaction({
+        transaction: transaction,
+        connection: connection
+      });
+
+      console.log('Real transaction sent successfully:', receipt);
+      
+      toast({
+        title: "Transaction Successful!",
+        description: `Sent ${amountNum.toLocaleString()} ${tokenType} to ${recipient.slice(0, 8)}...${recipient.slice(-8)}. Signature: ${receipt.signature.slice(0, 8)}...`,
+        duration: 5000
+      });
       
       // 성공 후 폼 초기화
       setRecipient("");
