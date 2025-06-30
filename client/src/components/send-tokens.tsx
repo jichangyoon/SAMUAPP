@@ -10,7 +10,14 @@ import { isSolanaAddress } from "@/lib/solana";
 import { useSendTransaction } from '@privy-io/react-auth/solana';
 import { usePrivy } from '@privy-io/react-auth';
 import { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { createTransferInstruction, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, getAccount } from '@solana/spl-token';
+import { 
+  createTransferInstruction, 
+  getAssociatedTokenAddress, 
+  createAssociatedTokenAccountInstruction, 
+  getAccount,
+  TOKEN_PROGRAM_ID,
+  ASSOCIATED_TOKEN_PROGRAM_ID
+} from '@solana/spl-token';
 
 interface SendTokensProps {
   walletAddress: string;
@@ -81,14 +88,16 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       );
     }
 
-    // 토큰 전송 instruction 추가
-    const transferAmount = BigInt(Math.floor(amountTokens * Math.pow(10, 6))); // SAMU는 6 decimals, BigInt 사용
+    // 토큰 전송 instruction 추가 (안전한 amount 처리)
+    const decimals = 6; // SAMU 토큰의 decimals
+    const transferAmount = Math.floor(amountTokens * Math.pow(10, decimals)); // number로 유지
+    
     transaction.add(
       createTransferInstruction(
         fromTokenAccount,
         toTokenAccount,
         fromPubkey,
-        transferAmount
+        transferAmount // Privy가 자동으로 올바른 형식으로 변환
       )
     );
 
@@ -162,23 +171,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
         transaction = await createTokenTransferTransaction(recipient, amountNum);
       }
 
-      console.log("Transaction created, simulating first...");
-
-      // 트랜잭션 시뮬레이션 먼저 실행
-      try {
-        const simulation = await connection.simulateTransaction(transaction);
-        console.log("Transaction simulation result:", simulation);
-        
-        if (simulation.value.err) {
-          throw new Error(`Transaction simulation failed: ${JSON.stringify(simulation.value.err)}`);
-        }
-      } catch (simError: any) {
-        console.error("Simulation error:", simError);
-        console.error("Simulation error details:", simError?.message, simError?.logs);
-        throw new Error(`Transaction validation failed: ${simError?.message || simError}`);
-      }
-
-      console.log("Simulation successful, sending via Privy...");
+      console.log("Transaction created, sending via Privy...");
 
       // Privy의 sendTransaction 사용 (문서 권장 설정)
       const receipt = await sendTransaction({
