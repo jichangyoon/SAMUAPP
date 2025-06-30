@@ -1,6 +1,4 @@
-// Buffer polyfill for Solana Web3.js compatibility
-import { Buffer } from 'buffer';
-window.Buffer = Buffer;
+// Buffer polyfill setup is handled in main.tsx
 
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";

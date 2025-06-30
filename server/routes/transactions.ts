@@ -377,4 +377,122 @@ router.post('/privy-send', async (req, res) => {
   }
 });
 
+// Privy transaction creation endpoint (solves Buffer issue)
+router.post('/create-transaction', async (req, res) => {
+  try {
+    const { fromAddress, toAddress, amount, tokenType, privyUserId } = req.body;
+    
+    console.log('Creating transaction for Privy useSendTransaction:', { fromAddress, toAddress, amount, tokenType, privyUserId });
+    
+    if (!fromAddress || !toAddress || !amount || !privyUserId) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
+    // Verify Privy user authentication
+    try {
+      const serverAuth = await import('@privy-io/server-auth');
+      const PrivyClient = serverAuth.PrivyClient;
+      
+      const privy = new PrivyClient(
+        process.env.PRIVY_APP_ID!,
+        process.env.PRIVY_APP_SECRET!
+      );
+
+      // Get user wallet mapping
+      const user = await privy.getUser(privyUserId);
+      const solanaWallet = user.linkedAccounts.find(
+        (account: any) => account.type === 'wallet' && account.chainType === 'solana'
+      ) as any;
+
+      if (!solanaWallet || !solanaWallet.address || solanaWallet.address !== fromAddress) {
+        return res.status(400).json({ error: 'Wallet address mismatch or not found' });
+      }
+
+      console.log(`User ${privyUserId} wallet verified: ${solanaWallet.address}`);
+      
+    } catch (privyError) {
+      console.error('Privy verification error:', privyError);
+      return res.status(400).json({ error: 'Failed to verify user wallet' });
+    }
+    
+    // Create Solana transaction
+    const { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } = await import('@solana/web3.js');
+    const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+    
+    const fromPubkey = new PublicKey(fromAddress);
+    const toPubkey = new PublicKey(toAddress);
+    
+    let instruction;
+    if (tokenType === 'SOL') {
+      // SOL transfer
+      const lamports = Math.floor(amount * LAMPORTS_PER_SOL);
+      instruction = SystemProgram.transfer({
+        fromPubkey,
+        toPubkey,
+        lamports
+      });
+    } else {
+      // SAMU token transfer
+      const { createTransferInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } = await import('@solana/spl-token');
+      
+      const SAMU_TOKEN_MINT = 'EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF';
+      const mintPubkey = new PublicKey(SAMU_TOKEN_MINT);
+      
+      const fromTokenAccount = await getAssociatedTokenAddress(mintPubkey, fromPubkey);
+      const toTokenAccount = await getAssociatedTokenAddress(mintPubkey, toPubkey);
+      
+      const tokenAmount = Math.floor(amount * Math.pow(10, 6)); // SAMU has 6 decimals
+      
+      instruction = createTransferInstruction(
+        fromTokenAccount,
+        toTokenAccount,
+        fromPubkey,
+        tokenAmount,
+        [],
+        TOKEN_PROGRAM_ID
+      );
+    }
+    
+    // Create transaction
+    const transaction = new Transaction().add(instruction);
+    const { blockhash } = await connection.getLatestBlockhash();
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = fromPubkey;
+    
+    // Simulate transaction
+    try {
+      const simulation = await connection.simulateTransaction(transaction);
+      if (simulation.value.err) {
+        console.error('Transaction simulation failed:', simulation.value.err);
+        return res.status(400).json({ 
+          error: 'Transaction simulation failed: ' + JSON.stringify(simulation.value.err) 
+        });
+      }
+    } catch (simError) {
+      console.error('Simulation error:', simError);
+      return res.status(400).json({ 
+        error: 'Failed to simulate transaction: ' + (simError as Error).message 
+      });
+    }
+    
+    // Serialize transaction to Base64 for client
+    const transactionBytes = transaction.serialize({ requireAllSignatures: false });
+    const transactionBase64 = Buffer.from(transactionBytes).toString('base64');
+    
+    console.log('Transaction created successfully for Privy useSendTransaction, size:', transactionBytes.length);
+    
+    res.json({
+      transactionBase64,
+      message: 'Transaction ready for Privy useSendTransaction',
+      estimatedFee: 5000 // lamports
+    });
+    
+  } catch (error) {
+    console.error('Transaction creation error:', error);
+    res.status(500).json({ 
+      error: 'Internal server error: ' + (error as Error).message 
+    });
+  }
+});
+
 export default router;
