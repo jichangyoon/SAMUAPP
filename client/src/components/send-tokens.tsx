@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Send, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePrivy } from "@privy-io/react-auth";
+import { useSendTransaction } from "@privy-io/react-auth/solana";
 
 interface SendTokensProps {
   walletAddress: string;
@@ -23,6 +24,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user } = usePrivy();
+  const { sendTransaction } = useSendTransaction();
 
   const handleSend = async () => {
     if (!recipient || !amount) {
@@ -68,10 +70,12 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     setIsLoading(true);
 
     try {
-      // 백엔드에서 트랜잭션 생성 및 전송
-      const endpoint = tokenType === 'SOL' ? 'create-sol-transfer' : 'create-samu-transfer';
+      // Buffer 오류 방지를 위해 백엔드에서 트랜잭션 처리
+      console.log('Using backend API for token transfer...');
       
-      const response = await fetch(`/api/transactions/${endpoint}`, {
+      const endpoint = `/api/transactions/privy-send`;
+      
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -79,48 +83,27 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
         body: JSON.stringify({
           fromAddress: walletAddress,
           toAddress: recipient,
-          amount: amountNum
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create transaction');
-      }
-
-      const { transaction } = await response.json();
-      
-      // 백엔드에서 Privy API로 전송 시도
-      const sendResult = await fetch('/api/transactions/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          walletAddress,
-          transactionBase64: transaction,
-          tokenType,
+          amount: amountNum,
+          tokenType: tokenType,
           privyUserId: user?.id
         })
       });
 
-      if (sendResult.ok) {
-        const txResult = await sendResult.json();
-        console.log('Transaction successful:', txResult);
-        
+      if (!response.ok) {
+        throw new Error('Failed to send transaction');
+      }
+
+      const result = await response.json();
+      console.log('Transaction result:', result);
+      
+      if (result.success) {
         toast({
           title: "Transaction Successful!",
           description: `Sent ${amountNum.toLocaleString()} ${tokenType} to ${recipient.slice(0, 8)}...${recipient.slice(-8)}`,
           duration: 5000
         });
       } else {
-        // Privy API 전송 실패시 시뮬레이션으로 대체
-        console.log('Privy API failed, showing simulation success');
-        
-        toast({
-          title: "Transaction Simulated",
-          description: `Simulated sending ${amountNum.toLocaleString()} ${tokenType} to ${recipient.slice(0, 8)}...${recipient.slice(-8)}`,
-          duration: 5000
-        });
+        throw new Error(result.error || 'Transaction failed');
       }
       
       // 성공 후 폼 초기화
