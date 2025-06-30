@@ -2,12 +2,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Send, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePrivy } from "@privy-io/react-auth";
-import { useSendTransaction } from "@privy-io/react-auth/solana";
 
 interface SendTokensProps {
   walletAddress: string;
@@ -24,128 +24,69 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user } = usePrivy();
-  const { sendTransaction } = useSendTransaction();
 
   const handleSend = async () => {
     if (!recipient || !amount) {
       toast({
-        title: "Missing Information",
-        description: "Please enter recipient address and amount",
+        title: "Error",
+        description: "Please fill in all fields",
         variant: "destructive"
       });
       return;
     }
 
-    const amountNum = parseFloat(amount);
-    if (isNaN(amountNum) || amountNum <= 0) {
+    if (!user) {
       toast({
-        title: "Invalid Amount",
-        description: "Please enter a valid amount",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // 잔고 확인
-    const maxBalance = tokenType === "SAMU" ? samuBalance : solBalance;
-    if (amountNum > maxBalance) {
-      toast({
-        title: "Insufficient Balance",
-        description: `You don't have enough ${tokenType}`,
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Solana 주소 검증 (간단한 길이 체크)
-    if (chainType === 'solana' && (recipient.length < 32 || recipient.length > 44)) {
-      toast({
-        title: "Invalid Address",
-        description: "Please enter a valid Solana address",
+        title: "Error", 
+        description: "Please login first",
         variant: "destructive"
       });
       return;
     }
 
     setIsLoading(true);
-
+    
     try {
-      // Privy useSendTransaction - 프론트엔드에서 직접 트랜잭션 생성
-      console.log('Creating transaction directly in frontend for Privy...');
-      
-      // Dynamic import to use Buffer polyfill
-      const { 
-        Connection, 
-        PublicKey, 
-        SystemProgram, 
-        Transaction,
-        LAMPORTS_PER_SOL 
-      } = await import('@solana/web3.js');
-      
-      const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
-      
-      // 트랜잭션 직접 생성
-      const fromPubkey = new PublicKey(walletAddress);
-      const toPubkey = new PublicKey(recipient);
-      
-      let instruction;
-      if (tokenType === 'SOL') {
-        // SOL 전송
-        const lamports = Math.floor(amountNum * LAMPORTS_PER_SOL);
-        instruction = SystemProgram.transfer({
-          fromPubkey,
-          toPubkey,
-          lamports
-        });
-      } else {
-        // SAMU 토큰 전송 (SPL 토큰)
-        const { 
-          createTransferInstruction, 
-          getAssociatedTokenAddress, 
-          TOKEN_PROGRAM_ID 
-        } = await import('@solana/spl-token');
-        
-        const SAMU_TOKEN_MINT = 'EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF';
-        const mintPubkey = new PublicKey(SAMU_TOKEN_MINT);
-        
-        const fromTokenAccount = await getAssociatedTokenAddress(mintPubkey, fromPubkey);
-        const toTokenAccount = await getAssociatedTokenAddress(mintPubkey, toPubkey);
-        
-        const tokenAmount = Math.floor(amountNum * Math.pow(10, 6)); // SAMU has 6 decimals
-        
-        instruction = createTransferInstruction(
-          fromTokenAccount,
-          toTokenAccount,
-          fromPubkey,
-          tokenAmount,
-          [],
-          TOKEN_PROGRAM_ID
-        );
+      const amountNum = parseFloat(amount);
+      if (isNaN(amountNum) || amountNum <= 0) {
+        throw new Error('Invalid amount');
       }
-      
-      // 트랜잭션 생성
-      const transaction = new Transaction().add(instruction);
-      
-      console.log('Sending transaction with Privy useSendTransaction...');
-      console.log('Wallet address:', walletAddress);
-      console.log('User ID:', user?.id);
-      console.log('User authenticated:', !!user);
-      console.log('Transaction ready, attempting to send...');
-      
-      // Privy useSendTransaction으로 전송 - embedded wallet 자동 선택
-      const receipt = await sendTransaction({
-        transaction: transaction,
-        connection: connection,
-        uiOptions: {
-          showWalletUIs: false  // UI를 숨겨서 자동 처리 시도
-        }
-      });
 
-      console.log('Transaction sent successfully:', receipt);
+      // Validate recipient address
+      const { PublicKey } = await import('@solana/web3.js');
+      try {
+        new PublicKey(recipient);
+      } catch (error) {
+        throw new Error('Invalid recipient address');
+      }
+
+      console.log('Using backend API for secure token transfer...');
+      
+      // 백엔드 API를 통한 검증된 토큰 전송
+      const response = await fetch('/api/transactions/create-transaction', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fromAddress: walletAddress,
+          toAddress: recipient,
+          amount: amountNum,
+          tokenType: tokenType,
+          privyUserId: user?.id
+        })
+      });
+      
+      const result = await response.json();
+      console.log('Backend API response:', result);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Transaction failed');
+      }
       
       toast({
         title: "Transaction Successful!",
-        description: `Sent ${amountNum.toLocaleString()} ${tokenType} to ${recipient.slice(0, 8)}...${recipient.slice(-8)}. Signature: ${receipt.signature.slice(0, 8)}...`,
+        description: `${result.note} - Hash: ${result.hash.slice(0, 12)}...`,
         duration: 5000
       });
       
@@ -158,9 +99,9 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       console.error('Transaction error:', error);
       toast({
         title: "Transaction Failed",
-        description: error?.message || "Please try again",
+        description: error.message || "Failed to send transaction. Please try again.",
         variant: "destructive",
-        duration: 5000
+        duration: 4000
       });
     } finally {
       setIsLoading(false);
@@ -170,99 +111,80 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="w-full bg-primary/10 border-primary/30 hover:bg-primary/20"
-        >
+        <Button variant="outline" size="sm" className="bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
           <Send className="h-4 w-4 mr-2" />
           Send Tokens
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-black border-gray-800">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="text-yellow-400 flex items-center gap-2">
             <Wallet className="h-5 w-5" />
             Send Tokens
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
-          {/* 토큰 타입 선택 */}
-          <div className="space-y-2">
-            <Label htmlFor="tokenType">Token Type</Label>
-            <Select value={tokenType} onValueChange={setTokenType}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="SAMU">
-                  SAMU (Balance: {samuBalance.toLocaleString()})
-                </SelectItem>
-                <SelectItem value="SOL">
-                  SOL (Balance: {solBalance.toFixed(4)})
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <Card className="bg-gray-900/50 border-gray-800">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg text-white">Transfer {tokenType}</CardTitle>
+            <CardDescription className="text-gray-400">
+              Send {tokenType} tokens to another wallet
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Token Type Selection */}
+            <div className="space-y-2">
+              <Label className="text-white">Token Type</Label>
+              <Select value={tokenType} onValueChange={setTokenType}>
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  <SelectItem value="SAMU">SAMU (Balance: {samuBalance.toLocaleString()})</SelectItem>
+                  <SelectItem value="SOL">SOL (Balance: {solBalance.toFixed(4)})</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          {/* 수신자 주소 */}
-          <div className="space-y-2">
-            <Label htmlFor="recipient">Recipient Address</Label>
-            <Input
-              id="recipient"
-              value={recipient}
-              onChange={(e) => setRecipient(e.target.value)}
-              placeholder={chainType === 'solana' ? "Enter Solana address..." : "Enter wallet address..."}
-              className="font-mono text-sm"
-            />
-          </div>
-
-          {/* 송금 금액 */}
-          <div className="space-y-2">
-            <Label htmlFor="amount">Amount</Label>
-            <div className="relative">
+            {/* Recipient Address */}
+            <div className="space-y-2">
+              <Label className="text-white">Recipient Address</Label>
               <Input
-                id="amount"
+                placeholder="Enter Solana wallet address..."
+                value={recipient}
+                onChange={(e) => setRecipient(e.target.value)}
+                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+              />
+            </div>
+
+            {/* Amount */}
+            <div className="space-y-2">
+              <Label className="text-white">Amount</Label>
+              <Input
                 type="number"
+                placeholder="0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                placeholder="0.00"
-                step="0.0001"
-                min="0"
+                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
               />
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground">
-                {tokenType}
-              </div>
             </div>
-            <div className="text-xs text-muted-foreground">
-              Available: {tokenType === "SAMU" ? samuBalance.toLocaleString() : solBalance.toFixed(4)} {tokenType}
+
+            {/* Wallet Info */}
+            <div className="p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+              <div className="text-sm text-gray-400">From Wallet:</div>
+              <div className="text-sm text-white font-mono">{walletAddress.slice(0, 8)}...{walletAddress.slice(-8)}</div>
             </div>
-          </div>
 
-          {/* 전송 버튼 */}
-          <div className="flex gap-2 pt-2">
-            <Button
-              onClick={handleSend}
-              disabled={isLoading}
-              className="flex-1"
+            {/* Send Button */}
+            <Button 
+              onClick={handleSend} 
+              disabled={isLoading || !recipient || !amount}
+              className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
             >
-              {isLoading ? "Sending..." : "Send Tokens"}
+              {isLoading ? "Sending..." : `Send ${tokenType}`}
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-              disabled={isLoading}
-            >
-              Cancel
-            </Button>
-          </div>
-
-          {/* 주의사항 */}
-          <div className="text-xs text-muted-foreground bg-accent/20 rounded p-2">
-            <strong>Note:</strong> This is currently a UI prototype. Actual token transfers will be implemented with Solana Web3.js integration.
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </DialogContent>
     </Dialog>
   );
