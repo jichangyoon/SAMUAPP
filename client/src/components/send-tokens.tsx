@@ -95,12 +95,11 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       // Base64 트랜잭션을 Uint8Array로 변환
       const transactionBytes = Uint8Array.from(atob(transactionBase64), c => c.charCodeAt(0));
       
-      // Privy useSendTransaction으로 전송
-      const receipt = await sendTransaction({
-        transactionBytes,
-        options: {
-          skipPreflight: false
-        }
+      console.log('Sending transaction with Privy useSendTransaction...');
+      
+      // Privy useSendTransaction으로 전송 (올바른 파라미터 형식)
+      const receipt = await sendTransaction(transactionBytes, {
+        skipPreflight: false
       });
 
       console.log('Transaction sent successfully:', receipt);
