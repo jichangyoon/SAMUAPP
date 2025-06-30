@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Send, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePrivy } from "@privy-io/react-auth";
+import { useSendTransaction } from "@privy-io/react-auth/solana";
 
 interface SendTokensProps {
   walletAddress: string;
@@ -24,6 +25,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user } = usePrivy();
+  const { sendTransaction } = useSendTransaction();
 
   const handleSend = async () => {
     if (!recipient || !amount) {
@@ -60,9 +62,9 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
         throw new Error('Invalid recipient address');
       }
 
-      console.log('Using backend API for secure token transfer...');
+      console.log('Creating transaction with backend API...');
       
-      // 백엔드 API를 통한 검증된 토큰 전송
+      // Step 1: 백엔드에서 트랜잭션 생성
       const response = await fetch('/api/transactions/create-transaction', {
         method: 'POST',
         headers: {
@@ -84,9 +86,26 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
         throw new Error(result.error || 'Transaction failed');
       }
       
+      // Step 2: 백엔드에서 받은 트랜잭션을 Privy로 전송
+      console.log('Sending transaction with Privy useSendTransaction...');
+      
+      // Base64 트랜잭션을 Transaction 객체로 변환
+      const { Transaction, Connection } = await import('@solana/web3.js');
+      const transactionBuffer = Buffer.from(result.transactionBase64, 'base64');
+      const transaction = Transaction.from(transactionBuffer);
+      const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+      
+      // Privy useSendTransaction으로 실제 전송
+      const receipt = await sendTransaction({
+        transaction: transaction,
+        connection: connection
+      });
+      
+      console.log('Transaction sent successfully:', receipt);
+      
       toast({
-        title: "Transaction Ready!",
-        description: `${result.message} - Ready for Privy signing`,
+        title: "Transaction Successful!",
+        description: `Sent ${amountNum} ${tokenType} to ${recipient.slice(0, 8)}...${recipient.slice(-8)}. Signature: ${receipt.signature.slice(0, 8)}...`,
         duration: 5000
       });
       
