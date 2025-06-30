@@ -67,22 +67,51 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     setIsLoading(true);
 
     try {
-      // 실제 전송 로직은 여기에 구현됩니다
+      // 백엔드에서 트랜잭션 생성
+      const endpoint = tokenType === 'SOL' ? 'create-sol-transfer' : 'create-samu-transfer';
+      
+      const response = await fetch(`/api/transactions/${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fromAddress: walletAddress,
+          toAddress: recipient,
+          amount: amountNum
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create transaction');
+      }
+
+      const { transaction } = await response.json();
+
+      // Privy로 트랜잭션 전송 (base64 문자열을 그대로 사용)
+      const result = await sendTransaction({
+        transaction: transaction,
+        connection: 'https://api.mainnet-beta.solana.com'
+      });
+
       toast({
-        title: "Transaction Simulated",
-        description: `Would send ${amountNum.toLocaleString()} ${tokenType} to ${recipient.slice(0, 8)}...${recipient.slice(-8)}`,
-        duration: 3000
+        title: "Transaction Successful!",
+        description: `Sent ${amountNum.toLocaleString()} ${tokenType} to ${recipient.slice(0, 8)}...${recipient.slice(-8)}`,
+        duration: 5000
       });
       
       // 성공 후 폼 초기화
       setRecipient("");
       setAmount("");
       setIsOpen(false);
+      
     } catch (error: any) {
+      console.error('Transaction error:', error);
       toast({
         title: "Transaction Failed",
         description: error?.message || "Please try again",
-        variant: "destructive"
+        variant: "destructive",
+        duration: 5000
       });
     } finally {
       setIsLoading(false);
