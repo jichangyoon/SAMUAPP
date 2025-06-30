@@ -70,48 +70,71 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     setIsLoading(true);
 
     try {
-      // Privy useSendTransaction 사용 - 백엔드에서 트랜잭션 생성
-      console.log('Creating transaction using backend API for Privy sendTransaction...');
+      // Privy useSendTransaction - 프론트엔드에서 직접 트랜잭션 생성
+      console.log('Creating transaction directly in frontend for Privy...');
       
-      // 백엔드 API로 트랜잭션 생성 요청
-      const transactionResponse = await fetch('/api/transactions/create-transaction', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fromAddress: walletAddress,
-          toAddress: recipient,
-          amount: amountNum,
-          tokenType: tokenType,
-          privyUserId: user?.id
-        })
-      });
-
-      if (!transactionResponse.ok) {
-        throw new Error('Failed to create transaction');
+      // Dynamic import to use Buffer polyfill
+      const { 
+        Connection, 
+        PublicKey, 
+        SystemProgram, 
+        Transaction,
+        LAMPORTS_PER_SOL 
+      } = await import('@solana/web3.js');
+      
+      const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+      
+      // 트랜잭션 직접 생성
+      const fromPubkey = new PublicKey(walletAddress);
+      const toPubkey = new PublicKey(recipient);
+      
+      let instruction;
+      if (tokenType === 'SOL') {
+        // SOL 전송
+        const lamports = Math.floor(amountNum * LAMPORTS_PER_SOL);
+        instruction = SystemProgram.transfer({
+          fromPubkey,
+          toPubkey,
+          lamports
+        });
+      } else {
+        // SAMU 토큰 전송 (SPL 토큰)
+        const { 
+          createTransferInstruction, 
+          getAssociatedTokenAddress, 
+          TOKEN_PROGRAM_ID 
+        } = await import('@solana/spl-token');
+        
+        const SAMU_TOKEN_MINT = 'EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF';
+        const mintPubkey = new PublicKey(SAMU_TOKEN_MINT);
+        
+        const fromTokenAccount = await getAssociatedTokenAddress(mintPubkey, fromPubkey);
+        const toTokenAccount = await getAssociatedTokenAddress(mintPubkey, toPubkey);
+        
+        const tokenAmount = Math.floor(amountNum * Math.pow(10, 6)); // SAMU has 6 decimals
+        
+        instruction = createTransferInstruction(
+          fromTokenAccount,
+          toTokenAccount,
+          fromPubkey,
+          tokenAmount,
+          [],
+          TOKEN_PROGRAM_ID
+        );
       }
-
-      const { transactionBase64 } = await transactionResponse.json();
       
-      // Base64 트랜잭션을 Uint8Array로 변환
-      const transactionBytes = Uint8Array.from(atob(transactionBase64), c => c.charCodeAt(0));
+      // 트랜잭션 생성
+      const transaction = new Transaction().add(instruction);
       
       console.log('Sending transaction with Privy useSendTransaction...');
-      console.log('Transaction bytes length:', transactionBytes.length);
-      console.log('Transaction bytes sample:', Array.from(transactionBytes.slice(0, 20)));
       
-      // Privy useSendTransaction으로 전송 (올바른 파라미터 형식)
-      try {
-        const receipt = await sendTransaction(transactionBytes, {
-          skipPreflight: false
-        });
+      // Privy useSendTransaction으로 전송 (문서에 따른 올바른 방식)
+      const receipt = await sendTransaction({
+        transaction: transaction,
+        connection: connection
+      });
 
-        console.log('Transaction sent successfully:', receipt);
-      } catch (sendError) {
-        console.error('Privy sendTransaction error details:', sendError);
-        console.error('Error message:', sendError.message);
-        console.error('Error stack:', sendError.stack);
-        throw sendError;
-      }
+      console.log('Transaction sent successfully:', receipt);
       
       toast({
         title: "Transaction Successful!",
