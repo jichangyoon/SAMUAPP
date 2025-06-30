@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Send, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { isSolanaAddress } from "@/lib/solana";
 
 interface SendTokensProps {
   walletAddress: string;
@@ -67,51 +66,16 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     setIsLoading(true);
 
     try {
-      // 백엔드에서 트랜잭션 생성 및 전송
-      const endpoint = tokenType === 'SOL' ? 'create-sol-transfer' : 'create-samu-transfer';
+      // 현재는 시뮬레이션만 가능합니다
+      // 실제 토큰 전송은 보안상의 이유로 별도 구현이 필요합니다
       
-      const response = await fetch(`/api/transactions/${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fromAddress: walletAddress,
-          toAddress: recipient,
-          amount: amountNum
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create transaction');
-      }
-
-      const { transaction } = await response.json();
-
-      // 백엔드 API를 통해 Privy로 전송
-      const result = await fetch('/api/transactions/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          walletAddress,
-          transactionBase64: transaction,
-          tokenType
-        })
-      });
-
-      if (!result.ok) {
-        const errorData = await result.json();
-        throw new Error(errorData.error || 'Transaction failed');
-      }
-
-      const txResult = await result.json();
-      console.log('Transaction result:', txResult);
-
+      // 시뮬레이션 딜레이
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // 성공 메시지 표시
       toast({
-        title: "Transaction Successful!",
-        description: `Sent ${amountNum.toLocaleString()} ${tokenType} to ${recipient.slice(0, 8)}...${recipient.slice(-8)}`,
+        title: "Transaction Simulated!",
+        description: `Simulated sending ${amountNum.toLocaleString()} ${tokenType} to ${recipient.slice(0, 8)}...${recipient.slice(-8)}`,
         duration: 5000
       });
       

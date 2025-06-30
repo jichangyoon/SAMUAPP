@@ -123,6 +123,9 @@ router.post('/send', async (req, res) => {
     }
 
     // Privy API call to send transaction
+    console.log('Sending transaction with wallet:', walletAddress);
+    console.log('Transaction length:', transactionBase64.length);
+    
     const privyResponse = await fetch(`https://api.privy.io/v1/wallets/${walletAddress}/rpc`, {
       method: 'POST',
       headers: {
