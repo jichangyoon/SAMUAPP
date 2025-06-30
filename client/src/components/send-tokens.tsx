@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Send, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePrivy } from "@privy-io/react-auth";
-import { useSendTransaction } from "@privy-io/react-auth/solana";
 
 interface SendTokensProps {
   walletAddress: string;
@@ -24,7 +23,6 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user } = usePrivy();
-  const { sendTransaction } = useSendTransaction();
 
   const handleSend = async () => {
     if (!recipient || !amount) {
