@@ -7,6 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Send, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { isSolanaAddress } from "@/lib/solana";
+import { useSendTransaction } from '@privy-io/react-auth/solana';
+import { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { createTransferInstruction, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, getAccount } from '@solana/spl-token';
 
 interface SendTokensProps {
   walletAddress: string;
@@ -22,6 +25,72 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [tokenType, setTokenType] = useState("SAMU");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { sendTransaction } = useSendTransaction();
+
+  // SAMU 토큰 민트 주소
+  const SAMU_TOKEN_MINT = 'EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF';
+  
+  // Helius RPC 연결
+  const connection = new Connection(
+    `https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`,
+    'confirmed'
+  );
+
+  const createSolTransferTransaction = async (recipientAddress: string, amountSol: number) => {
+    const fromPubkey = new PublicKey(walletAddress);
+    const toPubkey = new PublicKey(recipientAddress);
+    const lamports = Math.floor(amountSol * LAMPORTS_PER_SOL);
+
+    const transaction = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey,
+        toPubkey,
+        lamports,
+      })
+    );
+
+    return transaction;
+  };
+
+  const createTokenTransferTransaction = async (recipientAddress: string, amountTokens: number) => {
+    const fromPubkey = new PublicKey(walletAddress);
+    const toPubkey = new PublicKey(recipientAddress);
+    const mintPubkey = new PublicKey(SAMU_TOKEN_MINT);
+
+    // 토큰 계정 주소 계산
+    const fromTokenAccount = await getAssociatedTokenAddress(mintPubkey, fromPubkey);
+    const toTokenAccount = await getAssociatedTokenAddress(mintPubkey, toPubkey);
+
+    const transaction = new Transaction();
+
+    try {
+      // 수신자의 토큰 계정 존재 확인
+      await getAccount(connection, toTokenAccount);
+    } catch (error) {
+      // 토큰 계정이 없으면 생성
+      transaction.add(
+        createAssociatedTokenAccountInstruction(
+          fromPubkey, // payer
+          toTokenAccount, // associatedToken
+          toPubkey, // owner
+          mintPubkey // mint
+        )
+      );
+    }
+
+    // 토큰 전송 instruction 추가
+    const transferAmount = Math.floor(amountTokens * Math.pow(10, 6)); // SAMU는 6 decimals
+    transaction.add(
+      createTransferInstruction(
+        fromTokenAccount,
+        toTokenAccount,
+        fromPubkey,
+        transferAmount
+      )
+    );
+
+    return transaction;
+  };
 
   const handleSend = async () => {
     if (!recipient || !amount) {
@@ -67,18 +136,37 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     setIsLoading(true);
 
     try {
-      // 실제 전송 로직은 여기에 구현됩니다
-      toast({
-        title: "Transaction Simulated",
-        description: `Would send ${amountNum.toLocaleString()} ${tokenType} to ${recipient.slice(0, 8)}...${recipient.slice(-8)}`,
-        duration: 3000
+      let transaction;
+      
+      if (tokenType === "SOL") {
+        transaction = await createSolTransferTransaction(recipient, amountNum);
+      } else {
+        transaction = await createTokenTransferTransaction(recipient, amountNum);
+      }
+
+      // Privy의 sendTransaction 사용
+      const receipt = await sendTransaction({
+        transaction: transaction,
+        connection: connection,
+        uiOptions: {
+          showWalletUIs: true // 확인 모달 표시
+        }
       });
+
+      toast({
+        title: "Transaction Successful!",
+        description: `Sent ${amountNum.toLocaleString()} ${tokenType} to ${recipient.slice(0, 8)}...${recipient.slice(-8)}`,
+        duration: 5000
+      });
+
+      console.log("Transaction signature:", receipt.signature);
       
       // 성공 후 폼 초기화
       setRecipient("");
       setAmount("");
       setIsOpen(false);
     } catch (error: any) {
+      console.error("Transaction error:", error);
       toast({
         title: "Transaction Failed",
         description: error?.message || "Please try again",
