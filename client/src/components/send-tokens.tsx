@@ -160,14 +160,29 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
         transaction = await createTokenTransferTransaction(recipient, amountNum);
       }
 
-      console.log("Transaction created, sending via Privy...");
+      console.log("Transaction created, simulating first...");
 
-      // Privy의 sendTransaction 사용
+      // 트랜잭션 시뮬레이션 먼저 실행
+      try {
+        const simulation = await connection.simulateTransaction(transaction);
+        console.log("Transaction simulation result:", simulation);
+        
+        if (simulation.value.err) {
+          throw new Error(`Transaction simulation failed: ${JSON.stringify(simulation.value.err)}`);
+        }
+      } catch (simError) {
+        console.error("Simulation error:", simError);
+        throw new Error(`Transaction validation failed: ${simError}`);
+      }
+
+      console.log("Simulation successful, sending via Privy...");
+
+      // Privy의 sendTransaction 사용 (UI 모달 비활성화)
       const receipt = await sendTransaction({
         transaction: transaction,
         connection: connection,
         uiOptions: {
-          showWalletUIs: true // 확인 모달 표시
+          showWalletUIs: false // UI 모달 비활성화로 프로그래밍 방식 처리
         },
         address: walletAddress // 명시적으로 지갑 주소 지정
       });
