@@ -81,8 +81,16 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       
       const result = await response.json();
       console.log('Backend API response:', result);
+      console.log('Response status:', response.status, response.ok);
+      console.log('Result success field:', result.success);
       
-      if (!response.ok || !result.success) {
+      if (!response.ok) {
+        console.error('HTTP error:', response.status, result);
+        throw new Error(result.error || `HTTP ${response.status} error`);
+      }
+      
+      if (!result.success) {
+        console.error('Backend returned success=false:', result);
         throw new Error(result.error || 'Transaction failed');
       }
       
