@@ -141,7 +141,9 @@ router.post('/send', async (req, res) => {
     });
 
     if (!privyResponse.ok) {
-      throw new Error('Privy API call failed');
+      const errorText = await privyResponse.text();
+      console.error('Privy API error:', privyResponse.status, errorText);
+      throw new Error(`Privy API call failed: ${privyResponse.status} - ${errorText}`);
     }
 
     const result = await privyResponse.json();
