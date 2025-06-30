@@ -99,7 +99,8 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       
       // Base64 트랜잭션을 Transaction 객체로 변환
       const { Transaction, Connection } = await import('@solana/web3.js');
-      const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+      // 무료 RPC 엔드포인트 사용 (rate limit 회피)
+      const connection = new Connection('https://solana-api.projectserum.com', 'confirmed');
       const transactionBuffer = Buffer.from(result.transactionBase64, 'base64');
       const transaction = Transaction.from(transactionBuffer);
       

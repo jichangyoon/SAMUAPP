@@ -3,8 +3,8 @@ import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } f
 import { createTransferInstruction, getAssociatedTokenAddress } from '@solana/spl-token';
 const router = Router();
 
-// Solana connection
-const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+// Solana connection (using reliable free RPC)
+const connection = new Connection('https://solana-api.projectserum.com', 'confirmed');
 
 // SAMU Token Mint Address
 const SAMU_TOKEN_MINT = 'EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF';
@@ -172,7 +172,7 @@ router.post('/send', async (req, res) => {
           // 실제 구현: 클라이언트에서 서명 후 브로드캐스트
           // Privy 서버 SDK는 사용자 검증만 지원하므로 트랜잭션 브로드캐스트는 직접 처리
           const { Connection } = await import('@solana/web3.js');
-          const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+          const connection = new Connection('https://solana-api.projectserum.com', 'confirmed');
           
           // 트랜잭션 브로드캐스트 시도 (서명 없이는 실패할 것임)
           try {
@@ -304,7 +304,7 @@ router.post('/privy-send', async (req, res) => {
       
       // 트랜잭션 생성
       const { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } = await import('@solana/web3.js');
-      const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+      const connection = new Connection('https://solana-api.projectserum.com', 'confirmed');
       
       const fromPubkey = new PublicKey(fromAddress);
       const toPubkey = new PublicKey(toAddress);
@@ -417,7 +417,7 @@ router.post('/create-transaction', async (req, res) => {
     
     // Create Solana transaction
     const { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } = await import('@solana/web3.js');
-    const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+    const connection = new Connection('https://solana-api.projectserum.com', 'confirmed');
     
     const fromPubkey = new PublicKey(fromAddress);
     const toPubkey = new PublicKey(toAddress);
