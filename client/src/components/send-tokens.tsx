@@ -99,15 +99,22 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       
       // Base64 트랜잭션을 Transaction 객체로 변환
       const { Transaction, Connection } = await import('@solana/web3.js');
+      const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
       const transactionBuffer = Buffer.from(result.transactionBase64, 'base64');
       const transaction = Transaction.from(transactionBuffer);
-      const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
       
-      // Privy useSendTransaction으로 실제 전송 (address 파라미터 필수)
+      // 최신 블록해시로 업데이트 (중요!)
+      const { blockhash } = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      
+      console.log('Transaction prepared with fresh blockhash:', blockhash);
+      console.log('Wallet address for signing:', walletAddress);
+      
+      // Privy useSendTransaction으로 실제 전송
       const receipt = await sendTransaction({
         transaction: transaction,
         connection: connection,
-        address: walletAddress,  // embedded wallet의 경우 명시적 지정 필요
+        address: walletAddress,
         uiOptions: {
           showWalletUIs: true
         }
