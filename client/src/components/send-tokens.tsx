@@ -22,6 +22,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const [tokenType, setTokenType] = useState("SAMU");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { sendTransaction } = useSendTransaction();
 
   const handleSend = async () => {
     if (!recipient || !amount) {
@@ -67,7 +68,7 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     setIsLoading(true);
 
     try {
-      // Privy wallet API를 통한 실제 전송 (테스트 중)
+      // 백엔드에서 트랜잭션 생성
       const endpoint = tokenType === 'SOL' ? 'create-sol-transfer' : 'create-samu-transfer';
       
       const response = await fetch(`/api/transactions/${endpoint}`, {
@@ -86,14 +87,30 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
         throw new Error('Failed to create transaction');
       }
 
-      const data = await response.json();
-      console.log('Transaction prepared:', data);
+      const { transaction } = await response.json();
 
-      // 현재는 시뮬레이션으로 성공 표시
-      // 실제 Privy 전송은 추후 구현
+      // 백엔드에서 받은 base64 트랜잭션을 사용해서 전송
+      const result = await fetch('/api/transactions/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          walletAddress,
+          transactionBase64: transaction,
+          tokenType
+        })
+      });
+
+      if (!result.ok) {
+        throw new Error('Transaction failed');
+      }
+
+      const txResult = await result.json();
+
       toast({
-        title: "Transaction Prepared!",
-        description: `Ready to send ${amountNum.toLocaleString()} ${tokenType} to ${recipient.slice(0, 8)}...${recipient.slice(-8)}`,
+        title: "Transaction Successful!",
+        description: `Sent ${amountNum.toLocaleString()} ${tokenType} to ${recipient.slice(0, 8)}...${recipient.slice(-8)}`,
         duration: 5000
       });
       

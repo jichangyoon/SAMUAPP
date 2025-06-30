@@ -116,11 +116,16 @@ function App() {
         loginMethods: ['email'],
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
-          noPromptOnMfaRequired: false,
           solana: {
             createOnLogin: 'users-without-wallets',
           },
-        }
+        },
+        solanaClusters: [
+          {
+            name: 'mainnet-beta',
+            rpcUrl: 'https://api.mainnet-beta.solana.com'
+          }
+        ]
       }}
     >
       <QueryClientProvider client={queryClient}>
