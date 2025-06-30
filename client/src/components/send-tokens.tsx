@@ -97,18 +97,13 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
       // Step 2: 백엔드에서 받은 트랜잭션을 Privy로 전송
       console.log('Sending transaction with Privy useSendTransaction...');
       
-      // Base64 트랜잭션을 Transaction 객체로 변환
+      // Base64 트랜잭션을 Transaction 객체로 변환 (백엔드에서 준비된 상태)
       const { Transaction, Connection } = await import('@solana/web3.js');
-      // 무료 RPC 엔드포인트 사용 (rate limit 회피)
-      const connection = new Connection('https://solana-api.projectserum.com', 'confirmed');
+      const connection = new Connection('https://rpc.ankr.com/solana', 'confirmed');
       const transactionBuffer = Buffer.from(result.transactionBase64, 'base64');
       const transaction = Transaction.from(transactionBuffer);
       
-      // 최신 블록해시로 업데이트 (중요!)
-      const { blockhash } = await connection.getLatestBlockhash();
-      transaction.recentBlockhash = blockhash;
-      
-      console.log('Transaction prepared with fresh blockhash:', blockhash);
+      console.log('Transaction ready from backend (blockhash already set)');
       console.log('Wallet address for signing:', walletAddress);
       
       // Privy useSendTransaction으로 실제 전송

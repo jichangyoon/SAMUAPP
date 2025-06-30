@@ -6,7 +6,7 @@ export const config = {
   // Solana
   SAMU_TOKEN_MINT: 'EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF',
   RPC_ENDPOINTS: [
-    'https://solana-api.projectserum.com',
+    'https://rpc.ankr.com/solana',
     'https://rpc.ankr.com/solana'
   ],
   
