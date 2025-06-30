@@ -19,10 +19,125 @@
   <body>
     <div id="root"></div>
     <script>
-      // Simple Buffer polyfill
+      // Complete Node.js polyfills for Solana Web3.js
       window.global = globalThis;
       if (typeof global === 'undefined') {
         var global = globalThis;
+      }
+      
+      // Process polyfill
+      window.process = window.process || {
+        env: { NODE_ENV: 'production' },
+        nextTick: function(cb) { setTimeout(cb, 0); },
+        browser: true,
+        version: 'v18.0.0'
+      };
+      
+      // Complete Buffer polyfill
+      window.Buffer = class Buffer extends Uint8Array {
+        static isBuffer(obj) {
+          return obj instanceof Buffer;
+        }
+        
+        static from(data, encoding) {
+          if (typeof data === 'string') {
+            if (encoding === 'base64') {
+              const binaryString = atob(data);
+              const bytes = new Uint8Array(binaryString.length);
+              for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+              }
+              return new Buffer(bytes);
+            } else if (encoding === 'hex') {
+              const bytes = new Uint8Array(data.length / 2);
+              for (let i = 0; i < data.length; i += 2) {
+                bytes[i / 2] = parseInt(data.substr(i, 2), 16);
+              }
+              return new Buffer(bytes);
+            } else {
+              const encoder = new TextEncoder();
+              const bytes = encoder.encode(data);
+              return new Buffer(bytes);
+            }
+          }
+          if (data instanceof ArrayBuffer) {
+            return new Buffer(data);
+          }
+          if (Array.isArray(data)) {
+            return new Buffer(data);
+          }
+          if (data instanceof Uint8Array) {
+            return new Buffer(data);
+          }
+          return new Buffer(data);
+        }
+        
+        static alloc(size, fill) {
+          const buf = new Buffer(size);
+          if (fill !== undefined) {
+            if (typeof fill === 'number') {
+              buf.fill(fill);
+            } else if (typeof fill === 'string') {
+              const fillBytes = new TextEncoder().encode(fill);
+              for (let i = 0; i < size; i++) {
+                buf[i] = fillBytes[i % fillBytes.length];
+              }
+            }
+          }
+          return buf;
+        }
+        
+        static allocUnsafe(size) {
+          return new Buffer(size);
+        }
+        
+        static concat(list, totalLength) {
+          if (!totalLength) {
+            totalLength = list.reduce((acc, buf) => acc + buf.length, 0);
+          }
+          const result = new Buffer(totalLength);
+          let offset = 0;
+          for (const buf of list) {
+            result.set(buf, offset);
+            offset += buf.length;
+          }
+          return result;
+        }
+        
+        toString(encoding) {
+          encoding = encoding || 'utf8';
+          if (encoding === 'hex') {
+            return Array.from(this).map(b => b.toString(16).padStart(2, '0')).join('');
+          } else if (encoding === 'base64') {
+            let binary = '';
+            for (let i = 0; i < this.length; i++) {
+              binary += String.fromCharCode(this[i]);
+            }
+            return btoa(binary);
+          } else {
+            const decoder = new TextDecoder(encoding);
+            return decoder.decode(this);
+          }
+        }
+        
+        constructor(data) {
+          if (typeof data === 'number') {
+            super(data);
+          } else if (data instanceof ArrayBuffer) {
+            super(data);
+          } else if (Array.isArray(data)) {
+            super(data);
+          } else if (data instanceof Uint8Array) {
+            super(data);
+          } else {
+            super(0);
+          }
+        }
+      };
+      
+      // Additional polyfills
+      if (typeof window.setImmediate === 'undefined') {
+        window.setImmediate = function(fn) { return setTimeout(fn, 0); };
       }
     </script>
     <script type="module" src="/src/main.tsx"></script>
