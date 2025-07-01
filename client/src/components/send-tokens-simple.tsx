@@ -31,13 +31,38 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
 
   // Privy 공식 문서 방식: SOL 전송 트랜잭션
   const createSolTransaction = (recipientAddress: string, amountSol: number) => {
+    // 디버깅: wallets 배열 전체 확인
+    console.log("=== 디버깅 시작 ===");
+    console.log("wallets 배열:", wallets);
+    console.log("wallets 개수:", wallets.length);
+    console.log("찾고 있는 walletAddress:", walletAddress);
+    
+    wallets.forEach((w, index) => {
+      console.log(`Wallet ${index}:`, {
+        address: w.address,
+        type: w.walletClientType,
+        connectorType: w.connectorType,
+        meta: w.meta,
+        wallet전체: w
+      });
+    });
+    
     // Privy 문서 방식: 실제 wallet 객체에서 publicKey 사용
     const wallet = wallets.find(w => w.address === walletAddress);
-    if (!wallet || !wallet.publicKey) return null;
+    console.log("찾은 wallet:", wallet);
+    
+    if (!wallet) {
+      console.log("❌ wallet을 찾을 수 없음");
+      return null;
+    }
+    
+    // wallet.address를 PublicKey로 변환해서 사용
+    console.log("✅ wallet 찾음, address로 PublicKey 생성");
+    console.log("=== 디버깅 끝 ===");
     
     return new Transaction().add(
       SystemProgram.transfer({
-        fromPubkey: wallet.publicKey, // wallet 객체에서 직접 publicKey 사용
+        fromPubkey: new PublicKey(wallet.address), // wallet.address를 PublicKey로 변환
         toPubkey: new PublicKey(recipientAddress),
         lamports: amountSol * LAMPORTS_PER_SOL
       })
