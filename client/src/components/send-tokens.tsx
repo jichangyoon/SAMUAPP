@@ -10,14 +10,7 @@ import { isSolanaAddress } from "@/lib/solana";
 import { useSendTransaction } from '@privy-io/react-auth/solana';
 import { usePrivy } from '@privy-io/react-auth';
 import { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { 
-  createTransferInstruction, 
-  getAssociatedTokenAddress, 
-  createAssociatedTokenAccountInstruction, 
-  getAccount,
-  TOKEN_PROGRAM_ID,
-  ASSOCIATED_TOKEN_PROGRAM_ID
-} from '@solana/spl-token';
+import { createTransferInstruction, getAssociatedTokenAddress, getAccount, createAssociatedTokenAccountInstruction } from '@solana/spl-token';
 
 interface SendTokensProps {
   walletAddress: string;
@@ -35,6 +28,11 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
   const { toast } = useToast();
   const { ready, authenticated, user } = usePrivy();
   const { sendTransaction } = useSendTransaction();
+  
+  // Privy 지갑 객체 가져오기 (공식 문서 방식)
+  const wallet = user?.linkedAccounts?.find(
+    account => account.type === 'wallet' && account.walletClientType === 'privy'
+  );
 
   // SAMU 토큰 민트 주소
   const SAMU_TOKEN_MINT = 'EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF';
@@ -45,21 +43,17 @@ export function SendTokens({ walletAddress, samuBalance, solBalance, chainType }
     'confirmed'
   );
 
-  const createSolTransferTransaction = async (recipientAddress: string, amountSol: number) => {
-    const fromPubkey = new PublicKey(walletAddress);
-    const toPubkey = new PublicKey(recipientAddress);
-    const lamports = Math.floor(amountSol * LAMPORTS_PER_SOL);
-
-    const transaction = new Transaction().add(
+  // Privy 공식 문서 방식: SOL 전송
+  const createSolTransaction = (recipientAddress: string, amountSol: number) => {
+    if (!wallet?.address) return null;
+    
+    return new Transaction().add(
       SystemProgram.transfer({
-        fromPubkey,
-        toPubkey,
-        lamports,
+        fromPubkey: new PublicKey(wallet.address), // wallet 객체 직접 사용
+        toPubkey: new PublicKey(recipientAddress),
+        lamports: amountSol * LAMPORTS_PER_SOL
       })
     );
-
-    // Privy가 자동으로 fee payer와 blockhash를 처리합니다
-    return transaction;
   };
 
   const createTokenTransferTransaction = async (recipientAddress: string, amountTokens: number) => {
