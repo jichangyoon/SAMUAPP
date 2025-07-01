@@ -29,44 +29,33 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
   // Privy 공식 문서 방식: Connection 생성 - 안정적인 무료 RPC 사용
   const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
 
-  // Privy 공식 문서 방식: SOL 전송 트랜잭션
+  // useSolanaWallets가 작동하지 않으므로 직접 walletAddress 사용
   const createSolTransaction = (recipientAddress: string, amountSol: number) => {
-    // 디버깅: wallets 배열 전체 확인
-    console.log("=== 디버깅 시작 ===");
-    console.log("wallets 배열:", wallets);
-    console.log("wallets 개수:", wallets.length);
-    console.log("찾고 있는 walletAddress:", walletAddress);
+    console.log("=== SOL 트랜잭션 생성 ===");
+    console.log("보내는 주소:", walletAddress);
+    console.log("받는 주소:", recipientAddress);
+    console.log("금액:", amountSol, "SOL");
     
-    wallets.forEach((w, index) => {
-      console.log(`Wallet ${index}:`, {
-        address: w.address,
-        type: w.walletClientType,
-        connectorType: w.connectorType,
-        meta: w.meta,
-        wallet전체: w
-      });
-    });
-    
-    // Privy 문서 방식: 실제 wallet 객체에서 publicKey 사용
-    const wallet = wallets.find(w => w.address === walletAddress);
-    console.log("찾은 wallet:", wallet);
-    
-    if (!wallet) {
-      console.log("❌ wallet을 찾을 수 없음");
+    if (!walletAddress) {
+      console.log("❌ 지갑 주소가 없음");
       return null;
     }
     
-    // wallet.address를 PublicKey로 변환해서 사용
-    console.log("✅ wallet 찾음, address로 PublicKey 생성");
-    console.log("=== 디버깅 끝 ===");
-    
-    return new Transaction().add(
-      SystemProgram.transfer({
-        fromPubkey: new PublicKey(wallet.address), // wallet.address를 PublicKey로 변환
-        toPubkey: new PublicKey(recipientAddress),
-        lamports: amountSol * LAMPORTS_PER_SOL
-      })
-    );
+    try {
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: new PublicKey(walletAddress), // props로 받은 주소 직접 사용
+          toPubkey: new PublicKey(recipientAddress),
+          lamports: amountSol * LAMPORTS_PER_SOL
+        })
+      );
+      
+      console.log("✅ 트랜잭션 생성 성공");
+      return transaction;
+    } catch (error) {
+      console.log("❌ 트랜잭션 생성 실패:", error);
+      return null;
+    }
   };
 
   // Privy 공식 문서 방식: 전송 핸들러
