@@ -25,8 +25,8 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
   const { user } = usePrivy();
   const { sendTransaction } = useSendTransaction();
   
-  // Privy 공식 문서 방식: Connection 생성 - 무료 mainnet RPC 사용
-  const connection = new Connection('https://solana-api.projectserum.com');
+  // Privy 공식 문서 방식: Connection 생성 - 안정적인 무료 RPC 사용
+  const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
 
   // Privy 공식 문서 방식: SOL 전송 트랜잭션
   const createSolTransaction = (recipientAddress: string, amountSol: number) => {
