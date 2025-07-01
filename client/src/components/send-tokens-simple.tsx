@@ -64,11 +64,7 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
         throw new Error("Failed to create transaction");
       }
 
-      // 중요: recentBlockhash 설정 (Solana 트랜잭션 필수 요구사항)
-      const { blockhash } = await connection.getLatestBlockhash();
-      transaction.recentBlockhash = blockhash;
-
-      // Privy 공식 문서 방식: 최소한의 파라미터로 전송
+      // Privy 공식 문서 방식: recentBlockhash는 Privy가 자동 처리
       await sendTransaction({
         transaction,
         connection
