@@ -1,0 +1,88 @@
+Initializing Privy
+
+In your project, import the PrivyProvider component and wrap your app with it. The PrivyProvider must wrap any component or page that will use the Privy React SDK, and it is generally recommended to render it as close to the root of your application as possible.
+
+If you’re new to React and using contexts, check out these resources!
+Ethereum
+Solana
+
+NextJS
+
+Create React App
+
+Copy
+
+Ask AI
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+
+import './index.css';
+
+import {PrivyProvider} from '@privy-io/react-auth';
+
+import App from './App';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+
+root.render(
+  <React.StrictMode>
+    <PrivyProvider
+      appId="your-privy-app-id"
+      clientId="your-app-client-id"
+      config={{
+        // Create embedded wallets for users who don't have a wallet
+        embeddedWallets: {
+          solana: {
+            createOnLogin: 'users-without-wallets'
+          }
+        }
+      }}
+    >
+      <App />
+    </PrivyProvider>
+  </React.StrictMode>
+);
+To use external Solana wallets, you must pass toSolanaWalletConnectors() to the externalWallets prop in your PrivyProvider config. Learn more here.
+​
+Configuration
+
+The PrivyProvider component accepts the following props:
+
+​
+appId
+stringrequired
+Your Privy App ID. You can find this in the Privy Dashboard.
+​
+clientId
+string
+(Optional) A client ID to be used for this app client. Learn more about app clients here.
+​
+config
+Object
+Configuration options for the Privy SDK.
+For more information on the config object, look under React > Advanced for guides like customizing appearance for our UI components and configuring networks.
+​
+Waiting for Privy to be ready
+
+When the PrivyProvider is first rendered on your page, the Privy SDK will initialize some state about the current user. This might include checking if the user has a wallet connected, refreshing expired auth tokens, fetching up-to-date user data, and more.
+
+It’s important to wait until the PrivyProvider has finished initializing before you consume Privy’s state and interfaces, to ensure that the state you consume is accurate and not stale.
+
+To determine whether the Privy SDK has fully initialized on your page, check the ready Boolean returned by the usePrivy hook. When ready is true, Privy has completed initialization, and your app can consume Privy’s state and interfaces.
+
+
+Copy
+
+Ask AI
+import {usePrivy} from '@privy-io/react-auth';
+
+function YourComponent() {
+  const {ready} = usePrivy();
+
+  if (!ready) {
+    return <div>Loading...</div>;
+  }
+
+  // Now it's safe to use other Privy hooks and state
+  return <div>Privy is ready!</div>;
+}

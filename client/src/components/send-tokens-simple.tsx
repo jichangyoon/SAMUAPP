@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useSendTransaction } from '@privy-io/react-auth/solana';
+import { useSendTransaction, useSolanaWallets } from '@privy-io/react-auth/solana';
 import { usePrivy } from '@privy-io/react-auth';
 import { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
@@ -24,17 +24,20 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
   const { toast } = useToast();
   const { user } = usePrivy();
   const { sendTransaction } = useSendTransaction();
+  const { wallets } = useSolanaWallets();
   
   // Privy 공식 문서 방식: Connection 생성 - 안정적인 무료 RPC 사용
   const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
 
   // Privy 공식 문서 방식: SOL 전송 트랜잭션
   const createSolTransaction = (recipientAddress: string, amountSol: number) => {
-    if (!walletAddress) return null;
+    // Privy 문서 방식: 실제 wallet 객체에서 publicKey 사용
+    const wallet = wallets.find(w => w.address === walletAddress);
+    if (!wallet || !wallet.publicKey) return null;
     
     return new Transaction().add(
       SystemProgram.transfer({
-        fromPubkey: new PublicKey(walletAddress), // props에서 받은 주소 직접 사용
+        fromPubkey: wallet.publicKey, // wallet 객체에서 직접 publicKey 사용
         toPubkey: new PublicKey(recipientAddress),
         lamports: amountSol * LAMPORTS_PER_SOL
       })
