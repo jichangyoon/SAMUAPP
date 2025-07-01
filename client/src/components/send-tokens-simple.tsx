@@ -24,38 +24,44 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
   const { toast } = useToast();
   const { user } = usePrivy();
   const { sendTransaction } = useSendTransaction();
-  const { wallets } = useSolanaWallets();
+  const { wallets, ready } = useSolanaWallets();
   
   // Privy 공식 문서 방식: Connection 생성 - 안정적인 무료 RPC 사용
   const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
 
-  // useSolanaWallets가 작동하지 않으므로 직접 walletAddress 사용
+  // Privy 공식 문서 방식: SOL 전송 트랜잭션
   const createSolTransaction = (recipientAddress: string, amountSol: number) => {
-    console.log("=== SOL 트랜잭션 생성 ===");
-    console.log("보내는 주소:", walletAddress);
-    console.log("받는 주소:", recipientAddress);
-    console.log("금액:", amountSol, "SOL");
+    console.log("=== 디버깅 시작 ===");
+    console.log("ready 상태:", ready);
+    console.log("wallets 배열:", wallets);
+    console.log("wallets 개수:", wallets.length);
+    console.log("찾고 있는 walletAddress:", walletAddress);
     
-    if (!walletAddress) {
-      console.log("❌ 지갑 주소가 없음");
+    // Privy 공식 문서: ready가 true일 때만 실행
+    if (!ready) {
+      console.log("❌ wallets가 아직 준비되지 않음 (ready: false)");
       return null;
     }
     
-    try {
-      const transaction = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey: new PublicKey(walletAddress), // props로 받은 주소 직접 사용
-          toPubkey: new PublicKey(recipientAddress),
-          lamports: amountSol * LAMPORTS_PER_SOL
-        })
-      );
-      
-      console.log("✅ 트랜잭션 생성 성공");
-      return transaction;
-    } catch (error) {
-      console.log("❌ 트랜잭션 생성 실패:", error);
+    // Privy 공식 문서 방식: wallet 객체에서 publicKey 사용  
+    const wallet = wallets.find(w => w.address === walletAddress);
+    console.log("찾은 wallet:", wallet);
+    
+    if (!wallet) {
+      console.log("❌ wallet을 찾을 수 없음");
       return null;
     }
+    
+    console.log("✅ wallet 찾음, 트랜잭션 생성");
+    console.log("=== 디버깅 끝 ===");
+    
+    return new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey: new PublicKey(wallet.address), // 공식 문서: wallet.address 사용
+        toPubkey: new PublicKey(recipientAddress),
+        lamports: amountSol * LAMPORTS_PER_SOL
+      })
+    );
   };
 
   // Privy 공식 문서 방식: 전송 핸들러
