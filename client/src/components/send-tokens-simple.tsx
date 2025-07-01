@@ -43,10 +43,12 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
 
   // Privy 공식 문서 방식: 전송 핸들러
   const handleSend = async () => {
+    console.log("Debug values:", { walletAddress, recipient, amount, user: !!user });
+    
     if (!walletAddress || !recipient || !amount) {
       toast({
         title: "Error",
-        description: "Missing wallet or transaction details",
+        description: `Missing: ${!walletAddress ? 'wallet ' : ''}${!recipient ? 'recipient ' : ''}${!amount ? 'amount' : ''}`,
         variant: "destructive"
       });
       return;
