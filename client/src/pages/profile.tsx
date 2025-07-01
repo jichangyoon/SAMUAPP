@@ -15,7 +15,7 @@ import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Cop
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
-import { SendTokens } from "@/components/send-tokens";
+import { SendTokensSimple } from "@/components/send-tokens-simple";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { MediaDisplay } from "@/components/media-display";
 
@@ -678,7 +678,7 @@ const Profile = React.memo(() => {
             {/* 송금 기능 */}
             {walletAddress && user && (
               <div className="mt-3">
-                <SendTokens 
+                <SendTokensSimple 
                   walletAddress={walletAddress}
                   samuBalance={stats.currentSamuBalance}
                   solBalance={stats.currentSolBalance}
