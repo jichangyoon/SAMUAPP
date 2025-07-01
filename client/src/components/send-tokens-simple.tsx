@@ -25,8 +25,8 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
   const { user } = usePrivy();
   const { sendTransaction } = useSendTransaction();
   
-  // Privy 공식 문서 방식: Connection 생성
-  const connection = new Connection('https://api.mainnet-beta.solana.com');
+  // Privy 공식 문서 방식: Connection 생성 - Helius API 사용
+  const connection = new Connection('https://mainnet.helius-rpc.com/?api-key=a7d33bb1-2e88-4b90-908b-e45ae39abe60');
 
   // Privy 공식 문서 방식: SOL 전송 트랜잭션
   const createSolTransaction = (recipientAddress: string, amountSol: number) => {
