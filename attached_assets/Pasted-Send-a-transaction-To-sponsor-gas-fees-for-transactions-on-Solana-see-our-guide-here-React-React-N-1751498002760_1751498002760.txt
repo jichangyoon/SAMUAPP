@@ -1,0 +1,85 @@
+Send a transaction
+To sponsor gas fees for transactions on Solana, see our guide here.
+React
+React Native
+Swift
+Android
+Flutter
+NodeJS
+REST API
+Use the signMessage method on the Solana wallet provider to sign a transaction and then submit it to the network.
+
+
+Copy
+
+Ask AI
+Future<Result<String>> signMessage(String message);
+​
+Usage
+
+
+Copy
+
+Ask AI
+// Retrieve the user's Solana wallet (assumes wallet is already obtained)
+final solanaWallet = user.embeddedSolanaWallets.first;
+
+// Create a Solana RPC client
+final connection = Connection('https://api.mainnet-beta.solana.com');
+
+// Build the transaction
+final walletPublicKey = PublicKey(solanaWallet.address);
+final instruction = SystemProgram.transfer(
+    fromPubkey: walletPublicKey,
+    toPubkey: PublicKey(recipientAddress),
+    lamports: amount
+);
+
+// Get recent blockhash
+final recentBlockhash = await connection.getLatestBlockhash();
+
+// Create transaction
+final transaction = Transaction();
+transaction.add(instruction);
+transaction.recentBlockhash = recentBlockhash;
+transaction.feePayer = walletPublicKey;
+
+// Serialize transaction to base64
+final serializedTransaction = base64Encode(transaction.serializeMessage());
+
+// Sign the transaction message
+final result = await solanaWallet.provider.signMessage(serializedTransaction);
+
+// Handle the result
+result.when(
+    success: (signature) {
+        // Add signature to transaction
+        transaction.addSignature(walletPublicKey, base64Decode(signature));
+
+        // Send the transaction
+        connection.sendRawTransaction(transaction.serialize())
+          .then((txHash) {
+            print('Transaction sent with hash: $txHash');
+          });
+    },
+    failure: (error) {
+        print('Failed to sign transaction: $error');
+    },
+);
+​
+Parameters
+
+​
+message
+Stringrequired
+The base64-encoded serialized transaction message to sign.
+​
+Returns
+
+​
+result
+Result<String>
+A Result that, when successful, contains the base64-encoded signature.
+Sign a message
+Sign a transaction
+Powered by Mintlify
