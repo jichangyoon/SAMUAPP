@@ -123,7 +123,7 @@ function App() {
         },
         solanaClusters: [{
           name: 'mainnet-beta',
-          rpcUrl: `https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`
+          rpcUrl: 'https://api.mainnet-beta.solana.com'
         }]
       }}
     >
