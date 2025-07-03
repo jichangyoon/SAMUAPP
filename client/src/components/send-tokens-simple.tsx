@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useSendTransaction, useSolanaWallets } from '@privy-io/react-auth/solana';
+import { useSendTransaction, useSolanaWallets, useSignTransaction } from '@privy-io/react-auth/solana';
 import { usePrivy } from '@privy-io/react-auth';
 import { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
@@ -24,6 +24,7 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
   const { toast } = useToast();
   const { user } = usePrivy();
   const { sendTransaction } = useSendTransaction();
+  const { signTransaction } = useSignTransaction();
   const { wallets, ready } = useSolanaWallets();
   
   // Privy 공식 문서 방식: Connection 생성 - Helius RPC 사용 (PrivyProvider와 동일)
@@ -105,11 +106,19 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
         throw new Error("Failed to create transaction");
       }
 
-      // Privy 공식 문서 방식: recentBlockhash는 Privy가 자동 처리
-      await sendTransaction({
+      // 개선된 방식: signTransaction 후 직접 전송으로 TextDecoder 문제 우회
+      console.log("🔧 트랜잭션 서명 중...");
+      const signedTx = await signTransaction({
         transaction,
         connection
       });
+      
+      console.log("✅ 트랜잭션 서명 완료");
+      console.log("🚀 트랜잭션 전송 중...");
+      
+      // 서명된 트랜잭션을 직접 전송
+      const signature = await connection.sendRawTransaction(signedTx.serialize());
+      console.log("✅ 트랜잭션 전송 완료:", signature);
 
       toast({
         title: "Success!",

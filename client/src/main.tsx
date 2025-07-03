@@ -2,6 +2,17 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
+// TextDecoder polyfill for Solana/Privy compatibility
+if (typeof global === 'undefined') {
+  (globalThis as any).global = globalThis;
+}
+
+// Buffer polyfill for browser environment
+import { Buffer } from 'buffer';
+if (typeof window !== 'undefined') {
+  (window as any).Buffer = Buffer;
+}
+
 // 메모리 효율적인 전역 오류 핸들러
 const IGNORED_PATTERNS = ['Privy', 'iframe', 'wallet', 'fetch', 'Failed to fetch'];
 
