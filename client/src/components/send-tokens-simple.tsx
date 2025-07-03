@@ -32,8 +32,8 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
     'confirmed'
   );
 
-  // Privy 공식 문서 방식: SOL 전송 트랜잭션
-  const createSolTransaction = (recipientAddress: string, amountSol: number) => {
+  // Privy 공식 문서 방식 + recentBlockhash 수동 설정: SOL 전송 트랜잭션
+  const createSolTransaction = async (recipientAddress: string, amountSol: number) => {
     console.log("=== 디버깅 시작 ===");
     console.log("ready 상태:", ready);
     console.log("wallets 배열:", wallets);
@@ -56,15 +56,30 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
     }
     
     console.log("✅ wallet 찾음, 트랜잭션 생성");
-    console.log("=== 디버깅 끝 ===");
     
-    return new Transaction().add(
-      SystemProgram.transfer({
-        fromPubkey: new PublicKey(wallet.address), // 공식 문서: wallet.address 사용
-        toPubkey: new PublicKey(recipientAddress),
-        lamports: amountSol * LAMPORTS_PER_SOL
-      })
-    );
+    try {
+      // 트랜잭션 생성
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: new PublicKey(wallet.address),
+          toPubkey: new PublicKey(recipientAddress),
+          lamports: amountSol * LAMPORTS_PER_SOL
+        })
+      );
+      
+      // 핵심 수정: recentBlockhash와 feePayer 수동 설정
+      console.log("🔧 recentBlockhash 가져오는 중...");
+      const { blockhash } = await connection.getLatestBlockhash("confirmed");
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = new PublicKey(wallet.address);
+      console.log("✅ recentBlockhash 설정 완료:", blockhash);
+      console.log("=== 디버깅 끝 ===");
+      
+      return transaction;
+    } catch (error) {
+      console.error("❌ 트랜잭션 생성 실패:", error);
+      return null;
+    }
   };
 
   // Privy 공식 문서 방식: 전송 핸들러
@@ -83,8 +98,8 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
     const amountNum = parseFloat(amount);
     
     try {
-      // SOL 전송 트랜잭션 생성
-      const transaction = createSolTransaction(recipient, amountNum);
+      // SOL 전송 트랜잭션 생성 (async 함수로 변경)
+      const transaction = await createSolTransaction(recipient, amountNum);
       
       if (!transaction) {
         throw new Error("Failed to create transaction");
