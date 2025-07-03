@@ -120,7 +120,11 @@ function App() {
           solana: {
             createOnLogin: 'users-without-wallets',
           },
-        }
+        },
+        solanaClusters: [{
+          name: 'mainnet-beta',
+          rpcUrl: `https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`
+        }]
       }}
     >
       <QueryClientProvider client={queryClient}>

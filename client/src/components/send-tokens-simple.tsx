@@ -26,8 +26,11 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
   const { sendTransaction } = useSendTransaction();
   const { wallets, ready } = useSolanaWallets();
   
-  // Privy 공식 문서 방식: Connection 생성 - 안정적인 무료 RPC 사용
-  const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+  // Privy 공식 문서 방식: Connection 생성 - Helius RPC 사용 (PrivyProvider와 동일)
+  const connection = new Connection(
+    `https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`,
+    'confirmed'
+  );
 
   // Privy 공식 문서 방식: SOL 전송 트랜잭션
   const createSolTransaction = (recipientAddress: string, amountSol: number) => {
