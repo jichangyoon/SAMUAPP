@@ -495,6 +495,9 @@ Changelog:
 - January 3, 2025. Added comprehensive polyfills for browser compatibility (Buffer, global) in main.tsx
 - January 3, 2025. Achieved successful SOL transfer with transaction signature: 3eKDreXjTvjcxQqx8WEFy7atSvXhkggfh9xAuB32UPfAnWGZ75whwEWe4GM8VkYDrB56kHofcVtYXA9RD6crbFM6
 - January 3, 2025. Completed functional blockchain transaction system - users can now send SAMU tokens and SOL to external wallets using actual Solana mainnet
+- January 3, 2025. Optimized token balance caching system - reduced cache time from 30s to 5s for faster balance updates
+- January 3, 2025. Implemented automatic cache invalidation after token transfers - balances now update immediately after sending tokens
+- January 3, 2025. Enhanced Send Tokens component with React Query integration for real-time balance synchronization
 
 ## CHECKPOINT - June 30, 2025
 ```

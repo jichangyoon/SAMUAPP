@@ -8,6 +8,7 @@ import { Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useSendTransaction, useSolanaWallets, useSignTransaction } from '@privy-io/react-auth/solana';
 import { usePrivy } from '@privy-io/react-auth';
+import { useQueryClient } from "@tanstack/react-query";
 import { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { createTransferInstruction, getAssociatedTokenAddress } from '@solana/spl-token';
 
@@ -24,6 +25,7 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
   const [amount, setAmount] = useState("");
   const [tokenType, setTokenType] = useState("SOL");
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
 
   const { signTransaction } = useSignTransaction();
@@ -111,6 +113,14 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
       });
       
       const signature = await connection.sendRawTransaction(signedTx.serialize());
+
+      // 즉시 밸런스 캐시 무효화 (토큰 전송 후 갱신)
+      await queryClient.invalidateQueries({
+        queryKey: ['samu-balance', walletAddress]
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['sol-balance', walletAddress]
+      });
 
       toast({
         title: "Success!",
