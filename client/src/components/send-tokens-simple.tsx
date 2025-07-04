@@ -69,7 +69,7 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
             senderATA,
             recipientATA,
             new PublicKey(wallet.address),
-            amount * Math.pow(10, 9) // SAMU has 9 decimals
+            amount * Math.pow(10, 8) // SAMU has 8 decimals
           )
         );
       }

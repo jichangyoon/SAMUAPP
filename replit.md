@@ -501,6 +501,7 @@ Changelog:
 - January 3, 2025. Implemented Optimistic Updates system for instant UI feedback - token balances update immediately upon transaction initiation
 - January 3, 2025. Added automatic rollback functionality for failed transactions - balances revert to original values if transfer fails
 - January 3, 2025. Created delayed validation system - actual blockchain balances re-verified after 30 seconds for accuracy assurance
+- January 3, 2025. Fixed SAMU token decimal precision bug - corrected from 9 to 8 decimals to prevent 10x transfer amount errors
 
 ## CHECKPOINT - June 30, 2025
 ```
