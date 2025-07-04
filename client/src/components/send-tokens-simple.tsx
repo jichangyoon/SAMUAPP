@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useSendTransaction, useSolanaWallets, useSignTransaction } from '@privy-io/react-auth/solana';
 import { usePrivy } from '@privy-io/react-auth';
 import { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { createTransferInstruction, getAssociatedTokenAddress } from '@solana/spl-token';
 
 interface SendTokensProps {
   walletAddress: string;
@@ -21,76 +22,74 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
   const [isOpen, setIsOpen] = useState(false);
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
+  const [tokenType, setTokenType] = useState("SOL");
   const { toast } = useToast();
-  const { user } = usePrivy();
-  const { sendTransaction } = useSendTransaction();
+
+
   const { signTransaction } = useSignTransaction();
   const { wallets, ready } = useSolanaWallets();
   
-  // Privy 공식 문서 방식: Connection 생성 - Helius RPC 사용 (PrivyProvider와 동일)
+  // Helius RPC 연결 (PrivyProvider와 동일)
   const connection = new Connection(
     `https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`,
     'confirmed'
   );
 
-  // Privy 공식 문서 방식 + recentBlockhash 수동 설정: SOL 전송 트랜잭션
-  const createSolTransaction = async (recipientAddress: string, amountSol: number) => {
-    console.log("=== 디버깅 시작 ===");
-    console.log("ready 상태:", ready);
-    console.log("wallets 배열:", wallets);
-    console.log("wallets 개수:", wallets.length);
-    console.log("찾고 있는 walletAddress:", walletAddress);
+  // SAMU 토큰 정보
+  const SAMU_MINT = new PublicKey("EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF");
+
+  // 최적화된 트랜잭션 생성 (SOL 및 SAMU 토큰 지원)
+  const createTransaction = async (recipientAddress: string, amount: number, type: string) => {
+    if (!ready) return null;
     
-    // Privy 공식 문서: ready가 true일 때만 실행
-    if (!ready) {
-      console.log("❌ wallets가 아직 준비되지 않음 (ready: false)");
-      return null;
-    }
-    
-    // Privy 공식 문서 방식: wallet 객체에서 publicKey 사용  
     const wallet = wallets.find(w => w.address === walletAddress);
-    console.log("찾은 wallet:", wallet);
-    
-    if (!wallet) {
-      console.log("❌ wallet을 찾을 수 없음");
-      return null;
-    }
-    
-    console.log("✅ wallet 찾음, 트랜잭션 생성");
+    if (!wallet) return null;
     
     try {
-      // 트랜잭션 생성
-      const transaction = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey: new PublicKey(wallet.address),
-          toPubkey: new PublicKey(recipientAddress),
-          lamports: amountSol * LAMPORTS_PER_SOL
-        })
-      );
+      let transaction: Transaction;
       
-      // 핵심 수정: recentBlockhash와 feePayer 수동 설정
-      console.log("🔧 recentBlockhash 가져오는 중...");
+      if (type === "SOL") {
+        // SOL 전송
+        transaction = new Transaction().add(
+          SystemProgram.transfer({
+            fromPubkey: new PublicKey(wallet.address),
+            toPubkey: new PublicKey(recipientAddress),
+            lamports: amount * LAMPORTS_PER_SOL
+          })
+        );
+      } else {
+        // SAMU 토큰 전송
+        const senderATA = await getAssociatedTokenAddress(SAMU_MINT, new PublicKey(wallet.address));
+        const recipientATA = await getAssociatedTokenAddress(SAMU_MINT, new PublicKey(recipientAddress));
+        
+        transaction = new Transaction().add(
+          createTransferInstruction(
+            senderATA,
+            recipientATA,
+            new PublicKey(wallet.address),
+            amount * Math.pow(10, 9) // SAMU has 9 decimals
+          )
+        );
+      }
+      
+      // 핵심: recentBlockhash와 feePayer 수동 설정 (Privy 문서 오류 우회)
       const { blockhash } = await connection.getLatestBlockhash("confirmed");
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = new PublicKey(wallet.address);
-      console.log("✅ recentBlockhash 설정 완료:", blockhash);
-      console.log("=== 디버깅 끝 ===");
       
       return transaction;
     } catch (error) {
-      console.error("❌ 트랜잭션 생성 실패:", error);
+      console.error("Transaction creation failed:", error);
       return null;
     }
   };
 
-  // Privy 공식 문서 방식: 전송 핸들러
+  // 최적화된 전송 핸들러
   const handleSend = async () => {
-    console.log("Debug values:", { walletAddress, recipient, amount, user: !!user });
-    
     if (!walletAddress || !recipient || !amount) {
       toast({
         title: "Error",
-        description: `Missing: ${!walletAddress ? 'wallet ' : ''}${!recipient ? 'recipient ' : ''}${!amount ? 'amount' : ''}`,
+        description: "Please fill in all fields",
         variant: "destructive"
       });
       return;
@@ -99,38 +98,30 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
     const amountNum = parseFloat(amount);
     
     try {
-      // SOL 전송 트랜잭션 생성 (async 함수로 변경)
-      const transaction = await createSolTransaction(recipient, amountNum);
+      const transaction = await createTransaction(recipient, amountNum, tokenType);
       
       if (!transaction) {
         throw new Error("Failed to create transaction");
       }
 
-      // 개선된 방식: signTransaction 후 직접 전송으로 TextDecoder 문제 우회
-      console.log("🔧 트랜잭션 서명 중...");
+      // signTransaction + sendRawTransaction 방식 (TextDecoder 문제 우회)
       const signedTx = await signTransaction({
         transaction,
         connection
       });
       
-      console.log("✅ 트랜잭션 서명 완료");
-      console.log("🚀 트랜잭션 전송 중...");
-      
-      // 서명된 트랜잭션을 직접 전송
       const signature = await connection.sendRawTransaction(signedTx.serialize());
-      console.log("✅ 트랜잭션 전송 완료:", signature);
 
       toast({
         title: "Success!",
-        description: `Sent ${amountNum} SOL`,
-        duration: 3000
+        description: `Sent ${amountNum} ${tokenType}`,
+        duration: 2000
       });
       
       setRecipient("");
       setAmount("");
       setIsOpen(false);
     } catch (error: any) {
-      console.error("Transaction error:", error);
       toast({
         title: "Transaction Failed",
         description: error.message || "Unknown error occurred",
@@ -153,6 +144,19 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
         </DrawerHeader>
         <div className="p-6 space-y-4">
           <div className="space-y-2">
+            <Label htmlFor="tokenType" className="text-gray-300">Token Type</Label>
+            <Select value={tokenType} onValueChange={setTokenType}>
+              <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-900 border-gray-700">
+                <SelectItem value="SOL" className="text-white">SOL</SelectItem>
+                <SelectItem value="SAMU" className="text-white">SAMU</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="recipient" className="text-gray-300">Recipient Address</Label>
             <Input
               id="recipient"
@@ -168,13 +172,15 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
             <Input
               id="amount"
               type="number"
-              step="0.001"
-              placeholder="0.01"
+              step={tokenType === "SOL" ? "0.001" : "1"}
+              placeholder={tokenType === "SOL" ? "0.01" : "100"}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               className="bg-gray-900 border-gray-700 text-white"
             />
-            <p className="text-sm text-gray-400">Available: {solBalance.toFixed(4)} SOL</p>
+            <p className="text-sm text-gray-400">
+              Available: {tokenType === "SOL" ? `${solBalance.toFixed(4)} SOL` : `${samuBalance.toLocaleString()} SAMU`}
+            </p>
           </div>
 
           <div className="flex gap-3 pt-4">
@@ -182,7 +188,7 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
               onClick={handleSend}
               className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-black font-medium"
             >
-              Send SOL
+              Send {tokenType}
             </Button>
             <Button 
               variant="outline" 

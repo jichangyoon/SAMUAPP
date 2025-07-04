@@ -116,7 +116,6 @@ function App() {
         loginMethods: ['email'],
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
-          noPromptOnMfaRequired: false,
           solana: {
             createOnLogin: 'users-without-wallets',
           },
