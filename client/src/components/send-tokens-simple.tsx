@@ -99,7 +99,24 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
 
     const amountNum = parseFloat(amount);
     
+    // 1. 현재 잔액 가져오기 (Optimistic Update 준비)
+    const currentSamuBalance = queryClient.getQueryData(['samu-balance', walletAddress]) as { balance: number } | undefined;
+    const currentSolBalance = queryClient.getQueryData(['sol-balance', walletAddress]) as { balance: number } | undefined;
+    
     try {
+      // 2. Optimistic Update: 전송 금액 즉시 차감
+      if (tokenType === 'SAMU' && currentSamuBalance) {
+        const optimisticBalance = Math.max(0, currentSamuBalance.balance - amountNum);
+        queryClient.setQueryData(['samu-balance', walletAddress], {
+          balance: optimisticBalance
+        });
+      } else if (tokenType === 'SOL' && currentSolBalance) {
+        const optimisticBalance = Math.max(0, currentSolBalance.balance - amountNum);
+        queryClient.setQueryData(['sol-balance', walletAddress], {
+          balance: optimisticBalance
+        });
+      }
+
       const transaction = await createTransaction(recipient, amountNum, tokenType);
       
       if (!transaction) {
@@ -114,13 +131,15 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
       
       const signature = await connection.sendRawTransaction(signedTx.serialize());
 
-      // 즉시 밸런스 캐시 무효화 (토큰 전송 후 갱신)
-      await queryClient.invalidateQueries({
-        queryKey: ['samu-balance', walletAddress]
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ['sol-balance', walletAddress]
-      });
+      // 3. 성공 시: 30초 후 실제 잔액 재확인
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: ['samu-balance', walletAddress]
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['sol-balance', walletAddress]
+        });
+      }, 30000);
 
       toast({
         title: "Success!",
@@ -132,6 +151,17 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
       setAmount("");
       setIsOpen(false);
     } catch (error: any) {
+      // 4. 실패 시 Rollback: 원래 잔액으로 복원
+      if (tokenType === 'SAMU' && currentSamuBalance) {
+        queryClient.setQueryData(['samu-balance', walletAddress], {
+          balance: currentSamuBalance.balance
+        });
+      } else if (tokenType === 'SOL' && currentSolBalance) {
+        queryClient.setQueryData(['sol-balance', walletAddress], {
+          balance: currentSolBalance.balance
+        });
+      }
+      
       toast({
         title: "Transaction Failed",
         description: error.message || "Unknown error occurred",
