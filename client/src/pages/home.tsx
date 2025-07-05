@@ -13,6 +13,7 @@ import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { usePrivy } from '@privy-io/react-auth';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { getSamuTokenBalance, getSolBalance } from "@/lib/solana";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -593,7 +594,7 @@ export default function Home() {
                         <p className="text-muted-foreground">Loading contests...</p>
                       </CardContent>
                     </Card>
-                  ) : archivedContests.length === 0 ? (
+                  ) : (archivedContests as any)?.length === 0 ? (
                     <Card className="border-border/50">
                       <CardContent className="p-8 text-center">
                         <Archive className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
@@ -602,7 +603,7 @@ export default function Home() {
                       </CardContent>
                     </Card>
                   ) : (
-                    archivedContests.map((contest: any) => (
+                    (archivedContests as any).map((contest: any) => (
                       <button
                         key={contest.id}
                         onClick={async () => {

@@ -17,7 +17,7 @@ export const WalletConnect = memo(function WalletConnect() {
   const selectedWalletAccount = walletAccounts[0]; // 첫 번째 (그리고 유일한) Solana 지갑
 
   const isConnected = authenticated && !!selectedWalletAccount;
-  const walletAddress = selectedWalletAccount?.address || '';
+  const walletAddress = (selectedWalletAccount as any)?.address || '';
   const isSolana = true; // 항상 Solana
 
   // 지갑 연결 안정성을 위한 에러 바운더리
