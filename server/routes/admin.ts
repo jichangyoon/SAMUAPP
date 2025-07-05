@@ -116,11 +116,19 @@ router.post("/contests/:id/end", async (req, res) => {
   }
 });
 
-// Get current active contest info
+// Get current contest info (active or most recent)
 router.get("/current-contest", async (req, res) => {
   try {
-    const activeContest = await storage.getCurrentActiveContest();
-    res.json(activeContest);
+    // First try to get active contest
+    let contest = await storage.getCurrentActiveContest();
+    
+    // If no active contest, get the most recent contest
+    if (!contest) {
+      const allContests = await storage.getContests();
+      contest = allContests.sort((a, b) => b.id - a.id)[0] || null;
+    }
+    
+    res.json(contest);
   } catch (error) {
     console.error("Error fetching current contest:", error);
     res.status(500).json({ error: "Failed to fetch current contest" });
