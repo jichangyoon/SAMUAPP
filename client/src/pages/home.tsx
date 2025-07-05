@@ -385,7 +385,7 @@ export default function Home() {
                   <ContestHeader />
 
                   {/* Submit Button - Only show when logged in AND there's an active contest */}
-                  {isConnected && currentContest ? (
+                  {isConnected && currentContest?.status === "active" ? (
                     <div className="flex justify-center">
                       <Button 
                         onClick={() => setShowUploadForm(true)}
@@ -395,12 +395,14 @@ export default function Home() {
                         Submit Meme
                       </Button>
                     </div>
-                  ) : isConnected && !currentContest ? (
+                  ) : isConnected && currentContest?.status !== "active" ? (
                     <div className="flex justify-center">
                       <Card className="bg-amber-500/10 border-amber-500/20">
                         <CardContent className="p-4 text-center">
                           <p className="text-amber-600 dark:text-amber-400 text-sm">
-                            No active contest at the moment. Check back later!
+                            {currentContest?.status === "ended" || currentContest?.status === "archived" 
+                              ? "Contest has ended. Check back for the next contest!" 
+                              : "No active contest at the moment. Check back later!"}
                           </p>
                         </CardContent>
                       </Card>

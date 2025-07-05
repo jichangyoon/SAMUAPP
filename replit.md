@@ -510,6 +510,7 @@ Changelog:
 - January 6, 2025. Completed comprehensive performance optimization - removed react-icons package, optimized React Query cache settings (30s stale time, 2min gc time)
 - January 6, 2025. Fixed all remaining TypeScript LSP errors - resolved wallet-connect address type issues, home.tsx function imports, and archived contests typing
 - January 6, 2025. Achieved production-ready token transfer system - verified SAMU/SOL transfer functionality with optimistic updates and automatic rollback
+- January 6, 2025. Fixed contest termination bug - Submit button now hidden when contest ends, proper "Ended" status display, immediate UI updates when admin manually ends contest
 
 ## CHECKPOINT - June 30, 2025
 ```
