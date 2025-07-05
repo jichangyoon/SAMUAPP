@@ -76,14 +76,14 @@ export function ContestHeader() {
   return (
     <Card className="border-border bg-card">
       <CardContent className="p-4">
-        <div className="flex items-center gap-3 mb-3">
-          <h1 className="text-xl font-bold text-primary flex items-center flex-shrink-0">
-            <Trophy className="h-5 w-5 mr-2" />
-            SAMU Meme Contest
+        <div className="flex items-center justify-between mb-3">
+          <h1 className="text-lg font-bold text-primary flex items-center min-w-0 flex-1">
+            <Trophy className="h-5 w-5 mr-2 flex-shrink-0" />
+            <span className="truncate">SAMU Meme Contest</span>
           </h1>
           <Badge className={`${contestData.status === "Live" ? "bg-green-500/20 text-green-400" : 
                             contestData.status === "Not Started" ? "bg-yellow-500/20 text-yellow-400" : 
-                            "bg-red-500/20 text-red-400"} flex-shrink-0`}>
+                            "bg-red-500/20 text-red-400"} flex-shrink-0 ml-2`}>
             {contestData.status}
           </Badge>
         </div>
