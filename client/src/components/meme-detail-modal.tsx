@@ -80,11 +80,9 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
           <DrawerTitle className="text-xl font-bold text-white">
             {meme.title}
           </DrawerTitle>
-          {meme.description && (
-            <DrawerDescription className="text-gray-400">
-              {meme.description}
-            </DrawerDescription>
-          )}
+          <DrawerDescription className="text-gray-400">
+            {meme.description || "Check out this meme"}
+          </DrawerDescription>
         </DrawerHeader>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-6">

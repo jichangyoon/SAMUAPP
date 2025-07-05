@@ -30,7 +30,7 @@ export function ContestAdmin() {
       toast({ title: "New contest created successfully" });
     },
     onError: (error) => {
-      console.error("Create contest error:", error);
+      // Silent error handling for production
       toast({ title: "Failed to create contest", variant: "destructive" });
     },
   });
@@ -46,7 +46,7 @@ export function ContestAdmin() {
       toast({ title: "Contest started successfully" });
     },
     onError: (error) => {
-      console.error("Start contest error:", error);
+      // Silent error handling for production
       toast({ title: "Failed to start contest", variant: "destructive" });
     },
   });

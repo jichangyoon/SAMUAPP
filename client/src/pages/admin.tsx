@@ -45,7 +45,7 @@ export function Admin() {
       toast({ title: "Contest created successfully" });
     },
     onError: (error) => {
-      console.error("Create contest error:", error);
+      // Silent error handling for production
       toast({ title: "Failed to create contest", variant: "destructive" });
     },
   });
@@ -60,7 +60,7 @@ export function Admin() {
       toast({ title: "Contest started successfully" });
     },
     onError: (error) => {
-      console.error("Start contest error:", error);
+      // Silent error handling for production
       toast({ title: "Failed to start contest", variant: "destructive" });
     },
   });
@@ -76,7 +76,7 @@ export function Admin() {
       toast({ title: "Contest ended and archived successfully" });
     },
     onError: (error) => {
-      console.error("End contest error:", error);
+      // Silent error handling for production
       toast({ title: "Failed to end contest", variant: "destructive" });
     },
   });

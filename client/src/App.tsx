@@ -18,7 +18,7 @@ import { SplashScreen } from "@/components/splash-screen";
 window.addEventListener('error', (event) => {
   const target = event.target as HTMLElement;
   if (event.message?.includes('Privy iframe') || target?.tagName === 'IFRAME') {
-    console.warn('Privy iframe error handled:', event.message);
+    // Silent error handling for production
     event.preventDefault();
     return false;
   }
@@ -27,7 +27,7 @@ window.addEventListener('error', (event) => {
 // Handle unhandled promise rejections
 window.addEventListener('unhandledrejection', (event) => {
   if (event.reason?.message?.includes('Privy') || event.reason?.message?.includes('iframe')) {
-    console.warn('Privy promise rejection handled:', event.reason);
+    // Silent error handling for production
     event.preventDefault();
   }
 });

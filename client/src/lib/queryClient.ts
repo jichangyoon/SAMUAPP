@@ -49,7 +49,7 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       staleTime: 30 * 1000, // 30초 캐시 (더 빠른 업데이트)
       gcTime: 2 * 60 * 1000, // 2분 가비지 컬렉션 (메모리 절약)
-      refetchOnReconnect: 'always',
+      refetchOnReconnect: false,
       networkMode: 'online',
       retry: (failureCount, error) => {
         // 네트워크 오류만 재시도, 최대 2회
