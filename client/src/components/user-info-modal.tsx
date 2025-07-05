@@ -58,6 +58,8 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
     <Drawer open={isOpen} onOpenChange={onClose}>
       <DrawerContent className="h-[92vh] bg-black text-white border-gray-800">
         <DrawerHeader className="border-b border-gray-800 pb-4">
+          <DrawerTitle className="sr-only">User Profile</DrawerTitle>
+          <DrawerDescription className="sr-only">View user profile information, statistics, and memes</DrawerDescription>
           <div className="flex items-center gap-4">
             <button 
               onClick={() => userProfile?.avatarUrl && setShowAvatarModal(true)}
@@ -222,6 +224,7 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
       <Drawer open={showAvatarModal} onOpenChange={setShowAvatarModal}>
         <DrawerContent className="h-[92vh] bg-black text-white border-gray-800">
           <DrawerHeader className="border-b border-gray-800 pb-4">
+            <DrawerDescription className="sr-only">Full size profile picture view</DrawerDescription>
             <div className="flex items-center justify-between">
               <DrawerTitle className="text-xl font-bold text-white">
                 Profile Picture
