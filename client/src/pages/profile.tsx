@@ -139,7 +139,7 @@ const Profile = React.memo(() => {
       try {
         return JSON.parse(stored);
       } catch (error) {
-        console.error('Failed to parse stored profile:', error);
+
       }
     }
     return { displayName: '', profileImage: '' };
@@ -216,7 +216,7 @@ const Profile = React.memo(() => {
     if (userProfile) {
       setDisplayName(userProfile.displayName || user?.email?.address?.split('@')[0] || 'User');
       setProfileImage(userProfile.avatarUrl || '');
-      // console.log('Profile loaded from database:', { displayName: userProfile.displayName, avatarUrl: userProfile.avatarUrl });
+
     } else {
       setDisplayName(user?.email?.address?.split('@')[0] || 'User');
       setProfileImage('');
@@ -426,7 +426,7 @@ const Profile = React.memo(() => {
         throw new Error(error.message || 'Failed to delete meme');
       }
     } catch (error) {
-      console.error('Delete error:', error);
+
       toast({
         title: "Delete Failed",
         description: error instanceof Error ? error.message : "Failed to delete meme. Please try again.",

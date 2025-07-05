@@ -37,7 +37,7 @@ export const WalletConnect = memo(function WalletConnect() {
           const data = await response.json();
           setIsAdmin(data.isAdmin);
         } catch (error) {
-          console.error('Failed to check admin status:', error);
+
           setIsAdmin(false);
         }
       } else {

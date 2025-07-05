@@ -81,8 +81,7 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
       
       return transaction;
     } catch (error) {
-      console.error("Transaction creation failed:", error);
-      return null;
+        return null;
     }
   };
 

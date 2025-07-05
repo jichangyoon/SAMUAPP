@@ -81,12 +81,6 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
   };
 
   const uploadFile = async (file: File): Promise<string> => {
-    console.log('Starting file upload:', {
-      name: file.name,
-      size: file.size,
-      type: file.type
-    });
-
     const formData = new FormData();
     formData.append('file', file);
 
@@ -95,30 +89,20 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
     try {
-      console.log('Sending upload request to /api/uploads/upload');
-
       const response = await fetch('/api/uploads/upload', {
         method: 'POST',
         body: formData,
         signal: controller.signal,
-        // Remove all custom headers for FormData
       });
 
       clearTimeout(timeoutId);
-      console.log('Upload response received:', {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok
-      });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Upload failed:', response.status, errorText);
         throw new Error(`Upload failed: ${response.status} ${errorText}`);
       }
 
       const result = await response.json();
-      console.log('Upload result:', result);
   
       if (!result.fileUrl) {
         throw new Error('No file URL received from server');
@@ -127,7 +111,6 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       return result.fileUrl; // R2 URL is returned directly
     } catch (error: any) {
       clearTimeout(timeoutId);
-      console.error('Upload error:', error);
       
       if (error.name === 'AbortError') {
         throw new Error('Upload timeout - file may be too large or connection too slow');
@@ -192,7 +175,7 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       onSuccess();
       onClose?.();
     } catch (error: any) {
-      console.error('Submit error:', error);
+
       toast({
         title: "Upload Failed",
         description: error.message || "Failed to submit meme. Please try again.",

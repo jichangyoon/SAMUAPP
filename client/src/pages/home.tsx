@@ -105,7 +105,7 @@ export default function Home() {
         displayName: userProfile.displayName || user?.email?.address?.split('@')[0] || 'User',
         profileImage: userProfile.avatarUrl || ''
       });
-      // console.log('Header profile loaded from database:', { displayName: userProfile.displayName, avatarUrl: userProfile.avatarUrl });
+
     } else if (authenticated) {
       setProfileData({
         displayName: user?.email?.address?.split('@')[0] || 'User',
@@ -647,7 +647,7 @@ export default function Home() {
                             });
                             setArchiveView('contest');
                           } catch (error) {
-                            console.error('Failed to load contest memes:', error);
+
                             toast({
                               title: "Error loading contest data",
                               description: "Please try again later",
