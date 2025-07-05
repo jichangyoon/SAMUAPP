@@ -579,13 +579,13 @@ const Profile = React.memo(() => {
                   </div>
                 )}
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-1 shrink-0">
                 {isEditing ? (
                   <>
                     <Button
                       onClick={handleSaveProfile}
                       size="sm"
-                      className="bg-green-600 hover:bg-green-700 text-xs"
+                      className="bg-green-600 hover:bg-green-700 text-xs px-2 h-7"
                       disabled={isSaving}
                     >
                       {isSaving ? (
@@ -604,7 +604,7 @@ const Profile = React.memo(() => {
                       onClick={handleCancelEdit} 
                       variant="outline" 
                       size="sm" 
-                      className="text-xs"
+                      className="text-xs px-2 h-7"
                       disabled={isSaving}
                     >
                       Cancel
@@ -615,7 +615,7 @@ const Profile = React.memo(() => {
                     onClick={() => setIsEditing(true)}
                     variant="outline"
                     size="sm"
-                    className="text-xs"
+                    className="text-xs px-2 h-7 min-w-0"
                     disabled={!user || isSaving}
                   >
                     <Settings className="h-3 w-3 mr-1" />
