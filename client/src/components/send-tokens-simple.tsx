@@ -173,14 +173,14 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
-        <Button className="w-full bg-yellow-600 hover:bg-yellow-700 text-black font-medium">
+        <Button className="w-full bg-[hsl(50,85%,75%)] hover:bg-[hsl(50,85%,70%)] text-black font-medium">
           <Send className="w-4 h-4 mr-2" />
           Send Tokens
         </Button>
       </DrawerTrigger>
       <DrawerContent className="bg-black border-gray-800">
         <DrawerHeader>
-          <DrawerTitle className="text-yellow-400">Send Tokens</DrawerTitle>
+          <DrawerTitle className="text-[hsl(50,85%,75%)]">Send Tokens</DrawerTitle>
         </DrawerHeader>
         <div className="p-6 space-y-4">
           <div className="space-y-2">
@@ -226,7 +226,7 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
           <div className="flex gap-3 pt-4">
             <Button 
               onClick={handleSend}
-              className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-black font-medium"
+              className="flex-1 bg-[hsl(50,85%,75%)] hover:bg-[hsl(50,85%,70%)] text-black font-medium"
             >
               Send {tokenType}
             </Button>
