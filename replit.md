@@ -512,6 +512,7 @@ Changelog:
 - January 6, 2025. Achieved production-ready token transfer system - verified SAMU/SOL transfer functionality with optimistic updates and automatic rollback
 - January 6, 2025. Fixed contest termination bug - Submit button now hidden when contest ends, proper "Ended" status display, immediate UI updates when admin manually ends contest
 - January 6, 2025. Completed comprehensive UI optimization - fixed accessibility warnings with DrawerDescription, optimized contest header layout to prevent text wrapping, enhanced production code quality
+- January 6, 2025. Replaced splash screen with custom mobile-optimized full-screen image - switched from logo/text/animation to single branded splash image for better mobile app experience
 
 ## CHECKPOINT - June 30, 2025
 ```
