@@ -31,16 +31,16 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
   const { signTransaction } = useSignTransaction();
   const { wallets, ready } = useSolanaWallets();
   
-  // Helius RPC 연결 (PrivyProvider와 동일)
+  // Helius RPC connection (same as PrivyProvider)
   const connection = new Connection(
     `https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`,
     'confirmed'
   );
 
-  // SAMU 토큰 정보
+  // SAMU token configuration
   const SAMU_MINT = new PublicKey("EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF");
 
-  // 최적화된 트랜잭션 생성 (SOL 및 SAMU 토큰 지원)
+  // Optimized transaction creation (SOL and SAMU token support)
   const createTransaction = async (recipientAddress: string, amount: number, type: string) => {
     if (!ready) return null;
     
@@ -60,7 +60,7 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
           })
         );
       } else {
-        // SAMU 토큰 전송
+        // SAMU token transfer
         const senderATA = await getAssociatedTokenAddress(SAMU_MINT, new PublicKey(wallet.address));
         const recipientATA = await getAssociatedTokenAddress(SAMU_MINT, new PublicKey(recipientAddress));
         
@@ -74,7 +74,7 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
         );
       }
       
-      // 핵심: recentBlockhash와 feePayer 수동 설정 (Privy 문서 오류 우회)
+      // Critical: Manual recentBlockhash and feePayer setup (Privy docs workaround)
       const { blockhash } = await connection.getLatestBlockhash("confirmed");
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = new PublicKey(wallet.address);
@@ -86,7 +86,7 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
     }
   };
 
-  // 최적화된 전송 핸들러
+  // Optimized transfer handler
   const handleSend = async () => {
     if (!walletAddress || !recipient || !amount) {
       toast({
@@ -99,12 +99,12 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
 
     const amountNum = parseFloat(amount);
     
-    // 1. 현재 잔액 가져오기 (Optimistic Update 준비)
+    // 1. Get current balance (prepare for Optimistic Update)
     const currentSamuBalance = queryClient.getQueryData(['samu-balance', walletAddress]) as { balance: number } | undefined;
     const currentSolBalance = queryClient.getQueryData(['sol-balance', walletAddress]) as { balance: number } | undefined;
     
     try {
-      // 2. Optimistic Update: 전송 금액 즉시 차감
+      // 2. Optimistic Update: Immediately deduct transfer amount
       if (tokenType === 'SAMU' && currentSamuBalance) {
         const optimisticBalance = Math.max(0, currentSamuBalance.balance - amountNum);
         queryClient.setQueryData(['samu-balance', walletAddress], {
@@ -123,7 +123,7 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
         throw new Error("Failed to create transaction");
       }
 
-      // signTransaction + sendRawTransaction 방식 (TextDecoder 문제 우회)
+      // signTransaction + sendRawTransaction approach (TextDecoder issue workaround)
       const signedTx = await signTransaction({
         transaction,
         connection
@@ -131,7 +131,7 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
       
       const signature = await connection.sendRawTransaction(signedTx.serialize());
 
-      // 3. 성공 시: 30초 후 실제 잔액 재확인
+      // 3. On success: Re-verify actual balance after 30 seconds
       setTimeout(() => {
         queryClient.invalidateQueries({
           queryKey: ['samu-balance', walletAddress]
@@ -151,7 +151,7 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
       setAmount("");
       setIsOpen(false);
     } catch (error: any) {
-      // 4. 실패 시 Rollback: 원래 잔액으로 복원
+      // 4. On failure: Rollback to original balance
       if (tokenType === 'SAMU' && currentSamuBalance) {
         queryClient.setQueryData(['samu-balance', walletAddress], {
           balance: currentSamuBalance.balance

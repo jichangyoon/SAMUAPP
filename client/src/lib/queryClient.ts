@@ -63,8 +63,7 @@ export const queryClient = new QueryClient({
       retry: 0,
       networkMode: 'online',
       onError: (error) => {
-        // 전역 에러 처리 (필요시 토스트 표시)
-        console.error('Mutation error:', error);
+        // Silent error handling for production
       },
       gcTime: 5 * 60 * 1000,
     },

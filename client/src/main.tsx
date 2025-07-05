@@ -13,13 +13,12 @@ if (typeof window !== 'undefined') {
   (window as any).Buffer = Buffer;
 }
 
-// 메모리 효율적인 전역 오류 핸들러
+// Global error handlers for wallet and network issues
 const IGNORED_PATTERNS = ['Privy', 'iframe', 'wallet', 'fetch', 'Failed to fetch'];
 
 const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
   const reason = event.reason?.message || '';
   if (IGNORED_PATTERNS.some(pattern => reason.includes(pattern))) {
-    console.warn('지갑 관련 Promise rejection 차단됨');
     event.preventDefault();
   }
 };
@@ -27,7 +26,6 @@ const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
 const handleError = (event: ErrorEvent) => {
   const message = event.error?.message || '';
   if (IGNORED_PATTERNS.some(pattern => message.includes(pattern))) {
-    console.warn('네트워크/지갑 오류 차단됨');
     event.preventDefault();
   }
 };
