@@ -62,24 +62,12 @@ export function NftDetailModal({ selectedNft, isOpen, onClose }: NftDetailModalP
   // Get current user's profile for comment submission
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile', walletAddress],
-    queryFn: async () => {
-      if (!walletAddress) return null;
-      const res = await fetch(`/api/users/profile/${walletAddress}`);
-      if (!res.ok) throw new Error('Failed to fetch user profile');
-      return res.json();
-    },
     enabled: !!walletAddress,
   });
 
   // Fetch comments for selected NFT
   const { data: comments = [] } = useQuery<CommentWithProfile[]>({
     queryKey: ['/api/nfts', selectedNft?.id, 'comments'],
-    queryFn: async () => {
-      if (!selectedNft) return [];
-      const response = await fetch(`/api/nfts/${selectedNft.id}/comments`);
-      if (!response.ok) throw new Error('Failed to fetch comments');
-      return response.json();
-    },
     enabled: !!selectedNft,
   });
 
