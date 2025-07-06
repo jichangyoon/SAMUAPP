@@ -79,4 +79,32 @@ router.post("/:id/comments", async (req, res) => {
   }
 });
 
+// Delete a comment
+router.delete("/comments/:commentId", async (req, res) => {
+  try {
+    const commentId = parseInt(req.params.commentId);
+    const { userWallet } = req.body;
+    
+    if (!userWallet) {
+      return res.status(400).json({ error: "User wallet address is required" });
+    }
+    
+    // Get the comment to verify ownership
+    const comment = await storage.getNftCommentById(commentId);
+    if (!comment) {
+      return res.status(404).json({ error: "Comment not found" });
+    }
+    
+    // Check if the user owns this comment
+    if (comment.userWallet !== userWallet) {
+      return res.status(403).json({ error: "You can only delete your own comments" });
+    }
+    
+    await storage.deleteNftComment(commentId);
+    res.json({ message: "Comment deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to delete comment" });
+  }
+});
+
 export default router;

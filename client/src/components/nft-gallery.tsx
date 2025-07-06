@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Send, Image as ImageIcon, ExternalLink } from "lucide-react";
+import { MessageCircle, Send, Image as ImageIcon, ExternalLink, Trash2 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { UserInfoModal } from "@/components/user-info-modal";
@@ -128,6 +128,25 @@ export function NftGallery() {
     setSelectedUserWallet(userWallet);
     setShowUserModal(true);
   };
+
+  // Delete comment mutation
+  const deleteCommentMutation = useMutation({
+    mutationFn: async (commentId: number) => {
+      return apiRequest('DELETE', `/api/nfts/comments/${commentId}`, {
+        userWallet: walletAddress
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
+      if (walletAddress) {
+        queryClient.invalidateQueries({ queryKey: ['user-nft-comments', walletAddress] });
+      }
+      toast({ title: "Comment deleted successfully!", duration: 1200 });
+    },
+    onError: () => {
+      toast({ title: "Failed to delete comment", variant: "destructive" });
+    }
+  });
 
 
 
@@ -302,35 +321,50 @@ export function NftGallery() {
                       const commentWithProfile = comment as CommentWithProfile;
                       return (
                         <div key={comment.id} className="bg-muted/50 rounded-lg p-3">
-                          <div className="flex items-center gap-2 mb-1">
-                            <div 
-                              className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity bg-transparent p-1 rounded"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleUserClick(comment.userWallet);
-                              }}
-                            >
-                              {commentWithProfile.userProfile?.avatarUrl ? (
-                                <img 
-                                  src={commentWithProfile.userProfile.avatarUrl} 
-                                  alt={commentWithProfile.userProfile.displayName || 'User'}
-                                  className="w-6 h-6 rounded-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                                  <span className="text-xs font-bold text-primary-foreground">
-                                    {(commentWithProfile.userProfile?.displayName || comment.username || 'U').charAt(0).toUpperCase()}
-                                  </span>
-                                </div>
-                              )}
-                              <span className="text-sm font-medium text-foreground hover:text-primary">
-                                {commentWithProfile.userProfile?.displayName || 'Anonymous'}
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity bg-transparent p-1 rounded"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleUserClick(comment.userWallet);
+                                }}
+                              >
+                                {commentWithProfile.userProfile?.avatarUrl ? (
+                                  <img 
+                                    src={commentWithProfile.userProfile.avatarUrl} 
+                                    alt={commentWithProfile.userProfile.displayName || 'User'}
+                                    className="w-6 h-6 rounded-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                                    <span className="text-xs font-bold text-primary-foreground">
+                                      {(commentWithProfile.userProfile?.displayName || comment.username || 'U').charAt(0).toUpperCase()}
+                                    </span>
+                                  </div>
+                                )}
+                                <span className="text-sm font-medium text-foreground hover:text-primary">
+                                  {commentWithProfile.userProfile?.displayName || 'Anonymous'}
+                                </span>
+                              </div>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(comment.createdAt).toLocaleDateString()}
                               </span>
                             </div>
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(comment.createdAt).toLocaleDateString()}
-                            </span>
+                            
+                            {/* Delete button - only show for comment author */}
+                            {authenticated && walletAddress === comment.userWallet && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteCommentMutation.mutate(comment.id)}
+                                disabled={deleteCommentMutation.isPending}
+                                className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            )}
                           </div>
                           <p className="text-sm text-muted-foreground pl-8">{comment.comment}</p>
                         </div>
