@@ -31,12 +31,27 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Get comments for an NFT
+// Get comments for an NFT with user profile info
 router.get("/:id/comments", async (req, res) => {
   try {
     const nftId = parseInt(req.params.id);
     const comments = await storage.getNftComments(nftId);
-    res.json(comments);
+    
+    // Get user profile info for each comment
+    const commentsWithProfiles = await Promise.all(
+      comments.map(async (comment) => {
+        const user = await storage.getUserByWallet(comment.userWallet);
+        return {
+          ...comment,
+          userProfile: user ? {
+            displayName: user.displayName,
+            avatarUrl: user.avatarUrl
+          } : null
+        };
+      })
+    );
+    
+    res.json(commentsWithProfiles);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch comments" });
   }

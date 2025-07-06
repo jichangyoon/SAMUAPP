@@ -884,7 +884,7 @@ export class DatabaseStorage implements IStorage {
       secondMemeId,
       thirdMemeId,
       prizePool: contest.prizePool,
-      startTime: contest.startTime || contest.createdAt,
+      startTime: contest.startTime || contest.createdAt || new Date(),
       endTime: new Date(),
     };
 

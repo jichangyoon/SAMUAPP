@@ -39,8 +39,22 @@ export function NftGallery() {
   const nfts = SAMU_NFTS;
   const isLoading = false;
 
+  // Extended comment type with user profile info
+  type CommentWithProfile = {
+    id: number;
+    nftId: number;
+    userWallet: string;
+    username: string;
+    comment: string;
+    createdAt: Date;
+    userProfile?: {
+      displayName?: string;
+      avatarUrl?: string;
+    } | null;
+  };
+
   // Fetch comments for selected NFT
-  const { data: comments = [] } = useQuery<NftComment[]>({
+  const { data: comments = [] } = useQuery<CommentWithProfile[]>({
     queryKey: ['/api/nfts', selectedNft?.id, 'comments'],
     queryFn: async () => {
       if (!selectedNft) return [];
@@ -60,8 +74,12 @@ export function NftGallery() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
+      // Also invalidate user's NFT comments for profile page
+      if (user?.wallet?.address) {
+        queryClient.invalidateQueries({ queryKey: ['user-nft-comments', user.wallet.address] });
+      }
       setNewComment("");
-      toast({ title: "Comment posted successfully!" });
+      toast({ title: "Comment posted successfully!", duration: 1200 });
     },
     onError: (error) => {
       console.error('Comment creation failed:', error);
@@ -252,22 +270,35 @@ export function NftGallery() {
                 {/* Comments List */}
                 <div className="space-y-3 max-h-64 overflow-y-auto">
                   {comments.length > 0 ? (
-                    comments.map((comment) => (
-                      <div key={comment.id} className="bg-muted/50 rounded-lg p-3">
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                            <span className="text-xs font-bold text-primary-foreground">
-                              {(comment.username || 'U').charAt(0).toUpperCase()}
+                    comments.map((comment) => {
+                      const commentWithProfile = comment as CommentWithProfile;
+                      return (
+                        <div key={comment.id} className="bg-muted/50 rounded-lg p-3">
+                          <div className="flex items-center gap-2 mb-1">
+                            {commentWithProfile.userProfile?.avatarUrl ? (
+                              <img 
+                                src={commentWithProfile.userProfile.avatarUrl} 
+                                alt={commentWithProfile.userProfile.displayName || 'User'}
+                                className="w-6 h-6 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                                <span className="text-xs font-bold text-primary-foreground">
+                                  {(commentWithProfile.userProfile?.displayName || comment.username || 'U').charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            )}
+                            <span className="text-sm font-medium text-foreground">
+                              {commentWithProfile.userProfile?.displayName || comment.username || 'Anonymous'}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(comment.createdAt).toLocaleDateString()}
                             </span>
                           </div>
-                          <span className="text-sm font-medium text-foreground">{comment.username || 'Anonymous'}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(comment.createdAt).toLocaleDateString()}
-                          </span>
+                          <p className="text-sm text-muted-foreground pl-8">{comment.comment}</p>
                         </div>
-                        <p className="text-sm text-muted-foreground pl-8">{comment.comment}</p>
-                      </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <div className="text-center text-sm text-muted-foreground py-4">
                       No comments yet. Be the first to comment!
