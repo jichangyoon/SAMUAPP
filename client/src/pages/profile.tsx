@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send, Trash2, MoreVertical, MessageCircle } from "lucide-react";
+import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send, Trash2, MoreVertical, MessageCircle, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
@@ -20,6 +21,7 @@ import { SendTokensSimple } from "@/components/send-tokens-simple";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { MediaDisplay } from "@/components/media-display";
 import { SAMU_NFTS } from "@/data/nft-data";
+import { NftGallery } from "@/components/nft-gallery";
 
 const Profile = React.memo(() => {
   const { user, authenticated } = usePrivy();
@@ -1024,40 +1026,85 @@ const Profile = React.memo(() => {
         />
       )}
 
-      {/* NFT Detail Modal */}
+      {/* NFT Detail Modal - Copy from NFT Gallery */}
       {selectedNft && (
-        <Drawer open={isNftModalOpen} onOpenChange={setIsNftModalOpen}>
-          <DrawerContent className="h-[92vh] bg-black border-border">
-            <DrawerHeader className="border-b border-border">
-              <DrawerTitle className="text-foreground text-xl">
-                {selectedNft.name}
-              </DrawerTitle>
+        <Drawer open={isNftModalOpen} onOpenChange={() => setIsNftModalOpen(false)}>
+          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+            <DrawerHeader>
+              <DrawerTitle className="text-foreground">{selectedNft.name}</DrawerTitle>
               <DrawerDescription className="text-muted-foreground">
-                Owner: {selectedNft.owner ? (
-                  <a 
-                    href={`https://x.com/${selectedNft.owner.replace('@', '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-yellow-400 hover:text-yellow-300"
-                  >
-                    {selectedNft.owner}
-                  </a>
-                ) : 'Unknown'}
+                Created by SAMU Official
               </DrawerDescription>
             </DrawerHeader>
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className="max-w-2xl mx-auto space-y-6">
+
+            <div className="px-4 pb-4 space-y-4 overflow-y-auto">
+              {/* NFT Image */}
+              <div className="aspect-square rounded-lg overflow-hidden">
                 <img
                   src={selectedNft.imageUrl}
                   alt={selectedNft.name}
-                  className="w-full max-w-md mx-auto rounded-lg"
-                  loading="lazy"
+                  className="w-full h-full object-cover"
                 />
-                <div className="text-center">
-                  <p className="text-muted-foreground text-sm">
-                    {selectedNft.description}
-                  </p>
+              </div>
+
+              {/* NFT Details */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Token ID:</span>
+                  <span className="text-foreground font-mono">#{selectedNft.id.toString().padStart(3, '0')}</span>
                 </div>
+                
+                {/* Owner Information */}
+                {selectedNft.owner && (
+                  <div className="flex justify-between text-sm items-center">
+                    <span className="text-muted-foreground">Owned by:</span>
+                    <button
+                      onClick={() => {
+                        const username = selectedNft.owner.replace('@', '');
+                        window.open(`https://x.com/${username}`, '_blank');
+                      }}
+                      className="text-foreground hover:text-primary cursor-pointer flex items-center gap-1 transition-colors"
+                    >
+                      {selectedNft.owner}
+                      <ExternalLink className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+
+                <div className="text-sm">
+                  <span className="text-muted-foreground block mb-1">Description</span>
+                  <p className="text-foreground">{selectedNft.description}</p>
+                </div>
+              </div>
+
+              {/* Comments Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="h-4 w-4" />
+                  <span className="text-sm font-medium">Comments (0)</span>
+                </div>
+                
+                <div className="text-center py-4 text-muted-foreground">
+                  <p className="text-sm">Share your thoughts about this NFT...</p>
+                </div>
+                
+                {authenticated && (
+                  <div className="space-y-2">
+                    <Textarea
+                      placeholder="Add a comment..."
+                      className="min-h-[80px] resize-none bg-accent/50 border-border"
+                      disabled
+                    />
+                    <Button 
+                      size="sm" 
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                      disabled
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      Post Comment
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </DrawerContent>
