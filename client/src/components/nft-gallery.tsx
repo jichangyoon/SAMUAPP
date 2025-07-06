@@ -42,8 +42,16 @@ export function NftGallery() {
   // Fetch comments for selected NFT
   const { data: comments = [] } = useQuery<NftComment[]>({
     queryKey: ['/api/nfts', selectedNft?.id, 'comments'],
+    queryFn: async () => {
+      if (!selectedNft) return [];
+      const response = await fetch(`/api/nfts/${selectedNft.id}/comments`);
+      if (!response.ok) throw new Error('Failed to fetch comments');
+      return response.json();
+    },
     enabled: !!selectedNft,
   });
+
+
 
   // Create comment mutation
   const createCommentMutation = useMutation({
