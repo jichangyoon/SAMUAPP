@@ -39,6 +39,8 @@ const Profile = React.memo(() => {
   const [memeToDelete, setMemeToDelete] = useState<any>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showAllMemes, setShowAllMemes] = useState(false);
+  const [selectedNft, setSelectedNft] = useState<any>(null);
+  const [isNftModalOpen, setIsNftModalOpen] = useState(false);
 
   // 지갑 주소 가져오기 (홈과 동일한 로직)
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
@@ -412,12 +414,15 @@ const Profile = React.memo(() => {
     };
   }, [imagePreview]);
 
-  // NFT 클릭 핸들러 - NFT 페이지로 이동
-  const [, setLocation] = useLocation();
+  // NFT 클릭 핸들러 - NFT 상세 모달 열기
   const handleNftClick = useCallback((nftId: number) => {
-    // URL에 NFT ID를 전달하고 NFT 페이지로 이동 (새로고침 없이)
-    setLocation(`/nft?selected=${nftId}`);
-  }, [setLocation]);
+    // SAMU NFT 데이터에서 해당 NFT 찾기
+    const nft = SAMU_NFTS.find(n => n.id === nftId);
+    if (nft) {
+      setSelectedNft(nft);
+      setIsNftModalOpen(true);
+    }
+  }, []);
 
   const handleDeleteMeme = useCallback(async (meme: any) => {
     if (!walletAddress) return;
@@ -1017,6 +1022,46 @@ const Profile = React.memo(() => {
           meme={selectedMeme}
           canVote={false}
         />
+      )}
+
+      {/* NFT Detail Modal */}
+      {selectedNft && (
+        <Drawer open={isNftModalOpen} onOpenChange={setIsNftModalOpen}>
+          <DrawerContent className="h-[92vh] bg-black border-border">
+            <DrawerHeader className="border-b border-border">
+              <DrawerTitle className="text-foreground text-xl">
+                {selectedNft.name}
+              </DrawerTitle>
+              <DrawerDescription className="text-muted-foreground">
+                Owner: {selectedNft.owner ? (
+                  <a 
+                    href={`https://x.com/${selectedNft.owner.replace('@', '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-yellow-400 hover:text-yellow-300"
+                  >
+                    {selectedNft.owner}
+                  </a>
+                ) : 'Unknown'}
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="max-w-2xl mx-auto space-y-6">
+                <img
+                  src={selectedNft.imageUrl}
+                  alt={selectedNft.name}
+                  className="w-full max-w-md mx-auto rounded-lg"
+                  loading="lazy"
+                />
+                <div className="text-center">
+                  <p className="text-muted-foreground text-sm">
+                    {selectedNft.description}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </DrawerContent>
+        </Drawer>
       )}
 
 
