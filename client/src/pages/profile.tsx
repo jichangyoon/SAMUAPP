@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send, Trash2, MoreVertical, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -37,6 +38,8 @@ const Profile = React.memo(() => {
   const [memeToDelete, setMemeToDelete] = useState<any>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showAllMemes, setShowAllMemes] = useState(false);
+  const [selectedNft, setSelectedNft] = useState<any>(null);
+  const [showNftModal, setShowNftModal] = useState(false);
   // 지갑 주소 가져오기 (홈과 동일한 로직)
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
@@ -408,6 +411,22 @@ const Profile = React.memo(() => {
   }, [imagePreview]);
 
   // Delete meme function
+  // NFT 클릭 핸들러
+  const handleNftClick = useCallback((nftId: number) => {
+    // NFT 데이터 생성 (NFT 갤러리와 동일한 구조)
+    const nft = {
+      id: nftId,
+      title: `SAMU Wolf #${nftId.toString().padStart(3, '0')}`,
+      description: `SAMU Wolf NFT #${nftId} from the official collection`,
+      imageUrl: `/assets/nfts/${nftId}.webp`,
+      creator: 'SAMU Team',
+      price: 0,
+      owner: 'Community'
+    };
+    setSelectedNft(nft);
+    setShowNftModal(true);
+  }, []);
+
   const handleDeleteMeme = useCallback(async (meme: any) => {
     if (!walletAddress) return;
 
@@ -908,7 +927,10 @@ const Profile = React.memo(() => {
                         key={comment.id} 
                         className="flex items-start gap-3 p-3 bg-accent/50 rounded-lg hover:bg-accent/70 transition-colors"
                       >
-                        <div className="w-12 h-12 flex-shrink-0">
+                        <div 
+                          className="w-12 h-12 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => handleNftClick(comment.nftId)}
+                        >
                           <img
                             src={comment.nftImageUrl || `/assets/nfts/${comment.nftId}.webp`}
                             alt={comment.nftTitle}
@@ -997,6 +1019,42 @@ const Profile = React.memo(() => {
           canVote={false}
         />
       )}
+
+      {/* NFT Detail Modal */}
+      <Drawer open={showNftModal} onOpenChange={setShowNftModal}>
+        <DrawerContent className="h-[92vh] bg-black border-gray-800">
+          <DrawerHeader className="pb-4">
+            <DrawerTitle className="text-white text-center">
+              {selectedNft?.title}
+            </DrawerTitle>
+            <DrawerDescription className="text-gray-400 text-center">
+              NFT Collection
+            </DrawerDescription>
+          </DrawerHeader>
+          <div className="px-4 pb-4 overflow-y-auto">
+            {selectedNft && (
+              <div className="space-y-4">
+                <div className="flex justify-center">
+                  <img
+                    src={selectedNft.imageUrl}
+                    alt={selectedNft.title}
+                    className="w-full max-w-sm rounded-lg"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="text-center space-y-2">
+                  <h3 className="text-xl font-bold text-white">{selectedNft.title}</h3>
+                  <p className="text-gray-300">{selectedNft.description}</p>
+                  <div className="flex justify-center gap-4 text-sm text-gray-400">
+                    <span>Creator: {selectedNft.creator}</span>
+                    <span>Owner: {selectedNft.owner}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </DrawerContent>
+      </Drawer>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
