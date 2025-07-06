@@ -95,7 +95,7 @@ export function NftGallery() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
-      // Also invalidate user's NFT comments for profile page
+      // 더 효율적인 캐시 업데이트 - 특정 쿼리만 무효화
       if (walletAddress) {
         queryClient.invalidateQueries({ queryKey: ['user-nft-comments', walletAddress] });
       }

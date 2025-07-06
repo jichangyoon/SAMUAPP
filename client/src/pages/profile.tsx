@@ -116,7 +116,7 @@ const Profile = React.memo(() => {
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 2 * 60 * 1000, // 2분 캐시
+    staleTime: 30 * 1000, // 30초 캐시 - 적절한 균형
   });
 
   // Balance fetching - 짧은 캐시로 최신 잔고 유지
