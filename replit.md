@@ -515,6 +515,7 @@ Changelog:
 - January 6, 2025. Replaced splash screen with custom mobile-optimized full-screen image - switched from logo/text/animation to single branded splash image for better mobile app experience
 - January 6, 2025. Updated splash screen image to improved SAMU wolf design with better visual clarity and brand consistency
 - January 6, 2025. Removed underline from "Entries" text in meme section header by adding no-underline CSS class for cleaner UI design
+- January 6, 2025. Removed underline from author usernames in meme cards - replaced with hover color transition for cleaner visual design
 
 ## CHECKPOINT - June 30, 2025
 ```
