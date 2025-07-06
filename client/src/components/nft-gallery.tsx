@@ -88,23 +88,61 @@ export function NftGallery() {
 
 
 
-  // Create comment mutation
+  // Create comment mutation with optimistic updates
   const createCommentMutation = useMutation({
     mutationFn: async (commentData: { comment: string; userWallet: string; username: string }) => {
       return apiRequest('POST', `/api/nfts/${selectedNft?.id}/comments`, commentData);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
-      // 더 효율적인 캐시 업데이트 - 특정 쿼리만 무효화
-      if (walletAddress) {
-        queryClient.invalidateQueries({ queryKey: ['user-nft-comments', walletAddress] });
-      }
-      setNewComment("");
-      toast({ title: "Comment posted successfully!", duration: 1200 });
+    onMutate: async (commentData) => {
+      // Cancel ongoing queries
+      await queryClient.cancelQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
+      await queryClient.cancelQueries({ queryKey: ['user-nft-comments', walletAddress] });
+
+      // Get current data
+      const previousComments = queryClient.getQueryData(['/api/nfts', selectedNft?.id, 'comments']);
+      const previousUserComments = queryClient.getQueryData(['user-nft-comments', walletAddress]);
+
+      // Create optimistic comment
+      const optimisticComment = {
+        id: Date.now(), // Temporary ID
+        nftId: selectedNft?.id,
+        comment: commentData.comment,
+        userWallet: commentData.userWallet,
+        username: commentData.username,
+        createdAt: new Date().toISOString(),
+        userProfile: userProfile ? {
+          displayName: userProfile.displayName,
+          avatarUrl: userProfile.avatarUrl
+        } : null
+      };
+
+      // Optimistically add comment
+      queryClient.setQueryData(['/api/nfts', selectedNft?.id, 'comments'], 
+        (previous: any) => [optimisticComment, ...(previous || [])]
+      );
+
+      queryClient.setQueryData(['user-nft-comments', walletAddress],
+        (previous: any) => [optimisticComment, ...(previous || [])]
+      );
+
+      return { previousComments, previousUserComments };
     },
-    onError: (error) => {
-      console.error('Comment creation failed:', error);
+    onError: (error, commentData, context) => {
+      // Rollback on error
+      if (context?.previousComments) {
+        queryClient.setQueryData(['/api/nfts', selectedNft?.id, 'comments'], context.previousComments);
+      }
+      if (context?.previousUserComments) {
+        queryClient.setQueryData(['user-nft-comments', walletAddress], context.previousUserComments);
+      }
       toast({ title: "Failed to post comment", variant: "destructive" });
+    },
+    onSuccess: () => {
+      // Refresh to get real server data with correct IDs
+      queryClient.invalidateQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
+      queryClient.invalidateQueries({ queryKey: ['user-nft-comments', walletAddress] });
+      setNewComment("");
+      toast({ title: "Comment posted!", duration: 1200 });
     }
   });
 
@@ -129,22 +167,49 @@ export function NftGallery() {
     setShowUserModal(true);
   };
 
-  // Delete comment mutation
+  // Delete comment mutation with optimistic updates
   const deleteCommentMutation = useMutation({
     mutationFn: async (commentId: number) => {
       return apiRequest('DELETE', `/api/nfts/comments/${commentId}`, {
         userWallet: walletAddress
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
-      if (walletAddress) {
-        queryClient.invalidateQueries({ queryKey: ['user-nft-comments', walletAddress] });
+    onMutate: async (commentId) => {
+      // Cancel ongoing queries
+      await queryClient.cancelQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
+      await queryClient.cancelQueries({ queryKey: ['user-nft-comments', walletAddress] });
+
+      // Get current data
+      const previousComments = queryClient.getQueryData(['/api/nfts', selectedNft?.id, 'comments']);
+      const previousUserComments = queryClient.getQueryData(['user-nft-comments', walletAddress]);
+
+      // Optimistically update comments by removing the deleted comment
+      if (previousComments) {
+        queryClient.setQueryData(['/api/nfts', selectedNft?.id, 'comments'], 
+          (previous: any) => previous?.filter((comment: any) => comment.id !== commentId) || []
+        );
       }
-      toast({ title: "Comment deleted successfully!", duration: 1200 });
+
+      if (previousUserComments) {
+        queryClient.setQueryData(['user-nft-comments', walletAddress],
+          (previous: any) => previous?.filter((comment: any) => comment.id !== commentId) || []
+        );
+      }
+
+      return { previousComments, previousUserComments };
     },
-    onError: () => {
+    onError: (error, commentId, context) => {
+      // Rollback on error
+      if (context?.previousComments) {
+        queryClient.setQueryData(['/api/nfts', selectedNft?.id, 'comments'], context.previousComments);
+      }
+      if (context?.previousUserComments) {
+        queryClient.setQueryData(['user-nft-comments', walletAddress], context.previousUserComments);
+      }
       toast({ title: "Failed to delete comment", variant: "destructive" });
+    },
+    onSuccess: () => {
+      toast({ title: "Comment deleted!", duration: 1200 });
     }
   });
 
