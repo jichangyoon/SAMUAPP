@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { MessageCircle, Send, Image as ImageIcon, ExternalLink } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { UserInfoModal } from "@/components/user-info-modal";
 import type { NftComment } from "@shared/schema";
 import { SAMU_NFTS, type StaticNft } from "@/data/nft-data";
 import nftOwnersData from "@/data/nft-owners.json";
@@ -15,6 +16,8 @@ import nftOwnersData from "@/data/nft-owners.json";
 export function NftGallery() {
   const [selectedNft, setSelectedNft] = useState<StaticNft | null>(null);
   const [newComment, setNewComment] = useState("");
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [selectedUserWallet, setSelectedUserWallet] = useState<string>('');
   const { authenticated, user } = usePrivy();
   const { toast } = useToast();
 
@@ -117,6 +120,12 @@ export function NftGallery() {
       userWallet,
       username
     });
+  };
+
+  // Handle user click - show user profile modal
+  const handleUserClick = (userWallet: string) => {
+    setSelectedUserWallet(userWallet);
+    setShowUserModal(true);
   };
 
 
@@ -293,22 +302,27 @@ export function NftGallery() {
                       return (
                         <div key={comment.id} className="bg-muted/50 rounded-lg p-3">
                           <div className="flex items-center gap-2 mb-1">
-                            {commentWithProfile.userProfile?.avatarUrl ? (
-                              <img 
-                                src={commentWithProfile.userProfile.avatarUrl} 
-                                alt={commentWithProfile.userProfile.displayName || 'User'}
-                                className="w-6 h-6 rounded-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                                <span className="text-xs font-bold text-primary-foreground">
-                                  {(commentWithProfile.userProfile?.displayName || comment.username || 'U').charAt(0).toUpperCase()}
-                                </span>
-                              </div>
-                            )}
-                            <span className="text-sm font-medium text-foreground">
-                              {commentWithProfile.userProfile?.displayName || 'Anonymous'}
-                            </span>
+                            <div 
+                              className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+                              onClick={() => handleUserClick(comment.userWallet)}
+                            >
+                              {commentWithProfile.userProfile?.avatarUrl ? (
+                                <img 
+                                  src={commentWithProfile.userProfile.avatarUrl} 
+                                  alt={commentWithProfile.userProfile.displayName || 'User'}
+                                  className="w-6 h-6 rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                                  <span className="text-xs font-bold text-primary-foreground">
+                                    {(commentWithProfile.userProfile?.displayName || comment.username || 'U').charAt(0).toUpperCase()}
+                                  </span>
+                                </div>
+                              )}
+                              <span className="text-sm font-medium text-foreground hover:text-primary">
+                                {commentWithProfile.userProfile?.displayName || 'Anonymous'}
+                              </span>
+                            </div>
                             <span className="text-xs text-muted-foreground">
                               {new Date(comment.createdAt).toLocaleDateString()}
                             </span>
@@ -327,6 +341,14 @@ export function NftGallery() {
             </div>
           </DrawerContent>
         </Drawer>
+      )}
+
+      {/* User Info Modal */}
+      {showUserModal && (
+        <UserInfoModal 
+          walletAddress={selectedUserWallet}
+          onClose={() => setShowUserModal(false)}
+        />
       )}
     </div>
   );
