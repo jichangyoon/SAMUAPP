@@ -85,6 +85,16 @@ export function MediaDisplay({
         onClick();
       } : undefined}
       loading="lazy"
+      onContextMenu={(e) => {
+        // 컨텍스트 메뉴 허용 (길게 누르면 저장 옵션 표시)
+        e.stopPropagation();
+      }}
+      style={{ 
+        // 모바일에서 이미지 길게 누르기 활성화
+        WebkitUserSelect: 'none',
+        userSelect: 'none',
+        WebkitTouchCallout: 'default'
+      }}
     />
   );
 }
