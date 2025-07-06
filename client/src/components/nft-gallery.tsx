@@ -39,6 +39,18 @@ export function NftGallery() {
   const nfts = SAMU_NFTS;
   const isLoading = false;
 
+  // Get current user's profile for comment submission
+  const { data: userProfile } = useQuery({
+    queryKey: ['user-profile', user?.wallet?.address],
+    queryFn: async () => {
+      if (!user?.wallet?.address) return null;
+      const res = await fetch(`/api/users/profile/${user.wallet.address}`);
+      if (!res.ok) throw new Error('Failed to fetch user profile');
+      return res.json();
+    },
+    enabled: !!user?.wallet?.address,
+  });
+
   // Extended comment type with user profile info
   type CommentWithProfile = {
     id: number;
@@ -92,7 +104,7 @@ export function NftGallery() {
     if (!authenticated || !user || !selectedNft || !newComment.trim()) return;
     
     const userWallet = user.wallet?.address || '';
-    const username = String(user.email) || 'Anonymous';
+    const username = userProfile?.displayName || user.email?.address || 'Anonymous';
     
     createCommentMutation.mutate({
       comment: newComment.trim(),
