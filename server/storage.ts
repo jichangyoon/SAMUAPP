@@ -9,7 +9,6 @@ export interface IStorage {
   getUserByDisplayName(displayName: string): Promise<User | undefined>;
   updateUser(walletAddress: string, updates: Partial<InsertUser & { displayName?: string; avatarUrl?: string }>): Promise<User>;
   updateUserMemeAuthorInfo(walletAddress: string, newDisplayName: string, newAvatarUrl?: string): Promise<void>;
-  updateUserNftCommentInfo(walletAddress: string, newDisplayName: string, newAvatarUrl?: string): Promise<void>;
   getUserMemes(walletAddress: string): Promise<Meme[]>;
   getUserVotes(walletAddress: string): Promise<Vote[]>;
   
@@ -33,9 +32,6 @@ export interface IStorage {
   // NFT Comment operations
   createNftComment(comment: InsertNftComment): Promise<NftComment>;
   getNftComments(nftId: number): Promise<NftComment[]>;
-  getNftCommentById(commentId: number): Promise<NftComment | undefined>;
-  deleteNftComment(commentId: number): Promise<void>;
-  getUserNftComments(walletAddress: string): Promise<any[]>;
   
   // Partner Meme operations
   createPartnerMeme(meme: InsertMeme, partnerId: string): Promise<Meme>;
@@ -97,8 +93,6 @@ export class MemStorage implements IStorage {
       imageUrl: insertMeme.imageUrl,
       authorWallet: insertMeme.authorWallet,
       authorUsername: insertMeme.authorUsername,
-      authorAvatarUrl: null,
-      contestId: null,
       votes: 0,
       createdAt: new Date()
     };
@@ -138,7 +132,6 @@ export class MemStorage implements IStorage {
       walletAddress: insertUser.walletAddress,
       email: insertUser.email || null,
       username: insertUser.username,
-      displayName: insertUser.displayName || null,
       avatarUrl: insertUser.avatarUrl || null,
       samuBalance: insertUser.samuBalance || 0,
       totalVotingPower: insertUser.totalVotingPower || 0,
@@ -154,11 +147,15 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByDisplayName(displayName: string): Promise<User | undefined> {
-    const users = Array.from(this.users.values());
-    return users.find(user => user.displayName === displayName);
+    for (const user of this.users.values()) {
+      if (user.displayName === displayName) {
+        return user;
+      }
+    }
+    return undefined;
   }
 
-  async updateUser(walletAddress: string, updates: Partial<InsertUser & { displayName?: string; avatarUrl?: string }>): Promise<User> {
+  async updateUser(walletAddress: string, updates: Partial<InsertUser>): Promise<User> {
     const existingUser = this.users.get(walletAddress);
     if (!existingUser) {
       throw new Error("User not found");
@@ -171,29 +168,6 @@ export class MemStorage implements IStorage {
     };
     this.users.set(walletAddress, updatedUser);
     return updatedUser;
-  }
-
-  async updateUserMemeAuthorInfo(walletAddress: string, newDisplayName: string, newAvatarUrl?: string): Promise<void> {
-    // Update all memes by this author
-    const allMemes = Array.from(this.memes.values());
-    allMemes.forEach(meme => {
-      if (meme.authorWallet === walletAddress) {
-        meme.authorUsername = newDisplayName;
-        if (newAvatarUrl !== undefined) {
-          meme.authorAvatarUrl = newAvatarUrl;
-        }
-      }
-    });
-  }
-
-  async updateUserNftCommentInfo(walletAddress: string, newDisplayName: string, newAvatarUrl?: string): Promise<void> {
-    // Update all NFT comments by this user
-    const allComments = Array.from(this.nftComments.values());
-    allComments.forEach(comment => {
-      if (comment.userWallet === walletAddress) {
-        comment.username = newDisplayName;
-      }
-    });
   }
 
   async getUserMemes(walletAddress: string): Promise<Meme[]> {
@@ -300,34 +274,6 @@ export class MemStorage implements IStorage {
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
-  async getNftCommentById(commentId: number): Promise<NftComment | undefined> {
-    return this.nftComments.get(commentId);
-  }
-
-  async deleteNftComment(commentId: number): Promise<void> {
-    this.nftComments.delete(commentId);
-  }
-
-  async getUserNftComments(walletAddress: string): Promise<any[]> {
-    const userComments: any[] = [];
-    
-    // Filter comments by user wallet
-    Array.from(this.nftComments.values()).forEach(comment => {
-      if (comment.userWallet === walletAddress) {
-        userComments.push({
-          ...comment,
-          nftTitle: `SAMU Wolf #${comment.nftId.toString().padStart(3, '0')}`,
-          nftImageUrl: `/assets/nfts/${comment.nftId}.webp`
-        });
-      }
-    });
-    
-    // Sort by creation date (newest first)
-    userComments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    
-    return userComments;
-  }
-
   // Partner Meme operations
   async createPartnerMeme(insertMeme: InsertMeme, partnerId: string): Promise<Meme> {
     if (!this.partnerMemes.has(partnerId)) {
@@ -342,8 +288,6 @@ export class MemStorage implements IStorage {
       imageUrl: insertMeme.imageUrl,
       authorWallet: insertMeme.authorWallet,
       authorUsername: insertMeme.authorUsername,
-      authorAvatarUrl: null,
-      contestId: null,
       votes: 0,
       createdAt: new Date()
     };
@@ -402,39 +346,6 @@ export class MemStorage implements IStorage {
     
     meme.votes = voteCount;
   }
-
-  // Contest operations (stub implementations for MemStorage)
-  async createContest(contest: InsertContest): Promise<Contest> {
-    throw new Error("Contest operations not supported in MemStorage");
-  }
-
-  async getContests(): Promise<Contest[]> {
-    return [];
-  }
-
-  async getContestById(id: number): Promise<Contest | undefined> {
-    return undefined;
-  }
-
-  async updateContestStatus(id: number, status: string): Promise<Contest> {
-    throw new Error("Contest operations not supported in MemStorage");
-  }
-
-  async updateContestTimes(id: number, startTime: Date, endTime: Date): Promise<Contest> {
-    throw new Error("Contest operations not supported in MemStorage");
-  }
-
-  async endContestAndArchive(contestId: number): Promise<ArchivedContest> {
-    throw new Error("Contest operations not supported in MemStorage");
-  }
-
-  async getArchivedContests(): Promise<ArchivedContest[]> {
-    return [];
-  }
-
-  async getCurrentActiveContest(): Promise<Contest | undefined> {
-    return undefined;
-  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -483,7 +394,6 @@ export class DatabaseStorage implements IStorage {
     // Update author info in all memes if profile changed
     if (updates.displayName || updates.avatarUrl) {
       await this.updateUserMemeAuthorInfo(walletAddress, updates.displayName || '', updates.avatarUrl);
-      await this.updateUserNftCommentInfo(walletAddress, updates.displayName || '', updates.avatarUrl);
     }
     
     return user;
@@ -502,21 +412,6 @@ export class DatabaseStorage implements IStorage {
       .update(memes)
       .set(updateData)
       .where(eq(memes.authorWallet, walletAddress))
-      .returning();
-  }
-
-  async updateUserNftCommentInfo(walletAddress: string, newDisplayName: string, newAvatarUrl?: string): Promise<void> {
-    if (!this.db) throw new Error("Database not available");
-    
-    // Prepare update data
-    const updateData: any = {};
-    if (newDisplayName) updateData.username = newDisplayName;
-    
-    // Update username in all NFT comments created by this user
-    const result = await this.db
-      .update(nftComments)
-      .set(updateData)
-      .where(eq(nftComments.userWallet, walletAddress))
       .returning();
   }
 
@@ -682,42 +577,6 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(nftComments.createdAt));
   }
 
-  async getNftCommentById(commentId: number): Promise<NftComment | undefined> {
-    if (!this.db) throw new Error("Database not available");
-    
-    const [comment] = await this.db
-      .select()
-      .from(nftComments)
-      .where(eq(nftComments.id, commentId));
-    return comment;
-  }
-
-  async deleteNftComment(commentId: number): Promise<void> {
-    if (!this.db) throw new Error("Database not available");
-    
-    await this.db
-      .delete(nftComments)
-      .where(eq(nftComments.id, commentId));
-  }
-
-  async getUserNftComments(walletAddress: string): Promise<any[]> {
-    if (!this.db) throw new Error("Database not available");
-    
-    // 한 번의 쿼리로 사용자 NFT 댓글 가져오기
-    const userComments = await this.db
-      .select()
-      .from(nftComments)
-      .where(eq(nftComments.userWallet, walletAddress))
-      .orderBy(desc(nftComments.createdAt));
-    
-    // NFT 정보 추가
-    return userComments.map(comment => ({
-      ...comment,
-      nftTitle: `SAMU Wolf #${comment.nftId.toString().padStart(3, '0')}`,
-      nftImageUrl: `/assets/nfts/${comment.nftId}.webp`
-    }));
-  }
-
   async createPartnerMeme(insertMeme: InsertMeme, partnerId: string): Promise<Meme> {
     if (!this.db) throw new Error("Database not available");
     
@@ -734,8 +593,6 @@ export class DatabaseStorage implements IStorage {
       imageUrl: meme.imageUrl,
       authorWallet: meme.authorWallet,
       authorUsername: meme.authorUsername,
-      authorAvatarUrl: null,
-      contestId: null,
       votes: meme.votes,
       createdAt: meme.createdAt
     };
@@ -758,8 +615,6 @@ export class DatabaseStorage implements IStorage {
       imageUrl: meme.imageUrl,
       authorWallet: meme.authorWallet,
       authorUsername: meme.authorUsername,
-      authorAvatarUrl: null,
-      contestId: null,
       votes: meme.votes,
       createdAt: meme.createdAt
     }));
@@ -783,8 +638,6 @@ export class DatabaseStorage implements IStorage {
       imageUrl: meme.imageUrl,
       authorWallet: meme.authorWallet,
       authorUsername: meme.authorUsername,
-      authorAvatarUrl: null,
-      contestId: null,
       votes: meme.votes,
       createdAt: meme.createdAt
     };
@@ -966,25 +819,23 @@ export class DatabaseStorage implements IStorage {
     const secondMemeId = sortedMemes[1]?.id || null;
     const thirdMemeId = sortedMemes[2]?.id || null;
 
-    // Archive the contest using InsertArchivedContest type
-    const archiveData: InsertArchivedContest = {
-      originalContestId: contestId,
-      title: contest.title,
-      description: contest.description,
-      totalMemes,
-      totalVotes,
-      totalParticipants: uniqueParticipants,
-      winnerMemeId,
-      secondMemeId,
-      thirdMemeId,
-      prizePool: contest.prizePool,
-      startTime: contest.startTime || contest.createdAt || new Date(),
-      endTime: new Date(),
-    };
-
+    // Archive the contest
     const [archivedContest] = await this.db
       .insert(archivedContests)
-      .values(archiveData)
+      .values({
+        originalContestId: contestId,
+        title: contest.title,
+        description: contest.description,
+        totalMemes,
+        totalVotes,
+        totalParticipants: uniqueParticipants,
+        winnerMemeId,
+        secondMemeId,
+        thirdMemeId,
+        prizePool: contest.prizePool,
+        startTime: contest.startTime || contest.createdAt,
+        endTime: new Date(),
+      })
       .returning();
 
     // Update contest status to archived

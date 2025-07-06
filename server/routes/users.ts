@@ -55,8 +55,7 @@ router.put("/profile/:walletAddress", async (req, res) => {
     res.json(user);
   } catch (error) {
     console.error("Error updating user profile:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    res.status(400).json({ message: "Failed to update user profile", error: errorMessage });
+    res.status(400).json({ message: "Failed to update user profile", error: error.message });
   }
 });
 
@@ -148,21 +147,6 @@ router.get("/check-name/:displayName", async (req, res) => {
   } catch (error) {
     console.error("Error checking display name:", error);
     res.status(500).json({ message: "Failed to check display name availability" });
-  }
-});
-
-// Get user's NFT comments
-router.get("/:walletAddress/nft-comments", async (req, res) => {
-  try {
-    const { walletAddress } = req.params;
-    
-    // Use efficient single query to get user's NFT comments
-    const userComments = await storage.getUserNftComments(walletAddress);
-    
-    res.json(userComments);
-  } catch (error) {
-    console.error("Error fetching user NFT comments:", error);
-    res.status(500).json({ message: "Failed to fetch NFT comments" });
   }
 });
 

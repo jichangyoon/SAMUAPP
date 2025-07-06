@@ -31,27 +31,12 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Get comments for an NFT with user profile info
+// Get comments for an NFT
 router.get("/:id/comments", async (req, res) => {
   try {
     const nftId = parseInt(req.params.id);
     const comments = await storage.getNftComments(nftId);
-    
-    // Get user profile info for each comment
-    const commentsWithProfiles = await Promise.all(
-      comments.map(async (comment) => {
-        const user = await storage.getUserByWallet(comment.userWallet);
-        return {
-          ...comment,
-          userProfile: user ? {
-            displayName: user.displayName,
-            avatarUrl: user.avatarUrl
-          } : null
-        };
-      })
-    );
-    
-    res.json(commentsWithProfiles);
+    res.json(comments);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch comments" });
   }
@@ -76,34 +61,6 @@ router.post("/:id/comments", async (req, res) => {
     } else {
       res.status(500).json({ error: "Failed to create comment" });
     }
-  }
-});
-
-// Delete a comment
-router.delete("/comments/:commentId", async (req, res) => {
-  try {
-    const commentId = parseInt(req.params.commentId);
-    const { userWallet } = req.body;
-    
-    if (!userWallet) {
-      return res.status(400).json({ error: "User wallet address is required" });
-    }
-    
-    // Get the comment to verify ownership
-    const comment = await storage.getNftCommentById(commentId);
-    if (!comment) {
-      return res.status(404).json({ error: "Comment not found" });
-    }
-    
-    // Check if the user owns this comment
-    if (comment.userWallet !== userWallet) {
-      return res.status(403).json({ error: "You can only delete your own comments" });
-    }
-    
-    await storage.deleteNftComment(commentId);
-    res.json({ message: "Comment deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to delete comment" });
   }
 });
 
