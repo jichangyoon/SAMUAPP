@@ -202,15 +202,31 @@ export function NftGallery() {
                       <span className="text-muted-foreground">Owned by:</span>
                       <button
                         onClick={() => {
-                          // 네이티브 앱 환경에서 외부 링크 열기 최적화
+                          // X 앱 딥링크 우선, 웹사이트 폴백
+                          const username = owner.owner.replace('@', '');
+                          const xAppUrl = `twitter://user?screen_name=${username}`;
+                          const webUrl = owner.url;
+                          
                           if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform()) {
+                            // 네이티브 앱: X 앱 딥링크 시도 후 웹 폴백
                             import('@capacitor/browser').then(({ Browser }) => {
-                              Browser.open({ url: owner.url });
+                              Browser.open({ url: xAppUrl }).catch(() => {
+                                Browser.open({ url: webUrl });
+                              });
                             }).catch(() => {
-                              window.open(owner.url, '_blank');
+                              window.open(webUrl, '_blank');
                             });
                           } else {
-                            window.open(owner.url, '_blank');
+                            // 웹 브라우저: X 앱 딥링크 시도 후 웹 폴백
+                            const iframe = document.createElement('iframe');
+                            iframe.style.display = 'none';
+                            iframe.src = xAppUrl;
+                            document.body.appendChild(iframe);
+                            
+                            setTimeout(() => {
+                              document.body.removeChild(iframe);
+                              window.open(webUrl, '_blank');
+                            }, 1000);
                           }
                         }}
                         className="text-foreground hover:text-primary cursor-pointer flex items-center gap-1 transition-colors"
