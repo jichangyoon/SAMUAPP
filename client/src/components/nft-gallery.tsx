@@ -38,6 +38,21 @@ export function NftGallery() {
     return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
   }, []);
 
+  // Check URL for selected NFT parameter
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
+    const selectedId = params.get('selected');
+    if (selectedId) {
+      const nftId = parseInt(selectedId);
+      const nft = SAMU_NFTS.find(n => n.id === nftId);
+      if (nft) {
+        setSelectedNft(nft);
+        // Clear the URL parameter after opening modal
+        window.history.replaceState(null, '', '/#nft');
+      }
+    }
+  }, []);
+
   // Use static NFT data for instant loading
   const nfts = SAMU_NFTS;
   const isLoading = false;
