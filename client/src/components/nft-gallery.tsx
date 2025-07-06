@@ -39,16 +39,22 @@ export function NftGallery() {
   const nfts = SAMU_NFTS;
   const isLoading = false;
 
+  // Get wallet using same logic as MemeCard - prioritize Solana
+  const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
+  const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
+  const selectedWalletAccount = solanaWallet || walletAccounts[0];
+  const walletAddress = selectedWalletAccount?.address || '';
+
   // Get current user's profile for comment submission
   const { data: userProfile } = useQuery({
-    queryKey: ['user-profile', user?.wallet?.address],
+    queryKey: ['user-profile', walletAddress],
     queryFn: async () => {
-      if (!user?.wallet?.address) return null;
-      const res = await fetch(`/api/users/profile/${user.wallet.address}`);
+      if (!walletAddress) return null;
+      const res = await fetch(`/api/users/profile/${walletAddress}`);
       if (!res.ok) throw new Error('Failed to fetch user profile');
       return res.json();
     },
-    enabled: !!user?.wallet?.address,
+    enabled: !!walletAddress,
   });
 
   // Extended comment type with user profile info
@@ -87,8 +93,8 @@ export function NftGallery() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
       // Also invalidate user's NFT comments for profile page
-      if (user?.wallet?.address) {
-        queryClient.invalidateQueries({ queryKey: ['user-nft-comments', user.wallet.address] });
+      if (walletAddress) {
+        queryClient.invalidateQueries({ queryKey: ['user-nft-comments', walletAddress] });
       }
       setNewComment("");
       toast({ title: "Comment posted successfully!", duration: 1200 });
@@ -103,10 +109,8 @@ export function NftGallery() {
   const handleCommentSubmit = async () => {
     if (!authenticated || !user || !selectedNft || !newComment.trim()) return;
     
-    const userWallet = user.wallet?.address || '';
+    const userWallet = walletAddress;
     const username = userProfile?.displayName || user.email?.address || 'Anonymous';
-    
-    console.log('Comment submission:', { userWallet, username, userProfile });
     
     createCommentMutation.mutate({
       comment: newComment.trim(),
