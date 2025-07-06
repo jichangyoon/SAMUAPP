@@ -412,12 +412,12 @@ const Profile = React.memo(() => {
     };
   }, [imagePreview]);
 
-  // Delete meme function
   // NFT 클릭 핸들러 - NFT 페이지로 이동
+  const [, setLocation] = useLocation();
   const handleNftClick = useCallback((nftId: number) => {
-    // URL에 NFT ID를 전달하고 NFT 페이지로 이동
-    window.location.href = `/#nft?selected=${nftId}`;
-  }, []);
+    // URL에 NFT ID를 전달하고 NFT 페이지로 이동 (새로고침 없이)
+    setLocation(`/nft?selected=${nftId}`);
+  }, [setLocation]);
 
   const handleDeleteMeme = useCallback(async (meme: any) => {
     if (!walletAddress) return;
@@ -946,7 +946,7 @@ const Profile = React.memo(() => {
                               {new Date(comment.createdAt).toLocaleDateString()}
                             </span>
                           </div>
-                          <p className="text-sm text-foreground">{comment.content}</p>
+                          <p className="text-sm text-foreground">{comment.comment}</p>
                         </div>
                       </div>
                     ))}
