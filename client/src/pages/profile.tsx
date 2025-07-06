@@ -21,7 +21,7 @@ import { SendTokensSimple } from "@/components/send-tokens-simple";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { MediaDisplay } from "@/components/media-display";
 import { SAMU_NFTS } from "@/data/nft-data";
-import { NftGallery } from "@/components/nft-gallery";
+import { NftDetailModal } from "@/components/nft-detail-modal";
 
 const Profile = React.memo(() => {
   const { user, authenticated } = usePrivy();
@@ -1026,90 +1026,15 @@ const Profile = React.memo(() => {
         />
       )}
 
-      {/* NFT Detail Modal - Copy from NFT Gallery */}
-      {selectedNft && (
-        <Drawer open={isNftModalOpen} onOpenChange={() => setIsNftModalOpen(false)}>
-          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
-            <DrawerHeader>
-              <DrawerTitle className="text-foreground">{selectedNft.name}</DrawerTitle>
-              <DrawerDescription className="text-muted-foreground">
-                Created by SAMU Official
-              </DrawerDescription>
-            </DrawerHeader>
-
-            <div className="px-4 pb-4 space-y-4 overflow-y-auto">
-              {/* NFT Image */}
-              <div className="aspect-square rounded-lg overflow-hidden">
-                <img
-                  src={selectedNft.imageUrl}
-                  alt={selectedNft.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              {/* NFT Details */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Token ID:</span>
-                  <span className="text-foreground font-mono">#{selectedNft.id.toString().padStart(3, '0')}</span>
-                </div>
-                
-                {/* Owner Information */}
-                {selectedNft.owner && (
-                  <div className="flex justify-between text-sm items-center">
-                    <span className="text-muted-foreground">Owned by:</span>
-                    <button
-                      onClick={() => {
-                        const username = selectedNft.owner.replace('@', '');
-                        window.open(`https://x.com/${username}`, '_blank');
-                      }}
-                      className="text-foreground hover:text-primary cursor-pointer flex items-center gap-1 transition-colors"
-                    >
-                      {selectedNft.owner}
-                      <ExternalLink className="h-3 w-3" />
-                    </button>
-                  </div>
-                )}
-
-                <div className="text-sm">
-                  <span className="text-muted-foreground block mb-1">Description</span>
-                  <p className="text-foreground">{selectedNft.description}</p>
-                </div>
-              </div>
-
-              {/* Comments Section */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <MessageCircle className="h-4 w-4" />
-                  <span className="text-sm font-medium">Comments (0)</span>
-                </div>
-                
-                <div className="text-center py-4 text-muted-foreground">
-                  <p className="text-sm">Share your thoughts about this NFT...</p>
-                </div>
-                
-                {authenticated && (
-                  <div className="space-y-2">
-                    <Textarea
-                      placeholder="Add a comment..."
-                      className="min-h-[80px] resize-none bg-accent/50 border-border"
-                      disabled
-                    />
-                    <Button 
-                      size="sm" 
-                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                      disabled
-                    >
-                      <Send className="h-4 w-4 mr-2" />
-                      Post Comment
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </DrawerContent>
-        </Drawer>
-      )}
+      {/* NFT Detail Modal - Reuse from NFT Gallery */}
+      <NftDetailModal
+        selectedNft={selectedNft}
+        isOpen={isNftModalOpen}
+        onClose={() => {
+          setIsNftModalOpen(false);
+          setSelectedNft(null);
+        }}
+      />
 
 
 
