@@ -110,7 +110,7 @@ const Profile = React.memo(() => {
   const allMemes = memesResponse?.memes || [];
 
   // User NFT comments - for the comments tab
-  const { data: userComments = [] } = useQuery({
+  const { data: userComments = [], isLoading: commentsLoading } = useQuery({
     queryKey: ['user-nft-comments', walletAddress],
     queryFn: async () => {
       if (!walletAddress) return [];
@@ -119,7 +119,9 @@ const Profile = React.memo(() => {
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 30 * 1000, // 30초 캐시 - 적절한 균형
+    staleTime: 5 * 60 * 1000, // 5분 캐시 - 다른 쿼리와 동일
+    retry: 1, // 빠른 실패
+    refetchOnWindowFocus: false, // 불필요한 refetch 방지
   });
 
   // Balance fetching - 짧은 캐시로 최신 잔고 유지
@@ -907,10 +909,17 @@ const Profile = React.memo(() => {
           <TabsContent value="comments" className="flex-1 overflow-hidden">
             <Card className="border-border bg-card h-full flex flex-col">
               <CardHeader className="flex-shrink-0">
-                <CardTitle className="text-lg text-foreground">My NFT Comments ({userComments.length})</CardTitle>
+                <CardTitle className="text-lg text-foreground">
+                  My NFT Comments ({commentsLoading ? '...' : userComments.length})
+                </CardTitle>
               </CardHeader>
               <CardContent className="flex-1 overflow-y-auto">
-                {userComments.length > 0 ? (
+                {commentsLoading ? (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50 animate-pulse" />
+                    <p className="text-sm">Loading comments...</p>
+                  </div>
+                ) : userComments.length > 0 ? (
                   <div className="space-y-2">
                     {userComments.map((comment: any) => (
                       <div 

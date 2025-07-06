@@ -156,27 +156,8 @@ router.get("/:walletAddress/nft-comments", async (req, res) => {
   try {
     const { walletAddress } = req.params;
     
-    // Get all NFT comments for this user
-    const allNfts = await storage.getNfts();
-    const userComments: any[] = [];
-    
-    for (const nft of allNfts) {
-      const comments = await storage.getNftComments(nft.id);
-      const userNftComments = comments.filter(comment => comment.userWallet === walletAddress);
-      
-      // Add NFT info to each comment
-      userNftComments.forEach(comment => {
-        userComments.push({
-          ...comment,
-          nftId: nft.id,
-          nftTitle: nft.title,
-          nftImageUrl: nft.imageUrl
-        });
-      });
-    }
-    
-    // Sort by creation date (newest first)
-    userComments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    // Use efficient single query to get user's NFT comments
+    const userComments = await storage.getUserNftComments(walletAddress);
     
     res.json(userComments);
   } catch (error) {

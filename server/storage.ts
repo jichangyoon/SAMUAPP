@@ -34,6 +34,7 @@ export interface IStorage {
   getNftComments(nftId: number): Promise<NftComment[]>;
   getNftCommentById(commentId: number): Promise<NftComment | undefined>;
   deleteNftComment(commentId: number): Promise<void>;
+  getUserNftComments(walletAddress: string): Promise<any[]>;
   
   // Partner Meme operations
   createPartnerMeme(meme: InsertMeme, partnerId: string): Promise<Meme>;
@@ -294,6 +295,26 @@ export class MemStorage implements IStorage {
 
   async deleteNftComment(commentId: number): Promise<void> {
     this.nftComments.delete(commentId);
+  }
+
+  async getUserNftComments(walletAddress: string): Promise<any[]> {
+    const userComments: any[] = [];
+    
+    // Filter comments by user wallet
+    Array.from(this.nftComments.values()).forEach(comment => {
+      if (comment.userWallet === walletAddress) {
+        userComments.push({
+          ...comment,
+          nftTitle: `SAMU Wolf #${comment.nftId.toString().padStart(3, '0')}`,
+          nftImageUrl: `/assets/nfts/${comment.nftId}.webp`
+        });
+      }
+    });
+    
+    // Sort by creation date (newest first)
+    userComments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    
+    return userComments;
   }
 
   // Partner Meme operations
@@ -650,6 +671,24 @@ export class DatabaseStorage implements IStorage {
     await this.db
       .delete(nftComments)
       .where(eq(nftComments.id, commentId));
+  }
+
+  async getUserNftComments(walletAddress: string): Promise<any[]> {
+    if (!this.db) throw new Error("Database not available");
+    
+    // 한 번의 쿼리로 사용자 NFT 댓글 가져오기
+    const userComments = await this.db
+      .select()
+      .from(nftComments)
+      .where(eq(nftComments.userWallet, walletAddress))
+      .orderBy(desc(nftComments.createdAt));
+    
+    // NFT 정보 추가
+    return userComments.map(comment => ({
+      ...comment,
+      nftTitle: `SAMU Wolf #${comment.nftId.toString().padStart(3, '0')}`,
+      nftImageUrl: `/assets/nfts/${comment.nftId}.webp`
+    }));
   }
 
   async createPartnerMeme(insertMeme: InsertMeme, partnerId: string): Promise<Meme> {
