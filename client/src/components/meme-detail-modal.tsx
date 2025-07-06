@@ -6,6 +6,7 @@ import { ArrowUp, Share2, Twitter, Send, Calendar, Trophy } from "lucide-react";
 import { useState } from "react";
 import { MediaDisplay } from "@/components/media-display";
 import { UserInfoModal } from "@/components/user-info-modal";
+import { NativeShare } from "@/utils/native-share";
 import type { Meme } from "@shared/schema";
 
 interface MemeDetailModalProps {
@@ -61,16 +62,12 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
 
   const shareToTwitter = () => {
     const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername} 🔥`;
-    const url = window.location.href;
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
-    window.open(twitterUrl, '_blank');
+    NativeShare.shareToTwitter(text);
   };
 
   const shareToTelegram = () => {
     const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername}`;
-    const url = window.location.href;
-    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
-    window.open(telegramUrl, '_blank');
+    NativeShare.shareToTelegram(text);
   };
 
   return (

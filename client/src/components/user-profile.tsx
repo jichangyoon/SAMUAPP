@@ -12,6 +12,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UploadForm } from "@/components/upload-form";
 import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { NativeStorage } from "@/utils/native-storage";
 
 interface UserProfileProps {
   isOpen: boolean;
@@ -31,10 +32,10 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
   );
   const walletAddress = solanaWallet && 'address' in solanaWallet ? solanaWallet.address : '';
 
-  // Load profile data from localStorage or use defaults
-  const getStoredProfile = () => {
+  // Load profile data from native storage or use defaults
+  const getStoredProfile = async () => {
     try {
-      const stored = localStorage.getItem(`privy_profile_${user?.id}`);
+      const stored = await NativeStorage.getItem(`privy_profile_${user?.id}`);
       if (stored) {
         const parsed = JSON.parse(stored);
         return { displayName: parsed.displayName || '', profileImage: '' };
@@ -45,7 +46,7 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
     }
   };
 
-  const storedProfile = getStoredProfile();
+  const [storedProfile, setStoredProfile] = useState({ displayName: '', profileImage: '' });
 
   // Fetch user profile from database
   const { data: userProfile } = useQuery({
@@ -62,17 +63,27 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
   const [nameError, setNameError] = useState('');
   const [nameSuggestions, setNameSuggestions] = useState<string[]>([]);
 
+  // Load stored profile on mount
+  useEffect(() => {
+    const loadStoredProfile = async () => {
+      if (user?.id) {
+        const stored = await getStoredProfile();
+        setStoredProfile(stored);
+      }
+    };
+    loadStoredProfile();
+  }, [user?.id]);
+
   // Update local state when userProfile loads
   useEffect(() => {
     if (userProfile) {
       setDisplayName(userProfile.displayName || userProfile.username || user?.email?.address?.split('@')[0] || 'User');
       setProfileImage(userProfile.avatarUrl || '');
     } else {
-      const stored = getStoredProfile();
-      setDisplayName(stored.displayName || user?.email?.address?.split('@')[0] || 'User');
+      setDisplayName(storedProfile?.displayName || user?.email?.address?.split('@')[0] || 'User');
       setProfileImage('');
     }
-  }, [userProfile, user?.email?.address, user?.id]);
+  }, [userProfile, user?.email?.address, user?.id, storedProfile]);
 
   const displayAddress = useMemo(() => walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : '', [walletAddress]);
 
@@ -95,9 +106,9 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/users/profile'] });
       
-      // Update localStorage for display name only
+      // Update native storage for display name only
       if (user?.id) {
-        localStorage.setItem(`privy_profile_${user.id}`, JSON.stringify({
+        NativeStorage.setItem(`privy_profile_${user.id}`, JSON.stringify({
           displayName: displayName
         }));
       }
