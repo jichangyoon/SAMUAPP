@@ -26,7 +26,6 @@ export function NftGallery() {
   // Listen for profile updates to refresh comments
   useEffect(() => {
     const handleProfileUpdate = () => {
-      // Refresh all NFT comments to get updated author info
       queryClient.invalidateQueries({ 
         predicate: (query) => query.queryKey.includes('comments') 
       });
@@ -54,63 +53,25 @@ export function NftGallery() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
       setNewComment("");
-      toast({
-        title: "Comment posted!",
-        description: "Your comment has been added successfully.",
-      });
+      toast({ title: "Comment posted successfully!" });
     },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to post comment. Please try again.",
-        variant: "destructive",
-      });
-    },
+    onError: (error) => {
+      console.error('Comment creation failed:', error);
+      toast({ title: "Failed to post comment", variant: "destructive" });
+    }
   });
 
-  const handleCommentSubmit = () => {
-    if (!selectedNft || !authenticated || !user) {
-      toast({
-        title: "Login Required",
-        description: "Please log in to post comments.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!newComment.trim()) {
-      toast({
-        title: "Empty Comment",
-        description: "Please enter a comment before posting.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Get Solana wallet address
-    const walletAccounts = user?.linkedAccounts?.filter(account => 
-      account.type === 'wallet' && 
-      account.connectorType !== 'injected' && 
-      account.chainType === 'solana'
-    ) || [];
-    const selectedWalletAccount = walletAccounts[0];
-
-    // Type assertion for wallet address
-    const walletAddress = (selectedWalletAccount as any)?.address;
-
-    if (!walletAddress) {
-      toast({
-        title: "Wallet Required",
-        description: "Please connect your Solana wallet to post comments.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  // Handle comment submission
+  const handleCommentSubmit = async () => {
+    if (!authenticated || !user || !selectedNft || !newComment.trim()) return;
+    
+    const userWallet = user.wallet?.address || '';
+    const username = String(user.email) || 'Anonymous';
+    
     createCommentMutation.mutate({
       comment: newComment.trim(),
-      userWallet: walletAddress,
-      username: user?.email?.address || 'Anonymous User'
+      userWallet,
+      username
     });
   };
 
