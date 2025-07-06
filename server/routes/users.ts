@@ -150,4 +150,38 @@ router.get("/check-name/:displayName", async (req, res) => {
   }
 });
 
+// Get user's NFT comments
+router.get("/:walletAddress/nft-comments", async (req, res) => {
+  try {
+    const { walletAddress } = req.params;
+    
+    // Get all NFT comments for this user
+    const allNfts = await storage.getNfts();
+    const userComments = [];
+    
+    for (const nft of allNfts) {
+      const comments = await storage.getNftComments(nft.id);
+      const userNftComments = comments.filter(comment => comment.authorWallet === walletAddress);
+      
+      // Add NFT info to each comment
+      userNftComments.forEach(comment => {
+        userComments.push({
+          ...comment,
+          nftId: nft.id,
+          nftTitle: nft.title,
+          nftImageUrl: nft.imageUrl
+        });
+      });
+    }
+    
+    // Sort by creation date (newest first)
+    userComments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    
+    res.json(userComments);
+  } catch (error) {
+    console.error("Error fetching user NFT comments:", error);
+    res.status(500).json({ message: "Failed to fetch NFT comments" });
+  }
+});
+
 export default router;

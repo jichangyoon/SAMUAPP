@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send, Trash2, MoreVertical } from "lucide-react";
+import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send, Trash2, MoreVertical, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
@@ -36,6 +36,7 @@ const Profile = React.memo(() => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [memeToDelete, setMemeToDelete] = useState<any>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showAllMemes, setShowAllMemes] = useState(false);
   // 지갑 주소 가져오기 (홈과 동일한 로직)
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
@@ -104,6 +105,19 @@ const Profile = React.memo(() => {
   });
 
   const allMemes = memesResponse?.memes || [];
+
+  // User NFT comments - for the comments tab
+  const { data: userComments = [] } = useQuery({
+    queryKey: ['user-nft-comments', walletAddress],
+    queryFn: async () => {
+      if (!walletAddress) return [];
+      const res = await fetch(`/api/users/${walletAddress}/nft-comments`);
+      if (!res.ok) throw new Error('Failed to fetch NFT comments');
+      return res.json();
+    },
+    enabled: !!walletAddress,
+    staleTime: 2 * 60 * 1000, // 2분 캐시
+  });
 
   // Balance fetching - 짧은 캐시로 최신 잔고 유지
   const { data: samuData } = useQuery({
@@ -718,7 +732,7 @@ const Profile = React.memo(() => {
 
         {/* 탭 메뉴 */}
         <Tabs defaultValue="memes" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 h-auto">
+          <TabsList className="grid w-full grid-cols-4 h-auto">
             <TabsTrigger value="memes" className="flex flex-col items-center gap-1 p-3 text-xs">
               <Trophy className="h-4 w-4" />
               <span>My Memes</span>
@@ -726,6 +740,10 @@ const Profile = React.memo(() => {
             <TabsTrigger value="votes" className="flex flex-col items-center gap-1 p-3 text-xs">
               <Vote className="h-4 w-4" />
               <span>My Votes</span>
+            </TabsTrigger>
+            <TabsTrigger value="comments" className="flex flex-col items-center gap-1 p-3 text-xs">
+              <MessageCircle className="h-4 w-4" />
+              <span>Comments</span>
             </TabsTrigger>
             <TabsTrigger value="power" className="flex flex-col items-center gap-1 p-3 text-xs">
               <Zap className="h-4 w-4" />
@@ -741,7 +759,7 @@ const Profile = React.memo(() => {
               <CardContent>
                 {myMemes.length > 0 ? (
                   <div className="space-y-2">
-                    {myMemes.map((meme: any) => (
+                    {(showAllMemes ? myMemes : myMemes.slice(0, 5)).map((meme: any) => (
                       <div 
                         key={meme.id} 
                         className="flex items-center gap-3 p-2 bg-accent/50 rounded-lg hover:bg-accent/70 transition-colors"
@@ -804,6 +822,20 @@ const Profile = React.memo(() => {
                         )}
                       </div>
                     ))}
+                    
+                    {/* MORE button for memes if more than 5 */}
+                    {myMemes.length > 5 && (
+                      <div className="flex justify-center pt-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowAllMemes(!showAllMemes)}
+                          className="text-muted-foreground"
+                        >
+                          {showAllMemes ? 'Show Less' : `MORE (${myMemes.length - 5})`}
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-6 text-muted-foreground">
@@ -857,6 +889,52 @@ const Profile = React.memo(() => {
                     <Vote className="h-8 w-8 mx-auto mb-2 opacity-50" />
                     <p className="text-sm">No votes cast yet</p>
                     <p className="text-xs">Start voting to see your activity here!</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="comments" className="flex-1 overflow-hidden">
+            <Card className="border-border bg-card h-full flex flex-col">
+              <CardHeader className="flex-shrink-0">
+                <CardTitle className="text-lg text-foreground">My NFT Comments ({userComments.length})</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 overflow-y-auto">
+                {userComments.length > 0 ? (
+                  <div className="space-y-2">
+                    {userComments.map((comment: any) => (
+                      <div 
+                        key={comment.id} 
+                        className="flex items-start gap-3 p-3 bg-accent/50 rounded-lg hover:bg-accent/70 transition-colors"
+                      >
+                        <div className="w-12 h-12 flex-shrink-0">
+                          <img
+                            src={comment.nftImageUrl || `/assets/nfts/${comment.nftId}.webp`}
+                            alt={comment.nftTitle}
+                            className="w-full h-full rounded object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-medium text-foreground text-sm truncate">
+                              {comment.nftTitle || `SAMU Wolf #${comment.nftId.toString().padStart(3, '0')}`}
+                            </h4>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(comment.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="text-sm text-foreground">{comment.content}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No NFT comments yet</p>
+                    <p className="text-xs">Visit the NFT gallery to leave comments!</p>
                   </div>
                 )}
               </CardContent>
