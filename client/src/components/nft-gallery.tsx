@@ -5,17 +5,23 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Send, Image as ImageIcon } from "lucide-react";
+import { MessageCircle, Send, Image as ImageIcon, ExternalLink } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { NftComment } from "@shared/schema";
 import { SAMU_NFTS, type StaticNft } from "@/data/nft-data";
+import nftOwnersData from "@/data/nft-owners.json";
 
 export function NftGallery() {
   const [selectedNft, setSelectedNft] = useState<StaticNft | null>(null);
   const [newComment, setNewComment] = useState("");
   const { authenticated, user } = usePrivy();
   const { toast } = useToast();
+
+  // Get NFT owner info
+  const getNftOwner = (nftId: number) => {
+    return nftOwnersData[nftId.toString() as keyof typeof nftOwnersData] || null;
+  };
   
   // Listen for profile updates to refresh comments
   useEffect(() => {
@@ -187,6 +193,35 @@ export function NftGallery() {
                   <span className="text-muted-foreground">Token ID:</span>
                   <span className="text-foreground font-mono">#{selectedNft.tokenId.toString().padStart(3, '0')}</span>
                 </div>
+                
+                {/* Owner Information */}
+                {(() => {
+                  const owner = getNftOwner(selectedNft.tokenId);
+                  return owner ? (
+                    <div className="flex justify-between text-sm items-center">
+                      <span className="text-muted-foreground">Owned by:</span>
+                      <button
+                        onClick={() => {
+                          // 네이티브 앱 환경에서 외부 링크 열기 최적화
+                          if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform()) {
+                            import('@capacitor/browser').then(({ Browser }) => {
+                              Browser.open({ url: owner.url });
+                            }).catch(() => {
+                              window.open(owner.url, '_blank');
+                            });
+                          } else {
+                            window.open(owner.url, '_blank');
+                          }
+                        }}
+                        className="text-foreground hover:text-primary cursor-pointer flex items-center gap-1 transition-colors"
+                      >
+                        {owner.owner}
+                        <ExternalLink className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ) : null;
+                })()}
+                
                 {selectedNft.description && (
                   <div>
                     <h4 className="font-medium text-foreground mb-1">Description</h4>
