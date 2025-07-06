@@ -93,6 +93,8 @@ export class MemStorage implements IStorage {
       imageUrl: insertMeme.imageUrl,
       authorWallet: insertMeme.authorWallet,
       authorUsername: insertMeme.authorUsername,
+      authorAvatarUrl: null,
+      contestId: null,
       votes: 0,
       createdAt: new Date()
     };
@@ -132,6 +134,7 @@ export class MemStorage implements IStorage {
       walletAddress: insertUser.walletAddress,
       email: insertUser.email || null,
       username: insertUser.username,
+      displayName: insertUser.displayName || null,
       avatarUrl: insertUser.avatarUrl || null,
       samuBalance: insertUser.samuBalance || 0,
       totalVotingPower: insertUser.totalVotingPower || 0,
@@ -147,15 +150,11 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByDisplayName(displayName: string): Promise<User | undefined> {
-    for (const user of this.users.values()) {
-      if (user.displayName === displayName) {
-        return user;
-      }
-    }
-    return undefined;
+    const users = Array.from(this.users.values());
+    return users.find(user => user.displayName === displayName);
   }
 
-  async updateUser(walletAddress: string, updates: Partial<InsertUser>): Promise<User> {
+  async updateUser(walletAddress: string, updates: Partial<InsertUser & { displayName?: string; avatarUrl?: string }>): Promise<User> {
     const existingUser = this.users.get(walletAddress);
     if (!existingUser) {
       throw new Error("User not found");
@@ -168,6 +167,19 @@ export class MemStorage implements IStorage {
     };
     this.users.set(walletAddress, updatedUser);
     return updatedUser;
+  }
+
+  async updateUserMemeAuthorInfo(walletAddress: string, newDisplayName: string, newAvatarUrl?: string): Promise<void> {
+    // Update all memes by this author
+    const allMemes = Array.from(this.memes.values());
+    allMemes.forEach(meme => {
+      if (meme.authorWallet === walletAddress) {
+        meme.authorUsername = newDisplayName;
+        if (newAvatarUrl !== undefined) {
+          meme.authorAvatarUrl = newAvatarUrl;
+        }
+      }
+    });
   }
 
   async getUserMemes(walletAddress: string): Promise<Meme[]> {
@@ -288,6 +300,8 @@ export class MemStorage implements IStorage {
       imageUrl: insertMeme.imageUrl,
       authorWallet: insertMeme.authorWallet,
       authorUsername: insertMeme.authorUsername,
+      authorAvatarUrl: null,
+      contestId: null,
       votes: 0,
       createdAt: new Date()
     };
@@ -345,6 +359,39 @@ export class MemStorage implements IStorage {
       .filter(vote => vote.memeId === memeId).length;
     
     meme.votes = voteCount;
+  }
+
+  // Contest operations (stub implementations for MemStorage)
+  async createContest(contest: InsertContest): Promise<Contest> {
+    throw new Error("Contest operations not supported in MemStorage");
+  }
+
+  async getContests(): Promise<Contest[]> {
+    return [];
+  }
+
+  async getContestById(id: number): Promise<Contest | undefined> {
+    return undefined;
+  }
+
+  async updateContestStatus(id: number, status: string): Promise<Contest> {
+    throw new Error("Contest operations not supported in MemStorage");
+  }
+
+  async updateContestTimes(id: number, startTime: Date, endTime: Date): Promise<Contest> {
+    throw new Error("Contest operations not supported in MemStorage");
+  }
+
+  async endContestAndArchive(contestId: number): Promise<ArchivedContest> {
+    throw new Error("Contest operations not supported in MemStorage");
+  }
+
+  async getArchivedContests(): Promise<ArchivedContest[]> {
+    return [];
+  }
+
+  async getCurrentActiveContest(): Promise<Contest | undefined> {
+    return undefined;
   }
 }
 
@@ -593,6 +640,8 @@ export class DatabaseStorage implements IStorage {
       imageUrl: meme.imageUrl,
       authorWallet: meme.authorWallet,
       authorUsername: meme.authorUsername,
+      authorAvatarUrl: null,
+      contestId: null,
       votes: meme.votes,
       createdAt: meme.createdAt
     };
@@ -615,6 +664,8 @@ export class DatabaseStorage implements IStorage {
       imageUrl: meme.imageUrl,
       authorWallet: meme.authorWallet,
       authorUsername: meme.authorUsername,
+      authorAvatarUrl: null,
+      contestId: null,
       votes: meme.votes,
       createdAt: meme.createdAt
     }));
@@ -638,6 +689,8 @@ export class DatabaseStorage implements IStorage {
       imageUrl: meme.imageUrl,
       authorWallet: meme.authorWallet,
       authorUsername: meme.authorUsername,
+      authorAvatarUrl: null,
+      contestId: null,
       votes: meme.votes,
       createdAt: meme.createdAt
     };
@@ -819,23 +872,25 @@ export class DatabaseStorage implements IStorage {
     const secondMemeId = sortedMemes[1]?.id || null;
     const thirdMemeId = sortedMemes[2]?.id || null;
 
-    // Archive the contest
+    // Archive the contest using InsertArchivedContest type
+    const archiveData: InsertArchivedContest = {
+      originalContestId: contestId,
+      title: contest.title,
+      description: contest.description,
+      totalMemes,
+      totalVotes,
+      totalParticipants: uniqueParticipants,
+      winnerMemeId,
+      secondMemeId,
+      thirdMemeId,
+      prizePool: contest.prizePool,
+      startTime: contest.startTime || contest.createdAt,
+      endTime: new Date(),
+    };
+
     const [archivedContest] = await this.db
       .insert(archivedContests)
-      .values({
-        originalContestId: contestId,
-        title: contest.title,
-        description: contest.description,
-        totalMemes,
-        totalVotes,
-        totalParticipants: uniqueParticipants,
-        winnerMemeId,
-        secondMemeId,
-        thirdMemeId,
-        prizePool: contest.prizePool,
-        startTime: contest.startTime || contest.createdAt,
-        endTime: new Date(),
-      })
+      .values(archiveData)
       .returning();
 
     // Update contest status to archived

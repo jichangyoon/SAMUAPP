@@ -55,7 +55,8 @@ router.put("/profile/:walletAddress", async (req, res) => {
     res.json(user);
   } catch (error) {
     console.error("Error updating user profile:", error);
-    res.status(400).json({ message: "Failed to update user profile", error: error.message });
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    res.status(400).json({ message: "Failed to update user profile", error: errorMessage });
   }
 });
 
@@ -157,11 +158,11 @@ router.get("/:walletAddress/nft-comments", async (req, res) => {
     
     // Get all NFT comments for this user
     const allNfts = await storage.getNfts();
-    const userComments = [];
+    const userComments: any[] = [];
     
     for (const nft of allNfts) {
       const comments = await storage.getNftComments(nft.id);
-      const userNftComments = comments.filter(comment => comment.authorWallet === walletAddress);
+      const userNftComments = comments.filter(comment => comment.userWallet === walletAddress);
       
       // Add NFT info to each comment
       userNftComments.forEach(comment => {
