@@ -25,7 +25,7 @@ export const SAMU_NFTS: StaticNft[] = Array.from({ length: 164 }, (_, index) => 
     title: `SAMU Wolf #${tokenId.toString().padStart(3, '0')}`,
     tokenId,
     creator: "SAMU Official",
-    description: `Unique SAMU Wolf NFT with legendary traits and community significance. Part of the exclusive 164-piece collection featuring artistic wolf designs with special characteristics.`,
+    description: "Claim your wolf. Enter the SAMUrai ranks.",
     imageUrl: generateImageUrl(tokenId),
     createdAt: new Date(Date.now() - Math.random() * 86400000 * 30).toISOString() // Random date within last 30 days
   };
