@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { usePrivy } from '@privy-io/react-auth';
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,22 @@ export function NftDetailModal({ selectedNft, isOpen, onClose }: NftDetailModalP
   const getNftOwner = (nftId: number) => {
     return nftOwnersData[nftId.toString() as keyof typeof nftOwnersData] || null;
   };
+
+  // Listen for profile updates to refresh comments
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      queryClient.invalidateQueries({ 
+        predicate: (query) => query.queryKey.includes('comments') 
+      });
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    window.addEventListener('imageUpdated', handleProfileUpdate);
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+      window.removeEventListener('imageUpdated', handleProfileUpdate);
+    };
+  }, []);
 
   // Get wallet address
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];

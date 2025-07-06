@@ -9,6 +9,7 @@ export interface IStorage {
   getUserByDisplayName(displayName: string): Promise<User | undefined>;
   updateUser(walletAddress: string, updates: Partial<InsertUser & { displayName?: string; avatarUrl?: string }>): Promise<User>;
   updateUserMemeAuthorInfo(walletAddress: string, newDisplayName: string, newAvatarUrl?: string): Promise<void>;
+  updateUserNftCommentInfo(walletAddress: string, newDisplayName: string, newAvatarUrl?: string): Promise<void>;
   getUserMemes(walletAddress: string): Promise<Meme[]>;
   getUserVotes(walletAddress: string): Promise<Vote[]>;
   
@@ -181,6 +182,16 @@ export class MemStorage implements IStorage {
         if (newAvatarUrl !== undefined) {
           meme.authorAvatarUrl = newAvatarUrl;
         }
+      }
+    });
+  }
+
+  async updateUserNftCommentInfo(walletAddress: string, newDisplayName: string, newAvatarUrl?: string): Promise<void> {
+    // Update all NFT comments by this user
+    const allComments = Array.from(this.nftComments.values());
+    allComments.forEach(comment => {
+      if (comment.userWallet === walletAddress) {
+        comment.username = newDisplayName;
       }
     });
   }
@@ -472,6 +483,7 @@ export class DatabaseStorage implements IStorage {
     // Update author info in all memes if profile changed
     if (updates.displayName || updates.avatarUrl) {
       await this.updateUserMemeAuthorInfo(walletAddress, updates.displayName || '', updates.avatarUrl);
+      await this.updateUserNftCommentInfo(walletAddress, updates.displayName || '', updates.avatarUrl);
     }
     
     return user;
@@ -490,6 +502,21 @@ export class DatabaseStorage implements IStorage {
       .update(memes)
       .set(updateData)
       .where(eq(memes.authorWallet, walletAddress))
+      .returning();
+  }
+
+  async updateUserNftCommentInfo(walletAddress: string, newDisplayName: string, newAvatarUrl?: string): Promise<void> {
+    if (!this.db) throw new Error("Database not available");
+    
+    // Prepare update data
+    const updateData: any = {};
+    if (newDisplayName) updateData.username = newDisplayName;
+    
+    // Update username in all NFT comments created by this user
+    const result = await this.db
+      .update(nftComments)
+      .set(updateData)
+      .where(eq(nftComments.userWallet, walletAddress))
       .returning();
   }
 
