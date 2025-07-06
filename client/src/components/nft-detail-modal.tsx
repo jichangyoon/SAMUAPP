@@ -43,17 +43,27 @@ export function NftDetailModal({ selectedNft, isOpen, onClose }: NftDetailModalP
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
   const walletAddress = selectedWalletAccount?.address || '';
 
-  // Get user profile
+  // Get current user's profile for comment submission
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile', walletAddress],
-    queryFn: () => apiRequest('GET', `/api/users/profile/${walletAddress}`),
+    queryFn: async () => {
+      if (!walletAddress) return null;
+      const res = await fetch(`/api/users/profile/${walletAddress}`);
+      if (!res.ok) throw new Error('Failed to fetch user profile');
+      return res.json();
+    },
     enabled: !!walletAddress,
   });
 
   // Fetch comments for selected NFT
-  const { data: comments = [] } = useQuery({
+  const { data: comments = [] } = useQuery<CommentWithProfile[]>({
     queryKey: ['/api/nfts', selectedNft?.id, 'comments'],
-    queryFn: () => apiRequest('GET', `/api/nfts/${selectedNft?.id}/comments`),
+    queryFn: async () => {
+      if (!selectedNft) return [];
+      const response = await fetch(`/api/nfts/${selectedNft.id}/comments`);
+      if (!response.ok) throw new Error('Failed to fetch comments');
+      return response.json();
+    },
     enabled: !!selectedNft,
   });
 
@@ -330,7 +340,8 @@ export function NftDetailModal({ selectedNft, isOpen, onClose }: NftDetailModalP
       {/* User Info Modal */}
       {showUserModal && (
         <UserInfoModal
-          userWallet={selectedUserWallet}
+          walletAddress={selectedUserWallet}
+          username="User"
           isOpen={showUserModal}
           onClose={() => setShowUserModal(false)}
         />
