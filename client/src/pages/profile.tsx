@@ -19,6 +19,8 @@ import { useLocation } from "wouter";
 import { SendTokensSimple } from "@/components/send-tokens-simple";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { MediaDisplay } from "@/components/media-display";
+import { UserInfoModal } from "@/components/user-info-modal";
+import { SAMU_NFTS } from "@/data/nft-data";
 
 const Profile = React.memo(() => {
   const { user, authenticated } = usePrivy();
@@ -39,7 +41,9 @@ const Profile = React.memo(() => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showAllMemes, setShowAllMemes] = useState(false);
   const [selectedNft, setSelectedNft] = useState<any>(null);
-  const [showNftModal, setShowNftModal] = useState(false);
+  const [newComment, setNewComment] = useState("");
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [selectedUserWallet, setSelectedUserWallet] = useState<string>('');
   // 지갑 주소 가져오기 (홈과 동일한 로직)
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
@@ -411,21 +415,25 @@ const Profile = React.memo(() => {
   }, [imagePreview]);
 
   // Delete meme function
-  // NFT 클릭 핸들러
+  // NFT 클릭 핸들러 - NFT 갤러리와 동일한 데이터 사용
   const handleNftClick = useCallback((nftId: number) => {
-    // NFT 데이터 생성 (NFT 갤러리와 동일한 구조)
-    const nft = {
-      id: nftId,
-      title: `SAMU Wolf #${nftId.toString().padStart(3, '0')}`,
-      description: `SAMU Wolf NFT #${nftId} from the official collection`,
-      imageUrl: `/assets/nfts/${nftId}.webp`,
-      creator: 'SAMU Team',
-      price: 0,
-      owner: 'Community'
-    };
-    setSelectedNft(nft);
-    setShowNftModal(true);
+    const nft = SAMU_NFTS.find(n => n.id === nftId);
+    if (nft) {
+      setSelectedNft(nft);
+    }
   }, []);
+
+  // NFT comments query
+  const { data: nftComments = [] } = useQuery({
+    queryKey: ['/api/nfts', selectedNft?.id, 'comments'],
+    queryFn: async () => {
+      if (!selectedNft) return [];
+      const response = await fetch(`/api/nfts/${selectedNft.id}/comments`);
+      if (!response.ok) throw new Error('Failed to fetch comments');
+      return response.json();
+    },
+    enabled: !!selectedNft,
+  });
 
   const handleDeleteMeme = useCallback(async (meme: any) => {
     if (!walletAddress) return;
@@ -1020,41 +1028,88 @@ const Profile = React.memo(() => {
         />
       )}
 
-      {/* NFT Detail Modal */}
-      <Drawer open={showNftModal} onOpenChange={setShowNftModal}>
-        <DrawerContent className="h-[92vh] bg-black border-gray-800">
-          <DrawerHeader className="pb-4">
-            <DrawerTitle className="text-white text-center">
-              {selectedNft?.title}
-            </DrawerTitle>
-            <DrawerDescription className="text-gray-400 text-center">
-              NFT Collection
-            </DrawerDescription>
-          </DrawerHeader>
-          <div className="px-4 pb-4 overflow-y-auto">
-            {selectedNft && (
-              <div className="space-y-4">
-                <div className="flex justify-center">
-                  <img
-                    src={selectedNft.imageUrl}
-                    alt={selectedNft.title}
-                    className="w-full max-w-sm rounded-lg"
-                    loading="lazy"
-                  />
+      {/* NFT Detail Modal - NFT 갤러리와 동일한 구조 */}
+      {selectedNft && (
+        <Drawer open={!!selectedNft} onOpenChange={() => setSelectedNft(null)}>
+          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+            <DrawerHeader>
+              <DrawerTitle className="text-foreground">{selectedNft.title}</DrawerTitle>
+              <DrawerDescription className="text-muted-foreground">
+                Created by {selectedNft.creator}
+              </DrawerDescription>
+            </DrawerHeader>
+
+            <div className="px-4 pb-4 space-y-4 overflow-y-auto">
+              {/* NFT Image */}
+              <div className="aspect-square rounded-lg overflow-hidden">
+                <img
+                  src={selectedNft.imageUrl}
+                  alt={selectedNft.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* NFT Details */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Token ID:</span>
+                  <span className="text-foreground font-mono">#{selectedNft.tokenId.toString().padStart(3, '0')}</span>
                 </div>
-                <div className="text-center space-y-2">
-                  <h3 className="text-xl font-bold text-white">{selectedNft.title}</h3>
-                  <p className="text-gray-300">{selectedNft.description}</p>
-                  <div className="flex justify-center gap-4 text-sm text-gray-400">
-                    <span>Creator: {selectedNft.creator}</span>
-                    <span>Owner: {selectedNft.owner}</span>
+                
+                {selectedNft.description && (
+                  <div>
+                    <h4 className="font-medium text-foreground mb-1">Description</h4>
+                    <p className="text-sm text-muted-foreground">{selectedNft.description}</p>
                   </div>
+                )}
+              </div>
+
+              {/* Comments Section */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">Comments ({nftComments.length})</span>
+                </div>
+
+                {/* Comments List */}
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {nftComments.map((comment: any) => (
+                    <div key={comment.id} className="bg-accent/50 rounded-lg p-2 text-sm">
+                      <div className="flex items-center gap-2 mb-1">
+                        <button
+                          onClick={() => {
+                            setSelectedUserWallet(comment.userWallet);
+                            setShowUserModal(true);
+                          }}
+                          className="font-medium text-foreground hover:text-primary cursor-pointer"
+                        >
+                          {comment.userProfile?.displayName || comment.username || 'Anonymous'}
+                        </button>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(comment.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className="text-muted-foreground break-words">{comment.comment}</p>
+                    </div>
+                  ))}
+                  {nftComments.length === 0 && (
+                    <p className="text-center text-muted-foreground text-sm py-4">
+                      No comments yet. Be the first to comment!
+                    </p>
+                  )}
                 </div>
               </div>
-            )}
-          </div>
-        </DrawerContent>
-      </Drawer>
+            </div>
+          </DrawerContent>
+        </Drawer>
+      )}
+
+      {/* User Info Modal */}
+      <UserInfoModal
+        isOpen={showUserModal}
+        onClose={() => setShowUserModal(false)}
+        walletAddress={selectedUserWallet}
+      />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
