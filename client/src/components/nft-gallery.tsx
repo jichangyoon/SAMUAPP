@@ -124,6 +124,7 @@ export function NftGallery() {
 
   // Handle user click - show user profile modal
   const handleUserClick = (userWallet: string) => {
+    console.log('User clicked:', userWallet);
     setSelectedUserWallet(userWallet);
     setShowUserModal(true);
   };
@@ -303,8 +304,12 @@ export function NftGallery() {
                         <div key={comment.id} className="bg-muted/50 rounded-lg p-3">
                           <div className="flex items-center gap-2 mb-1">
                             <div 
-                              className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
-                              onClick={() => handleUserClick(comment.userWallet)}
+                              className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity bg-transparent p-1 rounded"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleUserClick(comment.userWallet);
+                              }}
                             >
                               {commentWithProfile.userProfile?.avatarUrl ? (
                                 <img 
@@ -344,12 +349,12 @@ export function NftGallery() {
       )}
 
       {/* User Info Modal */}
-      {showUserModal && (
-        <UserInfoModal 
-          walletAddress={selectedUserWallet}
-          onClose={() => setShowUserModal(false)}
-        />
-      )}
+      <UserInfoModal 
+        isOpen={showUserModal}
+        walletAddress={selectedUserWallet}
+        username=""
+        onClose={() => setShowUserModal(false)}
+      />
     </div>
   );
 }
