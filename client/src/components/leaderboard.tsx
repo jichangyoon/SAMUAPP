@@ -202,7 +202,7 @@ export function Leaderboard() {
                       </div>
                       <div className="text-xs text-muted-foreground">
                         by <span 
-                          className="underline cursor-pointer"
+                          className="cursor-pointer"
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedUser({ walletAddress: meme.authorWallet, username: meme.authorUsername });

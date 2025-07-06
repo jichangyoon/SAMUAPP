@@ -514,7 +514,7 @@ Changelog:
 - January 6, 2025. Completed comprehensive UI optimization - fixed accessibility warnings with DrawerDescription, optimized contest header layout to prevent text wrapping, enhanced production code quality
 - January 6, 2025. Replaced splash screen with custom mobile-optimized full-screen image - switched from logo/text/animation to single branded splash image for better mobile app experience
 - January 6, 2025. Updated splash screen image to improved SAMU wolf design with better visual clarity and brand consistency
-- January 6, 2025. Removed underline from author usernames in meme cards - replaced with hover color transition for cleaner visual design
+- January 6, 2025. Removed underline from author usernames in meme cards and leaderboard - simplified to cursor-pointer only for cleaner visual design
 
 ## CHECKPOINT - June 30, 2025
 ```
