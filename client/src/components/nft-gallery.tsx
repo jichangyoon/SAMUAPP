@@ -106,6 +106,8 @@ export function NftGallery() {
     const userWallet = user.wallet?.address || '';
     const username = userProfile?.displayName || user.email?.address || 'Anonymous';
     
+    console.log('Comment submission:', { userWallet, username, userProfile });
+    
     createCommentMutation.mutate({
       comment: newComment.trim(),
       userWallet,
@@ -301,7 +303,7 @@ export function NftGallery() {
                               </div>
                             )}
                             <span className="text-sm font-medium text-foreground">
-                              {commentWithProfile.userProfile?.displayName || comment.username || 'Anonymous'}
+                              {commentWithProfile.userProfile?.displayName || 'Anonymous'}
                             </span>
                             <span className="text-xs text-muted-foreground">
                               {new Date(comment.createdAt).toLocaleDateString()}
