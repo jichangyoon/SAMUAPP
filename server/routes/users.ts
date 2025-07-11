@@ -86,6 +86,18 @@ router.get("/:walletAddress/votes", async (req, res) => {
   }
 });
 
+// Get user's comments
+router.get("/:walletAddress/comments", async (req, res) => {
+  try {
+    const { walletAddress } = req.params;
+    const comments = await storage.getUserComments(walletAddress);
+    res.json(comments);
+  } catch (error) {
+    console.error("Error fetching user comments:", error);
+    res.status(500).json({ message: "Failed to fetch user comments" });
+  }
+});
+
 // Get user statistics
 router.get("/:walletAddress/stats", async (req, res) => {
   try {

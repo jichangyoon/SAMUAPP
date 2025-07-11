@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send, Trash2, MoreVertical } from "lucide-react";
+import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send, Trash2, MoreVertical, MessageCircle, Image as ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
@@ -37,6 +37,9 @@ const Profile = React.memo(() => {
   const [memeToDelete, setMemeToDelete] = useState<any>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showAllMemes, setShowAllMemes] = useState(false);
+  const [showCommentDeleteDialog, setShowCommentDeleteDialog] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<any>(null);
+  const [isDeletingComment, setIsDeletingComment] = useState(false);
   // 지갑 주소 가져오기 (홈과 동일한 로직)
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
@@ -87,6 +90,19 @@ const Profile = React.memo(() => {
       if (!walletAddress) return [];
       const res = await fetch(`/api/users/${walletAddress}/votes`);
       if (!res.ok) throw new Error('Failed to fetch votes');
+      return res.json();
+    },
+    enabled: !!walletAddress,
+    staleTime: 2 * 60 * 1000, // 2분 캐시
+  });
+
+  // User comments - 짧은 캐시로 최신 데이터 유지
+  const { data: userComments = [] } = useQuery({
+    queryKey: ['user-comments', walletAddress],
+    queryFn: async () => {
+      if (!walletAddress) return [];
+      const res = await fetch(`/api/users/${walletAddress}/comments`);
+      if (!res.ok) throw new Error('Failed to fetch comments');
       return res.json();
     },
     enabled: !!walletAddress,
@@ -440,6 +456,50 @@ const Profile = React.memo(() => {
     }
   }, [walletAddress, toast, queryClient]);
 
+  // Delete comment function
+  const handleDeleteComment = useCallback(async (comment: any) => {
+    if (!walletAddress) return;
+
+    setIsDeletingComment(true);
+    try {
+      const response = await fetch(`/api/nfts/comments/${comment.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userWallet: walletAddress
+        })
+      });
+
+      if (response.ok) {
+        // Invalidate related queries to refresh the data
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['user-comments', walletAddress] }),
+          queryClient.invalidateQueries({ queryKey: ['nft-comments'] })
+        ]);
+
+        toast({
+          title: "Comment Deleted",
+          description: "Your comment has been successfully deleted."
+        });
+      } else {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to delete comment');
+      }
+    } catch (error) {
+      toast({
+        title: "Delete Failed",
+        description: error instanceof Error ? error.message : "Failed to delete comment. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeletingComment(false);
+      setShowCommentDeleteDialog(false);
+      setCommentToDelete(null);
+    }
+  }, [walletAddress, toast, queryClient]);
+
 
 
   // Calculate statistics from user data - useMemo로 최적화
@@ -468,11 +528,12 @@ const Profile = React.memo(() => {
     };
   }, [samuData, solData, userStats]);
 
-  // User's memes and votes - useMemo로 최적화
-  const { myMemes, myVotes } = React.useMemo(() => ({
+  // User's memes, votes, and comments - useMemo로 최적화
+  const { myMemes, myVotes, myComments } = React.useMemo(() => ({
     myMemes: userMemes || [],
-    myVotes: userVoteHistory || []
-  }), [userMemes, userVoteHistory]);
+    myVotes: userVoteHistory || [],
+    myComments: userComments || []
+  }), [userMemes, userVoteHistory, userComments]);
 
   // Display limited memes with More button
   const displayedMemes = React.useMemo(() => {
@@ -724,7 +785,7 @@ const Profile = React.memo(() => {
 
         {/* 탭 메뉴 */}
         <Tabs defaultValue="memes" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 h-auto">
+          <TabsList className="grid w-full grid-cols-4 h-auto">
             <TabsTrigger value="memes" className="flex flex-col items-center gap-1 p-3 text-xs">
               <Trophy className="h-4 w-4" />
               <span>My Memes</span>
@@ -732,6 +793,10 @@ const Profile = React.memo(() => {
             <TabsTrigger value="votes" className="flex flex-col items-center gap-1 p-3 text-xs">
               <Vote className="h-4 w-4" />
               <span>My Votes</span>
+            </TabsTrigger>
+            <TabsTrigger value="comments" className="flex flex-col items-center gap-1 p-3 text-xs">
+              <MessageCircle className="h-4 w-4" />
+              <span>Comments</span>
             </TabsTrigger>
             <TabsTrigger value="power" className="flex flex-col items-center gap-1 p-3 text-xs">
               <Zap className="h-4 w-4" />
@@ -883,6 +948,76 @@ const Profile = React.memo(() => {
             </Card>
           </TabsContent>
 
+          <TabsContent value="comments" className="flex-1 overflow-hidden">
+            <Card className="border-border bg-card h-full flex flex-col">
+              <CardHeader className="flex-shrink-0">
+                <CardTitle className="text-lg text-foreground">My Comments ({myComments.length})</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 overflow-y-auto">
+                {myComments.length > 0 ? (
+                  <div className="space-y-2">
+                    {myComments.map((comment) => (
+                      <div 
+                        key={comment.id} 
+                        className="flex items-start gap-3 p-2 bg-accent/50 rounded-lg hover:bg-accent/70 transition-colors cursor-pointer"
+                        onClick={() => {
+                          // NFT 상세 모달 열기 (향후 구현)
+                          console.log('Open NFT modal for NFT ID:', comment.nftId);
+                        }}
+                      >
+                        <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
+                          <ImageIcon className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-foreground text-sm">NFT #{comment.nftId}</h4>
+                          <p className="text-xs text-muted-foreground truncate">{comment.comment}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {new Date(comment.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        
+                        {/* Delete button - only show for authenticated users */}
+                        {authenticated && walletAddress && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-8 w-8 p-0 hover:bg-accent"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem 
+                                className="text-destructive focus:text-destructive cursor-pointer"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCommentToDelete(comment);
+                                  setShowCommentDeleteDialog(true);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete Comment
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No comments yet</p>
+                    <p className="text-xs">Start commenting on NFTs to see your comments here!</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           <TabsContent value="power" className="flex-1 overflow-hidden">
             <Card className="border-border bg-card h-full flex flex-col">
               <CardHeader className="flex-shrink-0">
@@ -957,6 +1092,38 @@ const Profile = React.memo(() => {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isDeleting ? (
+                <>
+                  <div className="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></div>
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Comment Confirmation Dialog */}
+      <AlertDialog open={showCommentDeleteDialog} onOpenChange={setShowCommentDeleteDialog}>
+        <AlertDialogContent className="left-[46%]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Comment?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete your comment on NFT #{commentToDelete?.nftId}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingComment}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => commentToDelete && handleDeleteComment(commentToDelete)}
+              disabled={isDeletingComment}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeletingComment ? (
                 <>
                   <div className="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></div>
                   Deleting...

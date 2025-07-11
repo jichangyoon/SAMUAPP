@@ -11,6 +11,7 @@ export interface IStorage {
   updateUserMemeAuthorInfo(walletAddress: string, newDisplayName: string, newAvatarUrl?: string): Promise<void>;
   getUserMemes(walletAddress: string): Promise<Meme[]>;
   getUserVotes(walletAddress: string): Promise<Vote[]>;
+  getUserComments(walletAddress: string): Promise<NftComment[]>;
   
   // Meme operations
   createMeme(meme: InsertMeme): Promise<Meme>;
@@ -181,6 +182,12 @@ export class MemStorage implements IStorage {
   async getUserVotes(walletAddress: string): Promise<Vote[]> {
     return Array.from(this.votes.values())
       .filter(vote => vote.voterWallet === walletAddress)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getUserComments(walletAddress: string): Promise<NftComment[]> {
+    return Array.from(this.nftComments.values())
+      .filter(comment => comment.userWallet === walletAddress)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
@@ -443,6 +450,16 @@ export class DatabaseStorage implements IStorage {
       .from(votes)
       .where(eq(votes.voterWallet, walletAddress))
       .orderBy(desc(votes.createdAt));
+  }
+
+  async getUserComments(walletAddress: string): Promise<NftComment[]> {
+    if (!this.db) throw new Error("Database not available");
+    
+    return await this.db
+      .select()
+      .from(nftComments)
+      .where(eq(nftComments.userWallet, walletAddress))
+      .orderBy(desc(nftComments.createdAt));
   }
 
   async createMeme(insertMeme: InsertMeme): Promise<Meme> {
