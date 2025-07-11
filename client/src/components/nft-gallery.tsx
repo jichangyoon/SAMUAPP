@@ -36,6 +36,13 @@ export function NftGallery() {
     return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
   }, []);
 
+  // Force clear cache on component mount
+  useEffect(() => {
+    queryClient.invalidateQueries({ 
+      predicate: (query) => query.queryKey.includes('comments') 
+    });
+  }, []);
+
   // Use static NFT data for instant loading
   const nfts = SAMU_NFTS;
   const isLoading = false;
@@ -44,6 +51,8 @@ export function NftGallery() {
   const { data: comments = [] } = useQuery<NftComment[]>({
     queryKey: ['/api/nfts', selectedNft?.id, 'comments'],
     enabled: !!selectedNft,
+    staleTime: 0, // Don't cache comments
+    cacheTime: 0, // Don't keep in cache
   });
 
   // Create comment mutation
@@ -52,7 +61,9 @@ export function NftGallery() {
       return apiRequest('POST', `/api/nfts/${selectedNft?.id}/comments`, commentData);
     },
     onSuccess: () => {
+      // Force refresh comments immediately
       queryClient.invalidateQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
+      queryClient.refetchQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
       setNewComment("");
       toast({
         title: "Comment posted!",
