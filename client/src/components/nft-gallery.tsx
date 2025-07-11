@@ -4,6 +4,7 @@ import { usePrivy } from '@privy-io/react-auth';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { MessageCircle, Send, Image as ImageIcon, ExternalLink, Trash2 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -15,6 +16,8 @@ import nftOwnersData from "@/data/nft-owners.json";
 export function NftGallery() {
   const [selectedNft, setSelectedNft] = useState<StaticNft | null>(null);
   const [newComment, setNewComment] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
   const { authenticated, user } = usePrivy();
   const { toast } = useToast();
 
@@ -157,9 +160,16 @@ export function NftGallery() {
   });
 
   const handleDeleteComment = (commentId: number) => {
-    if (window.confirm('Delete this comment?')) {
-      deleteCommentMutation.mutate(commentId);
+    setCommentToDelete(commentId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (commentToDelete) {
+      deleteCommentMutation.mutate(commentToDelete);
     }
+    setDeleteDialogOpen(false);
+    setCommentToDelete(null);
   };
 
   const handleCommentSubmit = () => {
@@ -445,6 +455,27 @@ export function NftGallery() {
           </DrawerContent>
         </Drawer>
       )}
+
+      {/* Delete Comment Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="left-[46%]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Comment</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this comment? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete Comment
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
