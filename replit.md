@@ -524,6 +524,7 @@ Changelog:
 - July 11, 2025. Fixed critical NFT comment system bug - React Query was calling wrong endpoint (/api/nfts instead of /api/nfts/{id}/comments) causing 164 NFT records to display as comments
 - July 11, 2025. Implemented real-time profile synchronization for NFT comments - comments now display current user profile information (name/avatar) instead of stored data from comment creation time
 - July 11, 2025. Enhanced comment system with live profile updates - when users change their profile, all their existing comments across all NFTs immediately show the updated information
+- July 11, 2025. Implemented complete NFT comment deletion system with owner-only permissions, black styled delete buttons, and real-time UI updates
 
 ## CHECKPOINT - June 30, 2025
 ```
