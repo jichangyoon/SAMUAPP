@@ -286,12 +286,22 @@ export function NftGallery() {
                     comments.map((comment) => (
                       <div key={comment.id} className="bg-muted/50 rounded-lg p-3">
                         <div className="flex items-center gap-2 mb-1">
-                          <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                            <span className="text-xs font-bold text-primary-foreground">
-                              {(comment.username || 'U').charAt(0).toUpperCase()}
-                            </span>
+                          <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center overflow-hidden">
+                            {comment.avatarUrl ? (
+                              <img 
+                                src={comment.avatarUrl} 
+                                alt={comment.displayName || comment.username}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-xs font-bold text-primary-foreground">
+                                {(comment.displayName || comment.username || 'U').charAt(0).toUpperCase()}
+                              </span>
+                            )}
                           </div>
-                          <span className="text-sm font-medium text-foreground">{comment.username || 'Anonymous'}</span>
+                          <span className="text-sm font-medium text-foreground">
+                            {comment.displayName || comment.username || 'Anonymous'}
+                          </span>
                           <span className="text-xs text-muted-foreground">
                             {new Date(comment.createdAt).toLocaleDateString()}
                           </span>

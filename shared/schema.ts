@@ -68,6 +68,8 @@ export const nftComments = pgTable("nft_comments", {
   nftId: integer("nft_id").notNull(),
   userWallet: text("user_wallet").notNull(),
   username: text("username").notNull(),
+  displayName: text("display_name"), // 사용자가 설정한 표시 이름
+  avatarUrl: text("avatar_url"), // 사용자 프로필 사진
   comment: text("comment").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });

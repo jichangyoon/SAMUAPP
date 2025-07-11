@@ -49,16 +49,33 @@ router.get("/:id/comments", async (req, res) => {
 router.post("/:id/comments", async (req, res) => {
   try {
     const nftId = parseInt(req.params.id);
+    const { comment, userWallet, username } = req.body;
+    
+    // Get user profile information from database
+    let userProfile = null;
+    try {
+      userProfile = await storage.getUserByWallet(userWallet);
+    } catch (error) {
+      console.log("User not found in database, creating comment with basic info");
+    }
+    
+    // Prepare comment data with user profile information
+    const commentData = {
+      nftId,
+      userWallet,
+      username,
+      displayName: userProfile?.displayName || username,
+      avatarUrl: userProfile?.avatarUrl || null,
+      comment: comment.trim()
+    };
     
     // Validate the request body
-    const validatedData = insertNftCommentSchema.parse({
-      ...req.body,
-      nftId
-    });
+    const validatedData = insertNftCommentSchema.parse(commentData);
     
-    const comment = await storage.createNftComment(validatedData);
-    res.status(201).json(comment);
+    const createdComment = await storage.createNftComment(validatedData);
+    res.status(201).json(createdComment);
   } catch (error) {
+    console.error("Error creating NFT comment:", error);
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: "Invalid request data", details: error.errors });
     } else {
