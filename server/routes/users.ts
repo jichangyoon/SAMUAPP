@@ -4,10 +4,13 @@ import { insertUserSchema } from "@shared/schema";
 
 const router = Router();
 
-// Get or create user profile
+// Get or create user profile - with cache headers
 router.get("/profile/:walletAddress", async (req, res) => {
   try {
     const { walletAddress } = req.params;
+    
+    // Set cache headers for better performance
+    res.set('Cache-Control', 'public, max-age=60'); // 1분 브라우저 캐시
     
     let user = await storage.getUserByWallet(walletAddress);
     

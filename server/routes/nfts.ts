@@ -5,9 +5,12 @@ import { z } from "zod";
 
 const router = Router();
 
-// Get all NFTs
+// Get all NFTs - with cache headers
 router.get("/", async (_req, res) => {
   try {
+    // Set cache headers for better performance
+    res.set('Cache-Control', 'public, max-age=300'); // 5분 브라우저 캐시 (NFT 데이터는 자주 바뀌지 않음)
+    
     const nfts = await storage.getNfts();
     res.json(nfts);
   } catch (error) {

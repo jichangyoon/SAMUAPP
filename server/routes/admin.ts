@@ -23,9 +23,12 @@ router.post("/check-admin", async (req, res) => {
   }
 });
 
-// Get all contests (excluding archived ones)
+// Get all contests (excluding archived ones) - with cache headers
 router.get("/contests", async (req, res) => {
   try {
+    // Set cache headers for better performance
+    res.set('Cache-Control', 'public, max-age=60'); // 1분 브라우저 캐시
+    
     const allContests = await storage.getContests();
     // Filter out contests that have been archived
     const contests = allContests.filter(contest => contest.status !== 'archived');
@@ -119,9 +122,12 @@ router.post("/contests/:id/end", async (req, res) => {
   }
 });
 
-// Get current contest info (active or most recent)
+// Get current contest info (active or most recent) - with cache headers
 router.get("/current-contest", async (req, res) => {
   try {
+    // Set cache headers for better performance
+    res.set('Cache-Control', 'public, max-age=30'); // 30초 브라우저 캐시
+    
     // First try to get active contest
     let contest = await storage.getCurrentActiveContest();
     
