@@ -463,7 +463,7 @@ const Profile = React.memo(() => {
     setIsDeletingComment(true);
 
     try {
-      const response = await fetch(`/api/nfts/comments/${comment.id}`, {
+      const response = await fetch(`/api/nfts/${comment.nftId}/comments/${comment.id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json'
@@ -474,16 +474,9 @@ const Profile = React.memo(() => {
       });
 
       if (response.ok) {
-        // Clear the cache completely and force a fresh fetch
-        queryClient.removeQueries({ queryKey: ['user-comments', walletAddress] });
-        
-        // Invalidate all related comment queries
-        queryClient.invalidateQueries({ 
-          predicate: (query) => {
-            const key = query.queryKey[0] as string;
-            return key.includes('comments');
-          }
-        });
+        // Simple cache invalidation
+        queryClient.invalidateQueries({ queryKey: ['user-comments', walletAddress] });
+        queryClient.invalidateQueries({ queryKey: ['nft-comments'] });
 
         toast({
           title: "Comment Deleted",
