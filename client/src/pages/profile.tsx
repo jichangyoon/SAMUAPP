@@ -36,6 +36,7 @@ const Profile = React.memo(() => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [memeToDelete, setMemeToDelete] = useState<any>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showAllMemes, setShowAllMemes] = useState(false);
   // 지갑 주소 가져오기 (홈과 동일한 로직)
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
@@ -473,6 +474,11 @@ const Profile = React.memo(() => {
     myVotes: userVoteHistory || []
   }), [userMemes, userVoteHistory]);
 
+  // Display limited memes with More button
+  const displayedMemes = React.useMemo(() => {
+    return showAllMemes ? myMemes : myMemes.slice(0, 5);
+  }, [myMemes, showAllMemes]);
+
   return (
     <div 
       className="min-h-screen bg-background text-foreground transition-transform duration-300 ease-out"
@@ -741,7 +747,7 @@ const Profile = React.memo(() => {
               <CardContent>
                 {myMemes.length > 0 ? (
                   <div className="space-y-2">
-                    {myMemes.map((meme: any) => (
+                    {displayedMemes.map((meme: any) => (
                       <div 
                         key={meme.id} 
                         className="flex items-center gap-3 p-2 bg-accent/50 rounded-lg hover:bg-accent/70 transition-colors"
@@ -804,6 +810,20 @@ const Profile = React.memo(() => {
                         )}
                       </div>
                     ))}
+                    
+                    {/* More button - only show if there are more than 5 memes */}
+                    {myMemes.length > 5 && (
+                      <div className="flex justify-center pt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowAllMemes(!showAllMemes)}
+                          className="text-foreground border-border hover:bg-accent"
+                        >
+                          {showAllMemes ? 'Show Less' : `More (${myMemes.length - 5})`}
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-6 text-muted-foreground">
