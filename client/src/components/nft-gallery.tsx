@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { UserInfoModal } from "@/components/user-info-modal";
 import { Textarea } from "@/components/ui/textarea";
 import { MessageCircle, Send, Image as ImageIcon, ExternalLink, Trash2 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -18,6 +19,8 @@ export function NftGallery() {
   const [newComment, setNewComment] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
+  const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [userModalOpen, setUserModalOpen] = useState(false);
   const { authenticated, user } = usePrivy();
   const { toast } = useToast();
 
@@ -170,6 +173,11 @@ export function NftGallery() {
     }
     setDeleteDialogOpen(false);
     setCommentToDelete(null);
+  };
+
+  const handleUserClick = (walletAddress: string) => {
+    setSelectedUser(walletAddress);
+    setUserModalOpen(true);
   };
 
   const handleCommentSubmit = () => {
@@ -419,7 +427,10 @@ export function NftGallery() {
                                 </span>
                               )}
                             </div>
-                            <span className="text-sm font-medium text-foreground">
+                            <span 
+                              className="text-sm font-medium text-foreground cursor-pointer hover:text-primary transition-colors"
+                              onClick={() => handleUserClick(comment.userWallet)}
+                            >
                               {displayName}
                             </span>
                             <span className="text-xs text-muted-foreground">
@@ -476,6 +487,18 @@ export function NftGallery() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* User Info Modal */}
+      {selectedUser && (
+        <UserInfoModal
+          isOpen={userModalOpen}
+          onClose={() => {
+            setUserModalOpen(false);
+            setSelectedUser(null);
+          }}
+          walletAddress={selectedUser}
+        />
+      )}
     </div>
   );
 }
