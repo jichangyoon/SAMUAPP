@@ -60,14 +60,7 @@ export function NftGallery() {
     cacheTime: 0, // Don't keep in cache
   });
 
-  // Debug: Log the actual comments data
-  useEffect(() => {
-    if (selectedNft && comments) {
-      console.log(`NFT #${selectedNft.id} Comments:`, comments);
-      console.log(`Comment count: ${comments.length}`);
-      console.log(`Query key:`, ['/api/nfts', selectedNft?.id, 'comments']);
-    }
-  }, [selectedNft, comments]);
+
 
   // Create comment mutation
   const createCommentMutation = useMutation({
