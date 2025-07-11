@@ -49,7 +49,7 @@ export function NftGallery() {
 
   // Fetch comments for selected NFT
   const { data: comments = [] } = useQuery<NftComment[]>({
-    queryKey: ['/api/nfts', selectedNft?.id, 'comments', Date.now()], // Add timestamp to force refresh
+    queryKey: ['/api/nfts', selectedNft?.id, 'comments'],
     enabled: !!selectedNft,
     staleTime: 0, // Don't cache comments
     cacheTime: 0, // Don't keep in cache
@@ -61,13 +61,21 @@ export function NftGallery() {
       return apiRequest('POST', `/api/nfts/${selectedNft?.id}/comments`, commentData);
     },
     onSuccess: () => {
-      // Force refresh comments immediately
+      // Force refresh comments immediately with multiple strategies
       queryClient.invalidateQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
       queryClient.refetchQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
+      queryClient.removeQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
+      
+      // Close and reopen modal to force refresh
+      const currentNft = selectedNft;
+      setSelectedNft(null);
+      setTimeout(() => setSelectedNft(currentNft), 100);
+      
       setNewComment("");
       toast({
         title: "Comment posted!",
         description: "Your comment has been added successfully.",
+        duration: 1200,
       });
     },
     onError: () => {
