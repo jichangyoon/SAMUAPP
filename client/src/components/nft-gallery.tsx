@@ -157,7 +157,7 @@ export function NftGallery() {
   });
 
   const handleDeleteComment = (commentId: number) => {
-    if (window.confirm('Are you sure you want to delete this comment?')) {
+    if (window.confirm('Delete this comment?')) {
       deleteCommentMutation.mutate(commentId);
     }
   };
