@@ -521,6 +521,9 @@ Changelog:
 - January 11, 2025. Finalized production-ready mobile app infrastructure - GitHub Actions automatically builds APK files, releases to GitHub Releases, and maintains build artifacts for distribution
 - January 11, 2025. Implemented comprehensive API caching optimization - added Cache-Control headers to all endpoints (memes: 60s, contests: 60s, NFTs: 300s, user profiles: 60s, current contest: 30s, archived contests: 120s)
 - January 11, 2025. Completed performance optimization for mobile app - API response times improved with browser caching, reduced server load, and enhanced user experience for mobile app users
+- July 11, 2025. Fixed critical NFT comment system bug - React Query was calling wrong endpoint (/api/nfts instead of /api/nfts/{id}/comments) causing 164 NFT records to display as comments
+- July 11, 2025. Implemented real-time profile synchronization for NFT comments - comments now display current user profile information (name/avatar) instead of stored data from comment creation time
+- July 11, 2025. Enhanced comment system with live profile updates - when users change their profile, all their existing comments across all NFTs immediately show the updated information
 
 ## CHECKPOINT - June 30, 2025
 ```

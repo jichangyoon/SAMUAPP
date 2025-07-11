@@ -60,6 +60,34 @@ export function NftGallery() {
     cacheTime: 0, // Don't keep in cache
   });
 
+  // Fetch current user profiles for real-time sync
+  const { data: userProfiles = {} } = useQuery<{[key: string]: {displayName: string, avatarUrl: string}}>({
+    queryKey: ['/api/users/profiles', comments.map(c => c.userWallet)],
+    queryFn: async () => {
+      const wallets = [...new Set(comments.map(c => c.userWallet))];
+      const profiles: {[key: string]: {displayName: string, avatarUrl: string}} = {};
+      
+      await Promise.all(wallets.map(async (wallet) => {
+        try {
+          const response = await fetch(`/api/users/profile/${wallet}`);
+          if (response.ok) {
+            const profile = await response.json();
+            profiles[wallet] = {
+              displayName: profile.displayName || profile.username,
+              avatarUrl: profile.avatarUrl
+            };
+          }
+        } catch (error) {
+          console.error(`Failed to fetch profile for ${wallet}:`, error);
+        }
+      }));
+      
+      return profiles;
+    },
+    enabled: !!selectedNft && comments.length > 0,
+    staleTime: 30000, // Cache for 30 seconds
+  });
+
 
 
   // Create comment mutation
@@ -309,32 +337,39 @@ export function NftGallery() {
                 {/* Comments List */}
                 <div className="space-y-3 max-h-64 overflow-y-auto">
                   {comments.length > 0 ? (
-                    comments.map((comment) => (
-                      <div key={comment.id} className="bg-muted/50 rounded-lg p-3">
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center overflow-hidden">
-                            {comment.avatarUrl ? (
-                              <img 
-                                src={comment.avatarUrl} 
-                                alt={comment.displayName || comment.username}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <span className="text-xs font-bold text-primary-foreground">
-                                {(comment.displayName || comment.username || 'U').charAt(0).toUpperCase()}
-                              </span>
-                            )}
+                    comments.map((comment) => {
+                      // Use real-time profile data if available, fallback to stored data
+                      const currentProfile = userProfiles[comment.userWallet];
+                      const displayName = currentProfile?.displayName || comment.displayName || comment.username || 'Anonymous';
+                      const avatarUrl = currentProfile?.avatarUrl || comment.avatarUrl;
+                      
+                      return (
+                        <div key={comment.id} className="bg-muted/50 rounded-lg p-3">
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center overflow-hidden">
+                              {avatarUrl ? (
+                                <img 
+                                  src={avatarUrl} 
+                                  alt={displayName}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <span className="text-xs font-bold text-primary-foreground">
+                                  {displayName.charAt(0).toUpperCase()}
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-sm font-medium text-foreground">
+                              {displayName}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(comment.createdAt).toLocaleDateString()}
+                            </span>
                           </div>
-                          <span className="text-sm font-medium text-foreground">
-                            {comment.displayName || comment.username || 'Anonymous'}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(comment.createdAt).toLocaleDateString()}
-                          </span>
+                          <p className="text-sm text-muted-foreground pl-8">{comment.comment}</p>
                         </div>
-                        <p className="text-sm text-muted-foreground pl-8">{comment.comment}</p>
-                      </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <div className="text-center text-sm text-muted-foreground py-4">
                       No comments yet. Be the first to comment!
