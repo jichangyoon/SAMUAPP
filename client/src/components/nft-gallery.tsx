@@ -122,6 +122,39 @@ export function NftGallery() {
     },
   });
 
+  // Delete comment mutation
+  const deleteCommentMutation = useMutation({
+    mutationFn: async (commentId: number) => {
+      return apiRequest('DELETE', `/api/nfts/${selectedNft?.id}/comments/${commentId}`, {
+        userWallet: user?.wallet?.address || (user?.linkedAccounts?.find(account => 
+          account.type === 'wallet' && account.chainType === 'solana'
+        ) as any)?.address
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/users/profiles', comments.map(c => c.userWallet)] });
+      toast({
+        title: "Comment deleted",
+        duration: 1000,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to delete comment",
+        description: error.message || "You can only delete your own comments",
+        variant: "destructive",
+        duration: 2000,
+      });
+    },
+  });
+
+  const handleDeleteComment = (commentId: number) => {
+    if (window.confirm('Are you sure you want to delete this comment?')) {
+      deleteCommentMutation.mutate(commentId);
+    }
+  };
+
   const handleCommentSubmit = () => {
     if (!selectedNft || !authenticated || !user) {
       toast({
@@ -343,6 +376,12 @@ export function NftGallery() {
                       const displayName = currentProfile?.displayName || comment.displayName || comment.username || 'Anonymous';
                       const avatarUrl = currentProfile?.avatarUrl || comment.avatarUrl;
                       
+                      // Check if current user owns this comment
+                      const currentUserWallet = user?.wallet?.address || (user?.linkedAccounts?.find(account => 
+                        account.type === 'wallet' && account.chainType === 'solana'
+                      ) as any)?.address;
+                      const isOwner = authenticated && currentUserWallet === comment.userWallet;
+                      
                       return (
                         <div key={comment.id} className="bg-muted/50 rounded-lg p-3">
                           <div className="flex items-center gap-2 mb-1">
@@ -365,6 +404,15 @@ export function NftGallery() {
                             <span className="text-xs text-muted-foreground">
                               {new Date(comment.createdAt).toLocaleDateString()}
                             </span>
+                            {isOwner && (
+                              <button
+                                onClick={() => handleDeleteComment(comment.id)}
+                                className="ml-auto text-red-500 hover:text-red-700 text-xs p-1 rounded"
+                                disabled={deleteCommentMutation.isPending}
+                              >
+                                {deleteCommentMutation.isPending ? '...' : '🗑️'}
+                              </button>
+                            )}
                           </div>
                           <p className="text-sm text-muted-foreground pl-8">{comment.comment}</p>
                         </div>

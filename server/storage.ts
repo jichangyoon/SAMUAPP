@@ -32,6 +32,8 @@ export interface IStorage {
   // NFT Comment operations
   createNftComment(comment: InsertNftComment): Promise<NftComment>;
   getNftComments(nftId: number): Promise<NftComment[]>;
+  getNftCommentById(commentId: number): Promise<NftComment | undefined>;
+  deleteNftComment(commentId: number): Promise<void>;
   
   // Partner Meme operations
   createPartnerMeme(meme: InsertMeme, partnerId: string): Promise<Meme>;
@@ -272,6 +274,14 @@ export class MemStorage implements IStorage {
     return Array.from(this.nftComments.values())
       .filter(comment => comment.nftId === nftId)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getNftCommentById(commentId: number): Promise<NftComment | undefined> {
+    return this.nftComments.get(commentId);
+  }
+
+  async deleteNftComment(commentId: number): Promise<void> {
+    this.nftComments.delete(commentId);
   }
 
   // Partner Meme operations
@@ -576,6 +586,24 @@ export class DatabaseStorage implements IStorage {
       .from(nftComments)
       .where(eq(nftComments.nftId, nftId))
       .orderBy(desc(nftComments.createdAt));
+  }
+
+  async getNftCommentById(commentId: number): Promise<NftComment | undefined> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [comment] = await this.db
+      .select()
+      .from(nftComments)
+      .where(eq(nftComments.id, commentId));
+    return comment;
+  }
+
+  async deleteNftComment(commentId: number): Promise<void> {
+    if (!this.db) throw new Error("Database not available");
+    
+    await this.db
+      .delete(nftComments)
+      .where(eq(nftComments.id, commentId));
   }
 
   async createPartnerMeme(insertMeme: InsertMeme, partnerId: string): Promise<Meme> {
