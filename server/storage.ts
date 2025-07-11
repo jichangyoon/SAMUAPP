@@ -831,13 +831,11 @@ export class DatabaseStorage implements IStorage {
     if (contestMemes.length > 0) {
       const { moveToArchive, extractKeyFromUrl } = await import('./r2-storage');
       
-      console.log(`Starting R2 archive process for contest ${contestId} with ${contestMemes.length} files`);
-      
+      // Archive contest files to R2 storage
       for (const meme of contestMemes) {
         if (meme.imageUrl) {
           const key = extractKeyFromUrl(meme.imageUrl);
           if (key) {
-            console.log(`Moving file to archive: ${key} -> archives/contest-${contestId}/`);
             const result = await moveToArchive(key, contestId);
             if (result.success && result.url) {
               // Update meme with new archived URL
@@ -845,9 +843,6 @@ export class DatabaseStorage implements IStorage {
                 .update(memes)
                 .set({ imageUrl: result.url })
                 .where(eq(memes.id, meme.id));
-              console.log(`Updated meme ${meme.id} with archived URL: ${result.url}`);
-            } else {
-              console.error(`Failed to move file ${key}:`, result.error);
             }
           }
         }

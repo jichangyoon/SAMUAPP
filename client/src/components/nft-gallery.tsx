@@ -32,22 +32,17 @@ export function NftGallery() {
   // Listen for profile updates to refresh comments
   useEffect(() => {
     const handleProfileUpdate = () => {
-      // Refresh all NFT comments to get updated author info
-      queryClient.invalidateQueries({ 
-        predicate: (query) => query.queryKey.includes('comments') 
-      });
+      // Only invalidate comments for selected NFT
+      if (selectedNft) {
+        queryClient.invalidateQueries({ 
+          queryKey: ['/api/nfts', selectedNft.id, 'comments'] 
+        });
+      }
     };
 
     window.addEventListener('profileUpdated', handleProfileUpdate);
     return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
-  }, []);
-
-  // Force clear cache on component mount
-  useEffect(() => {
-    queryClient.invalidateQueries({ 
-      predicate: (query) => query.queryKey.includes('comments') 
-    });
-  }, []);
+  }, [selectedNft]);
 
   // Use static NFT data for instant loading
   const nfts = SAMU_NFTS;
@@ -62,39 +57,9 @@ export function NftGallery() {
       return response.json();
     },
     enabled: !!selectedNft,
-    staleTime: 0, // Don't cache comments
-    cacheTime: 0, // Don't keep in cache
+    staleTime: 30000, // 30초 캐시 - 댓글은 자주 변경되지 않음
+    cacheTime: 60000, // 1분 캐시 유지
   });
-
-  // Fetch current user profiles for real-time sync
-  const { data: userProfiles = {} } = useQuery<{[key: string]: {displayName: string, avatarUrl: string}}>({
-    queryKey: ['/api/users/profiles', comments.map(c => c.userWallet)],
-    queryFn: async () => {
-      const wallets = [...new Set(comments.map(c => c.userWallet))];
-      const profiles: {[key: string]: {displayName: string, avatarUrl: string}} = {};
-      
-      await Promise.all(wallets.map(async (wallet) => {
-        try {
-          const response = await fetch(`/api/users/profile/${wallet}`);
-          if (response.ok) {
-            const profile = await response.json();
-            profiles[wallet] = {
-              displayName: profile.displayName || profile.username,
-              avatarUrl: profile.avatarUrl
-            };
-          }
-        } catch (error) {
-          console.error(`Failed to fetch profile for ${wallet}:`, error);
-        }
-      }));
-      
-      return profiles;
-    },
-    enabled: !!selectedNft && comments.length > 0,
-    staleTime: 30000, // Cache for 30 seconds
-  });
-
-
 
   // Create comment mutation
   const createCommentMutation = useMutation({
@@ -102,15 +67,8 @@ export function NftGallery() {
       return apiRequest('POST', `/api/nfts/${selectedNft?.id}/comments`, commentData);
     },
     onSuccess: () => {
-      // Force refresh comments immediately with multiple strategies
+      // Simple cache invalidation
       queryClient.invalidateQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
-      queryClient.refetchQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
-      queryClient.removeQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
-      
-      // Close and reopen modal to force refresh
-      const currentNft = selectedNft;
-      setSelectedNft(null);
-      setTimeout(() => setSelectedNft(currentNft), 100);
       
       setNewComment("");
       toast({
@@ -146,7 +104,6 @@ export function NftGallery() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/users/profiles', comments.map(c => c.userWallet)] });
       toast({
         title: "Comment deleted",
         duration: 1000,
@@ -396,10 +353,9 @@ export function NftGallery() {
                 <div className="space-y-3 max-h-64 overflow-y-auto">
                   {comments.length > 0 ? (
                     comments.map((comment) => {
-                      // Use real-time profile data if available, fallback to stored data
-                      const currentProfile = userProfiles[comment.userWallet];
-                      const displayName = currentProfile?.displayName || comment.displayName || comment.username || 'Anonymous';
-                      const avatarUrl = currentProfile?.avatarUrl || comment.avatarUrl;
+                      // Use stored profile data from comment
+                      const displayName = comment.displayName || comment.username || 'Anonymous';
+                      const avatarUrl = comment.avatarUrl;
                       
                       // Check if current user owns this comment - get Solana wallet address
                       const walletAccounts = user?.linkedAccounts?.filter(account => 

@@ -56,7 +56,7 @@ router.post("/:id/comments", async (req, res) => {
     try {
       userProfile = await storage.getUserByWallet(userWallet);
     } catch (error) {
-      console.log("User not found in database, creating comment with basic info");
+      // User not found in database, creating comment with basic info
     }
     
     // Prepare comment data with user profile information

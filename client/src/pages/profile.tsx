@@ -499,8 +499,6 @@ const Profile = React.memo(() => {
     }
   }, [walletAddress, toast, queryClient]);
 
-
-
   // Calculate statistics from user data - useMemo로 최적화
   const stats = React.useMemo(() => {
     const currentSamuBalance = samuData?.balance || 0;

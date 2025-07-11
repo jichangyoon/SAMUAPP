@@ -525,6 +525,8 @@ Changelog:
 - July 11, 2025. Implemented real-time profile synchronization for NFT comments - comments now display current user profile information (name/avatar) instead of stored data from comment creation time
 - July 11, 2025. Enhanced comment system with live profile updates - when users change their profile, all their existing comments across all NFTs immediately show the updated information
 - July 11, 2025. Implemented complete NFT comment deletion system with owner-only permissions, black styled delete buttons, and real-time UI updates
+- July 11, 2025. Fixed critical comment deletion bug - corrected client API endpoint path from /api/nfts/comments/{id} to /api/nfts/{nftId}/comments/{commentId}
+- July 11, 2025. Optimized NFT comment system performance - reduced aggressive cache invalidation, simplified cache strategies, removed unnecessary profile queries, and cleaned up redundant code for better app performance
 
 ## CHECKPOINT - June 30, 2025
 ```
