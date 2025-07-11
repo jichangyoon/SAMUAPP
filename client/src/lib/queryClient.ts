@@ -47,17 +47,18 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: 30 * 1000, // 30초 캐시 (더 빠른 업데이트)
-      gcTime: 2 * 60 * 1000, // 2분 가비지 컬렉션 (메모리 절약)
+      refetchOnMount: false, // 마운트시 재요청 방지
       refetchOnReconnect: false,
+      staleTime: 2 * 60 * 1000, // 2분 캐시 (더 길게)
+      gcTime: 5 * 60 * 1000, // 5분 가비지 컬렉션
       networkMode: 'online',
       retry: (failureCount, error) => {
-        // 네트워크 오류만 재시도, 최대 2회
-        if (failureCount >= 2) return false;
+        // 네트워크 오류만 재시도, 최대 1회로 축소
+        if (failureCount >= 1) return false;
         if (error?.message?.includes('Failed to fetch')) return true;
         return false;
       },
-      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000), // 지수 백오프
+      retryDelay: 1000, // 1초 고정 딜레이
     },
     mutations: {
       retry: 0,

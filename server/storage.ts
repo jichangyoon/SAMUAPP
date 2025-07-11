@@ -448,12 +448,13 @@ export class DatabaseStorage implements IStorage {
   async getMemes(): Promise<Meme[]> {
     if (!this.db) throw new Error("Database not available");
     
-    // Get memes that are not archived (contestId IS NULL)
+    // Get memes that are not archived (contestId IS NULL) with limit for performance
     const result = await this.db
       .select()
       .from(memes)
       .where(isNull(memes.contestId))
-      .orderBy(desc(memes.createdAt));
+      .orderBy(desc(memes.createdAt))
+      .limit(100); // 최대 100개로 제한하여 성능 향상
     
     return result;
   }

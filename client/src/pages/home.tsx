@@ -117,7 +117,7 @@ export default function Home() {
     }
   }, [userProfile, authenticated, user?.email?.address]);
 
-  // Listen for profile updates from profile page
+  // Listen for profile updates from profile page - simplified
   useEffect(() => {
     const handleProfileUpdate = (event: CustomEvent) => {
       // Force immediate state update for instant visual feedback
@@ -126,9 +126,10 @@ export default function Home() {
         profileImage: event.detail.profileImage || event.detail.avatarUrl
       });
 
-      // Invalidate queries for immediate sync
-      queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] });
-      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+      // 효율적인 쿼리 무효화 - 특정 쿼리만
+      queryClient.invalidateQueries({ 
+        queryKey: ['user-profile-header', walletAddress] 
+      });
     };
 
     window.addEventListener('profileUpdated', handleProfileUpdate as EventListener);
@@ -138,8 +139,8 @@ export default function Home() {
   const displayName = authenticated ? profileData.displayName : 'SAMU';
   const profileImage = profileData.profileImage;
 
-  // Grid view voting function
-  const handleGridVote = async (meme: Meme) => {
+  // Grid view voting function - memoized
+  const handleGridVote = useCallback(async (meme: Meme) => {
     if (!isConnected || !walletAddress) {
       toast({
         title: "Wallet Required",
@@ -164,9 +165,9 @@ export default function Home() {
       });
 
       setSelectedMeme(null);
-      refetch(); // Refresh the memes list
       
-      // Only invalidate the specific meme author's stats cache
+      // Refresh the memes list by invalidating queries
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
       queryClient.invalidateQueries({ 
         queryKey: ['user-stats', meme.authorWallet]
       });
@@ -179,22 +180,22 @@ export default function Home() {
     } finally {
       setIsVoting(false);
     }
-  };
+  }, [isConnected, walletAddress, toast, queryClient]);
 
-  // Share functions
-  const shareToTwitter = (meme: Meme) => {
+  // Share functions - memoized
+  const shareToTwitter = useCallback((meme: Meme) => {
     const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername} 🔥`;
     const url = window.location.href;
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
     window.open(twitterUrl, '_blank');
-  };
+  }, []);
 
-  const shareToTelegram = (meme: Meme) => {
+  const shareToTelegram = useCallback((meme: Meme) => {
     const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername}`;
     const url = window.location.href;
     const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
     window.open(telegramUrl, '_blank');
-  };
+  }, []);
 
   // Wallet connection handled by Privy
   useEffect(() => {
@@ -242,7 +243,7 @@ export default function Home() {
     setHasMore(true);
   }, [viewMode, sortBy]);
 
-  // Fetch memes data with pagination
+  // Fetch memes data with pagination - optimized single query
   const { data: memesResponse, isLoading, refetch } = useQuery({
     queryKey: ['/api/memes', { page, limit: pageSize, sortBy }],
     queryFn: async () => {
@@ -256,7 +257,9 @@ export default function Home() {
       return response.json();
     },
     enabled: true,
-    staleTime: 10 * 1000, // 10초간 캐시 유지
+    staleTime: 60 * 1000, // 1분 캐시 (더 길게)
+    refetchOnWindowFocus: false, // 창 포커스시 재요청 방지
+    refetchOnMount: false, // 마운트시 재요청 방지
   });
 
   // Update memes list when new data arrives
@@ -305,14 +308,13 @@ export default function Home() {
     setShowVoteDialog(false);
     setSelectedMeme(null);
     
-    // Force immediate refetch of current data instead of resetting
+    // Force immediate refetch of current data by invalidating queries
     await Promise.all([
-      refetch(), // Refetch current page data
       queryClient.invalidateQueries({ queryKey: ['/api/memes'] }),
       queryClient.invalidateQueries({ queryKey: ['user-memes', walletAddress] }),
       queryClient.invalidateQueries({ queryKey: ['user-votes', walletAddress] })
     ]);
-  }, [queryClient, walletAddress, refetch]);
+  }, [queryClient, walletAddress]);
 
   const handleShareClick = useCallback((meme: Meme) => {
     setSelectedMeme(meme);
@@ -1075,7 +1077,7 @@ export default function Home() {
               onClose={() => setShowUploadForm(false)}
               onSuccess={() => {
                 setShowUploadForm(false);
-                refetch();
+                queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
               }}
             />
           </div>
