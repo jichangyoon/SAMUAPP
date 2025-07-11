@@ -456,11 +456,21 @@ const Profile = React.memo(() => {
     }
   }, [walletAddress, toast, queryClient]);
 
-  // Delete comment function
+  // Delete comment function with optimistic updates
   const handleDeleteComment = useCallback(async (comment: any) => {
     if (!walletAddress) return;
 
     setIsDeletingComment(true);
+    
+    // Get current comments data for potential rollback
+    const currentComments = queryClient.getQueryData(['user-comments', walletAddress]) as any[];
+    
+    // Optimistically update the cache (remove the comment immediately)
+    if (currentComments) {
+      const optimisticComments = currentComments.filter(c => c.id !== comment.id);
+      queryClient.setQueryData(['user-comments', walletAddress], optimisticComments);
+    }
+
     try {
       const response = await fetch(`/api/nfts/comments/${comment.id}`, {
         method: 'DELETE',
@@ -473,10 +483,17 @@ const Profile = React.memo(() => {
       });
 
       if (response.ok) {
-        // Invalidate related queries to refresh the data
+        // Comprehensive cache invalidation and refresh
         await Promise.all([
+          // Invalidate all related queries
           queryClient.invalidateQueries({ queryKey: ['user-comments', walletAddress] }),
-          queryClient.invalidateQueries({ queryKey: ['nft-comments'] })
+          queryClient.invalidateQueries({ queryKey: ['nft-comments'] }),
+          queryClient.invalidateQueries({ 
+            predicate: (query) => {
+              const key = query.queryKey[0] as string;
+              return key.includes('user-comments') || key.includes('nft-comments');
+            }
+          })
         ]);
 
         toast({
@@ -484,10 +501,19 @@ const Profile = React.memo(() => {
           description: "Your comment has been successfully deleted."
         });
       } else {
+        // Rollback on failure
+        if (currentComments) {
+          queryClient.setQueryData(['user-comments', walletAddress], currentComments);
+        }
         const error = await response.json();
         throw new Error(error.message || 'Failed to delete comment');
       }
     } catch (error) {
+      // Rollback on error
+      if (currentComments) {
+        queryClient.setQueryData(['user-comments', walletAddress], currentComments);
+      }
+      
       toast({
         title: "Delete Failed",
         description: error instanceof Error ? error.message : "Failed to delete comment. Please try again.",
