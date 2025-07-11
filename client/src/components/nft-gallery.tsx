@@ -49,7 +49,7 @@ export function NftGallery() {
 
   // Fetch comments for selected NFT
   const { data: comments = [] } = useQuery<NftComment[]>({
-    queryKey: ['/api/nfts', selectedNft?.id, 'comments'],
+    queryKey: ['/api/nfts', selectedNft?.id, 'comments', Date.now()], // Add timestamp to force refresh
     enabled: !!selectedNft,
     staleTime: 0, // Don't cache comments
     cacheTime: 0, // Don't keep in cache
@@ -261,7 +261,7 @@ export function NftGallery() {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <MessageCircle className="h-4 w-4 text-muted-foreground" />
-                  <h4 className="font-medium text-foreground">Comments ({comments.length})</h4>
+                  <h4 className="font-medium text-foreground">Comments ({comments?.length || 0})</h4>
                 </div>
 
                 {/* Comment Input */}
