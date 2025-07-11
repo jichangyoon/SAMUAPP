@@ -125,10 +125,17 @@ export function NftGallery() {
   // Delete comment mutation
   const deleteCommentMutation = useMutation({
     mutationFn: async (commentId: number) => {
+      // Get Solana wallet address
+      const walletAccounts = user?.linkedAccounts?.filter(account => 
+        account.type === 'wallet' && 
+        account.connectorType !== 'injected' && 
+        account.chainType === 'solana'
+      ) || [];
+      const selectedWalletAccount = walletAccounts[0];
+      const walletAddress = (selectedWalletAccount as any)?.address;
+      
       return apiRequest('DELETE', `/api/nfts/${selectedNft?.id}/comments/${commentId}`, {
-        userWallet: user?.wallet?.address || (user?.linkedAccounts?.find(account => 
-          account.type === 'wallet' && account.chainType === 'solana'
-        ) as any)?.address
+        userWallet: walletAddress
       });
     },
     onSuccess: () => {
@@ -376,20 +383,15 @@ export function NftGallery() {
                       const displayName = currentProfile?.displayName || comment.displayName || comment.username || 'Anonymous';
                       const avatarUrl = currentProfile?.avatarUrl || comment.avatarUrl;
                       
-                      // Check if current user owns this comment
-                      const currentUserWallet = user?.wallet?.address || (user?.linkedAccounts?.find(account => 
-                        account.type === 'wallet' && account.chainType === 'solana'
-                      ) as any)?.address;
+                      // Check if current user owns this comment - get Solana wallet address
+                      const walletAccounts = user?.linkedAccounts?.filter(account => 
+                        account.type === 'wallet' && 
+                        account.connectorType !== 'injected' && 
+                        account.chainType === 'solana'
+                      ) || [];
+                      const selectedWalletAccount = walletAccounts[0];
+                      const currentUserWallet = (selectedWalletAccount as any)?.address;
                       const isOwner = authenticated && currentUserWallet === comment.userWallet;
-                      
-                      // Debug logging
-                      console.log('Comment ownership check:', {
-                        authenticated,
-                        currentUserWallet,
-                        commentWallet: comment.userWallet,
-                        isOwner,
-                        user: user?.email?.address
-                      });
                       
                       return (
                         <div key={comment.id} className="bg-muted/50 rounded-lg p-3">
