@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Send, Image as ImageIcon, ExternalLink } from "lucide-react";
+import { MessageCircle, Send, Image as ImageIcon, ExternalLink, Trash2 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { NftComment } from "@shared/schema";
@@ -418,11 +418,15 @@ export function NftGallery() {
                             {isOwner && (
                               <button
                                 onClick={() => handleDeleteComment(comment.id)}
-                                className="ml-auto text-black hover:text-red-600 text-sm p-1 rounded hover:bg-red-50 transition-colors"
+                                className="ml-auto text-gray-500 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors"
                                 disabled={deleteCommentMutation.isPending}
                                 title="Delete comment"
                               >
-                                {deleteCommentMutation.isPending ? '...' : '🗑️'}
+                                {deleteCommentMutation.isPending ? (
+                                  <span className="text-xs">...</span>
+                                ) : (
+                                  <Trash2 className="h-4 w-4" />
+                                )}
                               </button>
                             )}
                           </div>
