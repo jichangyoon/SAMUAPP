@@ -20,35 +20,17 @@ export function Leaderboard() {
   const [showAllCurrent, setShowAllCurrent] = useState(false);
   const [showAllCreators, setShowAllCreators] = useState(false);
 
-  // Optimized data fetching for leaderboard with smart caching
+  // Optimized data fetching - use same query as home page to avoid duplication
   const { data: memesResponse, isLoading } = useQuery({
-    queryKey: ["/api/memes", "leaderboard-all"],
+    queryKey: ["/api/memes", { page: 1, limit: 100, sortBy: "votes" }],
     queryFn: async () => {
-      // Fetch larger page size to get most data in one request
       const response = await fetch(`/api/memes?page=1&limit=100&sortBy=votes`);
-      const data = await response.json();
-      
-      // If there are more pages, fetch remaining data
-      if (data.pagination.hasMore) {
-        let allMemes = [...data.memes];
-        let page = 2;
-        
-        while (page <= data.pagination.totalPages) {
-          const nextResponse = await fetch(`/api/memes?page=${page}&limit=100&sortBy=votes`);
-          const nextData = await nextResponse.json();
-          allMemes.push(...nextData.memes);
-          page++;
-        }
-        
-        return { memes: allMemes };
-      }
-      
-      return data;
+      return response.json();
     },
     enabled: true,
-    staleTime: 30000, // 30초 캐시 (적당한 균형)
-    refetchInterval: 60000, // 1분마다 갱신
-    refetchOnWindowFocus: false, // 창 포커스시 자동 갱신 비활성화
+    staleTime: 5 * 60 * 1000, // 5분 캐시 (더 길게)
+    refetchOnWindowFocus: false,
+    refetchOnMount: false, // 중복 호출 방지
   });
 
   // Fetch archived contests for Hall of Fame

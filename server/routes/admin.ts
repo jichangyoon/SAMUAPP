@@ -36,9 +36,12 @@ router.get("/contests", async (req, res) => {
   }
 });
 
-// Get archived contests
+// Get archived contests - with cache headers
 router.get("/archived-contests", async (req, res) => {
   try {
+    // Set cache headers for better performance
+    res.set('Cache-Control', 'public, max-age=120'); // 2분 브라우저 캐시
+    
     const archivedContests = await storage.getArchivedContests();
     res.json(archivedContests);
   } catch (error) {

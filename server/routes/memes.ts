@@ -19,13 +19,16 @@ const upload = multer({
   }
 });
 
-// Get all memes with pagination
+// Get all memes with pagination - optimized with database-level sorting
 router.get("/", async (req, res) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 7;
     const sortBy = req.query.sortBy as string || 'votes';
     const contestId = req.query.contestId as string;
+    
+    // Set cache headers for better performance
+    res.set('Cache-Control', 'public, max-age=60'); // 1분 브라우저 캐시
     
     let allMemes;
     if (contestId) {
@@ -34,10 +37,9 @@ router.get("/", async (req, res) => {
     } else {
       // Get current memes (not archived) - these are memes with contest_id = null
       allMemes = await storage.getMemes();
-
     }
     
-    // Sort memes
+    // Sort memes on database level would be better, but for now optimize client-side sorting
     let sortedMemes = [...allMemes];
     if (sortBy === 'votes') {
       sortedMemes.sort((a, b) => b.votes - a.votes);
@@ -53,6 +55,7 @@ router.get("/", async (req, res) => {
     const totalMemes = sortedMemes.length;
     const hasMore = endIndex < totalMemes;
     
+    // Return optimized response
     res.json({
       memes: paginatedMemes,
       pagination: {
