@@ -418,8 +418,9 @@ export function NftGallery() {
                             {isOwner && (
                               <button
                                 onClick={() => handleDeleteComment(comment.id)}
-                                className="ml-auto text-red-500 hover:text-red-700 text-xs p-1 rounded"
+                                className="ml-auto text-black hover:text-red-600 text-sm p-1 rounded hover:bg-red-50 transition-colors"
                                 disabled={deleteCommentMutation.isPending}
+                                title="Delete comment"
                               >
                                 {deleteCommentMutation.isPending ? '...' : '🗑️'}
                               </button>
