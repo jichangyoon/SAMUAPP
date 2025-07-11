@@ -96,7 +96,7 @@ const Profile = React.memo(() => {
     staleTime: 2 * 60 * 1000, // 2분 캐시
   });
 
-  // User comments - 실시간 반영을 위한 짧은 캐시
+  // User comments - 최적화된 캐시 설정
   const { data: userComments = [] } = useQuery({
     queryKey: ['user-comments', walletAddress],
     queryFn: async () => {
@@ -106,8 +106,8 @@ const Profile = React.memo(() => {
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 5 * 1000, // 5초 캐시 - 댓글은 실시간 반영 필요
-    refetchInterval: 10 * 1000, // 10초마다 자동 새로고침
+    staleTime: 30 * 1000, // 30초 캐시 - 성능 최적화
+    cacheTime: 60 * 1000, // 1분 캐시 유지
   });
 
   // All memes data to match with user votes
