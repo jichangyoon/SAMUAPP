@@ -382,6 +382,15 @@ export function NftGallery() {
                       ) as any)?.address;
                       const isOwner = authenticated && currentUserWallet === comment.userWallet;
                       
+                      // Debug logging
+                      console.log('Comment ownership check:', {
+                        authenticated,
+                        currentUserWallet,
+                        commentWallet: comment.userWallet,
+                        isOwner,
+                        user: user?.email?.address
+                      });
+                      
                       return (
                         <div key={comment.id} className="bg-muted/50 rounded-lg p-3">
                           <div className="flex items-center gap-2 mb-1">
