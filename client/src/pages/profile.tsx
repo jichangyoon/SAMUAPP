@@ -37,6 +37,7 @@ const Profile = React.memo(() => {
   const [memeToDelete, setMemeToDelete] = useState<any>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showAllMemes, setShowAllMemes] = useState(false);
+  const [showAllComments, setShowAllComments] = useState(false);
   const [showCommentDeleteDialog, setShowCommentDeleteDialog] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<any>(null);
   const [isDeletingComment, setIsDeletingComment] = useState(false);
@@ -538,6 +539,11 @@ const Profile = React.memo(() => {
     return showAllMemes ? myMemes : myMemes.slice(0, 5);
   }, [myMemes, showAllMemes]);
 
+  // Display limited comments with More button
+  const displayedComments = React.useMemo(() => {
+    return showAllComments ? myComments : myComments.slice(0, 5);
+  }, [myComments, showAllComments]);
+
   return (
     <div 
       className="min-h-screen bg-background text-foreground transition-transform duration-300 ease-out"
@@ -954,7 +960,7 @@ const Profile = React.memo(() => {
               <CardContent className="flex-1 overflow-y-auto">
                 {myComments.length > 0 ? (
                   <div className="space-y-2">
-                    {myComments.map((comment) => (
+                    {displayedComments.map((comment) => (
                       <div 
                         key={comment.id} 
                         className="flex items-start gap-3 p-2 bg-accent/50 rounded-lg hover:bg-accent/70 transition-colors cursor-pointer"
@@ -1004,6 +1010,20 @@ const Profile = React.memo(() => {
                         )}
                       </div>
                     ))}
+                    
+                    {/* More button - only show if there are more than 5 comments */}
+                    {myComments.length > 5 && (
+                      <div className="flex justify-center pt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowAllComments(!showAllComments)}
+                          className="text-foreground border-border hover:bg-accent"
+                        >
+                          {showAllComments ? 'Show Less' : `More (${myComments.length - 5})`}
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-6 text-muted-foreground">

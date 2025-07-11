@@ -527,6 +527,7 @@ Changelog:
 - July 11, 2025. Implemented complete NFT comment deletion system with owner-only permissions, black styled delete buttons, and real-time UI updates
 - July 11, 2025. Fixed critical comment deletion bug - corrected client API endpoint path from /api/nfts/comments/{id} to /api/nfts/{nftId}/comments/{commentId}
 - July 11, 2025. Optimized NFT comment system performance - reduced aggressive cache invalidation, simplified cache strategies, removed unnecessary profile queries, and cleaned up redundant code for better app performance
+- July 11, 2025. Added MORE button to My Comments section in Profile page - displays 5 comments by default with expandable view for better mobile UX, matching My Memes section pattern
 
 ## CHECKPOINT - June 30, 2025
 ```
