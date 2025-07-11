@@ -50,10 +50,24 @@ export function NftGallery() {
   // Fetch comments for selected NFT
   const { data: comments = [] } = useQuery<NftComment[]>({
     queryKey: ['/api/nfts', selectedNft?.id, 'comments'],
+    queryFn: async () => {
+      const response = await fetch(`/api/nfts/${selectedNft?.id}/comments`);
+      if (!response.ok) throw new Error('Failed to fetch comments');
+      return response.json();
+    },
     enabled: !!selectedNft,
     staleTime: 0, // Don't cache comments
     cacheTime: 0, // Don't keep in cache
   });
+
+  // Debug: Log the actual comments data
+  useEffect(() => {
+    if (selectedNft && comments) {
+      console.log(`NFT #${selectedNft.id} Comments:`, comments);
+      console.log(`Comment count: ${comments.length}`);
+      console.log(`Query key:`, ['/api/nfts', selectedNft?.id, 'comments']);
+    }
+  }, [selectedNft, comments]);
 
   // Create comment mutation
   const createCommentMutation = useMutation({
