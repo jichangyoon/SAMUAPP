@@ -324,8 +324,11 @@ export default function Home() {
       setAllMemes([]);
       setHasMore(true);
       
-      // Invalidate all meme queries
-      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+      // Invalidate all meme queries with immediate refetch
+      queryClient.invalidateQueries({ 
+        queryKey: ['/api/memes'],
+        refetchType: 'active' // Only refetch active queries
+      });
     };
 
     window.addEventListener('memeUploaded', handleMemeUpload);

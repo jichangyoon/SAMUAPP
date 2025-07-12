@@ -173,9 +173,48 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
         authorAvatarUrl: null
       };
 
-      // Optimistically update the UI immediately
-      queryClient.setQueryData(['/api/memes'], (oldData: any) => {
+      // Optimistically update the UI immediately for all view modes
+      // Update card view (page 1, limit 7)
+      queryClient.setQueryData(['/api/memes', { page: 1, limit: 7, sortBy: 'latest' }], (oldData: any) => {
         if (!oldData) return { memes: [optimisticMeme], pagination: { page: 1, limit: 7, total: 1, hasMore: false, totalPages: 1 } };
+        return {
+          ...oldData,
+          memes: [optimisticMeme, ...oldData.memes],
+          pagination: {
+            ...oldData.pagination,
+            total: oldData.pagination.total + 1
+          }
+        };
+      });
+
+      // Update grid view (page 1, limit 9)
+      queryClient.setQueryData(['/api/memes', { page: 1, limit: 9, sortBy: 'latest' }], (oldData: any) => {
+        if (!oldData) return { memes: [optimisticMeme], pagination: { page: 1, limit: 9, total: 1, hasMore: false, totalPages: 1 } };
+        return {
+          ...oldData,
+          memes: [optimisticMeme, ...oldData.memes],
+          pagination: {
+            ...oldData.pagination,
+            total: oldData.pagination.total + 1
+          }
+        };
+      });
+
+      // Update votes sort as well
+      queryClient.setQueryData(['/api/memes', { page: 1, limit: 7, sortBy: 'votes' }], (oldData: any) => {
+        if (!oldData) return { memes: [optimisticMeme], pagination: { page: 1, limit: 7, total: 1, hasMore: false, totalPages: 1 } };
+        return {
+          ...oldData,
+          memes: [optimisticMeme, ...oldData.memes],
+          pagination: {
+            ...oldData.pagination,
+            total: oldData.pagination.total + 1
+          }
+        };
+      });
+
+      queryClient.setQueryData(['/api/memes', { page: 1, limit: 9, sortBy: 'votes' }], (oldData: any) => {
+        if (!oldData) return { memes: [optimisticMeme], pagination: { page: 1, limit: 9, total: 1, hasMore: false, totalPages: 1 } };
         return {
           ...oldData,
           memes: [optimisticMeme, ...oldData.memes],
