@@ -37,13 +37,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { walletAddress } = req.params;
       
       // Get or initialize voting power
-      let votingPower = votingPowerManager.getVotingPower(walletAddress);
+      let votingPower = await votingPowerManager.getVotingPower(walletAddress);
       
       if (!votingPower) {
         // If not found, get SAMU balance and initialize
         const samuRes = await fetch(`http://localhost:5000/api/samu-balance/${walletAddress}`);
         const samuData = await samuRes.json();
-        votingPower = votingPowerManager.initializeVotingPower(walletAddress, samuData.balance || 0);
+        votingPower = await votingPowerManager.initializeVotingPower(walletAddress, samuData.balance || 0);
       }
       
       res.json(votingPower);
