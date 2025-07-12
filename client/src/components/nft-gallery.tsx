@@ -79,7 +79,10 @@ export function NftGallery() {
       // Invalidate both NFT comments and user comments cache
       queryClient.invalidateQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
       if (walletAddress) {
+        console.log('CREATE: Invalidating user-comments cache for wallet:', walletAddress);
         queryClient.invalidateQueries({ queryKey: ['user-comments', walletAddress] });
+      } else {
+        console.log('CREATE: No wallet address found for cache invalidation');
       }
       
       setNewComment("");
@@ -127,7 +130,10 @@ export function NftGallery() {
       // Invalidate both NFT comments and user comments cache
       queryClient.invalidateQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
       if (walletAddress) {
+        console.log('DELETE: Invalidating user-comments cache for wallet:', walletAddress);
         queryClient.invalidateQueries({ queryKey: ['user-comments', walletAddress] });
+      } else {
+        console.log('DELETE: No wallet address found for cache invalidation');
       }
       
       toast({
