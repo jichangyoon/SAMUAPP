@@ -133,6 +133,85 @@ router.get("/:walletAddress/stats", async (req, res) => {
   }
 });
 
+// Get user contest statistics
+router.get("/:walletAddress/contest-stats", async (req, res) => {
+  try {
+    const { walletAddress } = req.params;
+    
+    // Set cache headers for better performance
+    res.set('Cache-Control', 'public, max-age=60'); // 1분 브라우저 캐시
+    
+    const [allContests, userMemes, userVotes, archivedContests] = await Promise.all([
+      storage.getContests(),
+      storage.getUserMemes(walletAddress),
+      storage.getUserVotes(walletAddress),
+      storage.getArchivedContests()
+    ]);
+    
+    // Calculate contest participation stats
+    const totalContests = allContests.length + archivedContests.length;
+    const contestsParticipated = new Set();
+    
+    // Count contests where user submitted memes
+    userMemes.forEach(meme => {
+      if (meme.contestId) {
+        contestsParticipated.add(meme.contestId);
+      }
+    });
+    
+    // Count contests where user voted (check memes voted on)
+    const allMemes = await storage.getMemes();
+    userVotes.forEach(vote => {
+      const meme = allMemes.find(m => m.id === vote.memeId);
+      if (meme && meme.contestId) {
+        contestsParticipated.add(meme.contestId);
+      }
+    });
+    
+    // Calculate wins from archived contests
+    let contestWins = 0;
+    let totalPrizesWon = 0;
+    
+    for (const contest of archivedContests) {
+      const userMemesInContest = userMemes.filter(meme => meme.contestId === contest.originalContestId);
+      const allContestMemes = allMemes.filter(meme => meme.contestId === contest.originalContestId);
+      
+      if (allContestMemes.length > 0) {
+        const sortedMemes = allContestMemes.sort((a, b) => b.voteCount - a.voteCount);
+        const topThree = sortedMemes.slice(0, 3);
+        
+        userMemesInContest.forEach(meme => {
+          const ranking = topThree.findIndex(topMeme => topMeme.id === meme.id);
+          if (ranking !== -1) {
+            contestWins++;
+            // Estimate prize based on ranking
+            if (ranking === 0) totalPrizesWon += 1000; // 1st place
+            else if (ranking === 1) totalPrizesWon += 500; // 2nd place  
+            else if (ranking === 2) totalPrizesWon += 250; // 3rd place
+          }
+        });
+      }
+    }
+    
+    const participationRate = totalContests > 0 ? Math.round((contestsParticipated.size / totalContests) * 100) : 0;
+    
+    const contestStats = {
+      totalContests,
+      contestsParticipated: contestsParticipated.size,
+      participationRate,
+      contestWins,
+      totalPrizesWon,
+      currentRank: contestWins > 0 ? Math.max(1, 100 - (contestWins * 10)) : null,
+      averageVotesPerMeme: userMemes.length > 0 ? Math.round(userMemes.reduce((sum, meme) => sum + meme.voteCount, 0) / userMemes.length) : 0
+    };
+    
+    res.json(contestStats);
+  } catch (error) {
+    console.error("Error fetching user contest stats:", error);
+    res.status(500).json({ message: "Failed to fetch user contest stats" });
+  }
+});
+
 // Check display name availability
 router.get("/check-name/:displayName", async (req, res) => {
   try {

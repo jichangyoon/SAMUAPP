@@ -72,6 +72,19 @@ const Profile = React.memo(() => {
     staleTime: 2 * 60 * 1000, // 2분 캐시 (통계는 자주 변경됨)
   });
 
+  // User contest statistics - 콘테스트 관련 통계
+  const { data: contestStats } = useQuery({
+    queryKey: ['user-contest-stats', walletAddress],
+    queryFn: async () => {
+      if (!walletAddress) return null;
+      const res = await fetch(`/api/users/${walletAddress}/contest-stats`);
+      if (!res.ok) throw new Error('Failed to fetch contest stats');
+      return res.json();
+    },
+    enabled: !!walletAddress,
+    staleTime: 2 * 60 * 1000, // 2분 캐시 (콘테스트 통계는 자주 변경됨)
+  });
+
   // User memes - 글로벌 기본값 사용
   const { data: userMemes = [] } = useQuery({
     queryKey: ['user-memes', walletAddress],
@@ -480,7 +493,6 @@ const Profile = React.memo(() => {
     const totalVotingPowerUsed = userStats?.totalVotingPowerUsed || 0;
     const remainingVotingPower = userStats?.remainingVotingPower || Math.floor(currentSamuBalance * 0.8);
     const totalVotingPower = userStats?.samuBalance || currentSamuBalance;
-    const contestProgress = 75; // Contest period calculation placeholder
 
     return {
       currentSamuBalance,
@@ -491,7 +503,6 @@ const Profile = React.memo(() => {
       totalVotingPowerUsed,
       remainingVotingPower,
       totalVotingPower,
-      contestProgress,
     };
   }, [samuData, solData, userStats]);
 
@@ -738,18 +749,44 @@ const Profile = React.memo(() => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Contest Progress</span>
-                <span className="text-foreground font-medium">{stats.contestProgress}%</span>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="text-center bg-accent/30 rounded-lg p-2">
+                  <div className="text-sm font-bold text-primary">{contestStats?.contestsParticipated || 0}</div>
+                  <div className="text-xs text-muted-foreground">Contests Joined</div>
+                </div>
+                <div className="text-center bg-accent/30 rounded-lg p-2">
+                  <div className="text-sm font-bold text-green-400">{contestStats?.contestWins || 0}</div>
+                  <div className="text-xs text-muted-foreground">Contests Won</div>
+                </div>
+                <div className="text-center bg-accent/30 rounded-lg p-2">
+                  <div className="text-sm font-bold text-yellow-400">{contestStats?.participationRate || 0}%</div>
+                  <div className="text-xs text-muted-foreground">Participation Rate</div>
+                </div>
+                <div className="text-center bg-accent/30 rounded-lg p-2">
+                  <div className="text-sm font-bold text-purple-400">{contestStats?.averageVotesPerMeme || 0}</div>
+                  <div className="text-xs text-muted-foreground">Avg Votes/Meme</div>
+                </div>
               </div>
-              <div className="w-full bg-accent rounded-full h-2">
-                <div 
-                  className="bg-primary h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${stats.contestProgress}%` }}
-                />
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Voting power will be restored when the contest ends
+              
+              {contestStats?.totalPrizesWon > 0 && (
+                <div className="text-center bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-lg p-3 border border-yellow-500/30">
+                  <div className="text-lg font-bold text-yellow-400">{contestStats.totalPrizesWon.toLocaleString()}</div>
+                  <div className="text-xs text-yellow-300">Total Prizes Won</div>
+                </div>
+              )}
+              
+              {contestStats?.currentRank && (
+                <div className="text-center bg-accent/20 rounded-lg p-2">
+                  <div className="text-sm font-bold text-blue-400">#{contestStats.currentRank}</div>
+                  <div className="text-xs text-muted-foreground">Current Rank</div>
+                </div>
+              )}
+              
+              <div className="text-xs text-muted-foreground text-center">
+                {contestStats?.totalContests > 0 
+                  ? `${contestStats.contestsParticipated}/${contestStats.totalContests} contests participated`
+                  : 'No contests available yet'
+                }
               </div>
             </div>
           </CardContent>
