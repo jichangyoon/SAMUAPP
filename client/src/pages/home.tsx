@@ -495,7 +495,7 @@ export default function Home() {
                                       // 즉시 UI 업데이트
                                       setAllMemes(prevMemes => 
                                         prevMemes.map(m => 
-                                          m.id === meme.id ? { ...m, votes: m.votes + samuBalance } : m
+                                          m.id === meme.id ? { ...m, votes: m.votes + 1 } : m
                                         )
                                       );
                                       refetch();
