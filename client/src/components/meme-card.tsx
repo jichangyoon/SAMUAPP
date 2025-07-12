@@ -7,7 +7,7 @@ import { usePrivy } from '@privy-io/react-auth';
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowUp, Share2, Twitter, Send, Trash2 } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { UserInfoModal } from "@/components/user-info-modal";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { MediaDisplay } from "@/components/media-display";
@@ -46,8 +46,20 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   const walletAddress = selectedWalletAccount?.address || '';
   const { toast } = useToast();
 
-  // Use fixed voting power of 1 per vote (voting power system will handle the actual power calculation)
-  const votingPower = 1;
+  // Get actual voting power from backend
+  const { data: votingPowerData } = useQuery({
+    queryKey: ['voting-power', walletAddress],
+    queryFn: async () => {
+      if (!walletAddress) return null;
+      const res = await fetch(`/api/voting-power/${walletAddress}`);
+      if (!res.ok) throw new Error('Failed to fetch voting power');
+      return res.json();
+    },
+    enabled: !!walletAddress,
+    staleTime: 0, // Always get fresh data
+  });
+
+  const remainingVotingPower = votingPowerData?.remainingPower || 0;
 
   const handleVote = async () => {
     if (!canVote || !walletAddress) {
@@ -59,17 +71,27 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
       return;
     }
 
+    // Check if user has enough voting power
+    if (remainingVotingPower < 1) {
+      toast({
+        title: "Insufficient Voting Power",
+        description: "You don't have enough voting power to vote.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsVoting(true);
     
     try {
       await apiRequest("POST", `/api/memes/${meme.id}/vote`, {
         voterWallet: walletAddress,
-        votingPower,
+        votingPower: 1, // Each vote uses 1 voting power
       });
 
       toast({
         title: "Vote Submitted!",
-        description: `Your vote with ${votingPower} voting power has been recorded.`,
+        description: "Your vote has been recorded successfully.",
         duration: 1000
       });
 
@@ -238,7 +260,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
             <div className="bg-accent rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-muted-foreground">Your voting power:</span>
-                <span className="font-semibold text-primary">{votingPower.toLocaleString()}</span>
+                <span className="font-semibold text-primary">{remainingVotingPower.toLocaleString()}</span>
               </div>
               <div className="text-xs text-muted-foreground">
                 Each vote uses 1 voting power
