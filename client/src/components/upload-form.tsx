@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { usePrivy } from '@privy-io/react-auth';
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 import { Upload } from "lucide-react";
 import { MediaDisplay } from "@/components/media-display";
 import { getMediaType } from "@/utils/media-utils";
@@ -37,6 +38,17 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
   const walletAddress = selectedWalletAccount?.address || '';
   const { toast } = useToast();
+
+  // Get current active contest for auto-assignment
+  const { data: currentContest } = useQuery({
+    queryKey: ['/api/admin/current-contest'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/current-contest');
+      if (!response.ok) return null;
+      return response.json();
+    },
+    enabled: !partnerId, // Only fetch for main contest, not partner contests
+  });
 
   const form = useForm<z.infer<typeof uploadSchema>>({
     resolver: zodResolver(uploadSchema),
@@ -146,7 +158,8 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
         description: values.description || "",
         imageUrl,
         authorWallet: walletAddress,
-        authorUsername: user?.email?.address || walletAddress.slice(0, 8) + '...' + walletAddress.slice(-4)
+        authorUsername: user?.email?.address || walletAddress.slice(0, 8) + '...' + walletAddress.slice(-4),
+        contestId: currentContest?.id || null // Auto-assign to current active contest
       };
 
       const endpoint = partnerId 

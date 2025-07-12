@@ -475,13 +475,27 @@ export class DatabaseStorage implements IStorage {
   async getMemes(): Promise<Meme[]> {
     if (!this.db) throw new Error("Database not available");
     
-    // Get memes that are not archived (contestId IS NULL) with limit for performance
-    const result = await this.db
-      .select()
-      .from(memes)
-      .where(isNull(memes.contestId))
-      .orderBy(desc(memes.createdAt))
-      .limit(100); // 최대 100개로 제한하여 성능 향상
+    // Get current active contest to determine which memes to show
+    const currentContest = await this.getCurrentActiveContest();
+    
+    let result;
+    if (currentContest) {
+      // If there's an active contest, show memes from that contest
+      result = await this.db
+        .select()
+        .from(memes)
+        .where(eq(memes.contestId, currentContest.id))
+        .orderBy(desc(memes.createdAt))
+        .limit(100);
+    } else {
+      // If no active contest, show memes that are not archived (contestId IS NULL)
+      result = await this.db
+        .select()
+        .from(memes)
+        .where(isNull(memes.contestId))
+        .orderBy(desc(memes.createdAt))
+        .limit(100);
+    }
     
     return result;
   }
@@ -882,12 +896,12 @@ export class DatabaseStorage implements IStorage {
     // Update contest status to archived
     await this.updateContestStatus(contestId, "archived");
 
-    // Move current memes to archived contest (only if there are memes)
+    // Move current contest memes to archived contest (only if there are memes)
     if (contestMemes.length > 0) {
       await this.db
         .update(memes)
         .set({ contestId: contestId })
-        .where(isNull(memes.contestId));
+        .where(eq(memes.contestId, contestId));
     }
 
     console.log(`Contest ${contestId} archived with ${totalMemes} files moved to archives/contest-${contestId}/`);
