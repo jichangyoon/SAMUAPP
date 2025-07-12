@@ -519,7 +519,15 @@ const Profile = React.memo(() => {
         const timeLeft = totalDuration - elapsed;
         const daysLeft = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
         const hoursLeft = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        timeRemaining = daysLeft > 0 ? `${daysLeft}d ${hoursLeft}h remaining` : `${hoursLeft}h remaining`;
+        
+        // Only show time remaining if there's meaningful time left
+        if (daysLeft > 0) {
+          timeRemaining = `${daysLeft}d ${hoursLeft}h remaining`;
+        } else if (hoursLeft > 0) {
+          timeRemaining = `${hoursLeft}h remaining`;
+        } else {
+          timeRemaining = ''; // Don't show "0h remaining"
+        }
       }
     }
 
