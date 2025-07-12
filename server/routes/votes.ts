@@ -2,6 +2,7 @@
 import { Router } from "express";
 import { storage } from "../storage";
 import { insertVoteSchema } from "@shared/schema";
+import { votingPowerManager } from "../voting-power";
 
 const router = Router();
 
@@ -24,6 +25,13 @@ router.post("/:id/vote", async (req, res) => {
     }
 
     const vote = await storage.createVote(voteData);
+    
+    // Update voting power - deduct 1 voting power for each vote
+    const powerUsed = votingPowerManager.useVotingPower(voterWallet, 1);
+    if (!powerUsed) {
+      console.error('Failed to deduct voting power for wallet:', voterWallet);
+    }
+    
     const updatedMeme = await storage.getMemeById(memeId);
     
     res.json({ vote, meme: updatedMeme });

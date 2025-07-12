@@ -74,6 +74,10 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
       });
 
       setShowVoteDialog(false);
+      
+      // Invalidate voting power cache to show updated remaining power
+      queryClient.invalidateQueries({ queryKey: ['voting-power'] });
+      
       onVote(); // 부모에서 UI 업데이트 처리
     } catch (error: any) {
       toast({
