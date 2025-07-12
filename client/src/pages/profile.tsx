@@ -72,6 +72,19 @@ const Profile = React.memo(() => {
     staleTime: 2 * 60 * 1000, // 2분 캐시 (통계는 자주 변경됨)
   });
 
+  // Voting power data
+  const { data: votingPowerData } = useQuery({
+    queryKey: ['voting-power', walletAddress],
+    queryFn: async () => {
+      if (!walletAddress) return null;
+      const res = await fetch(`/api/voting-power/${walletAddress}`);
+      if (!res.ok) throw new Error('Failed to fetch voting power');
+      return res.json();
+    },
+    enabled: !!walletAddress,
+    staleTime: 0, // Always fresh data for voting power
+  });
+
   // User memes - 글로벌 기본값 사용
   const { data: userMemes = [] } = useQuery({
     queryKey: ['user-memes', walletAddress],
@@ -484,8 +497,8 @@ const Profile = React.memo(() => {
     const totalVotesReceived = userStats?.totalMemesVotes || 0;
     const totalVotesCast = userStats?.totalVotesCast || 0;
     const totalVotingPowerUsed = userStats?.totalVotingPowerUsed || 0;
-    const remainingVotingPower = userStats?.remainingVotingPower || Math.floor(currentSamuBalance * 0.8);
-    const totalVotingPower = userStats?.samuBalance || currentSamuBalance;
+    const remainingVotingPower = votingPowerData?.remainingPower || 0;
+    const totalVotingPower = votingPowerData?.totalPower || 0;
     
     // Calculate real contest progress based on active contest
     let contestProgress = 0;
