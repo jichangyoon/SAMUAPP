@@ -26,6 +26,8 @@ export function Admin() {
   // Fetch current contests
   const { data: contests = [], isLoading } = useQuery<Contest[]>({
     queryKey: ["/api/admin/contests"],
+    staleTime: 0, // Admin 페이지에서는 항상 최신 데이터 필요
+    refetchOnMount: true, // 마운트시 재요청
   });
 
   // Fetch archived contests
