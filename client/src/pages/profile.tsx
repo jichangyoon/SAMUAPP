@@ -149,6 +149,12 @@ const Profile = React.memo(() => {
     staleTime: 60 * 1000, // 1분 캐시
   });
 
+  // Fetch current active contest for status display
+  const { data: activeContest } = useQuery({
+    queryKey: ["/api/admin/current-contest"],
+    staleTime: 30 * 1000, // 30초 캐시
+  });
+
   // Profile data now comes from database, not localStorage
 
   // Update profile function
@@ -480,7 +486,42 @@ const Profile = React.memo(() => {
     const totalVotingPowerUsed = userStats?.totalVotingPowerUsed || 0;
     const remainingVotingPower = userStats?.remainingVotingPower || Math.floor(currentSamuBalance * 0.8);
     const totalVotingPower = userStats?.samuBalance || currentSamuBalance;
-    const contestProgress = 75; // Contest period calculation placeholder
+    
+    // Calculate real contest progress based on active contest
+    let contestProgress = 0;
+    let contestStatus = 'No active contest';
+    let timeRemaining = '';
+    
+    if (activeContest && activeContest.status === 'active') {
+      const now = new Date();
+      const startTime = new Date(activeContest.startTime);
+      const endTime = new Date(activeContest.endTime);
+      const totalDuration = endTime.getTime() - startTime.getTime();
+      const elapsed = now.getTime() - startTime.getTime();
+      
+      if (elapsed < 0) {
+        // Contest hasn't started yet
+        contestProgress = 0;
+        contestStatus = 'Contest starts soon';
+        const timeUntilStart = Math.abs(elapsed);
+        const daysUntilStart = Math.floor(timeUntilStart / (1000 * 60 * 60 * 24));
+        const hoursUntilStart = Math.floor((timeUntilStart % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        timeRemaining = daysUntilStart > 0 ? `${daysUntilStart}d ${hoursUntilStart}h until start` : `${hoursUntilStart}h until start`;
+      } else if (elapsed > totalDuration) {
+        // Contest has ended
+        contestProgress = 100;
+        contestStatus = 'Contest ended';
+        timeRemaining = 'Contest completed';
+      } else {
+        // Contest is active
+        contestProgress = Math.min(100, Math.round((elapsed / totalDuration) * 100));
+        contestStatus = `${activeContest.title} - Active`;
+        const timeLeft = totalDuration - elapsed;
+        const daysLeft = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+        const hoursLeft = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        timeRemaining = daysLeft > 0 ? `${daysLeft}d ${hoursLeft}h remaining` : `${hoursLeft}h remaining`;
+      }
+    }
 
     return {
       currentSamuBalance,
@@ -492,8 +533,10 @@ const Profile = React.memo(() => {
       remainingVotingPower,
       totalVotingPower,
       contestProgress,
+      contestStatus,
+      timeRemaining,
     };
-  }, [samuData, solData, userStats]);
+  }, [samuData, solData, userStats, activeContest]);
 
   // User's memes, votes, and comments - useMemo로 최적화
   const { myMemes, myVotes, myComments } = React.useMemo(() => ({
@@ -749,8 +792,18 @@ const Profile = React.memo(() => {
                 />
               </div>
               <div className="text-sm text-muted-foreground">
-                Voting power will be restored when the contest ends
+                {stats.contestStatus}
               </div>
+              {stats.timeRemaining && (
+                <div className="text-xs text-muted-foreground">
+                  {stats.timeRemaining}
+                </div>
+              )}
+              {activeContest && activeContest.status === 'active' && (
+                <div className="text-xs text-muted-foreground">
+                  Voting power will be restored when the contest ends
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
