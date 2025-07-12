@@ -950,7 +950,7 @@ export default function Home() {
                   <span className="font-semibold text-primary">1</span>
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  Based on your SAMU token balance: {samuBalance.toLocaleString()}
+                  Based on your voting power system
                 </div>
               </div>
             </div>
