@@ -529,6 +529,7 @@ Changelog:
 - July 11, 2025. Optimized NFT comment system performance - reduced aggressive cache invalidation, simplified cache strategies, removed unnecessary profile queries, and cleaned up redundant code for better app performance
 - July 11, 2025. Added MORE button to My Comments section in Profile page - displays 5 comments by default with expandable view for better mobile UX, matching My Memes section pattern
 - July 11, 2025. Fixed Profile page comment cache synchronization - NFT comment additions/deletions now immediately update Profile page Comments section by invalidating both NFT comments and user-comments cache queries
+- July 11, 2025. Resolved Profile page comment cache issue by setting user-comments staleTime to 0 - Profile page now always fetches latest comment data instead of using 30-second stale cache
 
 ## CHECKPOINT - June 30, 2025
 ```

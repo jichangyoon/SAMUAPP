@@ -97,7 +97,7 @@ const Profile = React.memo(() => {
     staleTime: 2 * 60 * 1000, // 2분 캐시
   });
 
-  // User comments - 최적화된 캐시 설정
+  // User comments - 댓글은 자주 변경되므로 짧은 캐시
   const { data: userComments = [] } = useQuery({
     queryKey: ['user-comments', walletAddress],
     queryFn: async () => {
@@ -107,7 +107,7 @@ const Profile = React.memo(() => {
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 30 * 1000, // 30초 캐시 - 성능 최적화
+    staleTime: 0, // 항상 최신 데이터 요청
     cacheTime: 60 * 1000, // 1분 캐시 유지
   });
 
