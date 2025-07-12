@@ -27,7 +27,7 @@ router.post("/:id/vote", async (req, res) => {
     const vote = await storage.createVote(voteData);
     
     // Update voting power - deduct 1 voting power for each vote
-    const powerUsed = votingPowerManager.useVotingPower(voterWallet, 1);
+    const powerUsed = await votingPowerManager.useVotingPower(voterWallet, 1);
     if (!powerUsed) {
       console.error('Failed to deduct voting power for wallet:', voterWallet);
     }

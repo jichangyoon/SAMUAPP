@@ -104,6 +104,7 @@ export const users = pgTable("users", {
   avatarUrl: text("avatar_url"),
   samuBalance: bigint("samu_balance", { mode: "number" }).notNull().default(0),
   totalVotingPower: bigint("total_voting_power", { mode: "number" }).notNull().default(0),
+  usedVotingPower: bigint("used_voting_power", { mode: "number" }).notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
