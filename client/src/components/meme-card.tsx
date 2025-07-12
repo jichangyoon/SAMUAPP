@@ -97,8 +97,12 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
 
       setShowVoteDialog(false);
       
-      // Invalidate voting power cache to show updated remaining power
-      queryClient.invalidateQueries({ queryKey: ['voting-power'] });
+      // Invalidate all related caches for consistent data
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['voting-power'] }),
+        queryClient.invalidateQueries({ queryKey: ['/api/memes'] }),
+        queryClient.invalidateQueries({ queryKey: ['user-votes'] })
+      ]);
       
       onVote(); // 부모에서 UI 업데이트 처리
     } catch (error: any) {

@@ -492,12 +492,7 @@ export default function Home() {
                                   <MemeCard 
                                     meme={meme} 
                                     onVote={() => {
-                                      // 즉시 UI 업데이트
-                                      setAllMemes(prevMemes => 
-                                        prevMemes.map(m => 
-                                          m.id === meme.id ? { ...m, votes: m.votes + 1 } : m
-                                        )
-                                      );
+                                      // 서버 응답 후 데이터 새로고침
                                       refetch();
                                     }}
                                     canVote={isConnected}
