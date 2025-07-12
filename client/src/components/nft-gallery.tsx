@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { usePrivy } from '@privy-io/react-auth';
 import { Button } from "@/components/ui/button";
@@ -29,20 +29,7 @@ export function NftGallery() {
     return nftOwnersData[nftId.toString() as keyof typeof nftOwnersData] || null;
   };
   
-  // Listen for profile updates to refresh comments
-  useEffect(() => {
-    const handleProfileUpdate = () => {
-      // Only invalidate comments for selected NFT
-      if (selectedNft) {
-        queryClient.invalidateQueries({ 
-          queryKey: ['/api/nfts', selectedNft.id, 'comments'] 
-        });
-      }
-    };
-
-    window.addEventListener('profileUpdated', handleProfileUpdate);
-    return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
-  }, [selectedNft]);
+  // Profile updates are handled automatically via real-time sync in comment display
 
   // Use static NFT data for instant loading
   const nfts = SAMU_NFTS;
@@ -57,8 +44,8 @@ export function NftGallery() {
       return response.json();
     },
     enabled: !!selectedNft,
-    staleTime: 30000, // 30초 캐시 - 댓글은 자주 변경되지 않음
-    cacheTime: 60000, // 1분 캐시 유지
+    staleTime: 0, // 항상 최신 데이터 요청 (Profile 페이지와 일관성)
+    cacheTime: 60 * 1000, // 1분 캐시 유지
   });
 
   // Create comment mutation

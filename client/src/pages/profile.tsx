@@ -149,20 +149,7 @@ const Profile = React.memo(() => {
     staleTime: 60 * 1000, // 1분 캐시
   });
 
-  // 저장된 프로필 가져오기 - useMemo로 최적화
-  const getStoredProfile = React.useMemo(() => {
-    if (!user?.id) return { displayName: '', profileImage: '' };
-
-    const stored = localStorage.getItem(`profile_${user?.id}`);
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch (error) {
-
-      }
-    }
-    return { displayName: '', profileImage: '' };
-  }, [user?.id]);
+  // Profile data now comes from database, not localStorage
 
   // Update profile function
   const updateProfile = React.useCallback(async (name: string, imageUrl?: string) => {
@@ -182,27 +169,8 @@ const Profile = React.memo(() => {
       if (response.ok) {
         const result = await response.json();
 
-        // Comprehensive cache clearing and invalidation
-        await Promise.all([
-          // Clear all profile-related queries
-          queryClient.removeQueries({ queryKey: ['user-profile', walletAddress] }),
-          queryClient.removeQueries({ queryKey: ['user-profile-header', walletAddress] }),
-          queryClient.removeQueries({ queryKey: [`/api/users/profile/${walletAddress}`] }),
-          
-          // Invalidate all related queries
-          queryClient.invalidateQueries({ 
-            predicate: (query) => {
-              const key = query.queryKey[0] as string;
-              return key.includes('user-profile') || key.includes(walletAddress) || key.includes('memes');
-            }
-          })
-        ]);
-
-        // Force immediate refetch with no cache
-        await queryClient.refetchQueries({ 
-          queryKey: ['user-profile', walletAddress],
-          type: 'active'
-        });
+        // Simple cache invalidation for profile updates
+        queryClient.invalidateQueries({ queryKey: ['user-profile', walletAddress] });
 
         // Update local state immediately with cache busting
         setDisplayName(name);
