@@ -44,10 +44,10 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
   const walletAddress = selectedWalletAccount?.address || '';
-  const samuBalance = 1;
   const { toast } = useToast();
 
-  const votingPower = samuBalance;
+  // Use fixed voting power of 1 per vote (voting power system will handle the actual power calculation)
+  const votingPower = 1;
 
   const handleVote = async () => {
     if (!canVote || !walletAddress) {
@@ -237,7 +237,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
                 <span className="font-semibold text-primary">{votingPower.toLocaleString()}</span>
               </div>
               <div className="text-xs text-muted-foreground">
-                Based on your SAMU token balance: {samuBalance.toLocaleString()}
+                Each vote uses 1 voting power
               </div>
             </div>
           </div>

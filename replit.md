@@ -535,6 +535,8 @@ Changelog:
 - July 12, 2025. Resolved admin panel cache synchronization issue - React Query staleTime was preventing immediate UI updates after contest status changes, fixed with staleTime: 0 for admin queries
 - July 12, 2025. Implemented automatic contest assignment for meme uploads - memes now automatically assigned to active contests instead of contestId: null, improved meme display logic
 - July 12, 2025. Added optimistic updates for meme uploads - immediate UI feedback when submitting memes, dramatically improved user experience by eliminating upload delay perception
+- July 12, 2025. Implemented new voting power system - base 3 voting power for all users plus 10 additional power per 1 million SAMU tokens, removed direct SAMU token voting integration
+- July 12, 2025. Simplified voting logic - each vote uses 1 voting power regardless of token balance, separated token holdings from voting mechanics for better system stability
 
 ## CHECKPOINT - June 30, 2025
 ```

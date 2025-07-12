@@ -12,7 +12,13 @@ class VotingPowerManager {
   
   // Initialize voting power based on SAMU balance
   initializeVotingPower(walletAddress: string, samuBalance: number): VotingPowerData {
-    const totalPower = Math.floor(samuBalance * 1.0); // 1:1 ratio for now
+    // Base voting power: 3 for everyone
+    const basePower = 3;
+    
+    // Additional power: 10 voting power per 1 million SAMU
+    const additionalPower = Math.floor(samuBalance / 1000000) * 10;
+    
+    const totalPower = basePower + additionalPower;
     const data: VotingPowerData = {
       walletAddress,
       totalPower,
