@@ -67,8 +67,20 @@ export function NftGallery() {
       return apiRequest('POST', `/api/nfts/${selectedNft?.id}/comments`, commentData);
     },
     onSuccess: () => {
-      // Simple cache invalidation
+      // Get wallet address for profile cache invalidation
+      const walletAccounts = user?.linkedAccounts?.filter(account => 
+        account.type === 'wallet' && 
+        account.connectorType !== 'injected' && 
+        account.chainType === 'solana'
+      ) || [];
+      const selectedWalletAccount = walletAccounts[0];
+      const walletAddress = (selectedWalletAccount as any)?.address;
+      
+      // Invalidate both NFT comments and user comments cache
       queryClient.invalidateQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
+      if (walletAddress) {
+        queryClient.invalidateQueries({ queryKey: ['user-comments', walletAddress] });
+      }
       
       setNewComment("");
       toast({
@@ -103,7 +115,21 @@ export function NftGallery() {
       });
     },
     onSuccess: () => {
+      // Get wallet address for profile cache invalidation
+      const walletAccounts = user?.linkedAccounts?.filter(account => 
+        account.type === 'wallet' && 
+        account.connectorType !== 'injected' && 
+        account.chainType === 'solana'
+      ) || [];
+      const selectedWalletAccount = walletAccounts[0];
+      const walletAddress = (selectedWalletAccount as any)?.address;
+      
+      // Invalidate both NFT comments and user comments cache
       queryClient.invalidateQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
+      if (walletAddress) {
+        queryClient.invalidateQueries({ queryKey: ['user-comments', walletAddress] });
+      }
+      
       toast({
         title: "Comment deleted",
         duration: 1000,
