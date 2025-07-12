@@ -30,19 +30,16 @@ export default function Home() {
   const [currentTab, setCurrentTab] = useState("contest");
   const [viewMode, setViewMode] = useState<'card' | 'grid'>('card');
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
-  const [showVoteDialog, setShowVoteDialog] = useState(false);
-  const [showShareDialog, setShowShareDialog] = useState(false);
-  const [isVoting, setIsVoting] = useState(false);
-  const [samuBalance, setSamuBalance] = useState<number>(0);
-  const [solBalance, setSolBalance] = useState<number>(0);
-  const [, setLocation] = useLocation();
   const [showUploadForm, setShowUploadForm] = useState(false);
-  const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [archiveView, setArchiveView] = useState<'list' | 'contest'>('list');
   const [selectedArchiveContest, setSelectedArchiveContest] = useState<any>(null);
   const [selectedArchiveMeme, setSelectedArchiveMeme] = useState<any>(null);
   const [isLoadingContestDetails, setIsLoadingContestDetails] = useState(false);
   const [showNftLoading, setShowNftLoading] = useState(false);
+  const [showVoteDialog, setShowVoteDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [isVoting, setIsVoting] = useState(false);
+  const [, setLocation] = useLocation();
   
   // Infinite scroll state
   const [page, setPage] = useState(1);
@@ -64,7 +61,6 @@ export default function Home() {
   // Privy authentication
   const { authenticated, user } = usePrivy();
   const { toast } = useToast();
-  const [, navigate] = useLocation();
 
   // Solana 지갑만 사용 - 간단하고 깔끔한 로직
   const walletAccounts = user?.linkedAccounts?.filter(account => 
@@ -220,18 +216,7 @@ export default function Home() {
     refetchInterval: 60 * 1000, // 1분마다 자동 갱신
   });
 
-  // 잔액 상태 업데이트
-  useEffect(() => {
-    if (balanceData) {
-      setSamuBalance(balanceData.samu);
-      setSolBalance(balanceData.sol);
-      setBalanceStatus('success');
-    } else if (!isConnected) {
-      setSamuBalance(0);
-      setSolBalance(0);
-      setBalanceStatus('idle');
-    }
-  }, [balanceData, isConnected]);
+  // 잔액 상태 업데이트 - 제거됨 (React Query로 직접 관리)
 
   // Calculate page size based on view mode
   const pageSize = viewMode === 'grid' ? 9 : 7;
@@ -347,7 +332,7 @@ export default function Home() {
         <div className="max-w-md mx-auto px-4 py-1">
           <div className="flex items-center justify-between">
             <button 
-              onClick={() => navigate('/profile')}
+              onClick={() => setLocation('/profile')}
               className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
             >
               {authenticated ? (

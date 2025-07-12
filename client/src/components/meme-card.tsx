@@ -37,7 +37,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
 
     window.addEventListener('profileUpdated', handleProfileUpdate);
     return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
-  }, [queryClient]);
+  }, []);
 
   // Get wallet using same logic as WalletConnect component - prioritize Solana
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
@@ -56,7 +56,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 0, // Always get fresh data
+    staleTime: 5000, // Cache for 5 seconds
   });
 
   const remainingVotingPower = votingPowerData?.remainingPower || 0;
@@ -98,11 +98,9 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
       setShowVoteDialog(false);
       
       // Invalidate all related caches for consistent data
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['voting-power'] }),
-        queryClient.invalidateQueries({ queryKey: ['/api/memes'] }),
-        queryClient.invalidateQueries({ queryKey: ['user-votes'] })
-      ]);
+      queryClient.invalidateQueries({ queryKey: ['voting-power'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+      queryClient.invalidateQueries({ queryKey: ['user-votes'] });
       
       onVote(); // 부모에서 UI 업데이트 처리
     } catch (error: any) {
