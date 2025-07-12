@@ -490,7 +490,6 @@ const Profile = React.memo(() => {
     // Calculate real contest progress based on active contest
     let contestProgress = 0;
     let contestStatus = 'No active contest';
-    let timeRemaining = '';
     
     if (activeContest && activeContest.status === 'active') {
       const now = new Date();
@@ -503,31 +502,14 @@ const Profile = React.memo(() => {
         // Contest hasn't started yet
         contestProgress = 0;
         contestStatus = 'Contest starts soon';
-        const timeUntilStart = Math.abs(elapsed);
-        const daysUntilStart = Math.floor(timeUntilStart / (1000 * 60 * 60 * 24));
-        const hoursUntilStart = Math.floor((timeUntilStart % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        timeRemaining = daysUntilStart > 0 ? `${daysUntilStart}d ${hoursUntilStart}h until start` : `${hoursUntilStart}h until start`;
       } else if (elapsed > totalDuration) {
         // Contest has ended
         contestProgress = 100;
         contestStatus = 'Contest ended';
-        timeRemaining = 'Contest completed';
       } else {
         // Contest is active
         contestProgress = Math.min(100, Math.round((elapsed / totalDuration) * 100));
         contestStatus = `${activeContest.title} - Active`;
-        const timeLeft = totalDuration - elapsed;
-        const daysLeft = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-        const hoursLeft = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        
-        // Only show time remaining if there's meaningful time left
-        if (daysLeft > 0) {
-          timeRemaining = `${daysLeft}d ${hoursLeft}h remaining`;
-        } else if (hoursLeft > 0) {
-          timeRemaining = `${hoursLeft}h remaining`;
-        } else {
-          timeRemaining = ''; // Don't show "0h remaining"
-        }
       }
     }
 
@@ -542,7 +524,6 @@ const Profile = React.memo(() => {
       totalVotingPower,
       contestProgress,
       contestStatus,
-      timeRemaining,
     };
   }, [samuData, solData, userStats, activeContest]);
 
@@ -802,11 +783,6 @@ const Profile = React.memo(() => {
               <div className="text-sm text-muted-foreground">
                 {stats.contestStatus}
               </div>
-              {stats.timeRemaining && (
-                <div className="text-xs text-muted-foreground">
-                  {stats.timeRemaining}
-                </div>
-              )}
               {activeContest && activeContest.status === 'active' && (
                 <div className="text-xs text-muted-foreground">
                   Voting power will be restored when the contest ends
