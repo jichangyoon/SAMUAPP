@@ -491,25 +491,35 @@ const Profile = React.memo(() => {
     let contestProgress = 0;
     let contestStatus = 'No active contest';
     
-    if (activeContest && activeContest.status === 'active') {
+    if (activeContest) {
       const now = new Date();
       const startTime = new Date(activeContest.startTime);
       const endTime = new Date(activeContest.endTime);
       const totalDuration = endTime.getTime() - startTime.getTime();
       const elapsed = now.getTime() - startTime.getTime();
       
-      if (elapsed < 0) {
-        // Contest hasn't started yet
-        contestProgress = 0;
-        contestStatus = 'Contest starts soon';
-      } else if (elapsed > totalDuration) {
-        // Contest has ended
+      if (activeContest.status === 'archived' || activeContest.status === 'ended') {
+        // Contest has been archived or ended
         contestProgress = 100;
         contestStatus = 'Contest ended';
+      } else if (activeContest.status === 'active') {
+        if (elapsed < 0) {
+          // Contest hasn't started yet
+          contestProgress = 0;
+          contestStatus = 'Contest starts soon';
+        } else if (elapsed > totalDuration) {
+          // Contest has ended
+          contestProgress = 100;
+          contestStatus = 'Contest ended';
+        } else {
+          // Contest is active
+          contestProgress = Math.min(100, Math.round((elapsed / totalDuration) * 100));
+          contestStatus = `${activeContest.title} - Active`;
+        }
       } else {
-        // Contest is active
-        contestProgress = Math.min(100, Math.round((elapsed / totalDuration) * 100));
-        contestStatus = `${activeContest.title} - Active`;
+        // Other states (draft, etc.)
+        contestProgress = 0;
+        contestStatus = 'Contest not active';
       }
     }
 

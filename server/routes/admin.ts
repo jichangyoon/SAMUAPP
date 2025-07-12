@@ -122,20 +122,14 @@ router.post("/contests/:id/end", async (req, res) => {
   }
 });
 
-// Get current contest info (active or most recent) - with cache headers
+// Get current contest info (active only) - with cache headers
 router.get("/current-contest", async (req, res) => {
   try {
     // Set cache headers for better performance
     res.set('Cache-Control', 'public, max-age=30'); // 30초 브라우저 캐시
     
-    // First try to get active contest
-    let contest = await storage.getCurrentActiveContest();
-    
-    // If no active contest, get the most recent contest
-    if (!contest) {
-      const allContests = await storage.getContests();
-      contest = allContests.sort((a, b) => b.id - a.id)[0] || null;
-    }
+    // Only get active contest, return null if no active contest
+    const contest = await storage.getCurrentActiveContest();
     
     res.json(contest);
   } catch (error) {
