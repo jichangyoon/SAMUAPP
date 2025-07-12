@@ -257,9 +257,9 @@ export default function Home() {
       return response.json();
     },
     enabled: true,
-    staleTime: 60 * 1000, // 1분 캐시 (더 길게)
+    staleTime: 0, // 항상 최신 데이터 가져오기
     refetchOnWindowFocus: false, // 창 포커스시 재요청 방지
-    refetchOnMount: false, // 마운트시 재요청 방지
+    refetchOnMount: true, // 마운트시 재요청 활성화
   });
 
   // Update memes list when new data arrives
@@ -315,6 +315,22 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ['user-votes', walletAddress] })
     ]);
   }, [queryClient, walletAddress]);
+
+  // Listen for new meme uploads and reset pagination
+  useEffect(() => {
+    const handleMemeUpload = () => {
+      // Reset pagination and clear cache when new meme is uploaded
+      setPage(1);
+      setAllMemes([]);
+      setHasMore(true);
+      
+      // Invalidate all meme queries
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+    };
+
+    window.addEventListener('memeUploaded', handleMemeUpload);
+    return () => window.removeEventListener('memeUploaded', handleMemeUpload);
+  }, [queryClient]);
 
   const handleShareClick = useCallback((meme: Meme) => {
     setSelectedMeme(meme);

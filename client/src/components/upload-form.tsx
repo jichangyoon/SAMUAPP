@@ -206,6 +206,9 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
       queryClient.invalidateQueries({ queryKey: ['user-stats'] });
 
+      // Dispatch event to notify home page of new meme upload
+      window.dispatchEvent(new CustomEvent('memeUploaded'));
+
       toast({
         title: "Meme Submitted!",
         description: "Your meme has been added to the contest.",
