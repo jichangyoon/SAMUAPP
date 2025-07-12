@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { usePrivy } from '@privy-io/react-auth';
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 import { Upload } from "lucide-react";
 import { MediaDisplay } from "@/components/media-display";
 import { getMediaType } from "@/utils/media-utils";
@@ -162,6 +163,29 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
         contestId: currentContest?.id || null // Auto-assign to current active contest
       };
 
+      // Create optimistic meme for immediate UI update
+      const tempId = Date.now(); // Temporary ID
+      const optimisticMeme = {
+        id: tempId,
+        ...memeData,
+        votes: 0,
+        createdAt: new Date().toISOString(),
+        authorAvatarUrl: null
+      };
+
+      // Optimistically update the UI immediately
+      queryClient.setQueryData(['/api/memes'], (oldData: any) => {
+        if (!oldData) return { memes: [optimisticMeme], pagination: { page: 1, limit: 7, total: 1, hasMore: false, totalPages: 1 } };
+        return {
+          ...oldData,
+          memes: [optimisticMeme, ...oldData.memes],
+          pagination: {
+            ...oldData.pagination,
+            total: oldData.pagination.total + 1
+          }
+        };
+      });
+
       const endpoint = partnerId 
         ? `/api/partners/${partnerId}/memes`
         : "/api/memes";
@@ -178,9 +202,14 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
         throw new Error('Failed to submit meme');
       }
 
+      // Success - invalidate queries to get real data from server
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+      queryClient.invalidateQueries({ queryKey: ['user-stats'] });
+
       toast({
         title: "Meme Submitted!",
         description: "Your meme has been added to the contest.",
+        duration: 1200,
       });
 
       form.reset();
@@ -188,6 +217,8 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       onSuccess();
       onClose?.();
     } catch (error: any) {
+      // Rollback optimistic update on error
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
 
       toast({
         title: "Upload Failed",
