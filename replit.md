@@ -538,6 +538,7 @@ Changelog:
 - July 12, 2025. Implemented new voting power system - base 3 voting power for all users plus 10 additional power per 1 million SAMU tokens, removed direct SAMU token voting integration
 - July 12, 2025. Simplified voting logic - each vote uses 1 voting power regardless of token balance, separated token holdings from voting mechanics for better system stability
 - July 12, 2025. Comprehensive performance optimization completed - removed all optimistic updates for data consistency, eliminated duplicate React states, reduced cache invalidations by 40%, optimized React Query stale times (5s for voting power, 30s for contests), streamlined useEffect dependencies, removed redundant console logs, and improved mobile UI responsiveness
+- July 12, 2025. Fixed critical voting power API bug - resolved duplicate route handlers causing empty {} responses, updated walletRouter to use database-backed VotingPowerManager with proper async/await, confirmed API now returns correct JSON with totalPower: 101, usedPower: 0, remainingPower: 101
 
 ## CHECKPOINT - June 30, 2025
 ```

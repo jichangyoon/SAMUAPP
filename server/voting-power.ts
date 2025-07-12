@@ -8,11 +8,15 @@ interface VotingPowerData {
   totalPower: number;
   usedPower: number;
   remainingPower: number;
-  lastUpdated: Date;
+  lastUpdated: string;
 }
 
 class VotingPowerManager {
   private db = getDatabase();
+  
+  constructor() {
+    console.log('VotingPowerManager initialized, database:', this.db ? 'connected' : 'null');
+  }
   
   // Calculate voting power based on SAMU balance
   private calculateTotalPower(samuBalance: number): number {
@@ -60,24 +64,46 @@ class VotingPowerManager {
   
   // Get current voting power from database
   async getVotingPower(walletAddress: string): Promise<VotingPowerData | null> {
-    if (!this.db) return null;
+    if (!this.db) {
+      console.log('Database connection is null');
+      return null;
+    }
     
-    const [user] = await this.db
-      .select()
-      .from(users)
-      .where(eq(users.walletAddress, walletAddress));
+    console.log('Fetching voting power for wallet:', walletAddress);
     
-    if (!user) return null;
-    
-    const remainingPower = user.totalVotingPower - user.usedVotingPower;
-    
-    return {
-      walletAddress,
-      totalPower: user.totalVotingPower,
-      usedPower: user.usedVotingPower,
-      remainingPower,
-      lastUpdated: user.updatedAt
-    };
+    try {
+      const [user] = await this.db
+        .select()
+        .from(users)
+        .where(eq(users.walletAddress, walletAddress));
+      
+      console.log('User found:', user ? 'Yes' : 'No');
+      if (user) {
+        console.log('User voting power data:', {
+          totalVotingPower: user.totalVotingPower,
+          usedVotingPower: user.usedVotingPower,
+          samuBalance: user.samuBalance
+        });
+        
+        const remainingPower = user.totalVotingPower - user.usedVotingPower;
+        
+        const result = {
+          walletAddress,
+          totalPower: user.totalVotingPower,
+          usedPower: user.usedVotingPower,
+          remainingPower,
+          lastUpdated: user.updatedAt.toISOString()
+        };
+        
+        console.log('Returning voting power result:', result);
+        return result;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error fetching voting power from database:', error);
+      return null;
+    }
   }
   
   // Use voting power when voting (update database)
