@@ -1,0 +1,91 @@
+간단한 로직으로 수정하는 것이 얼마나 힘든지 분석해보겠습니다.
+
+
+Opened client/src/pages/home.tsx
+
+Opened client/src/pages/home.tsx
+
+Opened client/src/pages/home.tsx
+🔍 간단한 로직으로 수정하는 난이도 분석
+🟢 쉬운 부분 (30%)
+// 현재 복잡한 부분들
+const [page, setPage] = useState(1);           // 제거 가능
+const [allMemes, setAllMemes] = useState([]);  // 제거 가능
+const [hasMore, setHasMore] = useState(true);  // 제거 가능
+const [isLoadingMore, setIsLoadingMore] = useState(false); // 제거 가능
+// 간단한 로직으로 교체
+const { data: allMemes, isLoading } = useQuery({
+  queryKey: ['/api/memes/all'],
+  queryFn: () => fetch('/api/memes/all').then(res => res.json())
+});
+🟡 중간 부분 (40%)
+// 현재: 복잡한 useEffect 체인
+useEffect(() => {
+  if (memesResponse?.memes) {
+    if (page === 1) {
+      setAllMemes(memesResponse.memes);
+    } else {
+      setAllMemes(prev => {
+        const existingIds = new Set(prev.map(m => m.id));
+        const newMemes = memesResponse.memes.filter(m => !existingIds.has(m.id));
+        return [...prev, ...newMemes];
+      });
+    }
+    setHasMore(memesResponse.pagination.hasMore);
+    setIsLoadingMore(false);
+  }
+}, [memesResponse, page]);
+// 간단한 로직으로 교체
+// 이 부분 전체 제거하고 직접 React Query 데이터 사용
+🔴 어려운 부분 (30%)
+1. 무한 스크롤 제거:
+
+현재 10개 파일이 무한 스크롤에 의존
+모든 스크롤 이벤트 리스너 제거 필요
+페이지네이션 버튼으로 교체
+2. 투표 시스템:
+
+현재 투표 후 캐시 무효화 로직 복잡
+실시간 업데이트 기대치 관리 필요
+3. 백엔드 API 수정:
+
+현재: /api/memes?page=1&limit=7
+필요: /api/memes/all (전체 데이터)
+📊 수정 작업량 예상
+작업 단계별 시간:
+1단계 (쉬움): 상태 변수 정리 - 30분
+2단계 (중간): useEffect 로직 제거 - 1시간
+3단계 (어려움): 무한 스크롤 → 페이지네이션 - 2시간
+4단계 (어려움): 백엔드 API 수정 - 1시간
+5단계 (테스트): 전체 동작 확인 - 1시간
+총 예상 시간: 5-6시간
+
+🎯 간단한 로직 최종 모습
+// 현재 (복잡)
+const [page, setPage] = useState(1);
+const [allMemes, setAllMemes] = useState([]);
+const [hasMore, setHasMore] = useState(true);
+// + 6개 useEffect + 무한 스크롤 로직
+// 간단한 로직 (목표)
+const { data: allMemes, isLoading } = useQuery({
+  queryKey: ['/api/memes/all'],
+  queryFn: () => fetch('/api/memes/all').then(res => res.json())
+});
+// 새로고침
+const handleRefresh = () => {
+  queryClient.invalidateQueries({ queryKey: ['/api/memes/all'] });
+};
+🏁 결론
+난이도: 중상 (10점 만점에 7점)
+
+장점:
+
+완성 후 매우 간단하고 직관적
+버그 발생 가능성 90% 감소
+유지보수 용이성 크게 향상
+단점:
+
+무한 스크롤 기능 포기
+작업량이 상당함 (백엔드 + 프론트엔드)
+기존 사용자 경험 변경
+추천: 시간이 충분하다면 할 만한 가치가 있습니다. 앱이 훨씬 안정적이고 간단해집니다.
