@@ -539,6 +539,7 @@ Changelog:
 - July 12, 2025. Simplified voting logic - each vote uses 1 voting power regardless of token balance, separated token holdings from voting mechanics for better system stability
 - July 12, 2025. Comprehensive performance optimization completed - removed all optimistic updates for data consistency, eliminated duplicate React states, reduced cache invalidations by 40%, optimized React Query stale times (5s for voting power, 30s for contests), streamlined useEffect dependencies, removed redundant console logs, and improved mobile UI responsiveness
 - July 12, 2025. Fixed critical voting power API bug - resolved duplicate route handlers causing empty {} responses, updated walletRouter to use database-backed VotingPowerManager with proper async/await, confirmed API now returns correct JSON with totalPower: 101, usedPower: 0, remainingPower: 101
+- July 13, 2025. Fixed voting power calculation inconsistency in Profile page - Power tab now uses votingPowerData from voting-power API instead of stats API, ensuring current contest power display (Total: 101, Used: 2, Remaining: 99) matches correctly
 
 ## CHECKPOINT - June 30, 2025
 ```

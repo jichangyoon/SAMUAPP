@@ -1075,11 +1075,11 @@ const Profile = React.memo(() => {
               <CardContent className="flex-1 overflow-y-auto space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="text-center bg-accent/30 rounded-lg p-3">
-                    <div className="text-lg font-bold text-green-400">{stats.totalVotingPower.toLocaleString()}</div>
+                    <div className="text-lg font-bold text-green-400">{votingPowerData?.totalPower?.toLocaleString() || '0'}</div>
                     <div className="text-xs text-muted-foreground">Total Power</div>
                   </div>
                   <div className="text-center bg-accent/30 rounded-lg p-3">
-                    <div className="text-lg font-bold text-red-400">{stats.totalVotingPowerUsed.toLocaleString()}</div>
+                    <div className="text-lg font-bold text-red-400">{votingPowerData?.usedPower?.toLocaleString() || '0'}</div>
                     <div className="text-xs text-muted-foreground">Used Power</div>
                   </div>
                 </div>
@@ -1088,11 +1088,11 @@ const Profile = React.memo(() => {
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-muted-foreground">Remaining Power</span>
                     <span className="text-sm font-medium text-foreground">
-                      {stats.remainingVotingPower.toLocaleString()} / {stats.totalVotingPower.toLocaleString()}
+                      {votingPowerData?.remainingPower?.toLocaleString() || '0'} / {votingPowerData?.totalPower?.toLocaleString() || '0'}
                     </span>
                   </div>
                   <Progress 
-                    value={stats.totalVotingPower > 0 ? (stats.remainingVotingPower / stats.totalVotingPower) * 100 : 0} 
+                    value={votingPowerData?.totalPower > 0 ? (votingPowerData.remainingPower / votingPowerData.totalPower) * 100 : 0} 
                     className="h-2"
                   />
                 </div>
