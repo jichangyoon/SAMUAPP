@@ -223,7 +223,7 @@ export default function Home() {
     ]);
   }, [queryClient]);
 
-  // 수동 새로고침 함수
+  // 수동 새로고침 함수 (간단한 로직)
   const handleRefresh = useCallback(async () => {
     toast({
       title: "Refreshing...",
@@ -233,17 +233,12 @@ export default function Home() {
 
     // 모든 쿼리 무효화 및 재요청
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['/api/memes'] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/memes/all'] }),
       queryClient.invalidateQueries({ queryKey: ['/api/admin/current-contest'] }),
       queryClient.invalidateQueries({ queryKey: ['/api/admin/archived-contests'] }),
       queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] }),
       queryClient.invalidateQueries({ queryKey: ['balances', walletAddress] })
     ]);
-
-    // Reset pagination
-    setPage(1);
-    setAllMemes([]);
-    setHasMore(true);
 
     toast({
       title: "Refreshed successfully",
