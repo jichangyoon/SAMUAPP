@@ -41,17 +41,18 @@ export function ContestHeader() {
 
   // 1초마다 현재 시간 업데이트 (활성 콘테스트가 있을 때만)
   useEffect(() => {
-    if (activeContest?.status === "active") {
+    if (activeContest && activeContest.status === "active") {
       const timer = setInterval(() => {
         setCurrentTime(new Date());
       }, 1000);
 
       return () => clearInterval(timer);
     }
-  }, [activeContest?.status]);
+    // 활성 콘테스트가 없으면 타이머 중지
+  }, [activeContest?.status, activeContest?.id]);
 
   const contestData = {
-    timeLeft: activeContest?.endTime && activeContest?.status === "active" ? 
+    timeLeft: activeContest && activeContest.status === "active" && activeContest.endTime ? 
       calculateTimeLeft(new Date(activeContest.endTime)) : null,
     prizePool: activeContest?.prizePool || "TBA",
     totalEntries: getCurrentEntriesCount(),
@@ -95,8 +96,8 @@ export function ContestHeader() {
           Submit your best SAMU memes and vote with your voting power. The most voted meme wins!
         </p>
         
-        {/* Time Left - Only show if contest is active */}
-        {contestData.timeLeft && (
+        {/* Time Left - Only show if contest is active and timeLeft is valid */}
+        {contestData.timeLeft && contestData.status === "Live" && (
           <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-2 mb-4 text-center">
             <div className="text-lg font-bold text-green-400">
               {contestData.timeLeft}
