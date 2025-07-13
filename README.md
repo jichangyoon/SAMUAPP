@@ -1,137 +1,62 @@
-# SAMU Meme Contest App
+# 🐺 SAMU 밈 콘테스트 모바일 앱
 
-Web3 밈 컨테스트 플랫폼 - Solana 블록체인과 팬텀 지갑 연동
+SAMU 토큰 기반 밈 콘테스트 플랫폼의 모바일 앱 버전입니다.
 
-## 기능
+## 🚀 주요 기능
 
-- 팬텀 지갑 연결 및 SAMU 토큰 잔액 조회
-- 밈 업로드 및 토큰 기반 투표
-- 상품 구매 시스템 (Hall of Fame)
-- 모바일 앱 지원 (Android/iOS)
+- **밈 콘테스트**: 밈 업로드, 투표, 리더보드
+- **SAMU 토큰 연동**: Privy 지갑을 통한 토큰 밸런스 조회
+- **파트너 통합**: WAGUS, DoctorBird 커뮤니티 연동
+- **X(Twitter) 딥링크**: 모바일 앱에서 X 앱 연동
+- **NFT 갤러리**: 164개 SAMU Wolf NFT 컬렉션
+- **토큰 전송**: SAMU/SOL 토큰 전송 기능
 
-## 모바일 앱 빌드
+## 📱 모바일 앱 빌드
 
-### 빠른 빌드
+### 자동 빌드 (GitHub Actions)
+푸시할 때마다 자동으로 APK가 빌드되어 Actions 탭에서 다운로드할 수 있습니다.
+
+### 로컬 빌드
 ```bash
-# Linux/Mac
-./build-mobile.sh
-
-# Windows  
-build-mobile.bat
-```
-
-### 수동 빌드
-```bash
+# 1. 의존성 설치
 npm install
+
+# 2. 웹 자산 빌드
 npm run build
-npx cap sync android
-cd android && ./gradlew assembleDebug
-```
 
-### APK 설치
-1. `android/app/build/outputs/apk/debug/app-debug.apk` 파일을 안드로이드 기기로 전송
-2. 안드로이드 설정에서 "알 수 없는 소스에서 앱 설치" 허용
-3. APK 파일 실행하여 설치
-
-## GitHub Actions 자동 빌드
-
-### 저장소 설정
-1. GitHub에서 새 저장소 생성
-2. `samu-mobile-project.tar.gz` 다운로드 및 압축 해제
-3. 파일들을 저장소에 업로드
-
-```bash
-git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git
-cd YOUR_REPO
-tar -xzf samu-mobile-project.tar.gz
-cp -R samu-mobile-project/. .
-git add .
-git commit -m "SAMU mobile app"
-git push origin main
-```
-
-### APK 자동 생성
-- **푸시시 자동 빌드**: main 브랜치에 푸시하면 자동으로 APK 생성
-- **수동 빌드**: GitHub Actions 탭에서 "Run workflow" 클릭
-- **다운로드**: Actions > Artifacts 또는 Releases 탭에서 APK 다운로드
-
-### 로컬 빌드 (선택사항)
-```bash
-# 빠른 빌드
-./build-mobile.sh  # Linux/Mac
-build-mobile.bat   # Windows
-
-# 수동 빌드  
-npm install
-npm run build
-npx cap sync android
-cd android && ./gradlew assembleDebug
-```
-
-## 요구사항
-- GitHub 계정
-- Node.js 20.x (로컬 빌드시)
-- Java 17 (로컬 빌드시)
-
-## Quick Start
-
-### Web Development
-```bash
-npm install
-npm run dev
-```
-
-### Mobile App Build
-```bash
-# Sync web assets to mobile
+# 3. Capacitor 동기화
 npx cap sync android
 
-# Open in Android Studio
+# 4. Android Studio에서 열기
 npx cap open android
 
-# Or build APK directly
-cd android && ./gradlew assembleDebug
+# 또는 직접 빌드
+cd android
+./gradlew assembleDebug
 ```
 
-## Deployment
+## 🔧 기술 스택
 
-### Automatic APK Build
-GitHub Actions automatically builds APK files on every push to main branch.
+- **Frontend**: React + TypeScript + Tailwind CSS
+- **Backend**: Express.js + PostgreSQL + Drizzle ORM
+- **Mobile**: Capacitor 7.3.0 + Android SDK 35
+- **Authentication**: Privy 지갑 통합
+- **Storage**: Cloudflare R2 클라우드 스토리지
+- **Blockchain**: Solana 토큰 통합
 
-1. Push code to GitHub
-2. Check Actions tab for build progress
-3. Download APK from build artifacts
-4. Install on Android device
+## 📋 앱 설정
 
-### Google Play Store
-See `DEPLOYMENT.md` for complete app store deployment guide.
+- **App ID**: com.samu.memecontest
+- **App Name**: SAMU
+- **Target SDK**: 35
+- **Min SDK**: 24
+- **Java Version**: 17
 
-## Project Structure
+## 🔗 링크
 
-```
-├── client/          # React frontend
-├── server/          # Express.js backend  
-├── shared/          # Shared types and schemas
-├── android/         # Capacitor Android project
-├── .github/         # GitHub Actions workflows
-└── DEPLOYMENT.md    # Complete deployment guide
-```
+- **웹 앱**: https://meme-chain-rally-wlckddbs12345.replit.app
+- **SAMU 토큰**: EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF
 
-## SAMU Token Integration
+## 📄 라이선스
 
-- **Contract**: `EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF`
-- **Network**: Solana Mainnet
-- **Voting Power**: 1 SAMU = 1 Vote
-- **Wallet**: Phantom integration with mobile deep linking
-
-## Contributing
-
-1. Fork the repository
-2. Create feature branch
-3. Commit changes
-4. Push to branch
-5. Create Pull Request
-
-## License
-
-MIT License - see LICENSE file for details
+MIT License
