@@ -7,10 +7,8 @@ const router = Router();
 // Get SAMU token balance for a wallet
 router.get("/samu-balance/:wallet", async (req, res) => {
   try {
-    // No cache for real-time token balance
-    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.set('Pragma', 'no-cache');
-    res.set('Expires', '0');
+    // Cache headers for 5 seconds
+    res.set('Cache-Control', 'public, max-age=5');
     
     const walletAddress = req.params.wallet;
     
@@ -76,10 +74,8 @@ router.get("/samu-balance/:wallet", async (req, res) => {
 // SOL balance endpoint
 router.get('/sol-balance/:walletAddress', async (req, res) => {
   try {
-    // No cache for real-time token balance
-    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.set('Pragma', 'no-cache');
-    res.set('Expires', '0');
+    // Cache headers for 5 seconds
+    res.set('Cache-Control', 'public, max-age=5');
     
     const { walletAddress } = req.params;
     
