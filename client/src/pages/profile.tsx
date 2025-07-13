@@ -47,7 +47,7 @@ const Profile = React.memo(() => {
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
   const walletAddress = selectedWalletAccount?.address || '';
 
-  // User profile data - 프로필 이미지 깜빡임 방지를 위해 긴 캐시 적용
+  // User profile data
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile', walletAddress],
     queryFn: async () => {
@@ -57,11 +57,9 @@ const Profile = React.memo(() => {
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 5 * 60 * 1000, // 5분 캐시 (프로필 이미지 깜빡임 방지)
-    gcTime: 10 * 60 * 1000, // 10분 가비지 컬렉션
   });
 
-  // User statistics - 자주 변경되므로 짧은 캐시
+  // User statistics
   const { data: userStats } = useQuery({
     queryKey: ['user-stats', walletAddress],
     queryFn: async () => {
@@ -71,31 +69,19 @@ const Profile = React.memo(() => {
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 2 * 60 * 1000, // 2분 캐시 (통계는 자주 변경됨)
   });
 
-  // Voting power data - 프로필 페이지 접근시 항상 최신 데이터 가져오기
-  const { data: votingPowerData, refetch: refetchVotingPower } = useQuery({
+  // Voting power data
+  const { data: votingPowerData } = useQuery({
     queryKey: ['voting-power', walletAddress],
     queryFn: async () => {
       if (!walletAddress) return null;
-      const res = await fetch(`/api/voting-power/${walletAddress}?t=${Date.now()}`);
+      const res = await fetch(`/api/voting-power/${walletAddress}`);
       if (!res.ok) throw new Error('Failed to fetch voting power');
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 5 * 1000, // 5초 캐시 (너무 자주 새로고침 방지)
-    gcTime: 30 * 1000, // 30초 가비지 컬렉션
-    refetchOnMount: true, // 프로필 페이지 열 때마다 새로고침
-    refetchOnWindowFocus: true, // 윈도우 포커스 시 재요청
   });
-
-  // 사용자가 프로필 페이지를 열 때마다 투표력 새로고침
-  React.useEffect(() => {
-    if (walletAddress) {
-      refetchVotingPower();
-    }
-  }, [walletAddress, refetchVotingPower]);
 
   // 수동 새로고침 함수
   const handleRefresh = useCallback(async () => {
@@ -120,17 +106,14 @@ const Profile = React.memo(() => {
       queryClient.invalidateQueries({ queryKey: ['sol-balance', walletAddress] })
     ]);
 
-    // 투표력 재요청
-    refetchVotingPower();
-
     toast({
       title: "Refreshed successfully",
       description: "All data has been updated",
       duration: 1200
     });
-  }, [walletAddress, queryClient, refetchVotingPower, toast]);
+  }, [walletAddress, queryClient, toast]);
 
-  // User memes - 실시간 업데이트를 위한 짧은 캐시
+  // User memes
   const { data: userMemes = [] } = useQuery({
     queryKey: ['user-memes', walletAddress],
     queryFn: async () => {
@@ -140,12 +123,9 @@ const Profile = React.memo(() => {
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 10 * 1000, // 10초 캐시
-    refetchOnMount: true, // 프로필 페이지 열 때마다 새로고침
-    refetchOnWindowFocus: true, // 윈도우 포커스 시 재요청
   });
 
-  // User votes - 짧은 캐시로 최신 데이터 유지
+  // User votes
   const { data: userVoteHistory = [] } = useQuery({
     queryKey: ['user-votes', walletAddress],
     queryFn: async () => {
@@ -155,12 +135,9 @@ const Profile = React.memo(() => {
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 10 * 1000, // 10초 캐시
-    refetchOnMount: true, // 프로필 페이지 열 때마다 새로고침
-    refetchOnWindowFocus: true, // 윈도우 포커스 시 재요청
   });
 
-  // User comments - 댓글은 자주 변경되므로 짧은 캐시
+  // User comments
   const { data: userComments = [] } = useQuery({
     queryKey: ['user-comments', walletAddress],
     queryFn: async () => {
@@ -170,8 +147,6 @@ const Profile = React.memo(() => {
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 0, // 항상 최신 데이터 요청
-    cacheTime: 60 * 1000, // 1분 캐시 유지
   });
 
   // All memes data to match with user votes
@@ -182,14 +157,11 @@ const Profile = React.memo(() => {
       if (!res.ok) throw new Error('Failed to fetch memes');
       return res.json();
     },
-    staleTime: 30 * 1000, // 30초 캐시
-    refetchOnMount: true, // 프로필 페이지 열 때마다 새로고침
-    refetchOnWindowFocus: true, // 윈도우 포커스 시 재요청
   });
 
   const allMemes = memesResponse?.memes || [];
 
-  // Balance fetching - 짧은 캐시로 최신 잔고 유지
+  // Balance fetching
   const { data: samuData } = useQuery({
     queryKey: ['samu-balance', walletAddress],
     queryFn: async () => {
@@ -199,7 +171,6 @@ const Profile = React.memo(() => {
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 60 * 1000, // 1분 캐시 (잔고는 자주 확인)
   });
 
   const { data: solData } = useQuery({
@@ -211,7 +182,6 @@ const Profile = React.memo(() => {
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 60 * 1000, // 1분 캐시
   });
 
   // Fetch current active contest for status display
