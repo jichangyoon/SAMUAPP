@@ -767,7 +767,6 @@ const Profile = React.memo(() => {
                 className="text-center bg-accent/30 rounded-lg p-2 cursor-pointer hover:bg-accent/50 transition-colors"
                 onClick={() => {
                   queryClient.invalidateQueries({ queryKey: ['voting-power', walletAddress] });
-                  toast({ title: "Voting power refreshed", duration: 1200 });
                 }}
               >
                 <div className="text-sm font-bold text-green-400">{stats.remainingVotingPower.toLocaleString()}</div>
@@ -876,7 +875,6 @@ const Profile = React.memo(() => {
               className="flex flex-col items-center gap-1 p-3 text-xs"
               onClick={() => {
                 queryClient.invalidateQueries({ queryKey: ['voting-power', walletAddress] });
-                toast({ title: "Voting power refreshed", duration: 1200 });
               }}
             >
               <Zap className="h-4 w-4" />
