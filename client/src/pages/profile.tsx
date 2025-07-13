@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +19,7 @@ import { SendTokensSimple } from "@/components/send-tokens-simple";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { MediaDisplay } from "@/components/media-display";
 
-export default function Profile() {
+const Profile = React.memo(() => {
   const { user, authenticated } = usePrivy();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -1074,7 +1074,7 @@ export default function Profile() {
                         className="flex items-start gap-3 p-2 bg-accent/50 rounded-lg hover:bg-accent/70 transition-colors cursor-pointer"
                         onClick={() => {
                           // NFT 상세 모달 열기 (향후 구현)
-                          // Open NFT modal for NFT ID: comment.nftId
+                          console.log('Open NFT modal for NFT ID:', comment.nftId);
                         }}
                       >
                         <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
@@ -1266,4 +1266,8 @@ export default function Profile() {
       </AlertDialog>
     </div>
   );
-}
+});
+
+Profile.displayName = 'Profile';
+
+export default Profile;

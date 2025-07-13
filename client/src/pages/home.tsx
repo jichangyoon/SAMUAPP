@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { WalletConnect } from "@/components/wallet-connect";
 import { ContestHeader } from "@/components/contest-header";
@@ -9,15 +9,19 @@ import { GoodsShop } from "@/components/goods-shop";
 import { NftGallery } from "@/components/nft-gallery";
 import { MediaDisplay } from "@/components/media-display";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
+
+
 import { usePrivy } from '@privy-io/react-auth';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-// Removed unused token balance imports
+import { getSamuTokenBalance, getSolBalance } from "@/lib/solana";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-// Removed unused UI imports
+import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Image, Users, Plus, Lock, RefreshCw } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
@@ -245,7 +249,7 @@ export default function Home() {
     ]);
   }, [queryClient]);
 
-  // Manual refresh function - simplified
+  // 수동 새로고침 함수 (간단한 로직)
   const handleRefresh = useCallback(async () => {
     toast({
       title: "Refreshing...",
@@ -253,11 +257,12 @@ export default function Home() {
       duration: 1000
     });
 
-    // Invalidate essential queries only
+    // 모든 쿼리 무효화 및 재요청
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['/api/memes'] }),
       queryClient.invalidateQueries({ queryKey: ['/api/admin/current-contest'] }),
-      queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] })
+      queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] }),
+      queryClient.invalidateQueries({ queryKey: ['balances', walletAddress] })
     ]);
 
     toast({
@@ -325,7 +330,21 @@ export default function Home() {
 
 
 
-  // Balance query - removed unused balance data since it's not displayed in header anymore
+  // Balance query (optimized)
+  const { data: balanceData } = useQuery({
+    queryKey: ['balances', walletAddress],
+    queryFn: async () => {
+      if (!walletAddress || !isSolana) return { samu: 0, sol: 0 };
+
+      const [samuBal, solBal] = await Promise.all([
+        getSamuTokenBalance(walletAddress),
+        getSolBalance(walletAddress)
+      ]);
+
+      return { samu: samuBal, sol: solBal };
+    },
+    enabled: isConnected && !!walletAddress && isSolana,
+  });
 
   // Simple data fetching - current contest memes only
   const { data: memesResponse, isLoading, refetch } = useQuery({
