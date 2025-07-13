@@ -155,6 +155,7 @@ const Profile = React.memo(() => {
       return res.json();
     },
     enabled: !!walletAddress,
+    staleTime: 0, // Force fresh data
   });
 
   // User comments
