@@ -102,25 +102,8 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
 
       setShowVoteDialog(false);
       
-      // 스마트 캐시 동기화 - 순차적 업데이트
-      try {
-        // 1단계: 투표력 데이터 즉시 업데이트
-        await queryClient.invalidateQueries({ queryKey: ['voting-power'] });
-        
-        // 2단계: 사용자 투표 기록 업데이트
-        await queryClient.invalidateQueries({ queryKey: ['user-votes'] });
-        
-        // 3단계: 밈 데이터 업데이트 (투표 수 반영)
-        await queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
-        
-        // 4단계: 사용자 통계 업데이트
-        await queryClient.invalidateQueries({ queryKey: ['user-stats'] });
-        
-        onVote(); // 부모에서 UI 업데이트 처리
-      } catch (error) {
-        // 캐시 업데이트 실패 시에도 기본 동작 수행
-        onVote();
-      }
+      // 부모 컴포넌트에서 모든 캐시 동기화 처리
+      onVote();
     } catch (error: any) {
       toast({
         title: "Voting Failed",

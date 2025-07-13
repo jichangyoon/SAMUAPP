@@ -218,6 +218,33 @@ export default function Home() {
   const displayName = authenticated ? profileData.displayName : 'SAMU';
   const profileImage = profileData.profileImage;
 
+  // 통합 캐시 업데이트 함수 (투표 후 사용)
+  const handleVoteUpdate = useCallback(async () => {
+    try {
+      // 1단계: 투표력 데이터 즉시 업데이트
+      await queryClient.invalidateQueries({ queryKey: ['voting-power'] });
+      
+      // 2단계: 사용자 투표 기록 업데이트
+      await queryClient.invalidateQueries({ queryKey: ['user-votes'] });
+      
+      // 3단계: 밈 데이터 업데이트 (투표 수 반영)
+      await queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+      
+      // 4단계: 사용자 통계 업데이트
+      await queryClient.invalidateQueries({ queryKey: ['user-stats'] });
+      
+      // 페이지네이션 리셋
+      setPage(1);
+      setAllMemes([]);
+      setHasMore(true);
+    } catch (error) {
+      // 캐시 업데이트 실패 시에도 기본 동작 수행
+      setPage(1);
+      setAllMemes([]);
+      setHasMore(true);
+    }
+  }, [queryClient]);
+
   // 수동 새로고침 함수
   const handleRefresh = useCallback(async () => {
     toast({
@@ -273,6 +300,9 @@ export default function Home() {
       });
 
       setSelectedMeme(null);
+      
+      // 통합 캐시 업데이트
+      handleVoteUpdate();
 
     } catch (error: any) {
       toast({
@@ -348,7 +378,7 @@ export default function Home() {
     },
     enabled: true,
     staleTime: sortBy === 'votes' ? 0 : 30000, // votes 정렬은 즉시 stale, latest는 30초 캐시
-    cacheTime: sortBy === 'votes' ? 0 : 60000, // votes 정렬은 캐시 없음, latest는 1분 캐시
+    gcTime: sortBy === 'votes' ? 0 : 60000, // votes 정렬은 캐시 없음, latest는 1분 캐시
   });
 
   // Update memes list when new data arrives - 정렬 충돌 방지
