@@ -1,7 +1,13 @@
 {
-  "name": "samu-meme-contest",
+  "name": "SAMU",
   "integrations": {
     "capacitor": {}
   },
-  "type": "custom"
+  "type": "custom",
+  "build": {
+    "command": "npm run build",
+    "options": {
+      "silence": true
+    }
+  }
 }

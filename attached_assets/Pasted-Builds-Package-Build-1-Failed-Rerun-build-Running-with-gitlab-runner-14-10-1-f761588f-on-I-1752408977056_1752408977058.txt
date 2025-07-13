@@ -1,0 +1,1547 @@
+Builds
+Package Build #1
+Failed
+Rerun build
+Running with gitlab-runner 14.10.1 (f761588f)
+  on Ionic Package Android Runner 8edcfcad
+Preparing the "kubernetes" executor
+Using Kubernetes namespace: ionic-runners
+Using Kubernetes executor with image 319312831725.dkr.ecr.us-west-2.amazonaws.com/appflow-runners/linux:2025.01 ...
+Using attach strategy to execute scripts...
+Preparing environment
+Waiting for pod ionic-runners/runner-8edcfcad-project-0-concurrent-1jtsk4 to be running, status is Pending
+Running on runner-8edcfcad-project-0-concurrent-1jtsk4 via gitlab-runner-57c5549486-866f4...
+
+Getting source from Git repository
+$ pre-clone
+[12:10:54]: Cloning repository...
+Fetching changes...
+Initialized empty Git repository in /builds/jichangyoon/samuapp/.git/
+Created fresh repository.
+Checking out aa174585 as main...
+
+Updating/initializing submodules...
+$ setup-fastlane
+[12:10:55]: Cloning complete...
+Fetching latest build process code...
+Cloning into '/builds/appflow-runners'...
+
+Executing "step_script" stage of the job script
+$ pre-build
+[12:10:57]: Building project....
+$ run "fetch-updates"
+Checking for build process updates...
+$ run "build-android"
+[12:10:59]: ---------------------------------
+[12:10:59]: --- Step: add_extra_platforms ---
+[12:10:59]: ---------------------------------
+[12:10:59]: Setting '[:web]' as extra SupportedPlatforms
+/builds/jichangyoon/samuapp/fastlane/outsystems/errors/detectors/pdm_plugins.rb:8: warning: character class has '-' without escape
+/builds/jichangyoon/samuapp/fastlane/outsystems/errors/detectors/pdm_plugins.rb:15: warning: character class has '-' without escape
+[12:10:59]: ------------------------------
+[12:10:59]: --- Step: default_platform ---
+[12:10:59]: ------------------------------
+[12:10:59]: Driving the lane 'android build_capacitor' 🚀
+[12:10:59]: ---------------------------------
+[12:10:59]: --- Step: prepare_environment ---
+[12:10:59]: ---------------------------------
+[12:10:59]: Setting default environment variables to tidy up logs. These can be overridden by setting them in Appflow.
+[12:10:59]: 
+[12:10:59]: Set COREPACK_ENABLE_AUTO_PIN=0 (Suppress yarn warnings)
+[12:10:59]: -------------------------
+[12:10:59]: --- Step: sentry_init ---
+[12:10:59]: -------------------------
+[12:10:59]: ----------------------------
+[12:10:59]: --- Step: begin_building ---
+[12:10:59]: ----------------------------
+[12:10:59]: Began building @ 2025-07-13T12:10:59
+[12:10:59]: ---------------------------
+[12:10:59]: --- Step: build_summary ---
+[12:10:59]: ---------------------------
+
++---------------------------------------------------+
+|                   Build Summary                   |
++---------------------+-----------------------------+
+| Runners Revision    | f9ed312                     |
+| Job ID              | 10294457                    |
+| Node.js version     | v20.18.2                    |
+| Cordova CLI version | 12.0.0 (cordova-lib@12.0.2) |
+| npm version         | 10.8.2                      |
+| yarn version        | 1.22.22                     |
++---------------------+-----------------------------+
+
+[12:11:00]: No build credential specified
+[12:11:00]: ---------------------------
+[12:11:00]: --- Step: set_ionic_cli ---
+[12:11:00]: ---------------------------
+[12:11:01]: Preinstalled @ionic/cli compatible with project `custom`
+[12:11:01]: ------------------------------------
+[12:11:01]: --- Step: detect_package_manager ---
+[12:11:01]: ------------------------------------
+[12:11:01]: Detecting package manager
+[12:11:01]: Defaulting to npm
+[12:11:01]: ---------------------------------
+[12:11:01]: --- Step: add_git_credentials ---
+[12:11:01]: ---------------------------------
+[12:11:01]: Writing git-credentials files
+[12:11:01]: git-credentials successfully added to project
+[12:11:01]: --------------------------------
+[12:11:01]: --- Step: get_appflow_config ---
+[12:11:01]: --------------------------------
+[12:11:01]: Checking for appflow.config.json
+[12:11:01]: Appflow config not detected
+[12:11:01]: --------------------------------
+[12:11:01]: --- Step: dependency_install ---
+[12:11:01]: --------------------------------
+[12:11:01]: Installing Dependencies (in /builds/jichangyoon/samuapp)
+[12:11:01]: $ npm ci --quiet 
+[12:11:08]: ▸ npm warn deprecated @walletconnect/modal@2.7.0: Please follow the migration guide on https://docs.reown.com/appkit/upgrade/wcm
+[12:11:09]: ▸ npm warn deprecated @paulmillr/qr@0.2.1: The package is now available as "qr": npm install qr
+[12:11:10]: ▸ npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+[12:11:10]: ▸ npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+[12:11:11]: ▸ npm warn deprecated @motionone/vue@10.16.4: Motion One for Vue is deprecated. Use Oku Motion instead https://oku-ui.com/motion
+[12:11:56]: ▸ added 1192 packages, and audited 1193 packages in 55s
+[12:11:56]: ▸ 170 packages are looking for funding
+[12:11:56]: ▸ run `npm fund` for details
+[12:11:56]: ▸ 12 vulnerabilities (1 low, 7 moderate, 4 high)
+[12:11:56]: ▸ To address issues that do not require attention, run:
+[12:11:56]: ▸ npm audit fix
+[12:11:56]: ▸ To address all issues (including breaking changes), run:
+[12:11:56]: ▸ npm audit fix --force
+[12:11:56]: ▸ Run `npm audit` for details.
+[12:11:56]: -------------------------------------
+[12:11:56]: --- Step: create_capacitor_config ---
+[12:11:56]: -------------------------------------
+[12:11:57]: Created capacitor.config.json from capacitor.config.ts/js
+[12:11:57]: -------------------------
+[12:11:57]: --- Step: get_web_dir ---
+[12:11:57]: -------------------------
+[12:11:57]: webDir is `dist/public`
+[12:11:57]: -----------------------------------
+[12:11:57]: --- Step: modify_cap_web_config ---
+[12:11:57]: -----------------------------------
+[12:11:57]: No custom native config detected.
+[12:11:57]: ---------------------------
+[12:11:57]: --- Step: set_java_home ---
+[12:11:57]: ---------------------------
+[12:11:57]: Try to detect the android gradle plugin version
+[12:11:57]: Project Android Gradle Plug-in version is 8.7.2: set Java to 21
+[12:11:57]: ---------------------------
+[12:11:57]: --- Step: build_pro_app ---
+[12:11:57]: ---------------------------
+[12:11:57]: Building app from /builds/jichangyoon/samuapp
+[12:11:57]: Build script detected...
+[12:11:57]: $ npm run build
+[12:11:58]: ▸ > rest-express@1.0.0 build
+[12:11:58]: ▸ > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+[12:11:58]: ▸ vite v5.4.14 building for production...
+[12:11:58]: ▸ transforming...
+[12:11:58]: ▸ Browserslist: browsers data (caniuse-lite) is 9 months old. Please run:
+[12:11:58]: ▸ npx update-browserslist-db@latest
+[12:11:58]: ▸ Why you should do it regularly: https://github.com/browserslist/update-db#readme
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (1:29374): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (1:33970): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (1:34814): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (1:35799): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (1:53940): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (1:90726): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (1:105127): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (1:105423): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (1:141558): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (2:794): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (4:287): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (4:1401): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (4:4071): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (4:17991): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (4:18127): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (5:269): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (6:3510): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (6:4496): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (6:4705): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (6:4946): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (7:325): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (7:482): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (7:2623): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (8:11609): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (8:15072): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (8:15751): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (8:24503): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (10:13354): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (10:16427): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (10:16605): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (10:16784): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (11:1644): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (11:3988): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (11:6422): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (12:1291): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (12:3759): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (12:6539): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (12:9505): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (12:12904): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (12:15609): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (12:20775): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (12:25385): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (14:1968): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (14:4573): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (14:5649): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (15:692): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (15:831): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (15:1390): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (15:2341): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (15:2807): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (16:1027): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:2251): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:16223): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:16310): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:16792): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:23395): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:24934): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:25432): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:30227): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:31416): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:32719): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:39952): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:41706): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (18:5808): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (18:8375): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (18:16637): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:416): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:7559): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:8414): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:11241): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:13102): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:16449): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:20446): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:22294): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:52824): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:52869): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:53122): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (20:3634): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (20:5192): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (20:11747): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (20:19187): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (22:517): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (22:5793): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (22:6122): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (22:6680): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (22:11519): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (22:12316): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (22:12640): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (22:13439): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (22:17317): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (22:23476): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (23:6823): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (23:12249): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:925): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:11267): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:20227): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:21020): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:27930): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:28833): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:39813): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:50627): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:55218): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:55501): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:57977): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:62466): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (25:1702): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (25:2580): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (25:4662): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (25:9874): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:2318): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:3198): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:3712): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:4924): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:6335): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:9238): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:13661): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:18898): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:21565): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:21783): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:22356): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:23019): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:23729): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:30381): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:31575): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:35611): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:00]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (27:64587): A comment
+[12:12:00]: ▸ "/*#__PURE__*/"
+[12:12:00]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:05]: ▸ node_modules/ox/_esm/core/Address.js (6:21): A comment
+[12:12:05]: ▸ "/*#__PURE__*/"
+[12:12:05]: ▸ in "node_modules/ox/_esm/core/Address.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:05]: ▸ node_modules/ox/_esm/core/internal/cursor.js (2:21): A comment
+[12:12:05]: ▸ "/*#__PURE__*/"
+[12:12:05]: ▸ in "node_modules/ox/_esm/core/internal/cursor.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:07]: ▸ node_modules/@walletconnect/utils/node_modules/ox/_esm/core/Address.js (6:21): A comment
+[12:12:07]: ▸ "/*#__PURE__*/"
+[12:12:07]: ▸ in "node_modules/@walletconnect/utils/node_modules/ox/_esm/core/Address.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:07]: ▸ node_modules/@walletconnect/utils/node_modules/ox/_esm/core/internal/cursor.js (2:21): A comment
+[12:12:07]: ▸ "/*#__PURE__*/"
+[12:12:07]: ▸ in "node_modules/@walletconnect/utils/node_modules/ox/_esm/core/internal/cursor.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:08]: ▸ node_modules/@walletconnect/universal-provider/node_modules/ox/_esm/core/Address.js (6:21): A comment
+[12:12:08]: ▸ "/*#__PURE__*/"
+[12:12:08]: ▸ in "node_modules/@walletconnect/universal-provider/node_modules/ox/_esm/core/Address.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:08]: ▸ node_modules/@walletconnect/universal-provider/node_modules/ox/_esm/core/internal/cursor.js (2:21): A comment
+[12:12:08]: ▸ "/*#__PURE__*/"
+[12:12:08]: ▸ in "node_modules/@walletconnect/universal-provider/node_modules/ox/_esm/core/internal/cursor.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[12:12:18]: ▸ ✓ 6103 modules transformed.
+[12:12:19]: ▸ rendering chunks...
+[12:12:20]: ▸ computing gzip size...
+[12:12:20]: ▸ ../dist/public/index.html                                        3.02 kB │ gzip:   1.23 kB
+[12:12:20]: ▸ ../dist/public/assets/splash-screen-B6KGqzQe.jpg                12.99 kB
+[12:12:20]: ▸ ../dist/public/assets/doctorbird-logo-EzZeiTDK.webp             35.37 kB
+[12:12:20]: ▸ ../dist/public/assets/samu-logo-ZdRBbV3B.webp                   41.76 kB
+[12:12:20]: ▸ ../dist/public/assets/samu-samurai-shirt-DKnLUO4S.webp         624.25 kB
+[12:12:20]: ▸ ../dist/public/assets/index-CJa3r7Pf.css                        53.62 kB │ gzip:   9.84 kB
+[12:12:20]: ▸ ../dist/public/assets/ConstantsUtil-Dmg8YACJ.js                  0.09 kB │ gzip:   0.11 kB
+[12:12:20]: ▸ ../dist/public/assets/cursor-B3idXTsv.js                         0.23 kB │ gzip:   0.21 kB
+[12:12:20]: ▸ ../dist/public/assets/circle-Bb_1ffdP.js                         0.27 kB │ gzip:   0.22 kB
+[12:12:20]: ▸ ../dist/public/assets/index-BEIt6C7z.js                          0.34 kB │ gzip:   0.24 kB
+[12:12:20]: ▸ ../dist/public/assets/web-CsdeOr9B.js                            0.36 kB │ gzip:   0.25 kB
+[12:12:20]: ▸ ../dist/public/assets/chevron-left-DMmbDBkG.js                   0.37 kB │ gzip:   0.27 kB
+[12:12:20]: ▸ ../dist/public/assets/chevron-top-U3pmL0XF.js                    0.37 kB │ gzip:   0.26 kB
+[12:12:20]: ▸ ../dist/public/assets/external-link-DMaX_-lX.js                  0.37 kB │ gzip:   0.27 kB
+[12:12:20]: ▸ ../dist/public/assets/chevron-bottom-DpEIPSmQ.js                 0.37 kB │ gzip:   0.27 kB
+[12:12:20]: ▸ ../dist/public/assets/chevron-right-C-j4tb_8.js                  0.37 kB │ gzip:   0.26 kB
+[12:12:20]: ▸ ../dist/public/assets/web-CxTJiESU.js                            0.38 kB │ gzip:   0.25 kB
+[12:12:20]: ▸ ../dist/public/assets/arrow-top-BETltnD_.js                      0.38 kB │ gzip:   0.27 kB
+[12:12:20]: ▸ ../dist/public/assets/arrow-bottom-doDl3YJt.js                   0.38 kB │ gzip:   0.27 kB
+[12:12:20]: ▸ ../dist/public/assets/arrow-left-CrOtXVH-.js                     0.38 kB │ gzip:   0.27 kB
+[12:12:20]: ▸ ../dist/public/assets/arrow-right-Cmct0CJk.js                    0.39 kB │ gzip:   0.28 kB
+[12:12:20]: ▸ ../dist/public/assets/search-CqOXc9OY.js                         0.41 kB │ gzip:   0.28 kB
+[12:12:20]: ▸ ../dist/public/assets/close-CiZE4cHo.js                          0.41 kB │ gzip:   0.28 kB
+[12:12:20]: ▸ ../dist/public/assets/all-wallets-D3gL8tHl.js                    0.42 kB │ gzip:   0.25 kB
+[12:12:20]: ▸ ../dist/public/assets/filters-BR8a3r_a.js                        0.42 kB │ gzip:   0.26 kB
+[12:12:20]: ▸ ../dist/public/assets/info-circle-Vb1eoPkC.js                    0.44 kB │ gzip:   0.28 kB
+[12:12:20]: ▸ ../dist/public/assets/more-8rz6weWM.js                           0.46 kB │ gzip:   0.29 kB
+[12:12:20]: ▸ ../dist/public/assets/refresh-CDUozq0c.js                        0.46 kB │ gzip:   0.31 kB
+[12:12:20]: ▸ ../dist/public/assets/warning-circle-Bw5ODOYp.js                 0.47 kB │ gzip:   0.30 kB
+[12:12:20]: ▸ ../dist/public/assets/coinPlaceholder-C1QNpc22.js                0.47 kB │ gzip:   0.34 kB
+[12:12:20]: ▸ ../dist/public/assets/compass-Ave80cm_.js                        0.49 kB │ gzip:   0.33 kB
+[12:12:20]: ▸ ../dist/public/assets/swapVertical-4zXPXrO4.js                   0.52 kB │ gzip:   0.33 kB
+[12:12:20]: ▸ ../dist/public/assets/swapHorizontal-DAMNW1VU.js                 0.52 kB │ gzip:   0.32 kB
+[12:12:20]: ▸ ../dist/public/assets/x-CT6Y2Ro1.js                              0.54 kB │ gzip:   0.38 kB
+[12:12:20]: ▸ ../dist/public/assets/index-Cn5aGd7v.js                          0.55 kB │ gzip:   0.32 kB
+[12:12:20]: ▸ ../dist/public/assets/cursor-transparent-DJecqG2p.js             0.55 kB │ gzip:   0.34 kB
+[12:12:20]: ▸ ../dist/public/assets/twitterIcon-CulsUHN3.js                    0.55 kB │ gzip:   0.36 kB
+[12:12:20]: ▸ ../dist/public/assets/mobile-CSWaRd3_.js                         0.56 kB │ gzip:   0.31 kB
+[12:12:20]: ▸ ../dist/public/assets/checkmark-bold-C_oQHpYF.js                 0.62 kB │ gzip:   0.42 kB
+[12:12:20]: ▸ ../dist/public/assets/etherscan-CaWBnTEO.js                      0.67 kB │ gzip:   0.43 kB
+[12:12:20]: ▸ ../dist/public/assets/checkmark-DddU6gQ9.js                      0.68 kB │ gzip:   0.45 kB
+[12:12:20]: ▸ ../dist/public/assets/help-circle-CvdBG19s.js                    0.68 kB │ gzip:   0.41 kB
+[12:12:20]: ▸ ../dist/public/assets/wallet-BbVDXRcK.js                         0.69 kB │ gzip:   0.40 kB
+[12:12:20]: ▸ ../dist/public/assets/plus-B0OdRirr.js                           0.73 kB │ gzip:   0.41 kB
+[12:12:20]: ▸ ../dist/public/assets/verify-filled-CxyeekUM.js                  0.74 kB │ gzip:   0.45 kB
+[12:12:20]: ▸ ../dist/public/assets/add-pnYLb2Uo.js                            0.74 kB │ gzip:   0.41 kB
+[12:12:20]: ▸ ../dist/public/assets/x-mark-OY3AuCxq.js                         0.77 kB │ gzip:   0.42 kB
+[12:12:20]: ▸ ../dist/public/assets/google-BcDpJ9i5.js                         0.78 kB │ gzip:   0.44 kB
+[12:12:20]: ▸ ../dist/public/assets/three-dots-BK4QOs3v.js                     0.81 kB │ gzip:   0.39 kB
+[12:12:20]: ▸ ../dist/public/assets/clock-3B8kcaW3.js                          0.81 kB │ gzip:   0.46 kB
+[12:12:20]: ▸ ../dist/public/assets/disconnect-DRO2x8Ag.js                     0.86 kB │ gzip:   0.49 kB
+[12:12:20]: ▸ ../dist/public/assets/twitch-lBb20Pjl.js                         0.87 kB │ gzip:   0.48 kB
+[12:12:20]: ▸ ../dist/public/assets/bank-BdQP54zo.js                           0.91 kB │ gzip:   0.51 kB
+[12:12:20]: ▸ ../dist/public/assets/apple-ByU5-Aef.js                          0.93 kB │ gzip:   0.51 kB
+[12:12:20]: ▸ ../dist/public/assets/ref-CCT3wHMe.js                            0.97 kB │ gzip:   0.52 kB
+[12:12:20]: ▸ ../dist/public/assets/play-store-DZuS9CGv.js                     0.98 kB │ gzip:   0.50 kB
+[12:12:20]: ▸ ../dist/public/assets/farcaster-CsrtY8Ry.js                      0.99 kB │ gzip:   0.52 kB
+[12:12:20]: ▸ ../dist/public/assets/off-BluDGErJ.js                            1.03 kB │ gzip:   0.54 kB
+[12:12:20]: ▸ ../dist/public/assets/ethereum-CKVlhBNk.js                       1.06 kB │ gzip:   0.43 kB
+[12:12:20]: ▸ ../dist/public/assets/arrow-bottom-circle-CMphOtOV.js            1.10 kB │ gzip:   0.51 kB
+[12:12:20]: ▸ ../dist/public/assets/github-CCiPb-wR.js                         1.10 kB │ gzip:   0.58 kB
+[12:12:20]: ▸ ../dist/public/assets/transactions-BS6E5-4x.js                   1.13 kB │ gzip:   0.64 kB
+[12:12:20]: ▸ ../dist/public/assets/swapHorizontalBold-DiFLseXH.js             1.13 kB │ gzip:   0.60 kB
+[12:12:20]: ▸ ../dist/public/assets/app-store-DUu1qyZu.js                      1.17 kB │ gzip:   0.66 kB
+[12:12:20]: ▸ ../dist/public/assets/mail-DauK4rAW.js                           1.18 kB │ gzip:   0.64 kB
+[12:12:20]: ▸ ../dist/public/assets/index-DJYEVSw5.js                          1.19 kB │ gzip:   0.68 kB
+[12:12:20]: ▸ ../dist/public/assets/facebook-DfbQxqR2.js                       1.20 kB │ gzip:   0.63 kB
+[12:12:20]: ▸ ../dist/public/assets/wallet-placeholder-Cn2bsEdr.js             1.23 kB │ gzip:   0.58 kB
+[12:12:20]: ▸ ../dist/public/assets/desktop-DDKu4wHJ.js                        1.24 kB │ gzip:   0.63 kB
+[12:12:20]: ▸ ../dist/public/assets/discord-fvTfqhF_.js                        1.27 kB │ gzip:   0.64 kB
+[12:12:20]: ▸ ../dist/public/assets/swapHorizontalMedium-DpcO2vum.js           1.27 kB │ gzip:   0.66 kB
+[12:12:20]: ▸ ../dist/public/assets/recycle-horizontal-CWs6txdg.js             1.32 kB │ gzip:   0.68 kB
+[12:12:20]: ▸ ../dist/public/assets/extension-M8ZY8J2I.js                      1.40 kB │ gzip:   0.68 kB
+[12:12:20]: ▸ ../dist/public/assets/index-BW773MuN.js                          1.42 kB │ gzip:   0.73 kB
+[12:12:20]: ▸ ../dist/public/assets/index-BGmo-uCJ.js                          1.42 kB │ gzip:   0.71 kB
+[12:12:20]: ▸ ../dist/public/assets/telegram-DxzoSZrL.js                       1.42 kB │ gzip:   0.82 kB
+[12:12:20]: ▸ ../dist/public/assets/swapHorizontalRoundedBold-DbrSMo4j.js      1.43 kB │ gzip:   0.75 kB
+[12:12:20]: ▸ ../dist/public/assets/verify-BbTtfINb.js                         1.44 kB │ gzip:   0.69 kB
+[12:12:20]: ▸ ../dist/public/assets/index-RtbwFgb1.js                          1.47 kB │ gzip:   0.78 kB
+[12:12:20]: ▸ ../dist/public/assets/qr-code-DjysY1wz.js                        1.49 kB │ gzip:   0.51 kB
+[12:12:20]: ▸ ../dist/public/assets/browser-M28Sjp8m.js                        1.55 kB │ gzip:   0.77 kB
+[12:12:20]: ▸ ../dist/public/assets/network-placeholder-CpKJawO9.js            1.62 kB │ gzip:   0.72 kB
+[12:12:20]: ▸ ../dist/public/assets/index-82aFRiaR.js                          1.63 kB │ gzip:   0.78 kB
+[12:12:20]: ▸ ../dist/public/assets/index-Cf75jBa6.js                          1.69 kB │ gzip:   0.92 kB
+[12:12:20]: ▸ ../dist/public/assets/id-PmdZW3s4.js                             1.72 kB │ gzip:   0.79 kB
+[12:12:20]: ▸ ../dist/public/assets/nftPlaceholder-DufZapWT.js                 1.72 kB │ gzip:   0.85 kB
+[12:12:20]: ▸ ../dist/public/assets/bin-BHPWt7gI.js                            1.73 kB │ gzip:   0.86 kB
+[12:12:20]: ▸ ../dist/public/assets/index-Bzi_DNjq.js                          1.78 kB │ gzip:   0.85 kB
+[12:12:20]: ▸ ../dist/public/assets/index-DL1X3_i9.js                          1.96 kB │ gzip:   0.86 kB
+[12:12:20]: ▸ ../dist/public/assets/index-rwoXuNvm.js                          2.00 kB │ gzip:   0.82 kB
+[12:12:20]: ▸ ../dist/public/assets/bitcoin-B-aNwZ3c.js                        2.01 kB │ gzip:   1.09 kB
+[12:12:20]: ▸ ../dist/public/assets/info-MFh1RxiO.js                           2.23 kB │ gzip:   1.12 kB
+[12:12:20]: ▸ ../dist/public/assets/index-D2s1aagl.js                          2.29 kB │ gzip:   0.89 kB
+[12:12:20]: ▸ ../dist/public/assets/exclamation-triangle-B89eqHen.js           2.39 kB │ gzip:   1.11 kB
+[12:12:20]: ▸ ../dist/public/assets/send-CzcdyoC-.js                           2.39 kB │ gzip:   1.26 kB
+[12:12:20]: ▸ ../dist/public/assets/solana-CoAYZ8Z8.js                         2.51 kB │ gzip:   1.19 kB
+[12:12:20]: ▸ ../dist/public/assets/card-DuHTzBeq.js                           2.56 kB │ gzip:   1.15 kB
+[12:12:20]: ▸ ../dist/public/assets/chrome-store-hNM_4BrY.js                   2.56 kB │ gzip:   1.00 kB
+[12:12:20]: ▸ ../dist/public/assets/reown-logo-Cq4zRyN3.js                     2.57 kB │ gzip:   1.05 kB
+[12:12:20]: ▸ ../dist/public/assets/index-BOz-mBEh.js                          2.63 kB │ gzip:   1.05 kB
+[12:12:20]: ▸ ../dist/public/assets/ccip-Cp9DLfrf.js                           2.68 kB │ gzip:   1.27 kB
+[12:12:20]: ▸ ../dist/public/assets/lightbulb-DfQHAJZ9.js                      2.69 kB │ gzip:   1.20 kB
+[12:12:20]: ▸ ../dist/public/assets/image-CyBDQX5t.js                          3.46 kB │ gzip:   1.49 kB
+[12:12:20]: ▸ ../dist/public/assets/index-CKbPalci.js                          3.58 kB │ gzip:   1.38 kB
+[12:12:20]: ▸ ../dist/public/assets/copy-FCEcw-FF.js                           3.79 kB │ gzip:   1.45 kB
+[12:12:20]: ▸ ../dist/public/assets/walletconnect-BwEcH6vZ.js                  4.03 kB │ gzip:   1.64 kB
+[12:12:20]: ▸ ../dist/public/assets/index-Cx4KxSE0.js                          4.34 kB │ gzip:   1.73 kB
+[12:12:20]: ▸ ../dist/public/assets/index-_ONdpcRV.js                          4.38 kB │ gzip:   1.20 kB
+[12:12:20]: ▸ ../dist/public/assets/index-D3u4BdOK.js                          4.60 kB │ gzip:   1.54 kB
+[12:12:20]: ▸ ../dist/public/assets/receive-D8z_DWQ2.js                        5.64 kB │ gzip:   2.07 kB
+[12:12:20]: ▸ ../dist/public/assets/index-COty-jUY.js                          5.68 kB │ gzip:   1.69 kB
+[12:12:20]: ▸ ../dist/public/assets/index-CTTbqvRO.js                          6.32 kB │ gzip:   1.76 kB
+[12:12:20]: ▸ ../dist/public/assets/index-SGrikwkX.js                          6.84 kB │ gzip:   1.60 kB
+[12:12:20]: ▸ ../dist/public/assets/index-Bjltdz_y.js                          7.60 kB │ gzip:   2.60 kB
+[12:12:20]: ▸ ../dist/public/assets/index-BBLycuDx.js                          7.95 kB │ gzip:   2.24 kB
+[12:12:20]: ▸ ../dist/public/assets/index-Br2e6Kdz.js                          8.16 kB │ gzip:   2.17 kB
+[12:12:20]: ▸ ../dist/public/assets/index-BBi-aKFJ.js                          8.56 kB │ gzip:   2.57 kB
+[12:12:20]: ▸ ../dist/public/assets/index-Cpxf_D1m.js                          9.59 kB │ gzip:   1.97 kB
+[12:12:20]: ▸ ../dist/public/assets/index-BDjlppJg.js                         13.22 kB │ gzip:   5.36 kB
+[12:12:20]: ▸ ../dist/public/assets/index-CVdD1s6W.js                         13.28 kB │ gzip:   4.93 kB
+[12:12:20]: ▸ ../dist/public/assets/embedded-wallet-DNJ-HTAn.js               13.65 kB │ gzip:   4.06 kB
+[12:12:20]: ▸ ../dist/public/assets/index-D0XkYQZT.js                         15.64 kB │ gzip:   4.45 kB
+[12:12:20]: ▸ ../dist/public/assets/index-BYQPpsJ6.js                         15.96 kB │ gzip:   4.80 kB
+[12:12:20]: ▸ ../dist/public/assets/socials-C2yCahQu.js                       16.80 kB │ gzip:   4.46 kB
+[12:12:20]: ▸ ../dist/public/assets/email-NZHM3yjY.js                         20.46 kB │ gzip:   5.06 kB
+[12:12:20]: ▸ ../dist/public/assets/index-CiB0XAcW.js                         22.46 kB │ gzip:   6.46 kB
+[12:12:20]: ▸ ../dist/public/assets/secp256k1-BVG4u5mt.js                     26.52 kB │ gzip:  10.38 kB
+[12:12:20]: ▸ ../dist/public/assets/w3m-modal-3cXH8AFS.js                     27.33 kB │ gzip:   7.15 kB
+[12:12:20]: ▸ ../dist/public/assets/index-DgQ4HEzM.js                         27.93 kB │ gzip:  10.89 kB
+[12:12:20]: ▸ ../dist/public/assets/send-BN0jY2z3.js                          30.42 kB │ gzip:   6.66 kB
+[12:12:20]: ▸ ../dist/public/assets/secp256k1-DbXCCgBU.js                     31.87 kB │ gzip:  12.70 kB
+[12:12:20]: ▸ ../dist/public/assets/if-defined-Bs0mI9Iy.js                    31.92 kB │ gzip:   8.03 kB
+[12:12:20]: ▸ ../dist/public/assets/onramp-Cr_xOdMd.js                        36.28 kB │ gzip:   8.16 kB
+[12:12:20]: ▸ ../dist/public/assets/swaps-BdfASpGU.js                         50.97 kB │ gzip:   9.45 kB
+[12:12:20]: ▸ ../dist/public/assets/index-DiuSya96.js                         52.48 kB │ gzip:  15.24 kB
+[12:12:20]: ▸ ../dist/public/assets/index-BGuYkMMk.js                        137.40 kB │ gzip:  43.40 kB
+[12:12:20]: ▸ ../dist/public/assets/index-Bfk-4WoX.js                        254.56 kB │ gzip:  47.24 kB
+[12:12:20]: ▸ ../dist/public/assets/index-_bKIIntd.js                        664.53 kB │ gzip: 181.98 kB
+[12:12:20]: ▸ ../dist/public/assets/index-CySW5eF0.js                      3,096.27 kB │ gzip: 927.96 kB
+[12:12:20]: ▸ 
+[12:12:20]: ▸ (!) Some chunks are larger than 500 kB after minification. Consider:
+[12:12:20]: ▸ - Using dynamic import() to code-split the application
+[12:12:20]: ▸ - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+[12:12:20]: ▸ - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[12:12:20]: ▸ ✓ built in 22.15s
+[12:12:20]: ▸ dist/index.js  87.9kb
+[12:12:20]: ▸ ⚡ Done in 6ms
+[12:12:20]: $ ionic info
+[12:12:22]: ▸ Ionic:
+[12:12:22]: ▸ Ionic CLI : 7.2.0 (/usr/local/nvm/versions/node/v20.18.2/lib/node_modules/@ionic/cli)
+[12:12:22]: ▸ Capacitor:
+[12:12:22]: ▸ Capacitor CLI      : 7.3.0
+[12:12:22]: ▸ @capacitor/android : 7.3.0
+[12:12:22]: ▸ @capacitor/core    : 7.3.0
+[12:12:22]: ▸ @capacitor/ios     : 7.3.0
+[12:12:22]: ▸ Utility:
+[12:12:22]: ▸ cordova-res : not installed globally
+[12:12:22]: ▸ native-run  : 2.0.1
+[12:12:22]: ▸ System:
+[12:12:22]: ▸ NodeJS : v20.18.2 (/usr/local/nvm/versions/node/v20.18.2/bin/node)
+[12:12:22]: ▸ npm    : 10.8.2
+[12:12:22]: ▸ OS     : Linux 5.10
+[12:12:22]: Generating app manifest...
+[12:12:22]: ----------------------
+[12:12:22]: --- Step: cap_sync ---
+[12:12:22]: ----------------------
+[12:12:23]: $ npx cap sync android
+[12:12:24]: ▸ ✔ Copying web assets from public to android/app/src/main/assets/public in 21.62ms
+[12:12:24]: ▸ ✔ Creating capacitor.config.json in android/app/src/main/assets in 1.04ms
+[12:12:24]: ▸ ✔ copy android in 70.08ms
+[12:12:24]: ▸ ✔ Updating Android plugins in 13.89ms
+[12:12:24]: ▸ [info] Found 5 Capacitor plugins for android:
+[12:12:24]: ▸ @capacitor/app@7.0.1
+[12:12:24]: ▸ @capacitor/browser@7.0.1
+[12:12:24]: ▸ @capacitor/filesystem@7.1.2
+[12:12:24]: ▸ @capacitor/preferences@7.0.1
+[12:12:24]: ▸ @capacitor/share@7.0.1
+[12:12:24]: ▸ ✔ update android in 91.51ms
+[12:12:24]: ▸ [info] Sync finished in 0.248s
+[12:12:24]: -------------------------------
+[12:12:24]: --- Step: cap_custom_deploy ---
+[12:12:24]: -------------------------------
+[12:12:24]: No custom native config detected.
+[12:12:24]: ----------------------------------
+[12:12:24]: --- Step: modify_gradle_config ---
+[12:12:24]: ----------------------------------
+[12:12:24]: No custom native config found... skipping
+[12:12:24]: Building android (in /builds/jichangyoon/samuapp/android)...
+[12:12:24]: -------------------------
+[12:12:24]: --- Step: bundledebug ---
+[12:12:24]: -------------------------
+[12:12:24]: ▸ Downloading https://services.gradle.org/distributions/gradle-8.11.1-all.zip
+[12:12:26]: ▸ .....................10%......................20%......................30%......................40%......................50%......................60%......................70%......................80%......................90%......................100%
+[12:12:30]: ▸ Welcome to Gradle 8.11.1!
+[12:12:30]: ▸ Here are the highlights of this release:
+[12:12:30]: ▸ - Parallel load and store for Configuration Cache
+[12:12:30]: ▸ - Java compilation errors at the end of the build output
+[12:12:30]: ▸ - Consolidated report for warnings and deprecations
+[12:12:30]: ▸ For more details see https://docs.gradle.org/8.11.1/release-notes.html
+[12:12:30]: ▸ Starting a Gradle Daemon (subsequent builds will be faster)
+[12:13:17]: ▸ > Configure project :app
+[12:13:17]: ▸ WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+[12:13:22]: ▸ > Configure project :capacitor-cordova-android-plugins
+[12:13:22]: ▸ WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+[12:13:49]: ▸ > Task :app:preBuild UP-TO-DATE
+[12:13:49]: ▸ > Task :app:preDebugBuild UP-TO-DATE
+[12:13:49]: ▸ > Task :app:generateDebugResValues
+[12:13:49]: ▸ > Task :capacitor-android:preBuild UP-TO-DATE
+[12:13:49]: ▸ > Task :capacitor-android:preDebugBuild UP-TO-DATE
+[12:13:49]: ▸ > Task :capacitor-android:generateDebugResValues
+[12:13:49]: ▸ > Task :capacitor-android:generateDebugResources
+[12:13:49]: ▸ > Task :capacitor-android:packageDebugResources
+[12:13:49]: ▸ > Task :capacitor-cordova-android-plugins:preBuild UP-TO-DATE
+[12:13:49]: ▸ > Task :capacitor-cordova-android-plugins:preDebugBuild UP-TO-DATE
+[12:13:49]: ▸ > Task :capacitor-cordova-android-plugins:generateDebugResValues
+[12:13:49]: ▸ > Task :capacitor-cordova-android-plugins:generateDebugResources
+[12:13:49]: ▸ > Task :capacitor-cordova-android-plugins:packageDebugResources
+[12:14:18]: ▸ > Task :app:mapDebugSourceSetPaths
+[12:14:18]: ▸ > Task :app:generateDebugResources
+[12:14:19]: ▸ > Task :app:createDebugCompatibleScreenManifests
+[12:14:19]: ▸ > Task :app:extractDeepLinksDebug
+[12:14:19]: ▸ > Task :capacitor-android:extractDeepLinksDebug
+[12:14:19]: ▸ > Task :capacitor-cordova-android-plugins:extractDeepLinksDebug
+[12:14:19]: ▸ > Task :capacitor-cordova-android-plugins:writeDebugAarMetadata
+[12:14:19]: ▸ > Task :capacitor-android:writeDebugAarMetadata
+[12:14:19]: ▸ > Task :capacitor-android:processDebugManifest
+[12:14:19]: ▸ > Task :capacitor-cordova-android-plugins:processDebugManifest
+[12:14:19]: ▸ > Task :app:packageDebugResources
+[12:14:20]: ▸ > Task :app:mergeDebugResources
+[12:14:20]: ▸ > Task :app:processDebugMainManifest
+[12:14:20]: ▸ > Task :app:processDebugManifest
+[12:14:20]: ▸ > Task :app:processApplicationManifestDebugForBundle
+[12:14:20]: ▸ > Task :app:checkDebugAarMetadata
+[12:14:21]: ▸ > Task :app:parseDebugLocalResources
+[12:14:23]: ▸ > Task :app:processDebugManifestForPackage
+[12:14:23]: ▸ > Task :capacitor-android:compileDebugLibraryResources
+[12:14:23]: ▸ > Task :capacitor-android:parseDebugLocalResources
+[12:14:23]: ▸ > Task :capacitor-cordova-android-plugins:compileDebugLibraryResources
+[12:14:23]: ▸ > Task :capacitor-cordova-android-plugins:parseDebugLocalResources
+[12:14:23]: ▸ > Task :app:mergeDebugShaders
+[12:14:23]: ▸ > Task :capacitor-android:generateDebugRFile
+[12:14:23]: ▸ > Task :capacitor-cordova-android-plugins:generateDebugRFile
+[12:14:23]: ▸ > Task :app:compileDebugShaders NO-SOURCE
+[12:14:24]: ▸ > Task :app:generateDebugAssets UP-TO-DATE
+[12:14:24]: ▸ > Task :capacitor-android:mergeDebugShaders
+[12:14:24]: ▸ > Task :capacitor-android:compileDebugShaders NO-SOURCE
+[12:14:24]: ▸ > Task :capacitor-android:generateDebugAssets UP-TO-DATE
+[12:14:24]: ▸ > Task :capacitor-android:packageDebugAssets
+[12:14:24]: ▸ > Task :capacitor-cordova-android-plugins:mergeDebugShaders
+[12:14:24]: ▸ > Task :capacitor-cordova-android-plugins:compileDebugShaders NO-SOURCE
+[12:14:24]: ▸ > Task :capacitor-cordova-android-plugins:generateDebugAssets UP-TO-DATE
+[12:14:24]: ▸ > Task :capacitor-cordova-android-plugins:packageDebugAssets
+[12:14:24]: ▸ > Task :app:processDebugResources
+[12:14:25]: ▸ > Task :app:mergeDebugAssets
+[12:14:25]: ▸ > Task :capacitor-cordova-android-plugins:javaPreCompileDebug
+[12:14:25]: ▸ > Task :capacitor-android:javaPreCompileDebug
+[12:14:25]: ▸ > Task :app:desugarDebugFileDependencies
+[12:14:25]: ▸ > Task :app:bundleDebugResources
+[12:14:30]: ▸ > Task :capacitor-android:compileDebugJavaWithJavac
+[12:14:30]: ▸ Note: Some input files use unchecked or unsafe operations.
+[12:14:30]: ▸ Note: Recompile with -Xlint:unchecked for details.
+[12:14:49]: ▸ > Task :capacitor-cordova-android-plugins:compileDebugJavaWithJavac NO-SOURCE
+[12:14:49]: ▸ > Task :capacitor-cordova-android-plugins:bundleLibRuntimeToJarDebug
+[12:14:49]: ▸ > Task :app:javaPreCompileDebug
+[12:14:49]: ▸ > Task :capacitor-cordova-android-plugins:bundleLibCompileToJarDebug
+[12:14:49]: ▸ > Task :capacitor-android:bundleLibRuntimeToJarDebug
+[12:14:49]: ▸ > Task :app:processDebugJavaRes NO-SOURCE
+[12:14:49]: ▸ > Task :capacitor-android:bundleLibCompileToJarDebug
+[12:14:50]: ▸ > Task :app:compileDebugJavaWithJavac
+[12:14:50]: ▸ > Task :app:dexBuilderDebug
+[12:14:51]: ▸ > Task :capacitor-android:processDebugJavaRes NO-SOURCE
+[12:14:51]: ▸ > Task :capacitor-cordova-android-plugins:processDebugJavaRes NO-SOURCE
+[12:14:52]: ▸ > Task :app:mergeDebugJavaResource
+[12:14:52]: ▸ > Task :capacitor-cordova-android-plugins:bundleLibRuntimeToDirDebug
+[12:14:52]: ▸ > Task :app:checkDebugDuplicateClasses
+[12:14:52]: ▸ > Task :app:mergeDebugJniLibFolders
+[12:14:52]: ▸ > Task :capacitor-android:bundleLibRuntimeToDirDebug
+[12:15:07]: ▸ > Task :app:mergeDebugGlobalSynthetics
+[12:15:07]: ▸ > Task :capacitor-android:mergeDebugJniLibFolders
+[12:15:07]: ▸ > Task :capacitor-android:mergeDebugNativeLibs NO-SOURCE
+[12:15:07]: ▸ > Task :capacitor-android:copyDebugJniLibsProjectOnly
+[12:15:07]: ▸ > Task :capacitor-cordova-android-plugins:mergeDebugJniLibFolders
+[12:15:07]: ▸ > Task :capacitor-cordova-android-plugins:mergeDebugNativeLibs NO-SOURCE
+[12:15:07]: ▸ > Task :app:writeDebugAppMetadata
+[12:15:07]: ▸ > Task :capacitor-cordova-android-plugins:copyDebugJniLibsProjectOnly
+[12:15:07]: ▸ > Task :app:mergeLibDexDebug
+[12:15:07]: ▸ > Task :app:mergeProjectDexDebug
+[12:15:07]: ▸ > Task :app:mergeDebugNativeLibs NO-SOURCE
+[12:15:07]: ▸ > Task :app:stripDebugDebugSymbols NO-SOURCE
+[12:15:07]: ▸ > Task :app:parseDebugIntegrityConfig
+[12:15:09]: ▸ > Task :app:mergeExtDexDebug
+[12:15:09]: ▸ > Task :app:buildDebugPreBundle
+[12:15:09]: ▸ > Task :app:packageDebugBundle
+[12:15:10]: ▸ > Task :app:signDebugBundle
+[12:15:10]: ▸ > Task :app:produceDebugBundleIdeListingFile
+[12:15:10]: ▸ > Task :app:createDebugBundleListingFileRedirect
+[12:15:10]: ▸ > Task :app:bundleDebug
+[12:15:10]: ▸ [Incubating] Problems report is available at: file:///builds/jichangyoon/samuapp/android/build/reports/problems/problems-report.html
+[12:15:10]: ▸ BUILD SUCCESSFUL in 2m 45s
+[12:15:10]: ▸ 70 actionable tasks: 70 executed
+[12:15:11]: ---------------------------
+[12:15:11]: --- Step: assembledebug ---
+[12:15:11]: ---------------------------
+[12:15:13]: ▸ > Configure project :app
+[12:15:13]: ▸ WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+[12:15:13]: ▸ > Configure project :capacitor-cordova-android-plugins
+[12:15:13]: ▸ WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+[12:15:15]: ▸ > Task :app:preBuild UP-TO-DATE
+[12:15:15]: ▸ > Task :app:preDebugBuild UP-TO-DATE
+[12:15:15]: ▸ > Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+[12:15:15]: ▸ > Task :app:javaPreCompileDebug UP-TO-DATE
+[12:15:15]: ▸ > Task :capacitor-android:preBuild UP-TO-DATE
+[12:15:15]: ▸ > Task :capacitor-android:preDebugBuild UP-TO-DATE
+[12:15:15]: ▸ > Task :capacitor-android:writeDebugAarMetadata UP-TO-DATE
+[12:15:15]: ▸ > Task :capacitor-cordova-android-plugins:preBuild UP-TO-DATE
+[12:15:15]: ▸ > Task :capacitor-cordova-android-plugins:preDebugBuild UP-TO-DATE
+[12:15:15]: ▸ > Task :capacitor-cordova-android-plugins:writeDebugAarMetadata UP-TO-DATE
+[12:15:17]: ▸ > Task :app:checkDebugAarMetadata UP-TO-DATE
+[12:15:17]: ▸ > Task :app:generateDebugResValues UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-android:generateDebugResValues UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-android:generateDebugResources UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-android:packageDebugResources UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-cordova-android-plugins:generateDebugResValues UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-cordova-android-plugins:generateDebugResources UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-cordova-android-plugins:packageDebugResources UP-TO-DATE
+[12:15:17]: ▸ > Task :app:mapDebugSourceSetPaths UP-TO-DATE
+[12:15:17]: ▸ > Task :app:generateDebugResources UP-TO-DATE
+[12:15:17]: ▸ > Task :app:mergeDebugResources UP-TO-DATE
+[12:15:17]: ▸ > Task :app:packageDebugResources UP-TO-DATE
+[12:15:17]: ▸ > Task :app:parseDebugLocalResources UP-TO-DATE
+[12:15:17]: ▸ > Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+[12:15:17]: ▸ > Task :app:extractDeepLinksDebug UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-android:extractDeepLinksDebug UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-android:processDebugManifest UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-cordova-android-plugins:extractDeepLinksDebug UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-cordova-android-plugins:processDebugManifest UP-TO-DATE
+[12:15:17]: ▸ > Task :app:processDebugMainManifest UP-TO-DATE
+[12:15:17]: ▸ > Task :app:processDebugManifest UP-TO-DATE
+[12:15:17]: ▸ > Task :app:processDebugManifestForPackage UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-android:compileDebugLibraryResources UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-android:parseDebugLocalResources UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-android:generateDebugRFile UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-cordova-android-plugins:compileDebugLibraryResources UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-cordova-android-plugins:parseDebugLocalResources UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-cordova-android-plugins:generateDebugRFile UP-TO-DATE
+[12:15:17]: ▸ > Task :app:processDebugResources UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-android:javaPreCompileDebug UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-android:compileDebugJavaWithJavac UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-android:bundleLibCompileToJarDebug UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-cordova-android-plugins:javaPreCompileDebug UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-cordova-android-plugins:compileDebugJavaWithJavac NO-SOURCE
+[12:15:17]: ▸ > Task :capacitor-cordova-android-plugins:bundleLibCompileToJarDebug UP-TO-DATE
+[12:15:17]: ▸ > Task :app:compileDebugJavaWithJavac UP-TO-DATE
+[12:15:17]: ▸ > Task :app:mergeDebugShaders UP-TO-DATE
+[12:15:17]: ▸ > Task :app:compileDebugShaders NO-SOURCE
+[12:15:17]: ▸ > Task :app:generateDebugAssets UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-android:mergeDebugShaders UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-android:compileDebugShaders NO-SOURCE
+[12:15:17]: ▸ > Task :capacitor-android:generateDebugAssets UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-android:packageDebugAssets UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-cordova-android-plugins:mergeDebugShaders UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-cordova-android-plugins:compileDebugShaders NO-SOURCE
+[12:15:17]: ▸ > Task :capacitor-cordova-android-plugins:generateDebugAssets UP-TO-DATE
+[12:15:17]: ▸ > Task :capacitor-cordova-android-plugins:packageDebugAssets UP-TO-DATE
+[12:15:17]: ▸ > Task :app:mergeDebugAssets UP-TO-DATE
+[12:15:18]: ▸ > Task :capacitor-android:bundleLibRuntimeToJarDebug UP-TO-DATE
+[12:15:18]: ▸ > Task :capacitor-cordova-android-plugins:bundleLibRuntimeToJarDebug UP-TO-DATE
+[12:15:18]: ▸ > Task :app:desugarDebugFileDependencies UP-TO-DATE
+[12:15:18]: ▸ > Task :app:dexBuilderDebug UP-TO-DATE
+[12:15:18]: ▸ > Task :app:compressDebugAssets
+[12:15:18]: ▸ > Task :app:mergeDebugGlobalSynthetics UP-TO-DATE
+[12:15:18]: ▸ > Task :app:processDebugJavaRes NO-SOURCE
+[12:15:18]: ▸ > Task :capacitor-android:processDebugJavaRes NO-SOURCE
+[12:15:18]: ▸ > Task :capacitor-cordova-android-plugins:processDebugJavaRes NO-SOURCE
+[12:15:18]: ▸ > Task :app:mergeDebugJavaResource UP-TO-DATE
+[12:15:18]: ▸ > Task :app:checkDebugDuplicateClasses UP-TO-DATE
+[12:15:18]: ▸ > Task :app:mergeExtDexDebug UP-TO-DATE
+[12:15:18]: ▸ > Task :capacitor-android:bundleLibRuntimeToDirDebug UP-TO-DATE
+[12:15:18]: ▸ > Task :capacitor-cordova-android-plugins:bundleLibRuntimeToDirDebug UP-TO-DATE
+[12:15:18]: ▸ > Task :app:mergeProjectDexDebug UP-TO-DATE
+[12:15:18]: ▸ > Task :app:mergeLibDexDebug UP-TO-DATE
+[12:15:18]: ▸ > Task :app:mergeDebugJniLibFolders UP-TO-DATE
+[12:15:18]: ▸ > Task :capacitor-android:mergeDebugJniLibFolders UP-TO-DATE
+[12:15:18]: ▸ > Task :capacitor-android:mergeDebugNativeLibs NO-SOURCE
+[12:15:18]: ▸ > Task :capacitor-android:copyDebugJniLibsProjectOnly UP-TO-DATE
+[12:15:18]: ▸ > Task :capacitor-cordova-android-plugins:mergeDebugJniLibFolders UP-TO-DATE
+[12:15:18]: ▸ > Task :capacitor-cordova-android-plugins:mergeDebugNativeLibs NO-SOURCE
+[12:15:18]: ▸ > Task :capacitor-cordova-android-plugins:copyDebugJniLibsProjectOnly UP-TO-DATE
+[12:15:18]: ▸ > Task :app:mergeDebugNativeLibs NO-SOURCE
+[12:15:18]: ▸ > Task :app:stripDebugDebugSymbols NO-SOURCE
+[12:15:19]: ▸ > Task :app:validateSigningDebug
+[12:15:19]: ▸ > Task :app:writeDebugAppMetadata UP-TO-DATE
+[12:15:19]: ▸ > Task :app:writeDebugSigningConfigVersions
+[12:15:19]: ▸ > Task :capacitor-android:stripDebugDebugSymbols NO-SOURCE
+[12:15:19]: ▸ > Task :capacitor-android:copyDebugJniLibsProjectAndLocalJars
+[12:15:38]: ▸ > Task :capacitor-android:extractDebugAnnotations
+[12:15:38]: ▸ > Task :capacitor-android:extractDeepLinksForAarDebug
+[12:15:38]: ▸ > Task :capacitor-android:mergeDebugGeneratedProguardFiles
+[12:15:38]: ▸ > Task :capacitor-android:mergeDebugConsumerProguardFiles
+[12:15:38]: ▸ > Task :capacitor-android:prepareDebugArtProfile
+[12:15:39]: ▸ > Task :capacitor-android:prepareLintJarForPublish
+[12:15:39]: ▸ > Task :capacitor-app:preBuild UP-TO-DATE
+[12:15:39]: ▸ > Task :capacitor-android:mergeDebugJavaResource
+[12:15:39]: ▸ > Task :capacitor-app:preDebugBuild UP-TO-DATE
+[12:15:39]: ▸ > Task :capacitor-app:mergeDebugJniLibFolders
+[12:15:39]: ▸ > Task :capacitor-android:syncDebugLibJars
+[12:15:39]: ▸ > Task :capacitor-android:bundleDebugAar
+[12:15:39]: ▸ > Task :capacitor-android:assembleDebug
+[12:15:39]: ▸ > Task :capacitor-app:mergeDebugNativeLibs NO-SOURCE
+[12:15:39]: ▸ > Task :capacitor-app:stripDebugDebugSymbols NO-SOURCE
+[12:15:39]: ▸ > Task :capacitor-app:copyDebugJniLibsProjectAndLocalJars
+[12:15:39]: ▸ > Task :capacitor-app:generateDebugResValues
+[12:15:39]: ▸ > Task :capacitor-app:generateDebugResources
+[12:15:39]: ▸ > Task :capacitor-app:packageDebugResources
+[12:15:39]: ▸ > Task :capacitor-app:extractDeepLinksForAarDebug
+[12:15:39]: ▸ > Task :capacitor-app:parseDebugLocalResources
+[12:15:39]: ▸ > Task :capacitor-app:javaPreCompileDebug
+[12:15:39]: ▸ > Task :capacitor-app:mergeDebugShaders
+[12:15:39]: ▸ > Task :capacitor-app:generateDebugRFile
+[12:15:39]: ▸ > Task :capacitor-app:compileDebugShaders NO-SOURCE
+[12:15:39]: ▸ > Task :capacitor-app:extractDebugAnnotations
+[12:15:39]: ▸ > Task :capacitor-app:compileDebugJavaWithJavac
+[12:15:39]: ▸ > Task :capacitor-app:mergeDebugGeneratedProguardFiles
+[12:15:39]: ▸ > Task :capacitor-app:mergeDebugConsumerProguardFiles
+[12:15:39]: ▸ > Task :capacitor-app:generateDebugAssets UP-TO-DATE
+[12:15:39]: ▸ > Task :capacitor-app:packageDebugAssets
+[12:15:39]: ▸ > Task :capacitor-app:prepareDebugArtProfile
+[12:15:39]: ▸ > Task :capacitor-app:prepareLintJarForPublish
+[12:15:39]: ▸ > Task :capacitor-app:processDebugJavaRes NO-SOURCE
+[12:15:39]: ▸ > Task :capacitor-app:mergeDebugJavaResource
+[12:15:39]: ▸ > Task :capacitor-app:processDebugManifest
+[12:15:39]: ▸ > Task :app:packageDebug
+[12:15:39]: ▸ > Task :app:createDebugApkListingFileRedirect
+[12:15:39]: ▸ > Task :app:assembleDebug
+[12:15:39]: ▸ > Task :capacitor-app:syncDebugLibJars
+[12:15:39]: ▸ > Task :capacitor-browser:preBuild UP-TO-DATE
+[12:15:39]: ▸ > Task :capacitor-app:writeDebugAarMetadata
+[12:15:39]: ▸ > Task :capacitor-app:bundleDebugAar
+[12:15:39]: ▸ > Task :capacitor-app:assembleDebug
+[12:15:39]: ▸ > Task :capacitor-browser:preDebugBuild UP-TO-DATE
+[12:15:39]: ▸ > Task :capacitor-browser:mergeDebugJniLibFolders
+[12:15:39]: ▸ > Task :capacitor-browser:mergeDebugNativeLibs NO-SOURCE
+[12:15:39]: ▸ > Task :capacitor-browser:stripDebugDebugSymbols NO-SOURCE
+[12:15:39]: ▸ > Task :capacitor-browser:copyDebugJniLibsProjectAndLocalJars
+[12:15:39]: ▸ > Task :capacitor-browser:generateDebugResValues
+[12:15:39]: ▸ > Task :capacitor-browser:generateDebugResources
+[12:15:39]: ▸ > Task :capacitor-browser:packageDebugResources
+[12:15:39]: ▸ > Task :capacitor-browser:extractDeepLinksForAarDebug
+[12:15:39]: ▸ > Task :capacitor-browser:parseDebugLocalResources
+[12:15:39]: ▸ > Task :capacitor-browser:javaPreCompileDebug
+[12:15:39]: ▸ > Task :capacitor-browser:mergeDebugShaders
+[12:15:39]: ▸ > Task :capacitor-browser:generateDebugRFile
+[12:15:39]: ▸ > Task :capacitor-browser:compileDebugShaders NO-SOURCE
+[12:15:41]: ▸ > Task :capacitor-browser:extractDebugAnnotations
+[12:15:42]: ▸ > Task :capacitor-browser:compileDebugJavaWithJavac
+[12:15:42]: ▸ > Task :capacitor-browser:mergeDebugGeneratedProguardFiles
+[12:15:42]: ▸ > Task :capacitor-browser:mergeDebugConsumerProguardFiles
+[12:15:42]: ▸ > Task :capacitor-browser:generateDebugAssets UP-TO-DATE
+[12:15:42]: ▸ > Task :capacitor-browser:packageDebugAssets
+[12:15:42]: ▸ > Task :capacitor-browser:prepareDebugArtProfile
+[12:15:42]: ▸ > Task :capacitor-browser:prepareLintJarForPublish
+[12:15:42]: ▸ > Task :capacitor-browser:processDebugJavaRes NO-SOURCE
+[12:15:42]: ▸ > Task :capacitor-browser:mergeDebugJavaResource
+[12:15:42]: ▸ > Task :capacitor-browser:writeDebugAarMetadata
+[12:15:42]: ▸ > Task :capacitor-cordova-android-plugins:stripDebugDebugSymbols NO-SOURCE
+[12:15:42]: ▸ > Task :capacitor-browser:processDebugManifest
+[12:15:42]: ▸ > Task :capacitor-browser:syncDebugLibJars
+[12:15:42]: ▸ > Task :capacitor-browser:bundleDebugAar
+[12:15:42]: ▸ > Task :capacitor-browser:assembleDebug
+[12:15:42]: ▸ > Task :capacitor-cordova-android-plugins:copyDebugJniLibsProjectAndLocalJars
+[12:15:47]: ▸ > Task :capacitor-cordova-android-plugins:extractDebugAnnotations
+[12:15:47]: ▸ > Task :capacitor-cordova-android-plugins:extractDeepLinksForAarDebug
+[12:15:47]: ▸ > Task :capacitor-cordova-android-plugins:mergeDebugGeneratedProguardFiles
+[12:15:47]: ▸ > Task :capacitor-cordova-android-plugins:mergeDebugConsumerProguardFiles
+[12:15:47]: ▸ > Task :capacitor-cordova-android-plugins:prepareDebugArtProfile
+[12:15:47]: ▸ > Task :capacitor-cordova-android-plugins:prepareLintJarForPublish
+[12:15:47]: ▸ > Task :capacitor-filesystem:preBuild UP-TO-DATE
+[12:15:47]: ▸ > Task :capacitor-filesystem:preDebugBuild UP-TO-DATE
+[12:15:47]: ▸ > Task :capacitor-cordova-android-plugins:mergeDebugJavaResource
+[12:15:47]: ▸ > Task :capacitor-filesystem:mergeDebugJniLibFolders
+[12:15:47]: ▸ > Task :capacitor-cordova-android-plugins:syncDebugLibJars
+[12:15:47]: ▸ > Task :capacitor-cordova-android-plugins:bundleDebugAar
+[12:15:47]: ▸ > Task :capacitor-cordova-android-plugins:assembleDebug
+[12:15:47]: ▸ > Task :capacitor-filesystem:mergeDebugNativeLibs NO-SOURCE
+[12:15:47]: ▸ > Task :capacitor-filesystem:stripDebugDebugSymbols NO-SOURCE
+[12:15:47]: ▸ > Task :capacitor-filesystem:copyDebugJniLibsProjectAndLocalJars
+[12:15:47]: ▸ > Task :capacitor-filesystem:checkKotlinGradlePluginConfigurationErrors
+[12:15:47]: ▸ > Task :capacitor-filesystem:generateDebugResValues
+[12:15:47]: ▸ > Task :capacitor-filesystem:generateDebugResources
+[12:15:47]: ▸ > Task :capacitor-filesystem:packageDebugResources
+[12:15:47]: ▸ > Task :capacitor-filesystem:extractDeepLinksForAarDebug
+[12:15:47]: ▸ > Task :capacitor-filesystem:parseDebugLocalResources
+[12:15:47]: ▸ > Task :capacitor-filesystem:javaPreCompileDebug
+[12:15:47]: ▸ > Task :capacitor-filesystem:mergeDebugShaders
+[12:15:47]: ▸ > Task :capacitor-filesystem:generateDebugRFile
+[12:15:47]: ▸ > Task :capacitor-filesystem:compileDebugShaders NO-SOURCE
+[12:15:56]: ▸ > Task :capacitor-filesystem:compileDebugKotlin FAILED
+[12:15:56]: ▸ FAILURE: Build failed with an exception.
+[12:15:56]: ▸ * What went wrong:
+[12:15:56]: ▸ Execution failed for task ':capacitor-filesystem:compileDebugKotlin'.
+[12:15:56]: ▸ > Inconsistent JVM-target compatibility detected for tasks 'compileDebugJavaWithJavac' (17) and 'compileDebugKotlin' (21).
+[12:15:56]: ▸ Consider using JVM Toolchain: https://kotl.in/gradle/jvm/toolchain
+[12:15:56]: ▸ Learn more about JVM-target validation: https://kotl.in/gradle/jvm/target-validation
+[12:15:56]: ▸ * Try:
+[12:15:56]: ▸ > Run with --stacktrace option to get the stack trace.
+[12:15:56]: ▸ > Run with --info or --debug option to get more log output.
+[12:15:56]: ▸ > Run with --scan to get full insights.
+[12:15:56]: ▸ > Get more help at https://help.gradle.org.
+[12:15:56]: ▸ BUILD FAILED in 45s
+[12:15:56]: ▸ 143 actionable tasks: 81 executed, 62 up-to-date
+[12:15:56]: -------------------------
+[12:15:56]: --- Step: upload_logs ---
+[12:15:56]: -------------------------
+[12:16:00]: --------------------------------------
+[12:16:00]: --- Step: sentry_capture_exception ---
+[12:16:00]: --------------------------------------
++----------------------------------------------------------------------------------------------------------------------------+
+|                                                        Lane Context                                                        |
++-------------------------------------+--------------------------------------------------------------------------------------+
+| DEFAULT_PLATFORM                    | ios                                                                                  |
+| PLATFORM_NAME                       | android                                                                              |
+| LANE_NAME                           | android build_capacitor                                                              |
+| IONIC_CLI_VERSION                   | 7.2.0                                                                                |
+| NODE_PACKAGE_MANAGER                | npm                                                                                  |
+| CAP_IOS_PATH                        | /builds/jichangyoon/samuapp/ios                                                      |
+| PROJECT_WEB_DIR                     | dist/public                                                                          |
+| GRADLE_BUILD_TYPE                   | debug                                                                                |
+| GRADLE_ALL_APK_OUTPUT_PATHS         | []                                                                                   |
+| GRADLE_ALL_AAB_OUTPUT_PATHS         | ["/builds/jichangyoon/samuapp/android/app/build/outputs/bundle/debug/app-debug.aab"] |
+| GRADLE_ALL_OUTPUT_JSON_OUTPUT_PATHS | []                                                                                   |
+| GRADLE_ALL_MAPPING_TXT_OUTPUT_PATHS | []                                                                                   |
+| GRADLE_AAB_OUTPUT_PATH              | /builds/jichangyoon/samuapp/android/app/build/outputs/bundle/debug/app-debug.aab     |
++-------------------------------------+--------------------------------------------------------------------------------------+
+[12:16:00]: Shell command exited with exit status 1 instead of 0.
+
+> Configure project :app
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :capacitor-cordova-android-plugins
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :capacitor-android:preBuild UP-TO-DATE
+> Task :capacitor-android:preDebugBuild UP-TO-DATE
+> Task :capacitor-android:writeDebugAarMetadata UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:preBuild UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:preDebugBuild UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:writeDebugAarMetadata UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :capacitor-android:generateDebugResValues UP-TO-DATE
+> Task :capacitor-android:generateDebugResources UP-TO-DATE
+> Task :capacitor-android:packageDebugResources UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:generateDebugResValues UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:generateDebugResources UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:packageDebugResources UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :capacitor-android:extractDeepLinksDebug UP-TO-DATE
+> Task :capacitor-android:processDebugManifest UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:extractDeepLinksDebug UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:processDebugManifest UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :capacitor-android:compileDebugLibraryResources UP-TO-DATE
+> Task :capacitor-android:parseDebugLocalResources UP-TO-DATE
+> Task :capacitor-android:generateDebugRFile UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:compileDebugLibraryResources UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:parseDebugLocalResources UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:generateDebugRFile UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :capacitor-android:javaPreCompileDebug UP-TO-DATE
+> Task :capacitor-android:compileDebugJavaWithJavac UP-TO-DATE
+> Task :capacitor-android:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:javaPreCompileDebug UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:compileDebugJavaWithJavac NO-SOURCE
+> Task :capacitor-cordova-android-plugins:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :app:compileDebugJavaWithJavac UP-TO-DATE
+> Task :app:mergeDebugShaders UP-TO-DATE
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :capacitor-android:mergeDebugShaders UP-TO-DATE
+> Task :capacitor-android:compileDebugShaders NO-SOURCE
+> Task :capacitor-android:generateDebugAssets UP-TO-DATE
+> Task :capacitor-android:packageDebugAssets UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:mergeDebugShaders UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:compileDebugShaders NO-SOURCE
+> Task :capacitor-cordova-android-plugins:generateDebugAssets UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:packageDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :capacitor-android:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :app:desugarDebugFileDependencies UP-TO-DATE
+> Task :app:dexBuilderDebug UP-TO-DATE
+> Task :app:compressDebugAssets
+> Task :app:mergeDebugGlobalSynthetics UP-TO-DATE
+> Task :app:processDebugJavaRes NO-SOURCE
+> Task :capacitor-android:processDebugJavaRes NO-SOURCE
+> Task :capacitor-cordova-android-plugins:processDebugJavaRes NO-SOURCE
+> Task :app:mergeDebugJavaResource UP-TO-DATE
+> Task :app:checkDebugDuplicateClasses UP-TO-DATE
+> Task :app:mergeExtDexDebug UP-TO-DATE
+> Task :capacitor-android:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :app:mergeProjectDexDebug UP-TO-DATE
+> Task :app:mergeLibDexDebug UP-TO-DATE
+> Task :app:mergeDebugJniLibFolders UP-TO-DATE
+> Task :capacitor-android:mergeDebugJniLibFolders UP-TO-DATE
+> Task :capacitor-android:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-android:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:mergeDebugJniLibFolders UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-cordova-android-plugins:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :app:mergeDebugNativeLibs NO-SOURCE
+> Task :app:stripDebugDebugSymbols NO-SOURCE
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata UP-TO-DATE
+> Task :app:writeDebugSigningConfigVersions
+> Task :capacitor-android:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-android:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-android:extractDebugAnnotations
+> Task :capacitor-android:extractDeepLinksForAarDebug
+> Task :capacitor-android:mergeDebugGeneratedProguardFiles
+> Task :capacitor-android:mergeDebugConsumerProguardFiles
+> Task :capacitor-android:prepareDebugArtProfile
+> Task :capacitor-android:prepareLintJarForPublish
+> Task :capacitor-app:preBuild UP-TO-DATE
+> Task :capacitor-android:mergeDebugJavaResource
+> Task :capacitor-app:preDebugBuild UP-TO-DATE
+> Task :capacitor-app:mergeDebugJniLibFolders
+> Task :capacitor-android:syncDebugLibJars
+> Task :capacitor-android:bundleDebugAar
+> Task :capacitor-android:assembleDebug
+> Task :capacitor-app:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-app:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-app:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-app:generateDebugResValues
+> Task :capacitor-app:generateDebugResources
+> Task :capacitor-app:packageDebugResources
+> Task :capacitor-app:extractDeepLinksForAarDebug
+> Task :capacitor-app:parseDebugLocalResources
+> Task :capacitor-app:javaPreCompileDebug
+> Task :capacitor-app:mergeDebugShaders
+> Task :capacitor-app:generateDebugRFile
+> Task :capacitor-app:compileDebugShaders NO-SOURCE
+> Task :capacitor-app:extractDebugAnnotations
+> Task :capacitor-app:compileDebugJavaWithJavac
+> Task :capacitor-app:mergeDebugGeneratedProguardFiles
+> Task :capacitor-app:mergeDebugConsumerProguardFiles
+> Task :capacitor-app:generateDebugAssets UP-TO-DATE
+> Task :capacitor-app:packageDebugAssets
+> Task :capacitor-app:prepareDebugArtProfile
+> Task :capacitor-app:prepareLintJarForPublish
+> Task :capacitor-app:processDebugJavaRes NO-SOURCE
+> Task :capacitor-app:mergeDebugJavaResource
+> Task :capacitor-app:processDebugManifest
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+> Task :capacitor-app:syncDebugLibJars
+> Task :capacitor-browser:preBuild UP-TO-DATE
+> Task :capacitor-app:writeDebugAarMetadata
+> Task :capacitor-app:bundleDebugAar
+> Task :capacitor-app:assembleDebug
+> Task :capacitor-browser:preDebugBuild UP-TO-DATE
+> Task :capacitor-browser:mergeDebugJniLibFolders
+> Task :capacitor-browser:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-browser:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-browser:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-browser:generateDebugResValues
+> Task :capacitor-browser:generateDebugResources
+> Task :capacitor-browser:packageDebugResources
+> Task :capacitor-browser:extractDeepLinksForAarDebug
+> Task :capacitor-browser:parseDebugLocalResources
+> Task :capacitor-browser:javaPreCompileDebug
+> Task :capacitor-browser:mergeDebugShaders
+> Task :capacitor-browser:generateDebugRFile
+> Task :capacitor-browser:compileDebugShaders NO-SOURCE
+> Task :capacitor-browser:extractDebugAnnotations
+> Task :capacitor-browser:compileDebugJavaWithJavac
+> Task :capacitor-browser:mergeDebugGeneratedProguardFiles
+> Task :capacitor-browser:mergeDebugConsumerProguardFiles
+> Task :capacitor-browser:generateDebugAssets UP-TO-DATE
+> Task :capacitor-browser:packageDebugAssets
+> Task :capacitor-browser:prepareDebugArtProfile
+> Task :capacitor-browser:prepareLintJarForPublish
+> Task :capacitor-browser:processDebugJavaRes NO-SOURCE
+> Task :capacitor-browser:mergeDebugJavaResource
+> Task :capacitor-browser:writeDebugAarMetadata
+> Task :capacitor-cordova-android-plugins:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-browser:processDebugManifest
+> Task :capacitor-browser:syncDebugLibJars
+> Task :capacitor-browser:bundleDebugAar
+> Task :capacitor-browser:assembleDebug
+> Task :capacitor-cordova-android-plugins:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-cordova-android-plugins:extractDebugAnnotations
+> Task :capacitor-cordova-android-plugins:extractDeepLinksForAarDebug
+> Task :capacitor-cordova-android-plugins:mergeDebugGeneratedProguardFiles
+> Task :capacitor-cordova-android-plugins:mergeDebugConsumerProguardFiles
+> Task :capacitor-cordova-android-plugins:prepareDebugArtProfile
+> Task :capacitor-cordova-android-plugins:prepareLintJarForPublish
+> Task :capacitor-filesystem:preBuild UP-TO-DATE
+> Task :capacitor-filesystem:preDebugBuild UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:mergeDebugJavaResource
+> Task :capacitor-filesystem:mergeDebugJniLibFolders
+> Task :capacitor-cordova-android-plugins:syncDebugLibJars
+> Task :capacitor-cordova-android-plugins:bundleDebugAar
+> Task :capacitor-cordova-android-plugins:assembleDebug
+> Task :capacitor-filesystem:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-filesystem:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-filesystem:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-filesystem:checkKotlinGradlePluginConfigurationErrors
+> Task :capacitor-filesystem:generateDebugResValues
+> Task :capacitor-filesystem:generateDebugResources
+> Task :capacitor-filesystem:packageDebugResources
+> Task :capacitor-filesystem:extractDeepLinksForAarDebug
+> Task :capacitor-filesystem:parseDebugLocalResources
+> Task :capacitor-filesystem:javaPreCompileDebug
+> Task :capacitor-filesystem:mergeDebugShaders
+> Task :capacitor-filesystem:generateDebugRFile
+> Task :capacitor-filesystem:compileDebugShaders NO-SOURCE
+> Task :capacitor-filesystem:compileDebugKotlin FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':capacitor-filesystem:compileDebugKotlin'.
+> Inconsistent JVM-target compatibility detected for tasks 'compileDebugJavaWithJavac' (17) and 'compileDebugKotlin' (21).
+  
+  Consider using JVM Toolchain: https://kotl.in/gradle/jvm/toolchain
+  Learn more about JVM-target validation: https://kotl.in/gradle/jvm/target-validation 
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 45s
+143 actionable tasks: 81 executed, 62 up-to-date
+
+
++-----------------------------------------------+
+|               fastlane summary                |
++------+--------------------------+-------------+
+| Step | Action                   | Time (in s) |
++------+--------------------------+-------------+
+| 1    | add_extra_platforms      | 0           |
+| 2    | default_platform         | 0           |
+| 3    | prepare_environment      | 0           |
+| 4    | sentry_init              | 0           |
+| 5    | begin_building           | 0           |
+| 6    | build_summary            | 1           |
+| 7    | set_ionic_cli            | 1           |
+| 8    | detect_package_manager   | 0           |
+| 9    | add_git_credentials      | 0           |
+| 10   | get_appflow_config       | 0           |
+| 11   | dependency_install       | 54          |
+| 12   | create_capacitor_config  | 0           |
+| 13   | get_web_dir              | 0           |
+| 14   | modify_cap_web_config    | 0           |
+| 15   | set_java_home            | 0           |
+| 16   | build_pro_app            | 24          |
+| 17   | cap_sync                 | 1           |
+| 18   | cap_custom_deploy        | 0           |
+| 19   | modify_gradle_config     | 0           |
+| 20   | bundledebug              | 166         |
+| 💥   | assembledebug            | 45          |
+| 22   | upload_logs              | 3           |
+| 23   | sentry_capture_exception | 0           |
++------+--------------------------+-------------+
+
+[12:16:00]: fastlane finished with errors
+/usr/local/bundle/bin/fastlane: [!] Shell command exited with exit status 1 instead of 0. (FastlaneCore::Interface::FastlaneShellError)
+
+> Configure project :app
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :capacitor-cordova-android-plugins
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :capacitor-android:preBuild UP-TO-DATE
+> Task :capacitor-android:preDebugBuild UP-TO-DATE
+> Task :capacitor-android:writeDebugAarMetadata UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:preBuild UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:preDebugBuild UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:writeDebugAarMetadata UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :capacitor-android:generateDebugResValues UP-TO-DATE
+> Task :capacitor-android:generateDebugResources UP-TO-DATE
+> Task :capacitor-android:packageDebugResources UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:generateDebugResValues UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:generateDebugResources UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:packageDebugResources UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :capacitor-android:extractDeepLinksDebug UP-TO-DATE
+> Task :capacitor-android:processDebugManifest UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:extractDeepLinksDebug UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:processDebugManifest UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :capacitor-android:compileDebugLibraryResources UP-TO-DATE
+> Task :capacitor-android:parseDebugLocalResources UP-TO-DATE
+> Task :capacitor-android:generateDebugRFile UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:compileDebugLibraryResources UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:parseDebugLocalResources UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:generateDebugRFile UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :capacitor-android:javaPreCompileDebug UP-TO-DATE
+> Task :capacitor-android:compileDebugJavaWithJavac UP-TO-DATE
+> Task :capacitor-android:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:javaPreCompileDebug UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:compileDebugJavaWithJavac NO-SOURCE
+> Task :capacitor-cordova-android-plugins:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :app:compileDebugJavaWithJavac UP-TO-DATE
+> Task :app:mergeDebugShaders UP-TO-DATE
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :capacitor-android:mergeDebugShaders UP-TO-DATE
+> Task :capacitor-android:compileDebugShaders NO-SOURCE
+> Task :capacitor-android:generateDebugAssets UP-TO-DATE
+> Task :capacitor-android:packageDebugAssets UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:mergeDebugShaders UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:compileDebugShaders NO-SOURCE
+> Task :capacitor-cordova-android-plugins:generateDebugAssets UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:packageDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :capacitor-android:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :app:desugarDebugFileDependencies UP-TO-DATE
+> Task :app:dexBuilderDebug UP-TO-DATE
+> Task :app:compressDebugAssets
+> Task :app:mergeDebugGlobalSynthetics UP-TO-DATE
+> Task :app:processDebugJavaRes NO-SOURCE
+> Task :capacitor-android:processDebugJavaRes NO-SOURCE
+> Task :capacitor-cordova-android-plugins:processDebugJavaRes NO-SOURCE
+> Task :app:mergeDebugJavaResource UP-TO-DATE
+> Task :app:checkDebugDuplicateClasses UP-TO-DATE
+> Task :app:mergeExtDexDebug UP-TO-DATE
+> Task :capacitor-android:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :app:mergeProjectDexDebug UP-TO-DATE
+> Task :app:mergeLibDexDebug UP-TO-DATE
+> Task :app:mergeDebugJniLibFolders UP-TO-DATE
+> Task :capacitor-android:mergeDebugJniLibFolders UP-TO-DATE
+> Task :capacitor-android:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-android:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:mergeDebugJniLibFolders UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-cordova-android-plugins:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :app:mergeDebugNativeLibs NO-SOURCE
+> Task :app:stripDebugDebugSymbols NO-SOURCE
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata UP-TO-DATE
+> Task :app:writeDebugSigningConfigVersions
+> Task :capacitor-android:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-android:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-android:extractDebugAnnotations
+> Task :capacitor-android:extractDeepLinksForAarDebug
+> Task :capacitor-android:mergeDebugGeneratedProguardFiles
+> Task :capacitor-android:mergeDebugConsumerProguardFiles
+> Task :capacitor-android:prepareDebugArtProfile
+> Task :capacitor-android:prepareLintJarForPublish
+> Task :capacitor-app:preBuild UP-TO-DATE
+> Task :capacitor-android:mergeDebugJavaResource
+> Task :capacitor-app:preDebugBuild UP-TO-DATE
+> Task :capacitor-app:mergeDebugJniLibFolders
+> Task :capacitor-android:syncDebugLibJars
+> Task :capacitor-android:bundleDebugAar
+> Task :capacitor-android:assembleDebug
+> Task :capacitor-app:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-app:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-app:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-app:generateDebugResValues
+> Task :capacitor-app:generateDebugResources
+> Task :capacitor-app:packageDebugResources
+> Task :capacitor-app:extractDeepLinksForAarDebug
+> Task :capacitor-app:parseDebugLocalResources
+> Task :capacitor-app:javaPreCompileDebug
+> Task :capacitor-app:mergeDebugShaders
+> Task :capacitor-app:generateDebugRFile
+> Task :capacitor-app:compileDebugShaders NO-SOURCE
+> Task :capacitor-app:extractDebugAnnotations
+> Task :capacitor-app:compileDebugJavaWithJavac
+> Task :capacitor-app:mergeDebugGeneratedProguardFiles
+> Task :capacitor-app:mergeDebugConsumerProguardFiles
+> Task :capacitor-app:generateDebugAssets UP-TO-DATE
+> Task :capacitor-app:packageDebugAssets
+> Task :capacitor-app:prepareDebugArtProfile
+> Task :capacitor-app:prepareLintJarForPublish
+> Task :capacitor-app:processDebugJavaRes NO-SOURCE
+> Task :capacitor-app:mergeDebugJavaResource
+> Task :capacitor-app:processDebugManifest
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+> Task :capacitor-app:syncDebugLibJars
+> Task :capacitor-browser:preBuild UP-TO-DATE
+> Task :capacitor-app:writeDebugAarMetadata
+> Task :capacitor-app:bundleDebugAar
+> Task :capacitor-app:assembleDebug
+> Task :capacitor-browser:preDebugBuild UP-TO-DATE
+> Task :capacitor-browser:mergeDebugJniLibFolders
+> Task :capacitor-browser:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-browser:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-browser:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-browser:generateDebugResValues
+> Task :capacitor-browser:generateDebugResources
+> Task :capacitor-browser:packageDebugResources
+> Task :capacitor-browser:extractDeepLinksForAarDebug
+> Task :capacitor-browser:parseDebugLocalResources
+> Task :capacitor-browser:javaPreCompileDebug
+> Task :capacitor-browser:mergeDebugShaders
+> Task :capacitor-browser:generateDebugRFile
+> Task :capacitor-browser:compileDebugShaders NO-SOURCE
+> Task :capacitor-browser:extractDebugAnnotations
+> Task :capacitor-browser:compileDebugJavaWithJavac
+> Task :capacitor-browser:mergeDebugGeneratedProguardFiles
+> Task :capacitor-browser:mergeDebugConsumerProguardFiles
+> Task :capacitor-browser:generateDebugAssets UP-TO-DATE
+> Task :capacitor-browser:packageDebugAssets
+> Task :capacitor-browser:prepareDebugArtProfile
+> Task :capacitor-browser:prepareLintJarForPublish
+> Task :capacitor-browser:processDebugJavaRes NO-SOURCE
+> Task :capacitor-browser:mergeDebugJavaResource
+> Task :capacitor-browser:writeDebugAarMetadata
+> Task :capacitor-cordova-android-plugins:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-browser:processDebugManifest
+> Task :capacitor-browser:syncDebugLibJars
+> Task :capacitor-browser:bundleDebugAar
+> Task :capacitor-browser:assembleDebug
+> Task :capacitor-cordova-android-plugins:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-cordova-android-plugins:extractDebugAnnotations
+> Task :capacitor-cordova-android-plugins:extractDeepLinksForAarDebug
+> Task :capacitor-cordova-android-plugins:mergeDebugGeneratedProguardFiles
+> Task :capacitor-cordova-android-plugins:mergeDebugConsumerProguardFiles
+> Task :capacitor-cordova-android-plugins:prepareDebugArtProfile
+> Task :capacitor-cordova-android-plugins:prepareLintJarForPublish
+> Task :capacitor-filesystem:preBuild UP-TO-DATE
+> Task :capacitor-filesystem:preDebugBuild UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:mergeDebugJavaResource
+> Task :capacitor-filesystem:mergeDebugJniLibFolders
+> Task :capacitor-cordova-android-plugins:syncDebugLibJars
+> Task :capacitor-cordova-android-plugins:bundleDebugAar
+> Task :capacitor-cordova-android-plugins:assembleDebug
+> Task :capacitor-filesystem:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-filesystem:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-filesystem:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-filesystem:checkKotlinGradlePluginConfigurationErrors
+> Task :capacitor-filesystem:generateDebugResValues
+> Task :capacitor-filesystem:generateDebugResources
+> Task :capacitor-filesystem:packageDebugResources
+> Task :capacitor-filesystem:extractDeepLinksForAarDebug
+> Task :capacitor-filesystem:parseDebugLocalResources
+> Task :capacitor-filesystem:javaPreCompileDebug
+> Task :capacitor-filesystem:mergeDebugShaders
+> Task :capacitor-filesystem:generateDebugRFile
+> Task :capacitor-filesystem:compileDebugShaders NO-SOURCE
+> Task :capacitor-filesystem:compileDebugKotlin FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':capacitor-filesystem:compileDebugKotlin'.
+> Inconsistent JVM-target compatibility detected for tasks 'compileDebugJavaWithJavac' (17) and 'compileDebugKotlin' (21).
+  
+  Consider using JVM Toolchain: https://kotl.in/gradle/jvm/toolchain
+  Learn more about JVM-target validation: https://kotl.in/gradle/jvm/target-validation 
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 45s
+143 actionable tasks: 81 executed, 62 up-to-date
+
+
+Running after_script
+Running after script...
+$ run "clean-up"
+
+Cleaning up project directory and file based variables
+
+ERROR: Job failed: command terminated with exit code 1
