@@ -1009,6 +1009,7 @@ const Profile = React.memo(() => {
                   <div className="space-y-2">
                     {displayedVotes.map((vote: any) => {
                       const meme = allMemes.find((m: any) => m.id === vote.memeId);
+                      console.log('Vote:', vote.id, 'MemeId:', vote.memeId, 'Found meme:', !!meme);
                       return meme ? (
                         <div 
                           key={vote.id} 
