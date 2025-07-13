@@ -300,9 +300,6 @@ export default function Home() {
       });
 
       setSelectedMeme(null);
-      
-      // 통합 캐시 업데이트
-      handleVoteUpdate();
 
     } catch (error: any) {
       toast({
