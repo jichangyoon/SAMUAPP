@@ -349,13 +349,19 @@ export default function Home() {
     enabled: true,
   });
 
-  // Update memes list when new data arrives
+  // Update memes list when new data arrives - 정렬 충돌 방지
   useEffect(() => {
     if (memesResponse?.memes) {
       if (page === 1) {
+        // 첫 페이지는 항상 새로운 데이터로 교체
         setAllMemes(memesResponse.memes);
       } else {
-        setAllMemes(prev => [...prev, ...memesResponse.memes]);
+        // 추가 페이지는 중복 제거 후 추가
+        setAllMemes(prev => {
+          const existingIds = new Set(prev.map(m => m.id));
+          const newMemes = memesResponse.memes.filter(m => !existingIds.has(m.id));
+          return [...prev, ...newMemes];
+        });
       }
       setHasMore(memesResponse.pagination.hasMore);
       setIsLoadingMore(false);
@@ -394,7 +400,15 @@ export default function Home() {
   const handleVoteSuccess = useCallback(async () => {
     setShowVoteDialog(false);
     setSelectedMeme(null);
-  }, []);
+    
+    // 투표 후 즉시 전체 목록 새로고침 - 정렬 안정성 향상
+    setPage(1);
+    setAllMemes([]);
+    setHasMore(true);
+    
+    // 모든 관련 쿼리 무효화
+    await queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+  }, [queryClient]);
 
   // Listen for new meme uploads and reset pagination
   useEffect(() => {
@@ -575,9 +589,12 @@ export default function Home() {
                                 >
                                   <MemeCard 
                                     meme={meme} 
-                                    onVote={() => {
-                                      // 서버 응답 후 데이터 새로고침
-                                      refetch();
+                                    onVote={async () => {
+                                      // 투표 후 스마트 캐시 동기화 및 목록 새로고침
+                                      setPage(1);
+                                      setAllMemes([]);
+                                      setHasMore(true);
+                                      await queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
                                     }}
                                     canVote={isConnected}
                                   />
@@ -1054,11 +1071,29 @@ export default function Home() {
                       votingPower: 1,
                     });
 
-                    // 성공 시 실제 데이터로 업데이트
-                    refetch();
-                    
-                    // 선택된 밈도 업데이트
-                    setSelectedMeme(prev => prev ? { ...prev, votes: prev.votes + 1 } : null);
+                    // 성공 시 스마트 캐시 동기화 - 순차적 업데이트
+                    try {
+                      // 1단계: 투표력 데이터 즉시 업데이트
+                      await queryClient.invalidateQueries({ queryKey: ['voting-power'] });
+                      
+                      // 2단계: 사용자 투표 기록 업데이트
+                      await queryClient.invalidateQueries({ queryKey: ['user-votes'] });
+                      
+                      // 3단계: 전체 목록 새로고침 - 정렬 안정성 향상
+                      setPage(1);
+                      setAllMemes([]);
+                      setHasMore(true);
+                      await queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+                      
+                      // 4단계: 사용자 통계 업데이트
+                      await queryClient.invalidateQueries({ queryKey: ['user-stats'] });
+                      
+                      // 선택된 밈도 업데이트
+                      setSelectedMeme(prev => prev ? { ...prev, votes: prev.votes + 1 } : null);
+                    } catch (error) {
+                      // 캐시 업데이트 실패 시에도 기본 동작 수행
+                      refetch();
+                    }
 
                     toast({
                       title: "Vote Submitted!",

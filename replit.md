@@ -547,6 +547,7 @@ Changelog:
 - July 13, 2025. Implemented comprehensive voting power refresh system - profile page access, voting power card click, Power tab click, and window focus all trigger fresh data fetching with user-friendly toast notifications
 - July 13, 2025. Fixed refetchVotingPower undefined error by removing all references and replacing with queryClient.invalidateQueries for both voting power card click and Power tab click
 - July 13, 2025. Implemented smart cache synchronization system for voting - sequential cache invalidation in 4 stages (voting power → user votes → meme data → user stats) to ensure consistent UI updates and eliminate voting display lag
+- July 13, 2025. Fixed infinite scroll instability with sorting system - implemented duplicate prevention, immediate pagination reset after voting, and comprehensive cache synchronization to resolve slow updates in "MOST votes" sorting
 
 ## CHECKPOINT - June 30, 2025
 ```
