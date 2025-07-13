@@ -766,7 +766,7 @@ const Profile = React.memo(() => {
               <div 
                 className="text-center bg-accent/30 rounded-lg p-2 cursor-pointer hover:bg-accent/50 transition-colors"
                 onClick={() => {
-                  refetchVotingPower();
+                  queryClient.invalidateQueries({ queryKey: ['voting-power', walletAddress] });
                   toast({ title: "Voting power refreshed", duration: 1200 });
                 }}
               >
