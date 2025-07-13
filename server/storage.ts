@@ -1,6 +1,6 @@
 import { memes, votes, nfts, nftComments, partnerMemes, partnerVotes, users, contests, archivedContests, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type NftComment, type InsertNftComment, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest } from "@shared/schema";
 import { getDatabase } from "./db";
-import { eq, and, desc, isNull } from "drizzle-orm";
+import { eq, and, desc, isNull, or } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -879,11 +879,15 @@ export class DatabaseStorage implements IStorage {
       throw new Error("Contest not found");
     }
 
-    // Get all memes for this contest (current memes are contestId = null)
+    // Get all memes for this contest - current active contest memes have contestId = null
+    // OR memes that already belong to this specific contest
     const contestMemes = await this.db
       .select()
       .from(memes)
-      .where(isNull(memes.contestId))
+      .where(or(
+        isNull(memes.contestId),
+        eq(memes.contestId, contestId)
+      ))
       .orderBy(desc(memes.votes));
 
     // Allow ending contest even with no memes
@@ -948,7 +952,10 @@ export class DatabaseStorage implements IStorage {
       await this.db
         .update(memes)
         .set({ contestId: contestId })
-        .where(isNull(memes.contestId));
+        .where(or(
+          isNull(memes.contestId),
+          eq(memes.contestId, contestId)
+        ));
     }
 
     // Cancel any scheduled timers for this contest
