@@ -47,7 +47,7 @@ const Profile = React.memo(() => {
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
   const walletAddress = selectedWalletAccount?.address || '';
 
-  // User profile data - 글로벌 기본값 사용으로 최적화
+  // User profile data - 프로필 이미지 깜빡임 방지를 위해 긴 캐시 적용
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile', walletAddress],
     queryFn: async () => {
@@ -57,6 +57,8 @@ const Profile = React.memo(() => {
       return res.json();
     },
     enabled: !!walletAddress,
+    staleTime: 5 * 60 * 1000, // 5분 캐시 (프로필 이미지 깜빡임 방지)
+    gcTime: 10 * 60 * 1000, // 10분 가비지 컬렉션
   });
 
   // User statistics - 자주 변경되므로 짧은 캐시
@@ -82,8 +84,8 @@ const Profile = React.memo(() => {
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 0, // 항상 최신 데이터
-    gcTime: 0, // 캐시 무효화
+    staleTime: 5 * 1000, // 5초 캐시 (너무 자주 새로고침 방지)
+    gcTime: 30 * 1000, // 30초 가비지 컬렉션
     refetchOnMount: true, // 프로필 페이지 열 때마다 새로고침
     refetchOnWindowFocus: true, // 윈도우 포커스 시 재요청
   });
@@ -201,20 +203,18 @@ const Profile = React.memo(() => {
         // Simple cache invalidation for profile updates
         queryClient.invalidateQueries({ queryKey: ['user-profile', walletAddress] });
 
-        // Update local state immediately with cache busting
+        // Update local state immediately 
         setDisplayName(name);
         if (imageUrl) {
-          // Add timestamp to force image reload
-          const imageUrlWithTimestamp = `${imageUrl}?t=${Date.now()}`;
-          setProfileImage(imageUrlWithTimestamp);
+          setProfileImage(imageUrl);
         }
 
         // Dispatch profile update event for immediate sync across app
         window.dispatchEvent(new CustomEvent('profileUpdated', {
           detail: { 
             displayName: name, 
-            profileImage: imageUrl ? `${imageUrl}?t=${Date.now()}` : profileImage,
-            avatarUrl: imageUrl ? `${imageUrl}?t=${Date.now()}` : profileImage
+            profileImage: imageUrl || profileImage,
+            avatarUrl: imageUrl || profileImage
           }
         }));
 
@@ -246,8 +246,10 @@ const Profile = React.memo(() => {
       if (newName) setDisplayName(newName);
       if (avatarUrl) setProfileImage(avatarUrl);
 
-      // Force refetch to ensure data consistency
-      queryClient.refetchQueries({ queryKey: ['user-profile', walletAddress] });
+      // Only refetch if profile data changed (not for voting power updates)
+      if (newName || avatarUrl) {
+        queryClient.refetchQueries({ queryKey: ['user-profile', walletAddress] });
+      }
     };
 
     window.addEventListener('profileUpdated', handleProfileUpdate as EventListener);
@@ -642,8 +644,8 @@ const Profile = React.memo(() => {
               <div className="relative">
                 <Avatar className="h-12 w-12">
                   <AvatarImage 
-                    src={imagePreview || (profileImage ? `${profileImage}?t=${Date.now()}` : '')} 
-                    key={`${profileImage}-${Date.now()}`} 
+                    src={imagePreview || profileImage} 
+                    key={profileImage} 
                   />
                   <AvatarFallback className="bg-primary/20 text-primary text-sm">
                     {displayName.slice(0, 2).toUpperCase()}
