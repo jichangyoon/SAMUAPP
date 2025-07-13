@@ -545,6 +545,7 @@ Changelog:
 - July 13, 2025. Implemented comprehensive voting power recalculation system - voting power now recalculates at both contest start and end for maximum fairness and accurate SAMU token reflection
 - July 13, 2025. Enhanced contest lifecycle management - automatic voting power reset when contests begin (for fairness) and when contests end (for clean slate), ensuring real-time token balance reflection
 - July 13, 2025. Implemented comprehensive voting power refresh system - profile page access, voting power card click, Power tab click, and window focus all trigger fresh data fetching with user-friendly toast notifications
+- July 13, 2025. Fixed refetchVotingPower undefined error by removing all references and replacing with queryClient.invalidateQueries for both voting power card click and Power tab click
 
 ## CHECKPOINT - June 30, 2025
 ```

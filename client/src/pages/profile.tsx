@@ -875,7 +875,7 @@ const Profile = React.memo(() => {
               value="power" 
               className="flex flex-col items-center gap-1 p-3 text-xs"
               onClick={() => {
-                refetchVotingPower();
+                queryClient.invalidateQueries({ queryKey: ['voting-power', walletAddress] });
                 toast({ title: "Voting power refreshed", duration: 1200 });
               }}
             >
