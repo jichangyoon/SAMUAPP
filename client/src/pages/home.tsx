@@ -272,77 +272,13 @@ export default function Home() {
     });
   }, [queryClient, walletAddress, toast]);
 
-  // Grid view voting function - memoized
-  const handleGridVote = useCallback(async (meme: Meme) => {
-    if (!isConnected || !walletAddress) {
-      toast({
-        title: "Wallet Required",
-        description: "Please connect your wallet to vote.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const votingPower = 1; // Simplified for now
-    setIsVoting(true);
-
-    try {
-      await apiRequest("POST", `/api/memes/${meme.id}/vote`, {
-        voterWallet: walletAddress,
-        votingPower,
-      });
-
-      toast({
-        title: "Vote Submitted!",
-        description: `Your vote with ${votingPower} voting power has been recorded.`,
-      });
-
-      setSelectedMeme(null);
-
-      // 그리드 투표 후에도 동일한 캐시 업데이트 사용
-      await handleVoteUpdate();
-
-    } catch (error: any) {
-      toast({
-        title: "Voting Failed",
-        description: error.message || "Failed to submit vote. You may have already voted on this meme.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsVoting(false);
-    }
-  }, [isConnected, walletAddress, toast, handleVoteUpdate]);
-
-  // Share functions
-  const shareToTwitter = useCallback((meme: Meme) => {
-    const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername} 🔥`;
-    const url = window.location.href;
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
-    window.open(twitterUrl, '_blank');
-  }, []);
-
-  const shareToTelegram = useCallback((meme: Meme) => {
-    const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername}`;
-    const url = window.location.href;
-    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
-    window.open(telegramUrl, '_blank');
-  }, []);
 
 
 
-  // Balance query (optimized)
-  const { data: balanceData } = useQuery({
-    queryKey: ['balances', walletAddress],
-    queryFn: async () => {
-      if (!walletAddress || !isSolana) return { samu: 0, sol: 0 };
 
-      const [samuBal, solBal] = await Promise.all([
-        getSamuTokenBalance(walletAddress),
-        getSolBalance(walletAddress)
-      ]);
 
-      return { samu: samuBal, sol: solBal };
-    },
+
+
     enabled: isConnected && !!walletAddress && isSolana,
   });
 
