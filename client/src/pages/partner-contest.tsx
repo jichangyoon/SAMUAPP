@@ -215,15 +215,43 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
                 <p className="text-sm text-muted-foreground mb-3">
                   {partner.description}
                 </p>
-                <Badge 
-                  className="text-xs px-3 py-1"
+                <button
+                  onClick={() => {
+                    // X 앱 딥링크 우선, 웹사이트 폴백 - NFT 갤러리와 동일한 방식
+                    const webUrl = partner.twitterUrl;
+                    const username = partner.twitterUrl.split('/').pop();
+                    const xAppUrl = `twitter://user?screen_name=${username}`;
+                    
+                    if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform()) {
+                      // 네이티브 앱: X 앱 딥링크 시도 후 웹 폴백
+                      import('@capacitor/browser').then(({ Browser }) => {
+                        Browser.open({ url: xAppUrl }).catch(() => {
+                          Browser.open({ url: webUrl });
+                        });
+                      }).catch(() => {
+                        window.open(webUrl, '_blank');
+                      });
+                    } else {
+                      // 웹 브라우저: X 앱 딥링크 시도 후 웹 폴백
+                      const iframe = document.createElement('iframe');
+                      iframe.style.display = 'none';
+                      iframe.src = xAppUrl;
+                      document.body.appendChild(iframe);
+                      
+                      setTimeout(() => {
+                        document.body.removeChild(iframe);
+                        window.open(webUrl, '_blank');
+                      }, 1000);
+                    }
+                  }}
+                  className="text-xs px-3 py-1 rounded-full hover:opacity-80 transition-opacity"
                   style={{ 
                     backgroundColor: partner.color,
                     color: partner.color === '#FFFFFF' || partner.color === '#FFE4B5' ? '#000000' : '#FFFFFF'
                   }}
                 >
                   {partner.symbol} Community
-                </Badge>
+                </button>
               </CardContent>
             </Card>
 

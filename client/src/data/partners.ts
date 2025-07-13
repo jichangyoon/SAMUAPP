@@ -11,6 +11,7 @@ export interface Partner {
   color: string;
   tokenAddress: string;
   isActive: boolean;
+  twitterUrl: string;
 }
 
 export const partners: Partner[] = [
@@ -22,7 +23,8 @@ export const partners: Partner[] = [
     logo: wagusLogo,
     color: "#FFFFFF",
     tokenAddress: "WAGUSxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-    isActive: true
+    isActive: true,
+    twitterUrl: "https://x.com/WAGUS_APP"
   },
   {
     id: "doctorbird",
@@ -32,6 +34,7 @@ export const partners: Partner[] = [
     logo: doctorbirdLogo,
     color: "#FFE4B5",
     tokenAddress: "BIRDxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-    isActive: true
+    isActive: true,
+    twitterUrl: "https://x.com/DoctorBirdCoin"
   }
 ];
