@@ -97,7 +97,7 @@ const Profile = React.memo(() => {
     }
   }, [walletAddress, refetchVotingPower]);
 
-  // User memes - 글로벌 기본값 사용
+  // User memes - 실시간 업데이트를 위한 짧은 캐시
   const { data: userMemes = [] } = useQuery({
     queryKey: ['user-memes', walletAddress],
     queryFn: async () => {
@@ -107,6 +107,9 @@ const Profile = React.memo(() => {
       return res.json();
     },
     enabled: !!walletAddress,
+    staleTime: 10 * 1000, // 10초 캐시
+    refetchOnMount: true, // 프로필 페이지 열 때마다 새로고침
+    refetchOnWindowFocus: true, // 윈도우 포커스 시 재요청
   });
 
   // User votes - 짧은 캐시로 최신 데이터 유지
@@ -119,7 +122,9 @@ const Profile = React.memo(() => {
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 2 * 60 * 1000, // 2분 캐시
+    staleTime: 10 * 1000, // 10초 캐시
+    refetchOnMount: true, // 프로필 페이지 열 때마다 새로고침
+    refetchOnWindowFocus: true, // 윈도우 포커스 시 재요청
   });
 
   // User comments - 댓글은 자주 변경되므로 짧은 캐시
@@ -144,7 +149,9 @@ const Profile = React.memo(() => {
       if (!res.ok) throw new Error('Failed to fetch memes');
       return res.json();
     },
-    staleTime: 5 * 60 * 1000, // 5분 캐시
+    staleTime: 30 * 1000, // 30초 캐시
+    refetchOnMount: true, // 프로필 페이지 열 때마다 새로고침
+    refetchOnWindowFocus: true, // 윈도우 포커스 시 재요청
   });
 
   const allMemes = memesResponse?.memes || [];
