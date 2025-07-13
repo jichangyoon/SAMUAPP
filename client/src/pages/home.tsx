@@ -987,11 +987,7 @@ export default function Home() {
                   setIsVoting(true);
                   
                   // 즉시 UI 업데이트 (낙관적 업데이트)
-                  setAllMemes(prevMemes => 
-                    prevMemes.map(m => 
-                      m.id === selectedMeme.id ? { ...m, votes: m.votes + 1 } : m
-                    )
-                  );
+                  setSelectedMeme(prev => prev ? { ...prev, votes: prev.votes + 1 } : null);
                   
                   try {
                     await apiRequest("POST", `/api/memes/${selectedMeme.id}/vote`, {
@@ -999,29 +995,11 @@ export default function Home() {
                       votingPower: 1,
                     });
 
-                    // 성공 시 스마트 캐시 동기화 - 순차적 업데이트
-                    try {
-                      // 1단계: 투표력 데이터 즉시 업데이트
-                      await queryClient.invalidateQueries({ queryKey: ['voting-power'] });
-                      
-                      // 2단계: 사용자 투표 기록 업데이트
-                      await queryClient.invalidateQueries({ queryKey: ['user-votes'] });
-                      
-                      // 3단계: 전체 목록 새로고침 - 정렬 안정성 향상
-                      setPage(1);
-                      setAllMemes([]);
-                      setHasMore(true);
-                      await queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
-                      
-                      // 4단계: 사용자 통계 업데이트
-                      await queryClient.invalidateQueries({ queryKey: ['user-stats'] });
-                      
-                      // 선택된 밈도 업데이트
-                      setSelectedMeme(prev => prev ? { ...prev, votes: prev.votes + 1 } : null);
-                    } catch (error) {
-                      // 캐시 업데이트 실패 시에도 기본 동작 수행
-                      refetch();
-                    }
+                    // 성공 시 캐시 동기화
+                    await queryClient.invalidateQueries({ queryKey: ['voting-power'] });
+                    await queryClient.invalidateQueries({ queryKey: ['user-votes'] });
+                    await queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+                    await queryClient.invalidateQueries({ queryKey: ['user-stats'] });
 
                     toast({
                       title: "Vote Submitted!",
@@ -1032,12 +1010,8 @@ export default function Home() {
                     handleVoteSuccess();
                   } catch (error: any) {
                     // 실패 시 원래 상태로 복구
-                    setAllMemes(prevMemes => 
-                      prevMemes.map(m => 
-                        m.id === selectedMeme.id ? { ...m, votes: m.votes - 1 } : m
-                      )
-                    );
-                    refetch();
+                    setSelectedMeme(prev => prev ? { ...prev, votes: prev.votes - 1 } : null);
+                    await queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
                     
                     toast({
                       title: "Voting Failed",
