@@ -131,6 +131,7 @@ router.get("/current-contest", async (req, res) => {
     // Only get active contest, return null if no active contest
     const contest = await storage.getCurrentActiveContest();
     
+    console.log("API /current-contest returning:", contest);
     res.json(contest);
   } catch (error) {
     console.error("Error fetching current contest:", error);

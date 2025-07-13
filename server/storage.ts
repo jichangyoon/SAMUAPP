@@ -867,6 +867,8 @@ export class DatabaseStorage implements IStorage {
       .from(contests)
       .where(eq(contests.status, "active"))
       .limit(1);
+    
+    console.log("getCurrentActiveContest result:", contest);
     return contest;
   }
 
