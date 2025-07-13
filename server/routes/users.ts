@@ -114,7 +114,7 @@ router.get("/:walletAddress/stats", async (req, res) => {
     }
     
     const totalMemesVotes = memes.reduce((sum, meme) => sum + meme.votes, 0);
-    const totalVotingPowerUsed = votes.reduce((sum, vote) => sum + vote.votingPower, 0);
+    const totalVotingPowerUsed = votes.reduce((sum, vote) => sum + ((vote as any).powerUsed || vote.votingPower), 0);
     
     const stats = {
       totalMemes: memes.length,
