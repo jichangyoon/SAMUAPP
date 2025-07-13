@@ -27,8 +27,12 @@ router.get("/", async (req, res) => {
     const sortBy = req.query.sortBy as string || 'votes';
     const contestId = req.query.contestId as string;
     
-    // Set cache headers for better performance
-    res.set('Cache-Control', 'public, max-age=60'); // 1분 브라우저 캐시
+    // Set cache headers - votes 정렬은 캐시 비활성화
+    if (sortBy === 'votes') {
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate'); // 투표 정렬은 실시간 업데이트 필요
+    } else {
+      res.set('Cache-Control', 'public, max-age=60'); // latest 정렬은 캐시 유지
+    }
     
     let allMemes;
     if (contestId) {

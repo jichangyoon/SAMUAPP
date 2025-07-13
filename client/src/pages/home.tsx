@@ -333,7 +333,7 @@ export default function Home() {
     setHasMore(true);
   }, [viewMode, sortBy]);
 
-  // Fetch memes data with pagination - optimized single query
+  // Fetch memes data with pagination - votes 정렬은 캐시 비활성화
   const { data: memesResponse, isLoading, refetch } = useQuery({
     queryKey: ['/api/memes', { page, limit: pageSize, sortBy }],
     queryFn: async () => {
@@ -347,6 +347,8 @@ export default function Home() {
       return response.json();
     },
     enabled: true,
+    staleTime: sortBy === 'votes' ? 0 : 30000, // votes 정렬은 즉시 stale, latest는 30초 캐시
+    cacheTime: sortBy === 'votes' ? 0 : 60000, // votes 정렬은 캐시 없음, latest는 1분 캐시
   });
 
   // Update memes list when new data arrives - 정렬 충돌 방지
