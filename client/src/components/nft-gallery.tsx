@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { UserInfoModal } from "@/components/user-info-modal";
+import { LazyNftImage } from "@/components/lazy-nft-image";
 import { Textarea } from "@/components/ui/textarea";
 import { MessageCircle, Send, Image as ImageIcon, ExternalLink, Trash2 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -224,7 +225,7 @@ export function NftGallery() {
         </CardContent>
       </Card>
 
-      {/* NFT Grid - 4 columns */}
+      {/* NFT Grid - 4 columns with Lazy Loading */}
       <div className="grid grid-cols-4 gap-2">
         {nfts.map((nft) => (
           <button
@@ -232,17 +233,9 @@ export function NftGallery() {
             onClick={() => setSelectedNft(nft)}
             className="aspect-square bg-card border border-border rounded-lg overflow-hidden hover:border-primary/50 transition-colors group"
           >
-            <img
-              src={nft.imageUrl}
-              alt={nft.title}
-              loading="lazy"
-              decoding="async"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-              onError={(e) => {
-                // 로컬 이미지 로드 실패시 SAMU 플레이스홀더 표시
-                const target = e.target as HTMLImageElement;
-                target.src = `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23333"/><text x="50" y="55" text-anchor="middle" fill="%23F7DC6F" font-size="10" font-family="Arial">SAMU %23${nft.tokenId}</text></svg>`;
-              }}
+            <LazyNftImage
+              nft={nft}
+              className="w-full h-full"
             />
           </button>
         ))}
