@@ -29,12 +29,6 @@ allprojects {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    
-    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
-        kotlinOptions {
-            jvmTarget = "17"
-        }
-    }
 }
 
 // Force Java 17 compatibility across all modules
@@ -49,10 +43,12 @@ subprojects {
             }
         }
         
-        // Force Kotlin to use Java 17 target
-        tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
-            kotlinOptions {
-                jvmTarget = "17"
+        // Force Kotlin to use Java 17 target (if kotlin plugin is applied)
+        plugins.withId("org.jetbrains.kotlin.android") {
+            tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+                kotlinOptions {
+                    jvmTarget = "17"
+                }
             }
         }
     }
