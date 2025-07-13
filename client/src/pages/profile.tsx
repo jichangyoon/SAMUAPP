@@ -72,17 +72,20 @@ const Profile = React.memo(() => {
     staleTime: 2 * 60 * 1000, // 2분 캐시 (통계는 자주 변경됨)
   });
 
-  // Voting power data
+  // Voting power data - 실시간 업데이트 필요
   const { data: votingPowerData } = useQuery({
     queryKey: ['voting-power', walletAddress],
     queryFn: async () => {
       if (!walletAddress) return null;
-      const res = await fetch(`/api/voting-power/${walletAddress}`);
+      const res = await fetch(`/api/voting-power/${walletAddress}?t=${Date.now()}`);
       if (!res.ok) throw new Error('Failed to fetch voting power');
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 0, // Always fresh data for voting power
+    staleTime: 0, // 항상 최신 데이터
+    gcTime: 0, // 캐시 무효화
+    refetchOnMount: true, // 컴포넌트 마운트 시 재요청
+    refetchOnWindowFocus: true, // 윈도우 포커스 시 재요청
   });
 
   // User memes - 글로벌 기본값 사용
