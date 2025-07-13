@@ -1,4 +1,4 @@
-import { memes, votes, nfts, nftComments, partnerMemes, partnerVotes, users, contests, archivedContests, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type NftComment, type InsertNftComment, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest } from "@shared/schema";
+import { memes, votes, nfts, nftComments, partnerMemes, partnerVotes, users, contests, archivedContests, archivedVotes, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type NftComment, type InsertNftComment, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest } from "@shared/schema";
 import { getDatabase } from "./db";
 import { eq, and, desc, isNull, or } from "drizzle-orm";
 
@@ -450,11 +450,21 @@ export class DatabaseStorage implements IStorage {
   async getUserVotes(walletAddress: string): Promise<Vote[]> {
     if (!this.db) throw new Error("Database not available");
     
-    return await this.db
+    // Get current votes
+    const currentVotes = await this.db
       .select()
       .from(votes)
-      .where(eq(votes.voterWallet, walletAddress))
-      .orderBy(desc(votes.createdAt));
+      .where(eq(votes.voterWallet, walletAddress));
+    
+    // Get archived votes
+    const archivedVotes = await this.db
+      .select()
+      .from(archivedVotes)
+      .where(eq(archivedVotes.voterWallet, walletAddress));
+    
+    // Combine and sort by date
+    const allVotes = [...currentVotes, ...archivedVotes];
+    return allVotes.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 
   async getUserComments(walletAddress: string): Promise<NftComment[]> {
