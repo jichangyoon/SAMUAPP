@@ -1007,7 +1007,8 @@ export class DatabaseStorage implements IStorage {
       })
     );
 
-    return enrichedContests;
+    // Filter out contests with no winner (empty contests) for Hall of Fame
+    return enrichedContests.filter(contest => contest.winnerMeme !== null);
   }
 }
 
