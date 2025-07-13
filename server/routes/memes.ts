@@ -19,38 +19,7 @@ const upload = multer({
   }
 });
 
-// Get all memes without pagination - simple endpoint for complete data
-router.get("/all", async (req, res) => {
-  try {
-    const sortBy = req.query.sortBy as string || 'votes';
-    const contestId = req.query.contestId as string;
-    
-    // Set cache headers
-    res.set('Cache-Control', 'public, max-age=30'); // 30초 캐시
-    
-    let allMemes;
-    if (contestId) {
-      allMemes = await storage.getMemesByContestId(parseInt(contestId));
-    } else {
-      allMemes = await storage.getMemes();
-    }
-    
-    // Sort memes
-    let sortedMemes = [...allMemes];
-    if (sortBy === 'votes') {
-      sortedMemes.sort((a, b) => b.votes - a.votes);
-    } else if (sortBy === 'latest') {
-      sortedMemes.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    }
-    
-    res.json({
-      memes: sortedMemes,
-      total: sortedMemes.length
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch memes" });
-  }
-});
+
 
 // Get all memes with pagination - optimized with database-level sorting
 router.get("/", async (req, res) => {

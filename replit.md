@@ -578,6 +578,13 @@ Changelog:
   ✅ Images load 100px before entering viewport for smooth UX
   ✅ Applied simple skeleton UI with animate-pulse for clean loading experience
 
+- July 13, 2025. FIXED CRITICAL MY VOTES BUG - Resolved vote history display issue preventing users from seeing their past votes:
+  ✅ Identified duplicate /api/memes/all route handlers causing incorrect data return
+  ✅ Fixed route conflict - first route only returned current contest memes (empty), second route with getAllMemes() was never reached
+  ✅ Removed duplicate route handler and ensured getAllMemes() returns all memes (current + archived)
+  ✅ My Votes section now correctly displays all 38 vote history entries with proper meme details
+  ✅ Users can now view vote history across all contests (current and archived) with clickable meme details
+
 ## CHECKPOINT - June 30, 2025
 ```
 🔄 ROLLBACK POINT CREATED - Current stable state:
