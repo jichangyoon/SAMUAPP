@@ -585,6 +585,19 @@ Changelog:
   ✅ My Votes section now correctly displays all 38 vote history entries with proper meme details
   ✅ Users can now view vote history across all contests (current and archived) with clickable meme details
 
+- July 13, 2025. FIXED MAIN PAGE API BUG - Resolved issue where all memes were showing on main page instead of current contest only:
+  ✅ Changed main page API from `/api/memes/all` to `/api/memes` (current contest only)
+  ✅ Fixed cache invalidation to use correct API endpoints
+  ✅ Cleaned up unnecessary code and optimized cache management
+  ✅ Main page now correctly shows "No active contest" message when no active contest exists
+  ✅ Performance optimized with simplified data fetching and reduced API calls
+
+- July 13, 2025. COMPREHENSIVE DATABASE CLEANUP - Cleared all archive data for fresh start:
+  ✅ Deleted 19 archived contests from database
+  ✅ Removed 39 archived memes and 50 related votes
+  ✅ Cleaned up attached_assets folder removing all temporary files
+  ✅ Archive section now shows clean slate for new contest cycles
+
 ## CHECKPOINT - June 30, 2025
 ```
 🔄 ROLLBACK POINT CREATED - Current stable state:

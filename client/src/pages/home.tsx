@@ -163,6 +163,10 @@ export default function Home() {
   // Get archived contests
   const { data: archivedContests = [], isLoading: isLoadingArchives } = useQuery({
     queryKey: ["/api/admin/archived-contests"],
+    staleTime: 0, // 항상 새로운 데이터 가져오기
+    cacheTime: 0, // 캐시 시간 0으로 설정
+    refetchOnMount: true, // 마운트시 재요청
+    refetchOnWindowFocus: true, // 윈도우 포커스시 재요청
   });
 
   // User profile data from database
