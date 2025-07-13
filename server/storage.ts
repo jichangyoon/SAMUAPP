@@ -931,7 +931,7 @@ export class DatabaseStorage implements IStorage {
       await this.db
         .update(memes)
         .set({ contestId: contestId })
-        .where(eq(memes.contestId, contestId));
+        .where(isNull(memes.contestId));
     }
 
     // Cancel any scheduled timers for this contest
