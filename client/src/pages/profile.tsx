@@ -37,6 +37,7 @@ const Profile = React.memo(() => {
   const [memeToDelete, setMemeToDelete] = useState<any>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showAllMemes, setShowAllMemes] = useState(false);
+  const [showAllVotes, setShowAllVotes] = useState(false);
   const [showAllComments, setShowAllComments] = useState(false);
   const [showCommentDeleteDialog, setShowCommentDeleteDialog] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<any>(null);
@@ -584,6 +585,11 @@ const Profile = React.memo(() => {
     return showAllMemes ? myMemes : myMemes.slice(0, 5);
   }, [myMemes, showAllMemes]);
 
+  // Display limited votes with More button
+  const displayedVotes = React.useMemo(() => {
+    return showAllVotes ? myVotes : myVotes.slice(0, 5);
+  }, [myVotes, showAllVotes]);
+
   // Display limited comments with More button
   const displayedComments = React.useMemo(() => {
     return showAllComments ? myComments : myComments.slice(0, 5);
@@ -983,7 +989,7 @@ const Profile = React.memo(() => {
               <CardContent className="flex-1 overflow-y-auto">
                 {myVotes.length > 0 ? (
                   <div className="space-y-2">
-                    {myVotes.map((vote: any) => {
+                    {displayedVotes.map((vote: any) => {
                       const meme = allMemes.find((m: any) => m.id === vote.memeId);
                       return meme ? (
                         <div 
@@ -1010,6 +1016,20 @@ const Profile = React.memo(() => {
                         </div>
                       ) : null;
                     })}
+                    
+                    {/* More button - only show if there are more than 5 votes */}
+                    {myVotes.length > 5 && (
+                      <div className="flex justify-center pt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowAllVotes(!showAllVotes)}
+                          className="text-foreground border-border hover:bg-accent"
+                        >
+                          {showAllVotes ? 'Show Less' : `More (${myVotes.length - 5})`}
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-6 text-muted-foreground">
