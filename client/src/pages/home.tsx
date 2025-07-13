@@ -397,6 +397,8 @@ export default function Home() {
     }
   }, [memesResponse, page]);
 
+
+
   // Load more function
   const loadMore = useCallback(async () => {
     if (!hasMore || isLoadingMore || isLoading) return;
@@ -590,7 +592,7 @@ export default function Home() {
 
                     {/* 메인 콘텐츠 영역 - 로딩 중일 때 반투명 효과 */}
                     <div className={`transition-opacity duration-300 ${isLoadingMore ? 'opacity-60' : 'opacity-100'}`}>
-                      {isLoading || (page === 1 && sortedMemes.length === 0 && !memesResponse) ? (
+                      {isLoading ? (
                         <div className="space-y-4">
                           {[1, 2, 3, 4, 5, 6, 7].map((i) => (
                             <Card key={i} className="animate-pulse">
