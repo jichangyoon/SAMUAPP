@@ -102,8 +102,8 @@ const Profile = React.memo(() => {
     if (!walletAddress) return;
     
     toast({
-      title: "새로고침 중...",
-      description: "최신 데이터를 가져오는 중입니다",
+      title: "Refreshing...",
+      description: "Fetching latest data",
       duration: 1000
     });
 
@@ -124,8 +124,8 @@ const Profile = React.memo(() => {
     refetchVotingPower();
 
     toast({
-      title: "새로고침 완료",
-      description: "최신 데이터로 업데이트되었습니다",
+      title: "Refreshed successfully",
+      description: "All data has been updated",
       duration: 1200
     });
   }, [walletAddress, queryClient, refetchVotingPower, toast]);
