@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Image, Users, Plus, Lock } from "lucide-react";
+import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Image, Users, Plus, Lock, RefreshCw } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -138,13 +138,7 @@ export default function Home() {
 
   // Check if there's an active contest
   const { data: currentContest } = useQuery({
-    queryKey: ['/api/admin/current-contest'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/current-contest');
-      if (!response.ok) return null;
-      return response.json();
-    },
-    staleTime: 0, // 실시간 업데이트를 위해 캐시 비활성화
+    queryKey: ['/api/admin/current-contest']
   });
 
   // Privy authentication
@@ -173,11 +167,6 @@ export default function Home() {
   // User profile data from database
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile-header', walletAddress],
-    queryFn: async () => {
-      if (!walletAddress) return null;
-      const res = await fetch(`/api/users/profile/${walletAddress}`);
-      return res.json();
-    },
     enabled: !!walletAddress && authenticated,
   });
 
@@ -210,19 +199,43 @@ export default function Home() {
         displayName: event.detail.displayName,
         profileImage: event.detail.profileImage || event.detail.avatarUrl
       });
-
-      // 효율적인 쿼리 무효화 - 특정 쿼리만
-      queryClient.invalidateQueries({ 
-        queryKey: ['user-profile-header', walletAddress] 
-      });
     };
 
     window.addEventListener('profileUpdated', handleProfileUpdate as EventListener);
     return () => window.removeEventListener('profileUpdated', handleProfileUpdate as EventListener);
-  }, [queryClient, walletAddress]);
+  }, []);
 
   const displayName = authenticated ? profileData.displayName : 'SAMU';
   const profileImage = profileData.profileImage;
+
+  // 수동 새로고침 함수
+  const handleRefresh = useCallback(async () => {
+    toast({
+      title: "Refreshing...",
+      description: "Fetching latest data",
+      duration: 1000
+    });
+
+    // 모든 쿼리 무효화 및 재요청
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/current-contest'] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/archived-contests'] }),
+      queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] }),
+      queryClient.invalidateQueries({ queryKey: ['balances', walletAddress] })
+    ]);
+
+    // Reset pagination
+    setPage(1);
+    setAllMemes([]);
+    setHasMore(true);
+
+    toast({
+      title: "Refreshed successfully",
+      description: "All data has been updated",
+      duration: 1200
+    });
+  }, [queryClient, walletAddress, toast]);
 
   // Grid view voting function - memoized
   const handleGridVote = useCallback(async (meme: Meme) => {
@@ -250,12 +263,7 @@ export default function Home() {
       });
 
       setSelectedMeme(null);
-      
-      // Refresh the memes list by invalidating queries
-      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
-      queryClient.invalidateQueries({ 
-        queryKey: ['user-stats', meme.authorWallet]
-      });
+
     } catch (error: any) {
       toast({
         title: "Voting Failed",
@@ -290,19 +298,7 @@ export default function Home() {
   // React Query로 잔액 조회 최적화
   const { data: balanceData } = useQuery({
     queryKey: ['balances', walletAddress],
-    queryFn: async () => {
-      if (!walletAddress || !isSolana) return { samu: 0, sol: 0 };
-
-      const [samuBal, solBal] = await Promise.all([
-        getSamuTokenBalance(walletAddress),
-        getSolBalance(walletAddress)
-      ]);
-
-      return { samu: samuBal, sol: solBal };
-    },
     enabled: isConnected && !!walletAddress && isSolana,
-    staleTime: 30 * 1000, // 30초간 캐시 유지
-    refetchInterval: 60 * 1000, // 1분마다 자동 갱신
   });
 
   // 잔액 상태 업데이트 - 제거됨 (React Query로 직접 관리)
@@ -320,20 +316,7 @@ export default function Home() {
   // Fetch memes data with pagination - optimized single query
   const { data: memesResponse, isLoading, refetch } = useQuery({
     queryKey: ['/api/memes', { page, limit: pageSize, sortBy }],
-    queryFn: async () => {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: pageSize.toString(),
-        sortBy: sortBy
-      });
-      const response = await fetch(`/api/memes?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch memes');
-      return response.json();
-    },
     enabled: true,
-    staleTime: 0, // 항상 최신 데이터 가져오기
-    refetchOnWindowFocus: false, // 창 포커스시 재요청 방지
-    refetchOnMount: true, // 마운트시 재요청 활성화
   });
 
   // Update memes list when new data arrives
@@ -381,33 +364,20 @@ export default function Home() {
   const handleVoteSuccess = useCallback(async () => {
     setShowVoteDialog(false);
     setSelectedMeme(null);
-    
-    // Force immediate refetch of current data by invalidating queries
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['/api/memes'] }),
-      queryClient.invalidateQueries({ queryKey: ['user-memes', walletAddress] }),
-      queryClient.invalidateQueries({ queryKey: ['user-votes', walletAddress] })
-    ]);
-  }, [queryClient, walletAddress]);
+  }, []);
 
   // Listen for new meme uploads and reset pagination
   useEffect(() => {
     const handleMemeUpload = () => {
-      // Reset pagination and clear cache when new meme is uploaded
+      // Reset pagination when new meme is uploaded
       setPage(1);
       setAllMemes([]);
       setHasMore(true);
-      
-      // Invalidate all meme queries with immediate refetch
-      queryClient.invalidateQueries({ 
-        queryKey: ['/api/memes'],
-        refetchType: 'active' // Only refetch active queries
-      });
     };
 
     window.addEventListener('memeUploaded', handleMemeUpload);
     return () => window.removeEventListener('memeUploaded', handleMemeUpload);
-  }, [queryClient]);
+  }, []);
 
   const handleShareClick = useCallback((meme: Meme) => {
     setSelectedMeme(meme);
@@ -456,7 +426,17 @@ export default function Home() {
                 </>
               )}
             </button>
-            <WalletConnect />
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleRefresh}
+                className="text-foreground hover:bg-accent"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+              <WalletConnect />
+            </div>
           </div>
         </div>
       </header>
