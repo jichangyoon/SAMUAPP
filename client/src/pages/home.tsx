@@ -214,12 +214,12 @@ export default function Home() {
   const displayName = authenticated ? profileData.displayName : 'SAMU';
   const profileImage = profileData.profileImage;
 
-  // 투표 후 캐시 업데이트 함수 (간단한 로직)
+  // 투표 후 캐시 업데이트 함수 
   const handleVoteUpdate = useCallback(async () => {
     // 투표력과 밈 데이터 동시 업데이트
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['voting-power'] }),
-      queryClient.invalidateQueries({ queryKey: ['/api/memes/all'] })
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'] })
     ]);
   }, [queryClient]);
 
@@ -233,9 +233,8 @@ export default function Home() {
 
     // 모든 쿼리 무효화 및 재요청
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['/api/memes/all'] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'] }),
       queryClient.invalidateQueries({ queryKey: ['/api/admin/current-contest'] }),
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/archived-contests'] }),
       queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] }),
       queryClient.invalidateQueries({ queryKey: ['balances', walletAddress] })
     ]);
@@ -288,7 +287,7 @@ export default function Home() {
     }
   }, [isConnected, walletAddress, toast, handleVoteUpdate]);
 
-  // Share functions - memoized
+  // Share functions
   const shareToTwitter = useCallback((meme: Meme) => {
     const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername} 🔥`;
     const url = window.location.href;
@@ -303,12 +302,9 @@ export default function Home() {
     window.open(telegramUrl, '_blank');
   }, []);
 
-  // Wallet connection handled by Privy
-  useEffect(() => {
-    // All wallet management is now handled by Privy authentication
-  }, [authenticated]);
 
-  // React Query로 잔액 조회 최적화
+
+  // Balance query (optimized)
   const { data: balanceData } = useQuery({
     queryKey: ['balances', walletAddress],
     queryFn: async () => {
@@ -324,14 +320,12 @@ export default function Home() {
     enabled: isConnected && !!walletAddress && isSolana,
   });
 
-  // 잔액 상태 업데이트 - 제거됨 (React Query로 직접 관리)
-
-  // Simple data fetching - no pagination complexity
+  // Simple data fetching - current contest memes only
   const { data: memesResponse, isLoading, refetch } = useQuery({
-    queryKey: ['/api/memes/all', { sortBy }],
+    queryKey: ['/api/memes', { sortBy }],
     queryFn: async () => {
       const params = new URLSearchParams({ sortBy });
-      const response = await fetch(`/api/memes/all?${params}`);
+      const response = await fetch(`/api/memes?${params}`);
       if (!response.ok) throw new Error('Failed to fetch memes');
       return response.json();
     },
@@ -339,12 +333,10 @@ export default function Home() {
     gcTime: 60000, // 1분 가비지 컬렉션
   });
 
-
-
-  // Use memes directly from API response - no infinite scroll complexity
+  // Use memes directly from API response
   const sortedMemes = memesResponse?.memes || [];
 
-  // Optimized click handlers with minimal dependencies
+  // Click handlers
   const handleMemeClick = useCallback((meme: Meme) => {
     setSelectedMeme(meme);
     setShowVoteDialog(true);
@@ -354,14 +346,13 @@ export default function Home() {
     setShowVoteDialog(false);
     setSelectedMeme(null);
     
-    // 투표 후 모든 관련 쿼리 무효화
-    await queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+    // 투표 후 관련 쿼리 무효화
+    queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
   }, [queryClient]);
 
   // Listen for new meme uploads and refresh data
   useEffect(() => {
     const handleMemeUpload = () => {
-      // Refresh data when new meme is uploaded
       queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
     };
 
