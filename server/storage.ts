@@ -793,6 +793,18 @@ export class DatabaseStorage implements IStorage {
       .set({ status, updatedAt: new Date() })
       .where(eq(contests.id, id))
       .returning();
+    
+    // If contest is starting, recalculate all users' voting power
+    if (status === "active") {
+      try {
+        const { votingPowerManager } = await import('./voting-power');
+        await votingPowerManager.resetAllVotingPowerAfterContest();
+        console.log("All users' voting power recalculated for contest start");
+      } catch (error) {
+        console.error("Failed to recalculate voting power on contest start:", error);
+      }
+    }
+    
     return contest;
   }
 
@@ -809,6 +821,16 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(contests.id, id))
       .returning();
+    
+    // Contest is starting - recalculate all users' voting power
+    try {
+      const { votingPowerManager } = await import('./voting-power');
+      await votingPowerManager.resetAllVotingPowerAfterContest();
+      console.log("All users' voting power recalculated for contest start");
+    } catch (error) {
+      console.error("Failed to recalculate voting power on contest start:", error);
+    }
+    
     return contest;
   }
 
