@@ -24,7 +24,7 @@ export function ContestHeader() {
   // Fetch current memes count for active contest
   const { data: memesResponse } = useQuery({
     queryKey: ['/api/memes'],
-    staleTime: 30 * 1000, // 30초 캐시
+    staleTime: 5 * 1000, // 5초 캐시로 줄임
   });
 
   // Calculate entries count based on contest status

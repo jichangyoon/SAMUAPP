@@ -59,8 +59,21 @@ export function Admin() {
     mutationFn: async (contestId: number) => {
       return apiRequest("POST", `/api/admin/contests/${contestId}/start`);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/contests"] });
+    onSuccess: async () => {
+      // 즉시 모든 관련 캐시 무효화
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/contests"] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/current-contest"] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/memes"] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/voting-power"] }),
+      ]);
+
+      // 중요한 쿼리들 강제 리페치
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: ["/api/admin/contests"] }),
+        queryClient.refetchQueries({ queryKey: ["/api/admin/current-contest"] }),
+      ]);
+
       toast({ title: "Contest started successfully" });
     },
     onError: (error) => {
@@ -74,11 +87,30 @@ export function Admin() {
     mutationFn: async (contestId: number) => {
       return apiRequest("POST", `/api/admin/contests/${contestId}/end`);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/contests"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/archived-contests"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/current-contest"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/memes"] });
+    onSuccess: async () => {
+      // 즉시 모든 관련 캐시 무효화
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/contests"] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/archived-contests"] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/current-contest"] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/memes"] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/voting-power"] }),
+      ]);
+
+      // 중요한 쿼리들 강제 리페치
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: ["/api/admin/contests"] }),
+        queryClient.refetchQueries({ queryKey: ["/api/admin/archived-contests"] }),
+        queryClient.refetchQueries({ queryKey: ["/api/admin/current-contest"] }),
+      ]);
+
+      // 1초 후 한번 더 무효화 (서버 DB 업데이트 완료 보장)
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/contests"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/archived-contests"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/current-contest"] });
+      }, 1000);
+
       toast({ title: "Contest ended and archived successfully" });
     },
     onError: (error) => {

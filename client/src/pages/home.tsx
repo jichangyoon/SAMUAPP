@@ -145,7 +145,9 @@ export default function Home() {
       const response = await fetch('/api/admin/current-contest');
       if (!response.ok) return null;
       return response.json();
-    }
+    },
+    staleTime: 0, // 실시간 업데이트
+    refetchOnMount: true, // 마운트시 재요청
   });
 
   // Privy authentication
@@ -170,6 +172,7 @@ export default function Home() {
   const { data: archivedContests = [], isLoading: isLoadingArchives } = useQuery({
     queryKey: ["/api/admin/archived-contests"],
     staleTime: 0, // 항상 새로운 데이터 가져오기
+    refetchOnMount: true, // 마운트시 재요청
   });
 
   // User profile data from database
