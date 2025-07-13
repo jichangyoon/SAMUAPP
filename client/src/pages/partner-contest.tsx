@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { WalletConnect } from "@/components/wallet-connect";
-import { UploadForm } from "@/components/upload-form";
+
 import { MemeCard } from "@/components/meme-card";
 import { usePrivy } from '@privy-io/react-auth';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Plus } from "lucide-react";
+import { ArrowLeft, Grid3X3, List, ArrowUp, Share2, Twitter, Send } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -34,7 +34,7 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
   const walletAddress = user?.linkedAccounts?.find(
     account => account.type === 'wallet'
   )?.address as string || '';
-  const [showUploadForm, setShowUploadForm] = useState(false);
+
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
   const [showVoteDialog, setShowVoteDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
@@ -301,20 +301,7 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
                         </button>
                       </div>
 
-                      {authenticated && (
-                        <Button
-                          onClick={() => setShowUploadForm(true)}
-                          size="sm"
-                          style={{ 
-                            backgroundColor: partner.color,
-                            color: partner.color === '#FFFFFF' || partner.color === '#FFE4B5' ? '#000000' : '#FFFFFF'
-                          }}
-                          className="hover:opacity-90"
-                        >
-                          <Plus className="h-4 w-4 mr-1" />
-                          Submit
-                        </Button>
-                      )}
+
                     </div>
                   </div>
 
@@ -391,17 +378,7 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
         </Tabs>
       </div>
 
-      {/* Upload Form Modal */}
-      {showUploadForm && (
-        <UploadForm 
-          onClose={() => setShowUploadForm(false)}
-          onSuccess={() => {
-            setShowUploadForm(false);
-            refetch();
-          }}
-          partnerId={partnerId}
-        />
-      )}
+
 
       {/* Grid View Meme Detail Drawer */}
       {selectedMeme && (
@@ -546,28 +523,7 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
         </Drawer>
       )}
 
-      {/* Upload Form Drawer */}
-      <Drawer open={showUploadForm} onOpenChange={setShowUploadForm}>
-        <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
-          <DrawerHeader>
-            <DrawerTitle className="text-foreground">Submit to {partner.name} Contest</DrawerTitle>
-            <DrawerDescription className="text-muted-foreground">
-              Upload your meme to join the {partner.name} community contest
-            </DrawerDescription>
-          </DrawerHeader>
 
-          <div className="px-4 pb-4 overflow-y-auto flex-1">
-            <UploadForm 
-              onClose={() => setShowUploadForm(false)}
-              onSuccess={() => {
-                setShowUploadForm(false);
-                refetch();
-              }}
-              partnerId={partnerId}
-            />
-          </div>
-        </DrawerContent>
-      </Drawer>
     </div>
   );
 }
