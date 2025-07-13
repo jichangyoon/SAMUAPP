@@ -42,15 +42,6 @@ subprojects {
                 }
             }
         }
-        
-        // Force Kotlin to use Java 17 target (if kotlin plugin is applied)
-        plugins.withId("org.jetbrains.kotlin.android") {
-            tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-                kotlinOptions {
-                    jvmTarget = "17"
-                }
-            }
-        }
     }
 }
 
