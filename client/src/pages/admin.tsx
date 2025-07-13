@@ -33,6 +33,8 @@ export function Admin() {
   // Fetch archived contests
   const { data: archivedContests = [] } = useQuery<ArchivedContest[]>({
     queryKey: ["/api/admin/archived-contests"],
+    staleTime: 0, // 항상 새로운 데이터 가져오기
+    refetchOnMount: true, // 마운트시 재요청
   });
 
   // Create contest mutation

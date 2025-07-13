@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo, useMemo, ChangeEvent } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +19,7 @@ import { SendTokensSimple } from "@/components/send-tokens-simple";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { MediaDisplay } from "@/components/media-display";
 
-const Profile = React.memo(() => {
+const Profile = memo(() => {
   const { user, authenticated } = usePrivy();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -214,7 +214,7 @@ const Profile = React.memo(() => {
   // Profile data now comes from database, not localStorage
 
   // Update profile function
-  const updateProfile = React.useCallback(async (name: string, imageUrl?: string) => {
+  const updateProfile = useCallback(async (name: string, imageUrl?: string) => {
     try {
 
       const response = await fetch(`/api/users/profile/${walletAddress}`, {
@@ -290,7 +290,7 @@ const Profile = React.memo(() => {
   }, [walletAddress, queryClient]);
 
   // Handle image file selection (preview only, no upload)
-  const handleImageChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -323,7 +323,7 @@ const Profile = React.memo(() => {
 
 
   // Save profile changes
-  const handleSaveProfile = React.useCallback(async () => {
+  const handleSaveProfile = useCallback(async () => {
     if (!displayName.trim()) {
       toast({
         title: "Invalid Name",
@@ -412,7 +412,7 @@ const Profile = React.memo(() => {
   }, [displayName, profileImage, selectedFile, walletAddress, imagePreview, toast, queryClient, updateProfile]);
 
   // Cancel editing - 메모리 정리 포함
-  const handleCancelEdit = React.useCallback(() => {
+  const handleCancelEdit = useCallback(() => {
     // Clean up image preview URL if exists
     if (imagePreview && imagePreview.startsWith('blob:')) {
       URL.revokeObjectURL(imagePreview);
@@ -433,7 +433,7 @@ const Profile = React.memo(() => {
   }, [userProfile, user?.email?.address, imagePreview]);
 
   // Cleanup on unmount
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       // Clean up any remaining object URLs
       if (imagePreview && imagePreview.startsWith('blob:')) {
@@ -532,7 +532,7 @@ const Profile = React.memo(() => {
   }, [walletAddress, toast, queryClient]);
 
   // Calculate statistics from user data - useMemo로 최적화
-  const stats = React.useMemo(() => {
+  const stats = useMemo(() => {
     const currentSamuBalance = samuData?.balance || 0;
     const currentSolBalance = solData?.balance || 0;
 
@@ -594,24 +594,24 @@ const Profile = React.memo(() => {
   }, [samuData, solData, userStats, activeContest]);
 
   // User's memes, votes, and comments - useMemo로 최적화
-  const { myMemes, myVotes, myComments } = React.useMemo(() => ({
+  const { myMemes, myVotes, myComments } = useMemo(() => ({
     myMemes: userMemes || [],
     myVotes: userVoteHistory || [],
     myComments: userComments || []
   }), [userMemes, userVoteHistory, userComments]);
 
   // Display limited memes with More button
-  const displayedMemes = React.useMemo(() => {
+  const displayedMemes = useMemo(() => {
     return showAllMemes ? myMemes : myMemes.slice(0, 5);
   }, [myMemes, showAllMemes]);
 
   // Display limited votes with More button
-  const displayedVotes = React.useMemo(() => {
+  const displayedVotes = useMemo(() => {
     return showAllVotes ? myVotes : myVotes.slice(0, 5);
   }, [myVotes, showAllVotes]);
 
   // Display limited comments with More button
-  const displayedComments = React.useMemo(() => {
+  const displayedComments = useMemo(() => {
     return showAllComments ? myComments : myComments.slice(0, 5);
   }, [myComments, showAllComments]);
 

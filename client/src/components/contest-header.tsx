@@ -39,14 +39,16 @@ export function ContestHeader() {
     ).length;
   };
 
-  // 1초마다 현재 시간 업데이트
+  // 1초마다 현재 시간 업데이트 (활성 콘테스트가 있을 때만)
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
+    if (activeContest?.status === "active") {
+      const timer = setInterval(() => {
+        setCurrentTime(new Date());
+      }, 1000);
 
-    return () => clearInterval(timer);
-  }, []);
+      return () => clearInterval(timer);
+    }
+  }, [activeContest?.status]);
 
   const contestData = {
     timeLeft: activeContest?.endTime && activeContest?.status === "active" ? 
