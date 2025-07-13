@@ -1,0 +1,139 @@
+Running with gitlab-runner 14.10.1 (f761588f)
+  on Ionic Package Android Runner 8edcfcad
+Preparing the "kubernetes" executor
+Using Kubernetes namespace: ionic-runners
+Using Kubernetes executor with image 319312831725.dkr.ecr.us-west-2.amazonaws.com/appflow-runners/linux:2025.01 ...
+Using attach strategy to execute scripts...
+Preparing environment
+Waiting for pod ionic-runners/runner-8edcfcad-project-0-concurrent-1lxp5z to be running, status is Pending
+Running on runner-8edcfcad-project-0-concurrent-1lxp5z via gitlab-runner-57c5549486-866f4...
+
+Getting source from Git repository
+$ pre-clone
+[14:50:28]: Cloning repository...
+Fetching changes...
+Initialized empty Git repository in /builds/jichangyoon/samu-mobile-project--2-/.git/
+Created fresh repository.
+Checking out e940b4ff as main...
+
+Updating/initializing submodules...
+$ setup-fastlane
+[14:50:29]: Cloning complete...
+Fetching latest build process code...
+Cloning into '/builds/appflow-runners'...
+
+Executing "step_script" stage of the job script
+$ pre-build
+[14:50:31]: Building project....
+$ run "fetch-updates"
+Checking for build process updates...
+$ run "build-android"
+[14:50:33]: ---------------------------------
+[14:50:33]: --- Step: add_extra_platforms ---
+[14:50:33]: ---------------------------------
+[14:50:33]: Setting '[:web]' as extra SupportedPlatforms
+/builds/jichangyoon/samu-mobile-project--2-/fastlane/outsystems/errors/detectors/pdm_plugins.rb:8: warning: character class has '-' without escape
+/builds/jichangyoon/samu-mobile-project--2-/fastlane/outsystems/errors/detectors/pdm_plugins.rb:15: warning: character class has '-' without escape
+[14:50:33]: ------------------------------
+[14:50:33]: --- Step: default_platform ---
+[14:50:33]: ------------------------------
+[14:50:33]: Driving the lane 'android build_capacitor' 🚀
+[14:50:33]: ---------------------------------
+[14:50:33]: --- Step: prepare_environment ---
+[14:50:33]: ---------------------------------
+[14:50:33]: Setting default environment variables to tidy up logs. These can be overridden by setting them in Appflow.
+[14:50:33]: 
+[14:50:33]: Set COREPACK_ENABLE_AUTO_PIN=0 (Suppress yarn warnings)
+[14:50:33]: -------------------------
+[14:50:33]: --- Step: sentry_init ---
+[14:50:33]: -------------------------
+[14:50:33]: ----------------------------
+[14:50:33]: --- Step: begin_building ---
+[14:50:33]: ----------------------------
+[14:50:33]: Began building @ 2025-07-13T14:50:33
+[14:50:33]: ---------------------------
+[14:50:33]: --- Step: build_summary ---
+[14:50:33]: ---------------------------
+
++---------------------------------------------------+
+|                   Build Summary                   |
++---------------------+-----------------------------+
+| Runners Revision    | f9ed312                     |
+| Job ID              | 10294533                    |
+| Node.js version     | v20.18.2                    |
+| Cordova CLI version | 12.0.0 (cordova-lib@12.0.2) |
+| npm version         | 10.8.2                      |
+| yarn version        | 1.22.22                     |
++---------------------+-----------------------------+
+
+[14:50:35]: No build credential specified
+[14:50:35]: ---------------------------
+[14:50:35]: --- Step: set_ionic_cli ---
+[14:50:35]: ---------------------------
+[14:50:36]: Unable to detect ionic project type. Skipping...
+[14:50:36]: ------------------------------------
+[14:50:36]: --- Step: detect_package_manager ---
+[14:50:36]: ------------------------------------
+[14:50:36]: Detecting package manager
+[14:50:36]: Defaulting to npm
+[14:50:36]: ---------------------------------
+[14:50:36]: --- Step: add_git_credentials ---
+[14:50:36]: ---------------------------------
+[14:50:36]: Writing git-credentials files
+[14:50:36]: git-credentials successfully added to project
+[14:50:36]: --------------------------------
+[14:50:36]: --- Step: get_appflow_config ---
+[14:50:36]: --------------------------------
+[14:50:36]: Checking for appflow.config.json
+[14:50:36]: Appflow config not detected
+[14:50:36]: --------------------------------
+[14:50:36]: --- Step: dependency_install ---
+[14:50:36]: --------------------------------
+[14:50:36]: Installing Dependencies (in /builds/jichangyoon/samu-mobile-project--2-)
+[14:50:36]: -------------------------
+[14:50:36]: --- Step: upload_logs ---
+[14:50:36]: -------------------------
+[14:50:38]: --------------------------------------
+[14:50:38]: --- Step: sentry_capture_exception ---
+[14:50:38]: --------------------------------------
++------------------------------------------------+
+|                  Lane Context                  |
++----------------------+-------------------------+
+| DEFAULT_PLATFORM     | ios                     |
+| PLATFORM_NAME        | android                 |
+| LANE_NAME            | android build_capacitor |
+| IONIC_CLI_VERSION    | 7.2.0                   |
+| NODE_PACKAGE_MANAGER | npm                     |
++----------------------+-------------------------+
+[14:50:38]: No package.json file found in root of project.
+
++-----------------------------------------------+
+|               fastlane summary                |
++------+--------------------------+-------------+
+| Step | Action                   | Time (in s) |
++------+--------------------------+-------------+
+| 1    | add_extra_platforms      | 0           |
+| 2    | default_platform         | 0           |
+| 3    | prepare_environment      | 0           |
+| 4    | sentry_init              | 0           |
+| 5    | begin_building           | 0           |
+| 6    | build_summary            | 1           |
+| 7    | set_ionic_cli            | 1           |
+| 8    | detect_package_manager   | 0           |
+| 9    | add_git_credentials      | 0           |
+| 10   | get_appflow_config       | 0           |
+| 💥   | dependency_install       | 0           |
+| 12   | upload_logs              | 2           |
+| 13   | sentry_capture_exception | 0           |
++------+--------------------------+-------------+
+
+[14:50:38]: fastlane finished with errors
+/usr/local/bundle/bin/fastlane: [!] No package.json file found in root of project. (RuntimeError)
+
+Running after_script
+Running after script...
+$ run "clean-up"
+
+Cleaning up project directory and file based variables
+
+ERROR: Job failed: command terminated with exit code 1
