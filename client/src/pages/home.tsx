@@ -142,12 +142,19 @@ export default function Home() {
   const { data: currentContest } = useQuery({
     queryKey: ['/api/admin/current-contest'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/current-contest');
+      const response = await fetch('/api/admin/current-contest', {
+        cache: 'no-cache',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
       if (!response.ok) return null;
       return response.json();
     },
     staleTime: 0, // 실시간 업데이트
     refetchOnMount: true, // 마운트시 재요청
+    refetchOnWindowFocus: true, // 윈도우 포커스시 재요청
   });
 
   // Privy authentication

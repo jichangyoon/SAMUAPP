@@ -18,7 +18,20 @@ export function ContestHeader() {
   // Fetch current active contest
   const { data: activeContest } = useQuery<Contest>({
     queryKey: ["/api/admin/current-contest"],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/current-contest', {
+        cache: 'no-cache',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
+      if (!response.ok) return null;
+      return response.json();
+    },
     staleTime: 0, // 실시간 업데이트를 위해 캐시 비활성화
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   // Fetch current memes count for active contest
