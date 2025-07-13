@@ -123,6 +123,7 @@ export default function Home() {
   const [currentTab, setCurrentTab] = useState("contest");
   const [viewMode, setViewMode] = useState<'card' | 'grid'>('card');
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
+  const [votingMeme, setVotingMeme] = useState<Meme | null>(null);
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [archiveView, setArchiveView] = useState<'list' | 'contest'>('list');
   const [selectedArchiveContest, setSelectedArchiveContest] = useState<any>(null);
@@ -958,6 +959,7 @@ export default function Home() {
           onClose={() => setSelectedMeme(null)}
           meme={selectedMeme}
           onVote={() => {
+            setVotingMeme(selectedMeme);
             setSelectedMeme(null);
             setShowVoteDialog(true);
           }}
@@ -966,13 +968,13 @@ export default function Home() {
       )}
 
       {/* Grid View Vote Confirmation Drawer */}
-      {selectedMeme && (
+      {votingMeme && (
         <Drawer open={showVoteDialog} onOpenChange={setShowVoteDialog}>
           <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
             <DrawerHeader>
               <DrawerTitle className="text-foreground">Confirm Your Vote</DrawerTitle>
               <DrawerDescription className="text-muted-foreground">
-                You're about to vote for "{selectedMeme.title}" by {selectedMeme.authorUsername}
+                You're about to vote for "{votingMeme.title}" by {votingMeme.authorUsername}
               </DrawerDescription>
             </DrawerHeader>
 
@@ -1041,7 +1043,7 @@ export default function Home() {
               </Button>
               <Button
                 onClick={async () => {
-                  if (!selectedMeme || !walletAddress) return;
+                  if (!votingMeme || !walletAddress) return;
 
                   // 투표력 체크
                   if ((votingPowerData?.remainingPower || 0) < voteAmount) {
@@ -1056,7 +1058,7 @@ export default function Home() {
                   setIsVoting(true);
                   
                   try {
-                    await apiRequest("POST", `/api/memes/${selectedMeme.id}/vote`, {
+                    await apiRequest("POST", `/api/memes/${votingMeme.id}/vote`, {
                       voterWallet: walletAddress,
                       votingPower: votingPowerData?.remainingPower || 0,
                       powerUsed: voteAmount
@@ -1069,6 +1071,7 @@ export default function Home() {
                     });
 
                     setShowVoteDialog(false);
+                    setVotingMeme(null);
                     
                     // 캐시 동기화
                     queryClient.invalidateQueries({ queryKey: ['voting-power'] });
