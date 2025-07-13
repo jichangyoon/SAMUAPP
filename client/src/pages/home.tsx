@@ -138,7 +138,12 @@ export default function Home() {
 
   // Check if there's an active contest
   const { data: currentContest } = useQuery({
-    queryKey: ['/api/admin/current-contest']
+    queryKey: ['/api/admin/current-contest'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/current-contest');
+      if (!response.ok) return null;
+      return response.json();
+    }
   });
 
   // Privy authentication
@@ -167,6 +172,11 @@ export default function Home() {
   // User profile data from database
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile-header', walletAddress],
+    queryFn: async () => {
+      if (!walletAddress) return null;
+      const res = await fetch(`/api/users/profile/${walletAddress}`);
+      return res.json();
+    },
     enabled: !!walletAddress && authenticated,
   });
 
@@ -298,6 +308,16 @@ export default function Home() {
   // React Query로 잔액 조회 최적화
   const { data: balanceData } = useQuery({
     queryKey: ['balances', walletAddress],
+    queryFn: async () => {
+      if (!walletAddress || !isSolana) return { samu: 0, sol: 0 };
+
+      const [samuBal, solBal] = await Promise.all([
+        getSamuTokenBalance(walletAddress),
+        getSolBalance(walletAddress)
+      ]);
+
+      return { samu: samuBal, sol: solBal };
+    },
     enabled: isConnected && !!walletAddress && isSolana,
   });
 
@@ -316,6 +336,16 @@ export default function Home() {
   // Fetch memes data with pagination - optimized single query
   const { data: memesResponse, isLoading, refetch } = useQuery({
     queryKey: ['/api/memes', { page, limit: pageSize, sortBy }],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: pageSize.toString(),
+        sortBy: sortBy
+      });
+      const response = await fetch(`/api/memes?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch memes');
+      return response.json();
+    },
     enabled: true,
   });
 
