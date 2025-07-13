@@ -906,6 +906,15 @@ export class DatabaseStorage implements IStorage {
 
     console.log(`Contest ${contestId} archived with ${totalMemes} files moved to archives/contest-${contestId}/`);
 
+    // Reset all users' voting power after contest ends
+    try {
+      const { votingPowerManager } = await import('./voting-power');
+      await votingPowerManager.resetAllVotingPowerAfterContest();
+      console.log("All users' voting power reset after contest end");
+    } catch (error) {
+      console.error("Failed to reset voting power after contest end:", error);
+    }
+
     return archivedContest;
   }
 
