@@ -18,6 +18,7 @@ export function ContestHeader() {
   // Fetch current active contest
   const { data: activeContest } = useQuery<Contest>({
     queryKey: ["/api/admin/current-contest"],
+    staleTime: 0, // 실시간 업데이트를 위해 캐시 비활성화
   });
 
   // Fetch current memes count for active contest

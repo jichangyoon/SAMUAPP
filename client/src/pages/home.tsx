@@ -55,7 +55,7 @@ export default function Home() {
       if (!response.ok) return null;
       return response.json();
     },
-    staleTime: 30 * 1000, // 30초간 캐시 유지
+    staleTime: 0, // 실시간 업데이트를 위해 캐시 비활성화
   });
 
   // Privy authentication

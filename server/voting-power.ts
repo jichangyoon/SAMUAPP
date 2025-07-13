@@ -179,11 +179,16 @@ class VotingPowerManager {
     console.log("Resetting all users' voting power after contest end...");
     
     const allUsers = await this.db.select().from(users);
+    console.log(`Found ${allUsers.length} users to update voting power`);
     
     for (const user of allUsers) {
       try {
         // Get current SAMU balance from API
         const response = await fetch(`http://localhost:5000/api/samu-balance/${user.walletAddress}`);
+        if (!response.ok) {
+          console.error(`Failed to fetch SAMU balance for ${user.walletAddress}: ${response.status}`);
+          continue;
+        }
         const data = await response.json();
         const currentBalance = data.balance || 0;
         

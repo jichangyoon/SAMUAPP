@@ -904,6 +904,15 @@ export class DatabaseStorage implements IStorage {
         .where(eq(memes.contestId, contestId));
     }
 
+    // Cancel any scheduled timers for this contest
+    try {
+      const { contestScheduler } = await import('./contest-scheduler');
+      contestScheduler.cancelScheduled(contestId);
+      console.log(`Cancelled scheduled actions for contest ${contestId}`);
+    } catch (error) {
+      console.error("Failed to cancel scheduled actions:", error);
+    }
+
     console.log(`Contest ${contestId} archived with ${totalMemes} files moved to archives/contest-${contestId}/`);
 
     // Reset all users' voting power after contest ends

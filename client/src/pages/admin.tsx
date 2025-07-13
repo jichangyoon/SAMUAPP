@@ -75,6 +75,8 @@ export function Admin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/contests"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/archived-contests"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/current-contest"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/memes"] });
       toast({ title: "Contest ended and archived successfully" });
     },
     onError: (error) => {

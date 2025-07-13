@@ -541,6 +541,7 @@ Changelog:
 - July 12, 2025. Fixed critical voting power API bug - resolved duplicate route handlers causing empty {} responses, updated walletRouter to use database-backed VotingPowerManager with proper async/await, confirmed API now returns correct JSON with totalPower: 101, usedPower: 0, remainingPower: 101
 - July 13, 2025. Fixed voting power calculation inconsistency in Profile page - Power tab now uses votingPowerData from voting-power API instead of stats API, ensuring current contest power display (Total: 101, Used: 2, Remaining: 99) matches correctly
 - July 13, 2025. Implemented automatic voting power reset system on contest end - all users' voting power now recalculates based on current SAMU token balance when contests end, ensuring fair competition for next contest with used power reset to 0
+- July 13, 2025. Fixed contest termination cache issue - contest status now updates immediately after manual termination by removing stale cache (staleTime: 0) and adding comprehensive cache invalidation for all contest-related queries
 
 ## CHECKPOINT - June 30, 2025
 ```
