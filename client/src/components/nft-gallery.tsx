@@ -15,6 +15,73 @@ import type { NftComment } from "@shared/schema";
 import { SAMU_NFTS, type StaticNft } from "@/data/nft-data";
 import nftOwnersData from "@/data/nft-owners.json";
 
+// 실시간 프로필 동기화를 위한 댓글 아이템 컴포넌트
+function CommentItem({ comment, isOwner, onDelete, onUserClick }: {
+  comment: NftComment;
+  isOwner: boolean;
+  onDelete: () => void;
+  onUserClick: (wallet: string) => void;
+}) {
+  // 실시간 프로필 데이터 가져오기
+  const { data: userProfile } = useQuery({
+    queryKey: ['/api/users/profile', comment.userWallet],
+    queryFn: async () => {
+      const response = await fetch(`/api/users/profile/${comment.userWallet}`);
+      if (!response.ok) return null;
+      return response.json();
+    },
+    staleTime: 30000, // 30초 동안 캐시 유지
+  });
+
+  // 실시간 프로필 데이터 우선 사용, 없으면 댓글 저장 데이터 사용
+  const displayName = userProfile?.displayName || comment.displayName || comment.username || 'Anonymous';
+  const avatarUrl = userProfile?.avatarUrl || comment.avatarUrl;
+
+  return (
+    <div className="bg-muted/50 rounded-lg p-3">
+      <div className="flex items-center gap-2 mb-1">
+        <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center overflow-hidden">
+          {avatarUrl ? (
+            <img 
+              src={avatarUrl} 
+              alt={displayName}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                // 이미지 로드 실패 시 이니셜 표시
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+              }}
+            />
+          ) : (
+            <span className="text-xs font-bold text-primary-foreground">
+              {displayName.charAt(0).toUpperCase()}
+            </span>
+          )}
+        </div>
+        <span 
+          className="text-sm font-medium text-foreground cursor-pointer hover:text-primary transition-colors"
+          onClick={() => onUserClick(comment.userWallet)}
+        >
+          {displayName}
+        </span>
+        <span className="text-xs text-muted-foreground">
+          {new Date(comment.createdAt).toLocaleDateString()}
+        </span>
+        {isOwner && (
+          <button
+            onClick={onDelete}
+            className="ml-auto text-gray-500 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors"
+            title="Delete comment"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+      <p className="text-sm text-muted-foreground pl-8">{comment.comment}</p>
+    </div>
+  );
+}
+
 export function NftGallery() {
   const [selectedNft, setSelectedNft] = useState<StaticNft | null>(null);
   const [newComment, setNewComment] = useState("");
@@ -359,10 +426,6 @@ export function NftGallery() {
                 <div className="space-y-3 max-h-64 overflow-y-auto">
                   {comments.length > 0 ? (
                     comments.map((comment) => {
-                      // Use stored profile data from comment
-                      const displayName = comment.displayName || comment.username || 'Anonymous';
-                      const avatarUrl = comment.avatarUrl;
-                      
                       // Check if current user owns this comment - get Solana wallet address
                       const walletAccounts = user?.linkedAccounts?.filter(account => 
                         account.type === 'wallet' && 
@@ -374,47 +437,13 @@ export function NftGallery() {
                       const isOwner = authenticated && currentUserWallet === comment.userWallet;
                       
                       return (
-                        <div key={comment.id} className="bg-muted/50 rounded-lg p-3">
-                          <div className="flex items-center gap-2 mb-1">
-                            <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center overflow-hidden">
-                              {avatarUrl ? (
-                                <img 
-                                  src={avatarUrl} 
-                                  alt={displayName}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <span className="text-xs font-bold text-primary-foreground">
-                                  {displayName.charAt(0).toUpperCase()}
-                                </span>
-                              )}
-                            </div>
-                            <span 
-                              className="text-sm font-medium text-foreground cursor-pointer hover:text-primary transition-colors"
-                              onClick={() => handleUserClick(comment.userWallet)}
-                            >
-                              {displayName}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(comment.createdAt).toLocaleDateString()}
-                            </span>
-                            {isOwner && (
-                              <button
-                                onClick={() => handleDeleteComment(comment.id)}
-                                className="ml-auto text-gray-500 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors"
-                                disabled={deleteCommentMutation.isPending}
-                                title="Delete comment"
-                              >
-                                {deleteCommentMutation.isPending ? (
-                                  <span className="text-xs">...</span>
-                                ) : (
-                                  <Trash2 className="h-4 w-4" />
-                                )}
-                              </button>
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground pl-8">{comment.comment}</p>
-                        </div>
+                        <CommentItem
+                          key={comment.id}
+                          comment={comment}
+                          isOwner={isOwner}
+                          onDelete={() => handleDeleteComment(comment.id)}
+                          onUserClick={handleUserClick}
+                        />
                       );
                     })
                   ) : (
