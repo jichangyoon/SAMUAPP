@@ -218,31 +218,16 @@ export default function Home() {
   const displayName = authenticated ? profileData.displayName : 'SAMU';
   const profileImage = profileData.profileImage;
 
-  // 통합 캐시 업데이트 함수 (투표 후 사용)
+  // 투표 후 캐시 업데이트 함수 (간단화)
   const handleVoteUpdate = useCallback(async () => {
-    try {
-      // 1단계: 투표력 데이터 즉시 업데이트
-      await queryClient.invalidateQueries({ queryKey: ['voting-power'] });
-      
-      // 2단계: 사용자 투표 기록 업데이트
-      await queryClient.invalidateQueries({ queryKey: ['user-votes'] });
-      
-      // 3단계: 밈 데이터 업데이트 (투표 수 반영)
-      await queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
-      
-      // 4단계: 사용자 통계 업데이트
-      await queryClient.invalidateQueries({ queryKey: ['user-stats'] });
-      
-      // 페이지네이션 리셋
-      setPage(1);
-      setAllMemes([]);
-      setHasMore(true);
-    } catch (error) {
-      // 캐시 업데이트 실패 시에도 기본 동작 수행
-      setPage(1);
-      setAllMemes([]);
-      setHasMore(true);
-    }
+    // 투표 관련 캐시만 무효화 (1회만)
+    await queryClient.invalidateQueries({ queryKey: ['voting-power'] });
+    await queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+    
+    // 페이지네이션 리셋
+    setPage(1);
+    setAllMemes([]);
+    setHasMore(true);
   }, [queryClient]);
 
   // 수동 새로고침 함수
@@ -360,7 +345,7 @@ export default function Home() {
     setHasMore(true);
   }, [viewMode, sortBy]);
 
-  // Fetch memes data with pagination - votes 정렬은 캐시 비활성화
+  // Fetch memes data with pagination - 간단한 캐시 정책
   const { data: memesResponse, isLoading, refetch } = useQuery({
     queryKey: ['/api/memes', { page, limit: pageSize, sortBy }],
     queryFn: async () => {
@@ -374,8 +359,8 @@ export default function Home() {
       return response.json();
     },
     enabled: true,
-    staleTime: sortBy === 'votes' ? 0 : 30000, // votes 정렬은 즉시 stale, latest는 30초 캐시
-    gcTime: sortBy === 'votes' ? 0 : 60000, // votes 정렬은 캐시 없음, latest는 1분 캐시
+    staleTime: 5000, // 5초 캐시 (모든 정렬에 동일 적용)
+    gcTime: 30000, // 30초 가비지 컬렉션
   });
 
   // Update memes list when new data arrives - 정렬 충돌 방지
@@ -620,13 +605,7 @@ export default function Home() {
                                 >
                                   <MemeCard 
                                     meme={meme} 
-                                    onVote={async () => {
-                                      // 투표 후 스마트 캐시 동기화 및 목록 새로고침
-                                      setPage(1);
-                                      setAllMemes([]);
-                                      setHasMore(true);
-                                      await queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
-                                    }}
+                                    onVote={handleVoteUpdate}
                                     canVote={isConnected}
                                   />
                                 </div>
