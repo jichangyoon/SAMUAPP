@@ -122,11 +122,11 @@ router.post("/contests/:id/end", async (req, res) => {
   }
 });
 
-// Get current contest info (active only) - with cache headers
+// Get current contest info (active only) - no cache for real-time updates
 router.get("/current-contest", async (req, res) => {
   try {
-    // Set cache headers for better performance
-    res.set('Cache-Control', 'public, max-age=30'); // 30초 브라우저 캐시
+    // No cache for real-time contest status updates
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     
     // Only get active contest, return null if no active contest
     const contest = await storage.getCurrentActiveContest();
