@@ -130,11 +130,7 @@ export default function Home() {
   const [isVoting, setIsVoting] = useState(false);
   const [, setLocation] = useLocation();
   
-  // Infinite scroll state
-  const [page, setPage] = useState(1);
-  const [allMemes, setAllMemes] = useState<Meme[]>([]);
-  const [hasMore, setHasMore] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  // Removed infinite scroll - using simple data fetching
 
   // Check if there's an active contest
   const { data: currentContest } = useQuery({
@@ -218,10 +214,13 @@ export default function Home() {
   const displayName = authenticated ? profileData.displayName : 'SAMU';
   const profileImage = profileData.profileImage;
 
-  // 투표 후 캐시 업데이트 함수 (최대한 간단화)
+  // 투표 후 캐시 업데이트 함수 (간단한 로직)
   const handleVoteUpdate = useCallback(async () => {
-    // 투표력만 업데이트 (밈 목록은 사용자가 수동 새로고침)
-    await queryClient.invalidateQueries({ queryKey: ['voting-power'] });
+    // 투표력과 밈 데이터 동시 업데이트
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['voting-power'] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/memes/all'] })
+    ]);
   }, [queryClient]);
 
   // 수동 새로고침 함수
@@ -332,77 +331,23 @@ export default function Home() {
 
   // 잔액 상태 업데이트 - 제거됨 (React Query로 직접 관리)
 
-  // Calculate page size based on view mode
-  const pageSize = viewMode === 'grid' ? 9 : 7;
-
-  // Reset pagination when view mode or sort changes
-  useEffect(() => {
-    setPage(1);
-    setAllMemes([]);
-    setHasMore(true);
-  }, [viewMode, sortBy]);
-
-  // Fetch memes data with pagination - 간단한 캐시 정책
+  // Simple data fetching - no pagination complexity
   const { data: memesResponse, isLoading, refetch } = useQuery({
-    queryKey: ['/api/memes', { page, limit: pageSize, sortBy }],
+    queryKey: ['/api/memes/all', { sortBy }],
     queryFn: async () => {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: pageSize.toString(),
-        sortBy: sortBy
-      });
-      const response = await fetch(`/api/memes?${params}`);
+      const params = new URLSearchParams({ sortBy });
+      const response = await fetch(`/api/memes/all?${params}`);
       if (!response.ok) throw new Error('Failed to fetch memes');
       return response.json();
     },
-    enabled: true,
-    staleTime: 30000, // 30초 캐시 (자동 업데이트 줄이기)
+    staleTime: 30000, // 30초 캐시
     gcTime: 60000, // 1분 가비지 컬렉션
   });
 
-  // Update memes list when new data arrives - 정렬 충돌 방지
-  useEffect(() => {
-    if (memesResponse?.memes) {
-      if (page === 1) {
-        // 첫 페이지는 항상 새로운 데이터로 교체
-        setAllMemes(memesResponse.memes);
-      } else {
-        // 추가 페이지는 중복 제거 후 추가
-        setAllMemes(prev => {
-          const existingIds = new Set(prev.map(m => m.id));
-          const newMemes = memesResponse.memes.filter(m => !existingIds.has(m.id));
-          return [...prev, ...newMemes];
-        });
-      }
-      setHasMore(memesResponse.pagination.hasMore);
-      setIsLoadingMore(false);
-    }
-  }, [memesResponse, page]);
 
 
-
-  // Load more function
-  const loadMore = useCallback(async () => {
-    if (!hasMore || isLoadingMore || isLoading) return;
-    
-    setIsLoadingMore(true);
-    setPage(prev => prev + 1);
-  }, [hasMore, isLoadingMore, isLoading]);
-
-  // Infinite scroll detection
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
-        loadMore();
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [loadMore]);
-
-  // Use allMemes for display (already sorted by backend)
-  const sortedMemes = allMemes;
+  // Use memes directly from API response - no infinite scroll complexity
+  const sortedMemes = memesResponse?.memes || [];
 
   // Optimized click handlers with minimal dependencies
   const handleMemeClick = useCallback((meme: Meme) => {
@@ -572,8 +517,8 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* 메인 콘텐츠 영역 - 로딩 중일 때 반투명 효과 */}
-                    <div className={`transition-opacity duration-300 ${isLoadingMore ? 'opacity-60' : 'opacity-100'}`}>
+                    {/* 메인 콘텐츠 영역 - 간단한 로딩 표시 */}
+                    <div className="transition-opacity duration-300 opacity-100">
                       {isLoading ? (
                         <div className="space-y-4">
                           {[1, 2, 3, 4, 5, 6, 7].map((i) => (
@@ -623,8 +568,7 @@ export default function Home() {
                                   key={meme.id}
                                   onClick={() => {
                                     // 현재 투표 수를 포함한 meme 객체 전달
-                                    const currentMeme = allMemes.find(m => m.id === meme.id) || meme;
-                                    setSelectedMeme(currentMeme);
+                                    setSelectedMeme(meme);
                                   }}
                                   className="aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-all duration-200 relative group animate-fade-in"
                                   style={{ 
@@ -666,19 +610,8 @@ export default function Home() {
                       )}
                     </div>
 
-                    {/* Infinite scroll loading indicator - 더 부드러운 애니메이션 */}
-                    {isLoadingMore && (
-                      <div className="text-center mt-6 animate-fade-in">
-                        <div className="flex items-center justify-center space-x-2">
-                          <div className="animate-bounce w-2 h-2 bg-primary rounded-full" style={{ animationDelay: '0ms' }}></div>
-                          <div className="animate-bounce w-2 h-2 bg-primary rounded-full" style={{ animationDelay: '150ms' }}></div>
-                          <div className="animate-bounce w-2 h-2 bg-primary rounded-full" style={{ animationDelay: '300ms' }}></div>
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-3 animate-pulse">Loading more memes...</p>
-                      </div>
-                    )}
-                    
-                    {!hasMore && sortedMemes.length > 0 && (
+                    {/* Simple end message */}
+                    {sortedMemes.length > 0 && (
                       <div className="text-center mt-6">
                         <p className="text-sm text-muted-foreground">You've seen all memes!</p>
                       </div>
