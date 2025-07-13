@@ -10,6 +10,7 @@ import { NftGallery } from "@/components/nft-gallery";
 import { MediaDisplay } from "@/components/media-display";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 
+
 import { usePrivy } from '@privy-io/react-auth';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,6 +19,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Image, Users, Plus, Lock, RefreshCw } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
@@ -128,6 +132,7 @@ export default function Home() {
   const [showVoteDialog, setShowVoteDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
+  const [voteAmount, setVoteAmount] = useState(1);
   const [, setLocation] = useLocation();
   
   // Removed infinite scroll - using simple data fetching
@@ -177,6 +182,18 @@ export default function Home() {
     enabled: !!walletAddress && authenticated,
   });
 
+  // Get voting power data
+  const { data: votingPowerData } = useQuery({
+    queryKey: ['voting-power', walletAddress],
+    queryFn: async () => {
+      if (!walletAddress) return null;
+      const res = await fetch(`/api/voting-power/${walletAddress}`);
+      return res.json();
+    },
+    enabled: !!walletAddress && authenticated,
+    staleTime: 5000, // 5초 캐시
+  });
+
   // Profile state management
   const [profileData, setProfileData] = useState({ displayName: 'User', profileImage: '' });
 
@@ -214,6 +231,13 @@ export default function Home() {
 
   const displayName = authenticated ? profileData.displayName : 'SAMU';
   const profileImage = profileData.profileImage;
+
+  // Initialize vote amount when voting power changes
+  useEffect(() => {
+    if (votingPowerData?.remainingPower && voteAmount > votingPowerData.remainingPower) {
+      setVoteAmount(Math.min(1, votingPowerData.remainingPower));
+    }
+  }, [votingPowerData?.remainingPower, voteAmount]);
 
   // 투표 후 캐시 업데이트 함수 
   const handleVoteUpdate = useCallback(async () => {
@@ -953,18 +977,61 @@ export default function Home() {
             </DrawerHeader>
 
             <div className="px-4 pb-4 overflow-y-auto flex-1">
-              <div className="bg-accent rounded-lg p-4">
+              {/* 투표력 정보 */}
+              <div className="bg-accent rounded-lg p-4 mb-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">Your voting power:</span>
-                  <span className="font-semibold text-primary">1</span>
+                  <span className="text-sm text-muted-foreground">Your remaining voting power:</span>
+                  <span className="font-semibold text-primary">{votingPowerData?.remainingPower?.toLocaleString() || '0'}</span>
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  Based on your voting power system
+                  You can allocate any amount of your voting power to this meme
+                </div>
+              </div>
+
+              {/* 투표력 슬라이더 */}
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="vote-amount" className="text-sm font-medium text-foreground">
+                    Voting Power to Use: {voteAmount}
+                  </Label>
+                  <div className="mt-2">
+                    <Slider
+                      id="vote-amount"
+                      min={1}
+                      max={Math.max(1, votingPowerData?.remainingPower || 1)}
+                      step={1}
+                      value={[voteAmount]}
+                      onValueChange={(value) => setVoteAmount(value[0])}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                    <span>1</span>
+                    <span>{votingPowerData?.remainingPower || 1}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="vote-input" className="text-sm font-medium text-foreground">
+                    Or enter amount directly:
+                  </Label>
+                  <Input
+                    id="vote-input"
+                    type="number"
+                    min={1}
+                    max={votingPowerData?.remainingPower || 1}
+                    value={voteAmount}
+                    onChange={(e) => {
+                      const value = Math.max(1, Math.min(votingPowerData?.remainingPower || 1, parseInt(e.target.value) || 1));
+                      setVoteAmount(value);
+                    }}
+                    className="mt-1"
+                  />
                 </div>
               </div>
             </div>
 
-          <DrawerFooter className="flex space-x-3">
+            <DrawerFooter className="flex space-x-3">
               <Button
                 variant="outline"
                 onClick={() => setShowVoteDialog(false)}
@@ -975,39 +1042,43 @@ export default function Home() {
               <Button
                 onClick={async () => {
                   if (!selectedMeme || !walletAddress) return;
-                  
+
+                  // 투표력 체크
+                  if ((votingPowerData?.remainingPower || 0) < voteAmount) {
+                    toast({
+                      title: "Insufficient Voting Power",
+                      description: `You need ${voteAmount} voting power but only have ${votingPowerData?.remainingPower || 0}.`,
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+
                   setIsVoting(true);
-                  
-                  // 즉시 UI 업데이트 (낙관적 업데이트)
-                  setSelectedMeme(prev => prev ? { ...prev, votes: prev.votes + 1 } : null);
                   
                   try {
                     await apiRequest("POST", `/api/memes/${selectedMeme.id}/vote`, {
                       voterWallet: walletAddress,
-                      votingPower: 1,
+                      votingPower: votingPowerData?.remainingPower || 0,
+                      powerUsed: voteAmount
                     });
-
-                    // 성공 시 캐시 동기화
-                    await queryClient.invalidateQueries({ queryKey: ['voting-power'] });
-                    await queryClient.invalidateQueries({ queryKey: ['user-votes'] });
-                    await queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
-                    await queryClient.invalidateQueries({ queryKey: ['user-stats'] });
 
                     toast({
                       title: "Vote Submitted!",
-                      description: "Your vote has been recorded.",
+                      description: `Used ${voteAmount} voting power on this meme.`,
                       duration: 1000
                     });
 
-                    handleVoteSuccess();
-                  } catch (error: any) {
-                    // 실패 시 원래 상태로 복구
-                    setSelectedMeme(prev => prev ? { ...prev, votes: prev.votes - 1 } : null);
-                    await queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+                    setShowVoteDialog(false);
                     
+                    // 캐시 동기화
+                    queryClient.invalidateQueries({ queryKey: ['voting-power'] });
+                    queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+                    queryClient.invalidateQueries({ queryKey: ['user-votes'] });
+                    queryClient.invalidateQueries({ queryKey: ['user-stats'] });
+                  } catch (error: any) {
                     toast({
                       title: "Voting Failed",
-                      description: error.message || "Failed to submit vote. You may have already voted on this meme.",
+                      description: error.message || "Failed to submit vote. Please try again.",
                       variant: "destructive",
                       duration: 1000
                     });
