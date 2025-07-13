@@ -988,7 +988,7 @@ const Profile = React.memo(() => {
                             <p className="text-xs text-muted-foreground truncate">by {meme.authorUsername}</p>
                           </div>
                           <Badge variant="secondary" className="text-green-400 text-xs">
-                            +{vote.votingPower}
+                            +{vote.powerUsed || vote.votingPower}
                           </Badge>
                         </div>
                       ) : null;
