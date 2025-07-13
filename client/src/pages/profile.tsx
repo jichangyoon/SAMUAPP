@@ -72,8 +72,8 @@ const Profile = React.memo(() => {
     staleTime: 2 * 60 * 1000, // 2분 캐시 (통계는 자주 변경됨)
   });
 
-  // Voting power data - 실시간 업데이트 필요
-  const { data: votingPowerData } = useQuery({
+  // Voting power data - 프로필 페이지 접근시 항상 최신 데이터 가져오기
+  const { data: votingPowerData, refetch: refetchVotingPower } = useQuery({
     queryKey: ['voting-power', walletAddress],
     queryFn: async () => {
       if (!walletAddress) return null;
@@ -84,9 +84,16 @@ const Profile = React.memo(() => {
     enabled: !!walletAddress,
     staleTime: 0, // 항상 최신 데이터
     gcTime: 0, // 캐시 무효화
-    refetchOnMount: true, // 컴포넌트 마운트 시 재요청
+    refetchOnMount: true, // 프로필 페이지 열 때마다 새로고침
     refetchOnWindowFocus: true, // 윈도우 포커스 시 재요청
   });
+
+  // 사용자가 프로필 페이지를 열 때마다 투표력 새로고침
+  React.useEffect(() => {
+    if (walletAddress) {
+      refetchVotingPower();
+    }
+  }, [walletAddress, refetchVotingPower]);
 
   // User memes - 글로벌 기본값 사용
   const { data: userMemes = [] } = useQuery({
@@ -731,7 +738,13 @@ const Profile = React.memo(() => {
                 <div className="text-sm font-bold text-purple-400">{stats.currentSolBalance.toFixed(4)}</div>
                 <div className="text-xs text-muted-foreground">SOL</div>
               </div>
-              <div className="text-center bg-accent/30 rounded-lg p-2">
+              <div 
+                className="text-center bg-accent/30 rounded-lg p-2 cursor-pointer hover:bg-accent/50 transition-colors"
+                onClick={() => {
+                  refetchVotingPower();
+                  toast({ title: "Voting power refreshed", duration: 1200 });
+                }}
+              >
                 <div className="text-sm font-bold text-green-400">{stats.remainingVotingPower.toLocaleString()}</div>
                 <div className="text-xs text-muted-foreground">Voting Power</div>
               </div>
@@ -833,7 +846,14 @@ const Profile = React.memo(() => {
               <MessageCircle className="h-4 w-4" />
               <span>Comments</span>
             </TabsTrigger>
-            <TabsTrigger value="power" className="flex flex-col items-center gap-1 p-3 text-xs">
+            <TabsTrigger 
+              value="power" 
+              className="flex flex-col items-center gap-1 p-3 text-xs"
+              onClick={() => {
+                refetchVotingPower();
+                toast({ title: "Voting power refreshed", duration: 1200 });
+              }}
+            >
               <Zap className="h-4 w-4" />
               <span>Power</span>
             </TabsTrigger>

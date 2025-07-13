@@ -544,6 +544,7 @@ Changelog:
 - July 13, 2025. Fixed contest termination cache issue - contest status now updates immediately after manual termination by removing stale cache (staleTime: 0) and adding comprehensive cache invalidation for all contest-related queries
 - July 13, 2025. Implemented comprehensive voting power recalculation system - voting power now recalculates at both contest start and end for maximum fairness and accurate SAMU token reflection
 - July 13, 2025. Enhanced contest lifecycle management - automatic voting power reset when contests begin (for fairness) and when contests end (for clean slate), ensuring real-time token balance reflection
+- July 13, 2025. Implemented comprehensive voting power refresh system - profile page access, voting power card click, Power tab click, and window focus all trigger fresh data fetching with user-friendly toast notifications
 
 ## CHECKPOINT - June 30, 2025
 ```
