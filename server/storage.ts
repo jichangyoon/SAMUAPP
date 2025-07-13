@@ -16,6 +16,7 @@ export interface IStorage {
   // Meme operations
   createMeme(meme: InsertMeme): Promise<Meme>;
   getMemes(): Promise<Meme[]>;
+  getAllMemes(): Promise<Meme[]>;
   getMemeById(id: number): Promise<Meme | undefined>;
   getMemesByContestId(contestId: number): Promise<Meme[]>;
   deleteMeme(id: number): Promise<void>;
@@ -104,6 +105,10 @@ export class MemStorage implements IStorage {
   }
 
   async getMemes(): Promise<Meme[]> {
+    return Array.from(this.memes.values()).sort((a, b) => b.votes - a.votes);
+  }
+
+  async getAllMemes(): Promise<Meme[]> {
     return Array.from(this.memes.values()).sort((a, b) => b.votes - a.votes);
   }
 
@@ -496,6 +501,18 @@ export class DatabaseStorage implements IStorage {
         .orderBy(desc(memes.createdAt))
         .limit(100);
     }
+    
+    return result;
+  }
+
+  async getAllMemes(): Promise<Meme[]> {
+    if (!this.db) throw new Error("Database not available");
+    
+    // Get ALL memes from database (both current and archived contests)
+    const result = await this.db
+      .select()
+      .from(memes)
+      .orderBy(desc(memes.createdAt));
     
     return result;
   }

@@ -101,7 +101,7 @@ const Profile = React.memo(() => {
       queryClient.invalidateQueries({ queryKey: ['user-comments', walletAddress] }),
       queryClient.invalidateQueries({ queryKey: ['user-stats', walletAddress] }),
       queryClient.invalidateQueries({ queryKey: ['voting-power', walletAddress] }),
-      queryClient.invalidateQueries({ queryKey: ['memes'] }),
+      queryClient.invalidateQueries({ queryKey: ['all-memes'] }),
       queryClient.invalidateQueries({ queryKey: ['samu-balance', walletAddress] }),
       queryClient.invalidateQueries({ queryKey: ['sol-balance', walletAddress] })
     ]);
@@ -149,12 +149,12 @@ const Profile = React.memo(() => {
     enabled: !!walletAddress,
   });
 
-  // All memes data to match with user votes
+  // All memes data to match with user votes (including archived)
   const { data: memesResponse } = useQuery({
-    queryKey: ['memes'],
+    queryKey: ['all-memes'],
     queryFn: async () => {
-      const res = await fetch('/api/memes?limit=1000'); // Get all memes for profile
-      if (!res.ok) throw new Error('Failed to fetch memes');
+      const res = await fetch('/api/memes/all'); // Get ALL memes (current + archived)
+      if (!res.ok) throw new Error('Failed to fetch all memes');
       return res.json();
     },
   });

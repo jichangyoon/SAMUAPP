@@ -71,6 +71,25 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Get ALL memes (current + archived) for profile page vote matching
+router.get("/all", async (req, res) => {
+  try {
+    // Set cache headers for better performance
+    res.set('Cache-Control', 'public, max-age=60'); // 1분 브라우저 캐시
+    
+    // Get all memes from database (both current and archived)
+    const allMemes = await storage.getAllMemes();
+    
+    res.json({
+      memes: allMemes,
+      total: allMemes.length
+    });
+  } catch (error) {
+    console.error("Error fetching all memes:", error);
+    res.status(500).json({ message: "Failed to fetch all memes" });
+  }
+});
+
 // Create a new meme
 router.post("/", async (req, res) => {
   try {
