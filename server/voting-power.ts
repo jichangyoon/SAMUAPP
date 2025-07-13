@@ -171,6 +171,44 @@ class VotingPowerManager {
       lastUpdated: user.updatedAt
     }));
   }
+
+  // Reset all users' voting power for new contest
+  async resetAllVotingPowerForNewContest(): Promise<void> {
+    if (!this.db) throw new Error("Database not available");
+    
+    console.log("Resetting all users' voting power for new contest...");
+    
+    const allUsers = await this.db.select().from(users);
+    
+    for (const user of allUsers) {
+      try {
+        // Get current SAMU balance from API
+        const response = await fetch(`http://localhost:5000/api/samu-balance/${user.walletAddress}`);
+        const data = await response.json();
+        const currentBalance = data.balance || 0;
+        
+        // Calculate new voting power
+        const newTotalPower = this.calculateTotalPower(currentBalance);
+        
+        // Update user with new voting power and reset used power
+        await this.db
+          .update(users)
+          .set({
+            totalVotingPower: newTotalPower,
+            usedVotingPower: 0, // Reset used power for new contest
+            samuBalance: currentBalance,
+            updatedAt: new Date()
+          })
+          .where(eq(users.walletAddress, user.walletAddress));
+        
+        console.log(`Updated voting power for ${user.walletAddress}: ${newTotalPower} (balance: ${currentBalance})`);
+      } catch (error) {
+        console.error(`Failed to update voting power for ${user.walletAddress}:`, error);
+      }
+    }
+    
+    console.log("Finished resetting all users' voting power");
+  }
 }
 
 export const votingPowerManager = new VotingPowerManager();
