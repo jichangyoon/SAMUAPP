@@ -354,27 +354,20 @@ export default function Home() {
     setShowVoteDialog(false);
     setSelectedMeme(null);
     
-    // 투표 후 즉시 전체 목록 새로고침 - 정렬 안정성 향상
-    setPage(1);
-    setAllMemes([]);
-    setHasMore(true);
-    
-    // 모든 관련 쿼리 무효화
+    // 투표 후 모든 관련 쿼리 무효화
     await queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
   }, [queryClient]);
 
-  // Listen for new meme uploads and reset pagination
+  // Listen for new meme uploads and refresh data
   useEffect(() => {
     const handleMemeUpload = () => {
-      // Reset pagination when new meme is uploaded
-      setPage(1);
-      setAllMemes([]);
-      setHasMore(true);
+      // Refresh data when new meme is uploaded
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
     };
 
     window.addEventListener('memeUploaded', handleMemeUpload);
     return () => window.removeEventListener('memeUploaded', handleMemeUpload);
-  }, []);
+  }, [queryClient]);
 
   const handleShareClick = useCallback((meme: Meme) => {
     setSelectedMeme(meme);
