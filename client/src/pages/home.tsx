@@ -25,6 +25,95 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Meme } from "@shared/schema";
 import samuLogoImg from "@/assets/samu-logo.webp";
 
+// Real-time archive card component
+function RealTimeArchiveCard({ contest, isConnected, isLoadingContestDetails, onContestClick }: {
+  contest: any;
+  isConnected: boolean;
+  isLoadingContestDetails: boolean;
+  onContestClick: () => void;
+}) {
+  const [realTimeStats, setRealTimeStats] = useState<{
+    participants: number;
+    votes: number;
+    loading: boolean;
+  }>({ participants: 0, votes: 0, loading: false });
+
+  // Calculate real-time statistics if archival stats are 0
+  const needsRealTimeStats = contest.totalParticipants === 0 && contest.totalVotes === 0;
+
+  useEffect(() => {
+    if (needsRealTimeStats) {
+      setRealTimeStats(prev => ({ ...prev, loading: true }));
+      
+      fetch(`/api/memes?contestId=${contest.originalContestId}`)
+        .then(res => res.json())
+        .then(data => {
+          const memes = data.memes || [];
+          const uniqueAuthors = new Set(memes.map((m: any) => m.authorUsername)).size;
+          const totalVotes = memes.reduce((sum: number, m: any) => sum + m.votes, 0);
+          
+          setRealTimeStats({
+            participants: uniqueAuthors,
+            votes: totalVotes,
+            loading: false
+          });
+        })
+        .catch(() => {
+          setRealTimeStats({ participants: 0, votes: 0, loading: false });
+        });
+    }
+  }, [contest.originalContestId, needsRealTimeStats]);
+
+  const displayParticipants = needsRealTimeStats ? realTimeStats.participants : contest.totalParticipants;
+  const displayVotes = needsRealTimeStats ? realTimeStats.votes : contest.totalVotes;
+
+  return (
+    <button
+      onClick={onContestClick}
+      className="w-full"
+      disabled={isLoadingContestDetails}
+    >
+      <Card className={`border-border/50 hover:border-primary/30 transition-colors relative ${!isConnected ? 'opacity-70' : ''} ${isLoadingContestDetails ? 'opacity-50 cursor-not-allowed' : ''}`}>
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="text-left">
+              <h4 className="font-semibold text-foreground">{contest.title}</h4>
+              <p className="text-sm text-muted-foreground">
+                {needsRealTimeStats && realTimeStats.loading ? (
+                  "Loading statistics..."
+                ) : (
+                  <>
+                    {displayParticipants} participants • {displayVotes} votes
+                    {!isConnected && (
+                      <span className="text-primary ml-2">• Login to view</span>
+                    )}
+                  </>
+                )}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {isLoadingContestDetails ? (
+                <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
+              ) : (
+                <>
+                  <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-400/20">
+                    Completed
+                  </Badge>
+                  {!isConnected && (
+                    <Badge variant="outline" className="text-primary border-primary/50">
+                      🔒
+                    </Badge>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </button>
+  );
+}
+
 export default function Home() {
   const [sortBy, setSortBy] = useState("votes");
   const [currentTab, setCurrentTab] = useState("contest");
@@ -607,9 +696,12 @@ export default function Home() {
                     </Card>
                   ) : (
                     (archivedContests as any).map((contest: any) => (
-                      <button
+                      <RealTimeArchiveCard
                         key={contest.id}
-                        onClick={async () => {
+                        contest={contest}
+                        isConnected={isConnected}
+                        isLoadingContestDetails={isLoadingContestDetails}
+                        onContestClick={async () => {
                           if (!isConnected) {
                             toast({
                               title: "Please login first",
@@ -628,12 +720,16 @@ export default function Home() {
                             
                             const memes = memesData.memes || [];
                             
+                            // Calculate real-time statistics
+                            const uniqueAuthors = new Set(memes.map((m: any) => m.authorUsername)).size;
+                            const totalVotes = memes.reduce((sum: number, m: any) => sum + m.votes, 0);
+                            
                             setSelectedArchiveContest({
                               id: contest.originalContestId,
                               title: contest.title,
                               description: contest.description,
-                              participants: contest.totalParticipants,
-                              totalVotes: contest.totalVotes,
+                              participants: contest.totalParticipants || uniqueAuthors,
+                              totalVotes: contest.totalVotes || totalVotes,
                               status: "Completed",
                               winner: {
                                 name: memes.length > 0 ? memes[0].title : "Unknown",
@@ -661,41 +757,7 @@ export default function Home() {
                             setIsLoadingContestDetails(false);
                           }
                         }}
-                        className="w-full"
-                        disabled={isLoadingContestDetails}
-                      >
-                        <Card className={`border-border/50 hover:border-primary/30 transition-colors relative ${!isConnected ? 'opacity-70' : ''} ${isLoadingContestDetails ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div className="text-left">
-                                <h4 className="font-semibold text-foreground">{contest.title}</h4>
-                                <p className="text-sm text-muted-foreground">
-                                  {contest.totalParticipants} participants • {contest.totalVotes} votes
-                                  {!isConnected && (
-                                    <span className="text-primary ml-2">• Login to view</span>
-                                  )}
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                {isLoadingContestDetails ? (
-                                  <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
-                                ) : (
-                                  <>
-                                    <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-400/20">
-                                      Completed
-                                    </Badge>
-                                    {!isConnected && (
-                                      <Badge variant="outline" className="text-primary border-primary/50">
-                                        🔒
-                                      </Badge>
-                                    )}
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </button>
+                      />
                     ))
                   )}
                 </div>
