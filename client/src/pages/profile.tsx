@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send, Trash2, MoreVertical, MessageCircle, Image as ImageIcon } from "lucide-react";
+import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send, Trash2, MoreVertical, MessageCircle, Image as ImageIcon, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
@@ -96,6 +96,39 @@ const Profile = React.memo(() => {
       refetchVotingPower();
     }
   }, [walletAddress, refetchVotingPower]);
+
+  // 수동 새로고침 함수
+  const handleRefresh = useCallback(async () => {
+    if (!walletAddress) return;
+    
+    toast({
+      title: "새로고침 중...",
+      description: "최신 데이터를 가져오는 중입니다",
+      duration: 1000
+    });
+
+    // 모든 쿼리 무효화 및 재요청
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['user-profile', walletAddress] }),
+      queryClient.invalidateQueries({ queryKey: ['user-memes', walletAddress] }),
+      queryClient.invalidateQueries({ queryKey: ['user-votes', walletAddress] }),
+      queryClient.invalidateQueries({ queryKey: ['user-comments', walletAddress] }),
+      queryClient.invalidateQueries({ queryKey: ['user-stats', walletAddress] }),
+      queryClient.invalidateQueries({ queryKey: ['voting-power', walletAddress] }),
+      queryClient.invalidateQueries({ queryKey: ['memes'] }),
+      queryClient.invalidateQueries({ queryKey: ['samu-balance', walletAddress] }),
+      queryClient.invalidateQueries({ queryKey: ['sol-balance', walletAddress] })
+    ]);
+
+    // 투표력 재요청
+    refetchVotingPower();
+
+    toast({
+      title: "새로고침 완료",
+      description: "최신 데이터로 업데이트되었습니다",
+      duration: 1200
+    });
+  }, [walletAddress, queryClient, refetchVotingPower, toast]);
 
   // User memes - 실시간 업데이트를 위한 짧은 캐시
   const { data: userMemes = [] } = useQuery({
@@ -638,7 +671,14 @@ const Profile = React.memo(() => {
               Back
             </Button>
             <h1 className="text-lg font-bold text-foreground">My Profile</h1>
-            <div className="w-16" /> {/* Spacer for centering */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRefresh}
+              className="text-foreground hover:bg-accent"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </header>
