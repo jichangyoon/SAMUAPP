@@ -218,16 +218,10 @@ export default function Home() {
   const displayName = authenticated ? profileData.displayName : 'SAMU';
   const profileImage = profileData.profileImage;
 
-  // 투표 후 캐시 업데이트 함수 (간단화)
+  // 투표 후 캐시 업데이트 함수 (최대한 간단화)
   const handleVoteUpdate = useCallback(async () => {
-    // 투표 관련 캐시만 무효화 (1회만)
+    // 투표력만 업데이트 (밈 목록은 사용자가 수동 새로고침)
     await queryClient.invalidateQueries({ queryKey: ['voting-power'] });
-    await queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
-    
-    // 페이지네이션 리셋
-    setPage(1);
-    setAllMemes([]);
-    setHasMore(true);
   }, [queryClient]);
 
   // 수동 새로고침 함수
@@ -286,6 +280,9 @@ export default function Home() {
 
       setSelectedMeme(null);
 
+      // 그리드 투표 후에도 동일한 캐시 업데이트 사용
+      await handleVoteUpdate();
+
     } catch (error: any) {
       toast({
         title: "Voting Failed",
@@ -295,7 +292,7 @@ export default function Home() {
     } finally {
       setIsVoting(false);
     }
-  }, [isConnected, walletAddress, toast, queryClient]);
+  }, [isConnected, walletAddress, toast, handleVoteUpdate]);
 
   // Share functions - memoized
   const shareToTwitter = useCallback((meme: Meme) => {
@@ -359,8 +356,8 @@ export default function Home() {
       return response.json();
     },
     enabled: true,
-    staleTime: 5000, // 5초 캐시 (모든 정렬에 동일 적용)
-    gcTime: 30000, // 30초 가비지 컬렉션
+    staleTime: 30000, // 30초 캐시 (자동 업데이트 줄이기)
+    gcTime: 60000, // 1분 가비지 컬렉션
   });
 
   // Update memes list when new data arrives - 정렬 충돌 방지
