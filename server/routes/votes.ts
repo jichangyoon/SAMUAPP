@@ -10,26 +10,33 @@ const router = Router();
 router.post("/:id/vote", async (req, res) => {
   try {
     const memeId = parseInt(req.params.id);
-    const { voterWallet, votingPower } = req.body;
+    const { voterWallet, votingPower, powerUsed } = req.body;
+
+    // 투표력 검증
+    if (!powerUsed || powerUsed < 1) {
+      return res.status(400).json({ message: "Power used must be at least 1" });
+    }
+
+    // 현재 투표력 확인
+    const votingPowerData = await votingPowerManager.getVotingPower(voterWallet);
+    if (!votingPowerData || votingPowerData.remainingPower < powerUsed) {
+      return res.status(400).json({ message: "Insufficient voting power" });
+    }
 
     const voteData = insertVoteSchema.parse({
       memeId,
       voterWallet,
-      votingPower
+      votingPower,
+      powerUsed
     });
-
-    // Check if user already voted
-    const hasVoted = await storage.hasUserVoted(memeId, voterWallet);
-    if (hasVoted) {
-      return res.status(400).json({ message: "You have already voted on this meme" });
-    }
 
     const vote = await storage.createVote(voteData);
     
-    // Update voting power - deduct 1 voting power for each vote
-    const powerUsed = await votingPowerManager.useVotingPower(voterWallet, 1);
-    if (!powerUsed) {
+    // Update voting power - deduct the actual power used
+    const powerDeducted = await votingPowerManager.useVotingPower(voterWallet, powerUsed);
+    if (!powerDeducted) {
       console.error('Failed to deduct voting power for wallet:', voterWallet);
+      return res.status(500).json({ message: "Failed to update voting power" });
     }
     
     const updatedMeme = await storage.getMemeById(memeId);

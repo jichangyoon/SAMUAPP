@@ -572,7 +572,11 @@ export class DatabaseStorage implements IStorage {
     if (!this.db) throw new Error("Database not available");
     
     const memeVotes = await this.getVotesByMemeId(memeId);
-    const totalVotes = memeVotes.reduce((sum, vote) => sum + vote.votingPower, 0);
+    // Use powerUsed if available, otherwise fall back to votingPower for compatibility
+    const totalVotes = memeVotes.reduce((sum, vote) => {
+      const powerUsed = (vote as any).powerUsed || vote.votingPower;
+      return sum + powerUsed;
+    }, 0);
     
     await this.db
       .update(memes)
@@ -747,7 +751,11 @@ export class DatabaseStorage implements IStorage {
       .from(partnerVotes)
       .where(and(eq(partnerVotes.partnerId, partnerId), eq(partnerVotes.memeId, memeId)));
     
-    const totalVotes = partnerVotesList.reduce((sum, vote) => sum + vote.votingPower, 0);
+    // Use powerUsed if available, otherwise fall back to votingPower for compatibility
+    const totalVotes = partnerVotesList.reduce((sum, vote) => {
+      const powerUsed = (vote as any).powerUsed || vote.votingPower;
+      return sum + powerUsed;
+    }, 0);
     
     await this.db
       .update(partnerMemes)

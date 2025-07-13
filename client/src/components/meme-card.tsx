@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
+import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { usePrivy } from '@privy-io/react-auth';
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +29,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
+  const [voteAmount, setVoteAmount] = useState(1);
   const { authenticated, user } = usePrivy();
   const queryClient = useQueryClient();
   
@@ -72,10 +76,10 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
     }
 
     // Check if user has enough voting power
-    if (remainingVotingPower < 1) {
+    if (remainingVotingPower < voteAmount) {
       toast({
         title: "Insufficient Voting Power",
-        description: "You don't have enough voting power to vote.",
+        description: `You need ${voteAmount} voting power but only have ${remainingVotingPower}.`,
         variant: "destructive",
       });
       return;
@@ -86,12 +90,13 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
     try {
       await apiRequest("POST", `/api/memes/${meme.id}/vote`, {
         voterWallet: walletAddress,
-        votingPower: 1, // Each vote uses 1 voting power
+        votingPower: remainingVotingPower,
+        powerUsed: voteAmount
       });
 
       toast({
         title: "Vote Submitted!",
-        description: "Your vote has been recorded successfully.",
+        description: `Used ${voteAmount} voting power on this meme.`,
         duration: 1000
       });
 
@@ -106,7 +111,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
     } catch (error: any) {
       toast({
         title: "Voting Failed",
-        description: error.message || "Failed to submit vote. You may have already voted on this meme.",
+        description: error.message || "Failed to submit vote. Please try again.",
         variant: "destructive",
         duration: 1000
       });
@@ -259,13 +264,54 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
           </DrawerHeader>
 
           <div className="px-4 pb-4 overflow-y-auto flex-1">
-            <div className="bg-accent rounded-lg p-4">
+            <div className="bg-accent rounded-lg p-4 mb-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Your voting power:</span>
+                <span className="text-sm text-muted-foreground">Your remaining voting power:</span>
                 <span className="font-semibold text-primary">{remainingVotingPower.toLocaleString()}</span>
               </div>
               <div className="text-xs text-muted-foreground">
-                Each vote uses 1 voting power
+                You can allocate any amount of your voting power to this meme
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="vote-amount" className="text-sm font-medium text-foreground">
+                  Voting Power to Use: {voteAmount}
+                </Label>
+                <div className="mt-2">
+                  <Slider
+                    id="vote-amount"
+                    min={1}
+                    max={Math.max(1, remainingVotingPower)}
+                    step={1}
+                    value={[voteAmount]}
+                    onValueChange={(value) => setVoteAmount(value[0])}
+                    className="w-full"
+                  />
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                  <span>1</span>
+                  <span>{remainingVotingPower}</span>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="vote-input" className="text-sm font-medium text-foreground">
+                  Or enter amount directly:
+                </Label>
+                <Input
+                  id="vote-input"
+                  type="number"
+                  min={1}
+                  max={remainingVotingPower}
+                  value={voteAmount}
+                  onChange={(e) => {
+                    const value = Math.max(1, Math.min(remainingVotingPower, parseInt(e.target.value) || 1));
+                    setVoteAmount(value);
+                  }}
+                  className="mt-1"
+                />
               </div>
             </div>
           </div>
