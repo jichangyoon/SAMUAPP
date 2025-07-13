@@ -21,6 +21,19 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://www.jitpack.io' }
+    }
+    
+    // Force Java 17 compatibility for all modules
+    tasks.withType(JavaCompile) {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+        kotlinOptions {
+            jvmTarget = "17"
+        }
     }
 }
 
@@ -33,6 +46,13 @@ subprojects {
                     sourceCompatibility JavaVersion.VERSION_17
                     targetCompatibility JavaVersion.VERSION_17
                 }
+            }
+        }
+        
+        // Force Kotlin to use Java 17 target
+        tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+            kotlinOptions {
+                jvmTarget = "17"
             }
         }
     }
