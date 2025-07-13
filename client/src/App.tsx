@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { PrivyProvider } from '@privy-io/react-auth';
 import { useEffect, useState } from 'react';
-import * as React from 'react';
+
 import Home from "@/pages/home";
 import Profile from "@/pages/profile";
 import { Partners } from "@/pages/partners";
@@ -32,7 +32,7 @@ window.addEventListener('unhandledrejection', (event) => {
   }
 });
 
-const Router = React.memo(() => {
+function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
@@ -46,7 +46,7 @@ const Router = React.memo(() => {
       <Route component={NotFound} />
     </Switch>
   );
-});
+}
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);

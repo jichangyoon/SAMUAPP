@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ interface UserProfileProps {
   solBalance: number;
 }
 
-export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalance }: UserProfileProps) => {
+export function UserProfile({ isOpen, onClose, samuBalance, solBalance }: UserProfileProps) {
   const { user } = usePrivy();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -240,6 +240,4 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
       </DialogContent>
     </Dialog>
   );
-});
-
-UserProfile.displayName = "UserProfile";
+}
