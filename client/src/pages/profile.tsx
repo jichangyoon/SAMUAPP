@@ -148,35 +148,6 @@ const Profile = memo(() => {
     });
   }, [votingPowerData, toast]);
 
-  // Voting power refresh handler
-  const handleVotingPowerRefresh = useCallback(async () => {
-    if (!walletAddress) return;
-    
-    toast({
-      title: "Updating voting power...",
-      description: "Fetching latest data",
-      duration: 800
-    });
-
-    try {
-      // Refresh voting power data
-      await queryClient.invalidateQueries({ queryKey: ['voting-power', walletAddress] });
-      
-      toast({
-        title: "Voting power updated",
-        description: "Latest data has been fetched",
-        duration: 1200
-      });
-    } catch (error) {
-      console.error('Voting power refresh error:', error);
-      toast({
-        title: "Update completed",
-        description: "Data may still be updating",
-        duration: 1200
-      });
-    }
-  }, [walletAddress, queryClient, toast]);
-
   // User memes
   const { data: userMemes = [] } = useQuery({
     queryKey: ['user-memes', walletAddress],
@@ -1200,26 +1171,17 @@ const Profile = memo(() => {
               </CardHeader>
               <CardContent className="flex-1 overflow-y-auto space-y-3">
                 <div className="grid grid-cols-2 gap-3">
-                  <div 
-                    className="text-center bg-accent/30 rounded-lg p-3 cursor-pointer hover:bg-accent/50 transition-colors"
-                    onClick={handleVotingPowerRefresh}
-                  >
+                  <div className="text-center bg-accent/30 rounded-lg p-3">
                     <div className="text-lg font-bold text-green-400">{votingPowerData?.totalPower?.toLocaleString() || '0'}</div>
                     <div className="text-xs text-muted-foreground">Total Power</div>
                   </div>
-                  <div 
-                    className="text-center bg-accent/30 rounded-lg p-3 cursor-pointer hover:bg-accent/50 transition-colors"
-                    onClick={handleVotingPowerRefresh}
-                  >
+                  <div className="text-center bg-accent/30 rounded-lg p-3">
                     <div className="text-lg font-bold text-red-400">{votingPowerData?.usedPower?.toLocaleString() || '0'}</div>
                     <div className="text-xs text-muted-foreground">Used Power</div>
                   </div>
                 </div>
 
-                <div 
-                  className="cursor-pointer hover:bg-accent/30 rounded-lg p-3 transition-colors"
-                  onClick={handleVotingPowerRefresh}
-                >
+                <div>
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-muted-foreground">Remaining Power</span>
                     <span className="text-sm font-medium text-foreground">
@@ -1236,7 +1198,6 @@ const Profile = memo(() => {
                   <p>• Voting power is based on your SAMU token balance</p>
                   <p>• Each vote consumes voting power</p>
                   <p>• Power resets when the contest ends</p>
-                  <p>• <strong>Tap any card above to refresh</strong></p>
                 </div>
               </CardContent>
             </Card>
