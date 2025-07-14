@@ -1,0 +1,877 @@
+Running with gitlab-runner 14.10.1 (f761588f)
+  on Ionic Package Android Runner 8edcfcad
+Preparing the "kubernetes" executor
+Using Kubernetes namespace: ionic-runners
+Using Kubernetes executor with image 319312831725.dkr.ecr.us-west-2.amazonaws.com/appflow-runners/linux:2025.01 ...
+Using attach strategy to execute scripts...
+Preparing environment
+Waiting for pod ionic-runners/runner-8edcfcad-project-0-concurrent-11shnkm to be running, status is Pending
+Running on runner-8edcfcad-project-0-concurrent-11shnkm via gitlab-runner-57c5549486-866f4...
+
+Getting source from Git repository
+$ pre-clone
+[13:23:56]: Cloning repository...
+Fetching changes...
+Initialized empty Git repository in /builds/jichangyoon/samuapp/.git/
+Created fresh repository.
+Checking out 16dc3ad9 as main...
+
+Updating/initializing submodules...
+$ setup-fastlane
+[13:23:57]: Cloning complete...
+Fetching latest build process code...
+Cloning into '/builds/appflow-runners'...
+
+Executing "step_script" stage of the job script
+$ pre-build
+[13:23:59]: Building project....
+$ run "fetch-updates"
+Checking for build process updates...
+$ run "build-android"
+[13:24:03]: ---------------------------------
+[13:24:03]: --- Step: add_extra_platforms ---
+[13:24:03]: ---------------------------------
+[13:24:03]: Setting '[:web]' as extra SupportedPlatforms
+/builds/jichangyoon/samuapp/fastlane/outsystems/errors/detectors/pdm_plugins.rb:8: warning: character class has '-' without escape
+/builds/jichangyoon/samuapp/fastlane/outsystems/errors/detectors/pdm_plugins.rb:15: warning: character class has '-' without escape
+[13:24:03]: ------------------------------
+[13:24:03]: --- Step: default_platform ---
+[13:24:03]: ------------------------------
+[13:24:03]: Driving the lane 'android build_capacitor' 🚀
+[13:24:03]: ---------------------------------
+[13:24:03]: --- Step: prepare_environment ---
+[13:24:03]: ---------------------------------
+[13:24:03]: Setting default environment variables to tidy up logs. These can be overridden by setting them in Appflow.
+[13:24:03]: 
+[13:24:03]: Set COREPACK_ENABLE_AUTO_PIN=0 (Suppress yarn warnings)
+[13:24:03]: -------------------------
+[13:24:03]: --- Step: sentry_init ---
+[13:24:03]: -------------------------
+[13:24:03]: ----------------------------
+[13:24:03]: --- Step: begin_building ---
+[13:24:03]: ----------------------------
+[13:24:03]: Began building @ 2025-07-14T13:24:03
+[13:24:03]: ---------------------------
+[13:24:03]: --- Step: build_summary ---
+[13:24:03]: ---------------------------
+
++---------------------------------------------------+
+|                   Build Summary                   |
++---------------------+-----------------------------+
+| Runners Revision    | f9ed312                     |
+| Job ID              | 10296138                    |
+| Node.js version     | v20.18.2                    |
+| Cordova CLI version | 12.0.0 (cordova-lib@12.0.2) |
+| npm version         | 10.8.2                      |
+| yarn version        | 1.22.22                     |
++---------------------+-----------------------------+
+
+[13:24:05]: No build credential specified
+[13:24:05]: ---------------------------
+[13:24:05]: --- Step: set_ionic_cli ---
+[13:24:05]: ---------------------------
+[13:24:06]: Preinstalled @ionic/cli compatible with project `custom`
+[13:24:06]: ------------------------------------
+[13:24:06]: --- Step: detect_package_manager ---
+[13:24:06]: ------------------------------------
+[13:24:06]: Detecting package manager
+[13:24:06]: Defaulting to npm
+[13:24:06]: ---------------------------------
+[13:24:06]: --- Step: add_git_credentials ---
+[13:24:06]: ---------------------------------
+[13:24:06]: Writing git-credentials files
+[13:24:06]: git-credentials successfully added to project
+[13:24:06]: --------------------------------
+[13:24:06]: --- Step: get_appflow_config ---
+[13:24:06]: --------------------------------
+[13:24:06]: Checking for appflow.config.json
+[13:24:06]: Appflow config not detected
+[13:24:06]: --------------------------------
+[13:24:06]: --- Step: dependency_install ---
+[13:24:06]: --------------------------------
+[13:24:06]: Installing Dependencies (in /builds/jichangyoon/samuapp)
+[13:24:06]: $ npm ci --quiet 
+[13:24:23]: ▸ npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+[13:24:23]: ▸ npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+[13:24:24]: ▸ npm warn deprecated @paulmillr/qr@0.2.1: The package is now available as "qr": npm install qr
+[13:24:26]: ▸ npm warn deprecated @walletconnect/modal@2.7.0: Please follow the migration guide on https://docs.reown.com/appkit/upgrade/wcm
+[13:24:29]: ▸ npm warn deprecated @motionone/vue@10.16.4: Motion One for Vue is deprecated. Use Oku Motion instead https://oku-ui.com/motion
+[13:26:10]: ▸ added 1190 packages, and audited 1191 packages in 2m
+[13:26:10]: ▸ 170 packages are looking for funding
+[13:26:10]: ▸ run `npm fund` for details
+[13:26:10]: ▸ 11 vulnerabilities (1 low, 6 moderate, 4 high)
+[13:26:10]: ▸ To address issues that do not require attention, run:
+[13:26:10]: ▸ npm audit fix
+[13:26:10]: ▸ To address all issues (including breaking changes), run:
+[13:26:10]: ▸ npm audit fix --force
+[13:26:10]: ▸ Run `npm audit` for details.
+[13:26:10]: -------------------------------------
+[13:26:10]: --- Step: create_capacitor_config ---
+[13:26:10]: -------------------------------------
+[13:26:11]: Created capacitor.config.json from capacitor.config.ts/js
+[13:26:11]: -------------------------
+[13:26:11]: --- Step: get_web_dir ---
+[13:26:11]: -------------------------
+[13:26:11]: webDir is `dist/public`
+[13:26:11]: -----------------------------------
+[13:26:11]: --- Step: modify_cap_web_config ---
+[13:26:11]: -----------------------------------
+[13:26:11]: No custom native config detected.
+[13:26:11]: ---------------------------
+[13:26:11]: --- Step: set_java_home ---
+[13:26:11]: ---------------------------
+[13:26:11]: Try to detect the android gradle plugin version
+[13:26:12]: Project Android Gradle Plug-in version is 8.1.4: set Java to 17
+[13:26:12]: ---------------------------
+[13:26:12]: --- Step: build_pro_app ---
+[13:26:12]: ---------------------------
+[13:26:12]: Building app from /builds/jichangyoon/samuapp
+[13:26:12]: Build script detected...
+[13:26:12]: $ npm run build
+[13:26:12]: ▸ > rest-express@1.0.0 build
+[13:26:12]: ▸ > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+[13:26:12]: ▸ vite v5.4.14 building for production...
+[13:26:12]: ▸ transforming...
+[13:26:13]: ▸ Browserslist: browsers data (caniuse-lite) is 9 months old. Please run:
+[13:26:13]: ▸ npx update-browserslist-db@latest
+[13:26:13]: ▸ Why you should do it regularly: https://github.com/browserslist/update-db#readme
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (1:29374): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (1:33970): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (1:34814): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (1:35799): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (1:53940): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (1:90726): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (1:105127): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (1:105423): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (1:141558): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (2:794): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (4:287): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (4:1401): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (4:4071): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (4:17991): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (4:18127): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (5:269): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (6:3510): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (6:4496): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (6:4705): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (6:4946): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (7:325): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (7:482): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (7:2623): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (8:11609): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (8:15072): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (8:15751): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (8:24503): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (10:13354): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (10:16427): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (10:16605): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (10:16784): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (11:1644): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (11:3988): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (11:6422): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (12:1291): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (12:3759): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (12:6539): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (12:9505): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (12:12904): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (12:15609): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (12:20775): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (12:25385): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (14:1968): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (14:4573): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (14:5649): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (15:692): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (15:831): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (15:1390): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (15:2341): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (15:2807): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (16:1027): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:2251): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:16223): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:16310): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:16792): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:23395): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:24934): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:25432): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:30227): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:31416): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:32719): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:39952): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (17:41706): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (18:5808): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (18:8375): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (18:16637): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:416): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:7559): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:8414): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:11241): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:13102): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:16449): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:20446): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:22294): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:52824): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:52869): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (19:53122): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (20:3634): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (20:5192): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (20:11747): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (20:19187): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (22:517): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (22:5793): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (22:6122): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (22:6680): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (22:11519): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (22:12316): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (22:12640): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (22:13439): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (22:17317): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (22:23476): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (23:6823): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (23:12249): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:925): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:11267): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:20227): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:21020): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:27930): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:28833): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:39813): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:50627): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:55218): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:55501): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:57977): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (24:62466): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (25:1702): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (25:2580): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (25:4662): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (25:9874): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:2318): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:3198): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:3712): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:4924): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:6335): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:9238): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:13661): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:18898): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:21565): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:21783): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:22356): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:23019): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:23729): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:30381): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:31575): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (26:35611): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:16]: ▸ node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs (27:64587): A comment
+[13:26:16]: ▸ "/*#__PURE__*/"
+[13:26:16]: ▸ in "node_modules/@privy-io/react-auth/dist/esm/privy-provider-B2wDQG1e.mjs" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:30]: ▸ node_modules/ox/_esm/core/Address.js (6:21): A comment
+[13:26:30]: ▸ "/*#__PURE__*/"
+[13:26:30]: ▸ in "node_modules/ox/_esm/core/Address.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:30]: ▸ node_modules/ox/_esm/core/internal/cursor.js (2:21): A comment
+[13:26:30]: ▸ "/*#__PURE__*/"
+[13:26:30]: ▸ in "node_modules/ox/_esm/core/internal/cursor.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:34]: ▸ node_modules/@walletconnect/utils/node_modules/ox/_esm/core/Address.js (6:21): A comment
+[13:26:34]: ▸ "/*#__PURE__*/"
+[13:26:34]: ▸ in "node_modules/@walletconnect/utils/node_modules/ox/_esm/core/Address.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:34]: ▸ node_modules/@walletconnect/utils/node_modules/ox/_esm/core/internal/cursor.js (2:21): A comment
+[13:26:34]: ▸ "/*#__PURE__*/"
+[13:26:34]: ▸ in "node_modules/@walletconnect/utils/node_modules/ox/_esm/core/internal/cursor.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:36]: ▸ node_modules/@walletconnect/universal-provider/node_modules/ox/_esm/core/Address.js (6:21): A comment
+[13:26:36]: ▸ "/*#__PURE__*/"
+[13:26:36]: ▸ in "node_modules/@walletconnect/universal-provider/node_modules/ox/_esm/core/Address.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:36]: ▸ node_modules/@walletconnect/universal-provider/node_modules/ox/_esm/core/internal/cursor.js (2:21): A comment
+[13:26:36]: ▸ "/*#__PURE__*/"
+[13:26:36]: ▸ in "node_modules/@walletconnect/universal-provider/node_modules/ox/_esm/core/internal/cursor.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[13:26:51]: ▸ ✓ 6103 modules transformed.
+[13:26:53]: ▸ rendering chunks...
+[13:26:55]: ▸ computing gzip size...
+[13:26:55]: ▸ ../dist/public/index.html                                        3.02 kB │ gzip:   1.23 kB
+[13:26:55]: ▸ ../dist/public/assets/splash-screen-B6KGqzQe.jpg                12.99 kB
+[13:26:55]: ▸ ../dist/public/assets/doctorbird-logo-EzZeiTDK.webp             35.37 kB
+[13:26:55]: ▸ ../dist/public/assets/samu-logo-ZdRBbV3B.webp                   41.76 kB
+[13:26:55]: ▸ ../dist/public/assets/samu-samurai-shirt-DKnLUO4S.webp         624.25 kB
+[13:26:55]: ▸ ../dist/public/assets/index-CJa3r7Pf.css                        53.62 kB │ gzip:   9.84 kB
+[13:26:55]: ▸ ../dist/public/assets/ConstantsUtil-Dmg8YACJ.js                  0.09 kB │ gzip:   0.11 kB
+[13:26:55]: ▸ ../dist/public/assets/cursor-B3idXTsv.js                         0.23 kB │ gzip:   0.21 kB
+[13:26:55]: ▸ ../dist/public/assets/circle-Bb_1ffdP.js                         0.27 kB │ gzip:   0.22 kB
+[13:26:55]: ▸ ../dist/public/assets/index-BEIt6C7z.js                          0.34 kB │ gzip:   0.24 kB
+[13:26:55]: ▸ ../dist/public/assets/web-CsdeOr9B.js                            0.36 kB │ gzip:   0.25 kB
+[13:26:55]: ▸ ../dist/public/assets/chevron-left-DMmbDBkG.js                   0.37 kB │ gzip:   0.27 kB
+[13:26:55]: ▸ ../dist/public/assets/chevron-top-U3pmL0XF.js                    0.37 kB │ gzip:   0.26 kB
+[13:26:55]: ▸ ../dist/public/assets/external-link-DMaX_-lX.js                  0.37 kB │ gzip:   0.27 kB
+[13:26:55]: ▸ ../dist/public/assets/chevron-bottom-DpEIPSmQ.js                 0.37 kB │ gzip:   0.27 kB
+[13:26:55]: ▸ ../dist/public/assets/chevron-right-C-j4tb_8.js                  0.37 kB │ gzip:   0.26 kB
+[13:26:55]: ▸ ../dist/public/assets/web-CxTJiESU.js                            0.38 kB │ gzip:   0.25 kB
+[13:26:55]: ▸ ../dist/public/assets/arrow-top-BETltnD_.js                      0.38 kB │ gzip:   0.27 kB
+[13:26:55]: ▸ ../dist/public/assets/arrow-bottom-doDl3YJt.js                   0.38 kB │ gzip:   0.27 kB
+[13:26:55]: ▸ ../dist/public/assets/arrow-left-CrOtXVH-.js                     0.38 kB │ gzip:   0.27 kB
+[13:26:55]: ▸ ../dist/public/assets/arrow-right-Cmct0CJk.js                    0.39 kB │ gzip:   0.28 kB
+[13:26:55]: ▸ ../dist/public/assets/search-CqOXc9OY.js                         0.41 kB │ gzip:   0.28 kB
+[13:26:55]: ▸ ../dist/public/assets/close-CiZE4cHo.js                          0.41 kB │ gzip:   0.28 kB
+[13:26:55]: ▸ ../dist/public/assets/all-wallets-D3gL8tHl.js                    0.42 kB │ gzip:   0.25 kB
+[13:26:55]: ▸ ../dist/public/assets/filters-BR8a3r_a.js                        0.42 kB │ gzip:   0.26 kB
+[13:26:55]: ▸ ../dist/public/assets/info-circle-Vb1eoPkC.js                    0.44 kB │ gzip:   0.28 kB
+[13:26:55]: ▸ ../dist/public/assets/more-8rz6weWM.js                           0.46 kB │ gzip:   0.29 kB
+[13:26:55]: ▸ ../dist/public/assets/refresh-CDUozq0c.js                        0.46 kB │ gzip:   0.31 kB
+[13:26:55]: ▸ ../dist/public/assets/warning-circle-Bw5ODOYp.js                 0.47 kB │ gzip:   0.30 kB
+[13:26:55]: ▸ ../dist/public/assets/coinPlaceholder-C1QNpc22.js                0.47 kB │ gzip:   0.34 kB
+[13:26:55]: ▸ ../dist/public/assets/compass-Ave80cm_.js                        0.49 kB │ gzip:   0.33 kB
+[13:26:55]: ▸ ../dist/public/assets/swapVertical-4zXPXrO4.js                   0.52 kB │ gzip:   0.33 kB
+[13:26:55]: ▸ ../dist/public/assets/swapHorizontal-DAMNW1VU.js                 0.52 kB │ gzip:   0.32 kB
+[13:26:55]: ▸ ../dist/public/assets/x-CT6Y2Ro1.js                              0.54 kB │ gzip:   0.38 kB
+[13:26:55]: ▸ ../dist/public/assets/index-Cn5aGd7v.js                          0.55 kB │ gzip:   0.32 kB
+[13:26:55]: ▸ ../dist/public/assets/cursor-transparent-DJecqG2p.js             0.55 kB │ gzip:   0.34 kB
+[13:26:55]: ▸ ../dist/public/assets/twitterIcon-CulsUHN3.js                    0.55 kB │ gzip:   0.36 kB
+[13:26:55]: ▸ ../dist/public/assets/mobile-CSWaRd3_.js                         0.56 kB │ gzip:   0.31 kB
+[13:26:55]: ▸ ../dist/public/assets/checkmark-bold-C_oQHpYF.js                 0.62 kB │ gzip:   0.42 kB
+[13:26:55]: ▸ ../dist/public/assets/etherscan-CaWBnTEO.js                      0.67 kB │ gzip:   0.43 kB
+[13:26:55]: ▸ ../dist/public/assets/checkmark-DddU6gQ9.js                      0.68 kB │ gzip:   0.45 kB
+[13:26:55]: ▸ ../dist/public/assets/help-circle-CvdBG19s.js                    0.68 kB │ gzip:   0.41 kB
+[13:26:55]: ▸ ../dist/public/assets/wallet-BbVDXRcK.js                         0.69 kB │ gzip:   0.40 kB
+[13:26:55]: ▸ ../dist/public/assets/plus-B0OdRirr.js                           0.73 kB │ gzip:   0.41 kB
+[13:26:55]: ▸ ../dist/public/assets/verify-filled-CxyeekUM.js                  0.74 kB │ gzip:   0.45 kB
+[13:26:55]: ▸ ../dist/public/assets/add-pnYLb2Uo.js                            0.74 kB │ gzip:   0.41 kB
+[13:26:55]: ▸ ../dist/public/assets/x-mark-OY3AuCxq.js                         0.77 kB │ gzip:   0.42 kB
+[13:26:55]: ▸ ../dist/public/assets/google-BcDpJ9i5.js                         0.78 kB │ gzip:   0.44 kB
+[13:26:55]: ▸ ../dist/public/assets/three-dots-BK4QOs3v.js                     0.81 kB │ gzip:   0.39 kB
+[13:26:55]: ▸ ../dist/public/assets/clock-3B8kcaW3.js                          0.81 kB │ gzip:   0.46 kB
+[13:26:55]: ▸ ../dist/public/assets/disconnect-DRO2x8Ag.js                     0.86 kB │ gzip:   0.49 kB
+[13:26:55]: ▸ ../dist/public/assets/twitch-lBb20Pjl.js                         0.87 kB │ gzip:   0.48 kB
+[13:26:55]: ▸ ../dist/public/assets/bank-BdQP54zo.js                           0.91 kB │ gzip:   0.51 kB
+[13:26:55]: ▸ ../dist/public/assets/apple-ByU5-Aef.js                          0.93 kB │ gzip:   0.51 kB
+[13:26:55]: ▸ ../dist/public/assets/ref-CCT3wHMe.js                            0.97 kB │ gzip:   0.52 kB
+[13:26:55]: ▸ ../dist/public/assets/play-store-DZuS9CGv.js                     0.98 kB │ gzip:   0.50 kB
+[13:26:55]: ▸ ../dist/public/assets/farcaster-CsrtY8Ry.js                      0.99 kB │ gzip:   0.52 kB
+[13:26:55]: ▸ ../dist/public/assets/off-BluDGErJ.js                            1.03 kB │ gzip:   0.54 kB
+[13:26:55]: ▸ ../dist/public/assets/ethereum-CKVlhBNk.js                       1.06 kB │ gzip:   0.43 kB
+[13:26:55]: ▸ ../dist/public/assets/arrow-bottom-circle-CMphOtOV.js            1.10 kB │ gzip:   0.51 kB
+[13:26:55]: ▸ ../dist/public/assets/github-CCiPb-wR.js                         1.10 kB │ gzip:   0.58 kB
+[13:26:55]: ▸ ../dist/public/assets/transactions-BS6E5-4x.js                   1.13 kB │ gzip:   0.64 kB
+[13:26:55]: ▸ ../dist/public/assets/swapHorizontalBold-DiFLseXH.js             1.13 kB │ gzip:   0.60 kB
+[13:26:55]: ▸ ../dist/public/assets/app-store-DUu1qyZu.js                      1.17 kB │ gzip:   0.66 kB
+[13:26:55]: ▸ ../dist/public/assets/mail-DauK4rAW.js                           1.18 kB │ gzip:   0.64 kB
+[13:26:55]: ▸ ../dist/public/assets/index-DJYEVSw5.js                          1.19 kB │ gzip:   0.68 kB
+[13:26:55]: ▸ ../dist/public/assets/facebook-DfbQxqR2.js                       1.20 kB │ gzip:   0.63 kB
+[13:26:55]: ▸ ../dist/public/assets/wallet-placeholder-Cn2bsEdr.js             1.23 kB │ gzip:   0.58 kB
+[13:26:55]: ▸ ../dist/public/assets/desktop-DDKu4wHJ.js                        1.24 kB │ gzip:   0.63 kB
+[13:26:55]: ▸ ../dist/public/assets/discord-fvTfqhF_.js                        1.27 kB │ gzip:   0.64 kB
+[13:26:55]: ▸ ../dist/public/assets/swapHorizontalMedium-DpcO2vum.js           1.27 kB │ gzip:   0.66 kB
+[13:26:55]: ▸ ../dist/public/assets/recycle-horizontal-CWs6txdg.js             1.32 kB │ gzip:   0.68 kB
+[13:26:55]: ▸ ../dist/public/assets/extension-M8ZY8J2I.js                      1.40 kB │ gzip:   0.68 kB
+[13:26:55]: ▸ ../dist/public/assets/index-BW773MuN.js                          1.42 kB │ gzip:   0.73 kB
+[13:26:55]: ▸ ../dist/public/assets/index-BGmo-uCJ.js                          1.42 kB │ gzip:   0.71 kB
+[13:26:55]: ▸ ../dist/public/assets/telegram-DxzoSZrL.js                       1.42 kB │ gzip:   0.82 kB
+[13:26:55]: ▸ ../dist/public/assets/swapHorizontalRoundedBold-DbrSMo4j.js      1.43 kB │ gzip:   0.75 kB
+[13:26:55]: ▸ ../dist/public/assets/verify-BbTtfINb.js                         1.44 kB │ gzip:   0.69 kB
+[13:26:55]: ▸ ../dist/public/assets/index-RtbwFgb1.js                          1.47 kB │ gzip:   0.78 kB
+[13:26:55]: ▸ ../dist/public/assets/qr-code-DjysY1wz.js                        1.49 kB │ gzip:   0.51 kB
+[13:26:55]: ▸ ../dist/public/assets/browser-M28Sjp8m.js                        1.55 kB │ gzip:   0.77 kB
+[13:26:55]: ▸ ../dist/public/assets/network-placeholder-CpKJawO9.js            1.62 kB │ gzip:   0.72 kB
+[13:26:55]: ▸ ../dist/public/assets/index-82aFRiaR.js                          1.63 kB │ gzip:   0.78 kB
+[13:26:55]: ▸ ../dist/public/assets/index-Cf75jBa6.js                          1.69 kB │ gzip:   0.92 kB
+[13:26:55]: ▸ ../dist/public/assets/id-PmdZW3s4.js                             1.72 kB │ gzip:   0.79 kB
+[13:26:55]: ▸ ../dist/public/assets/nftPlaceholder-DufZapWT.js                 1.72 kB │ gzip:   0.85 kB
+[13:26:55]: ▸ ../dist/public/assets/bin-BHPWt7gI.js                            1.73 kB │ gzip:   0.86 kB
+[13:26:55]: ▸ ../dist/public/assets/index-Bzi_DNjq.js                          1.78 kB │ gzip:   0.85 kB
+[13:26:55]: ▸ ../dist/public/assets/index-DL1X3_i9.js                          1.96 kB │ gzip:   0.86 kB
+[13:26:55]: ▸ ../dist/public/assets/index-rwoXuNvm.js                          2.00 kB │ gzip:   0.82 kB
+[13:26:55]: ▸ ../dist/public/assets/bitcoin-B-aNwZ3c.js                        2.01 kB │ gzip:   1.09 kB
+[13:26:55]: ▸ ../dist/public/assets/info-MFh1RxiO.js                           2.23 kB │ gzip:   1.12 kB
+[13:26:55]: ▸ ../dist/public/assets/index-D2s1aagl.js                          2.29 kB │ gzip:   0.89 kB
+[13:26:55]: ▸ ../dist/public/assets/exclamation-triangle-B89eqHen.js           2.39 kB │ gzip:   1.11 kB
+[13:26:55]: ▸ ../dist/public/assets/send-CzcdyoC-.js                           2.39 kB │ gzip:   1.26 kB
+[13:26:55]: ▸ ../dist/public/assets/solana-CoAYZ8Z8.js                         2.51 kB │ gzip:   1.19 kB
+[13:26:55]: ▸ ../dist/public/assets/card-DuHTzBeq.js                           2.56 kB │ gzip:   1.15 kB
+[13:26:55]: ▸ ../dist/public/assets/chrome-store-hNM_4BrY.js                   2.56 kB │ gzip:   1.00 kB
+[13:26:55]: ▸ ../dist/public/assets/reown-logo-Cq4zRyN3.js                     2.57 kB │ gzip:   1.05 kB
+[13:26:55]: ▸ ../dist/public/assets/index-BOz-mBEh.js                          2.63 kB │ gzip:   1.05 kB
+[13:26:55]: ▸ ../dist/public/assets/ccip-Cp9DLfrf.js                           2.68 kB │ gzip:   1.27 kB
+[13:26:55]: ▸ ../dist/public/assets/lightbulb-DfQHAJZ9.js                      2.69 kB │ gzip:   1.20 kB
+[13:26:55]: ▸ ../dist/public/assets/image-CyBDQX5t.js                          3.46 kB │ gzip:   1.49 kB
+[13:26:55]: ▸ ../dist/public/assets/index-CKbPalci.js                          3.58 kB │ gzip:   1.38 kB
+[13:26:55]: ▸ ../dist/public/assets/copy-FCEcw-FF.js                           3.79 kB │ gzip:   1.45 kB
+[13:26:55]: ▸ ../dist/public/assets/walletconnect-BwEcH6vZ.js                  4.03 kB │ gzip:   1.64 kB
+[13:26:55]: ▸ ../dist/public/assets/index-Cx4KxSE0.js                          4.34 kB │ gzip:   1.73 kB
+[13:26:55]: ▸ ../dist/public/assets/index-_ONdpcRV.js                          4.38 kB │ gzip:   1.20 kB
+[13:26:55]: ▸ ../dist/public/assets/index-D3u4BdOK.js                          4.60 kB │ gzip:   1.54 kB
+[13:26:55]: ▸ ../dist/public/assets/receive-D8z_DWQ2.js                        5.64 kB │ gzip:   2.07 kB
+[13:26:55]: ▸ ../dist/public/assets/index-COty-jUY.js                          5.68 kB │ gzip:   1.69 kB
+[13:26:55]: ▸ ../dist/public/assets/index-CTTbqvRO.js                          6.32 kB │ gzip:   1.76 kB
+[13:26:55]: ▸ ../dist/public/assets/index-SGrikwkX.js                          6.84 kB │ gzip:   1.60 kB
+[13:26:55]: ▸ ../dist/public/assets/index-Bjltdz_y.js                          7.60 kB │ gzip:   2.60 kB
+[13:26:55]: ▸ ../dist/public/assets/index-BBLycuDx.js                          7.95 kB │ gzip:   2.24 kB
+[13:26:55]: ▸ ../dist/public/assets/index-Br2e6Kdz.js                          8.16 kB │ gzip:   2.17 kB
+[13:26:55]: ▸ ../dist/public/assets/index-BBi-aKFJ.js                          8.56 kB │ gzip:   2.57 kB
+[13:26:55]: ▸ ../dist/public/assets/index-Cpxf_D1m.js                          9.59 kB │ gzip:   1.97 kB
+[13:26:55]: ▸ ../dist/public/assets/index-BDjlppJg.js                         13.22 kB │ gzip:   5.36 kB
+[13:26:55]: ▸ ../dist/public/assets/index-CVdD1s6W.js                         13.28 kB │ gzip:   4.93 kB
+[13:26:55]: ▸ ../dist/public/assets/embedded-wallet-DNJ-HTAn.js               13.65 kB │ gzip:   4.06 kB
+[13:26:55]: ▸ ../dist/public/assets/index-D0XkYQZT.js                         15.64 kB │ gzip:   4.45 kB
+[13:26:55]: ▸ ../dist/public/assets/index-BYQPpsJ6.js                         15.96 kB │ gzip:   4.80 kB
+[13:26:55]: ▸ ../dist/public/assets/socials-C2yCahQu.js                       16.80 kB │ gzip:   4.46 kB
+[13:26:55]: ▸ ../dist/public/assets/email-NZHM3yjY.js                         20.46 kB │ gzip:   5.06 kB
+[13:26:55]: ▸ ../dist/public/assets/index-CiB0XAcW.js                         22.46 kB │ gzip:   6.46 kB
+[13:26:55]: ▸ ../dist/public/assets/secp256k1-BVG4u5mt.js                     26.52 kB │ gzip:  10.38 kB
+[13:26:55]: ▸ ../dist/public/assets/w3m-modal-3cXH8AFS.js                     27.33 kB │ gzip:   7.15 kB
+[13:26:55]: ▸ ../dist/public/assets/index-DgQ4HEzM.js                         27.93 kB │ gzip:  10.89 kB
+[13:26:55]: ▸ ../dist/public/assets/send-BN0jY2z3.js                          30.42 kB │ gzip:   6.66 kB
+[13:26:55]: ▸ ../dist/public/assets/secp256k1-DbXCCgBU.js                     31.87 kB │ gzip:  12.70 kB
+[13:26:55]: ▸ ../dist/public/assets/if-defined-Bs0mI9Iy.js                    31.92 kB │ gzip:   8.03 kB
+[13:26:55]: ▸ ../dist/public/assets/onramp-Cr_xOdMd.js                        36.28 kB │ gzip:   8.16 kB
+[13:26:55]: ▸ ../dist/public/assets/swaps-BdfASpGU.js                         50.97 kB │ gzip:   9.45 kB
+[13:26:55]: ▸ ../dist/public/assets/index-DiuSya96.js                         52.48 kB │ gzip:  15.24 kB
+[13:26:55]: ▸ ../dist/public/assets/index-BGuYkMMk.js                        137.40 kB │ gzip:  43.40 kB
+[13:26:55]: ▸ ../dist/public/assets/index-Bfk-4WoX.js                        254.56 kB │ gzip:  47.24 kB
+[13:26:55]: ▸ ../dist/public/assets/index-_bKIIntd.js                        664.53 kB │ gzip: 181.98 kB
+[13:26:55]: ▸ ../dist/public/assets/index-CySW5eF0.js                      3,096.27 kB │ gzip: 927.96 kB
+[13:26:55]: ▸ 
+[13:26:55]: ▸ (!) Some chunks are larger than 500 kB after minification. Consider:
+[13:26:55]: ▸ - Using dynamic import() to code-split the application
+[13:26:55]: ▸ - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+[13:26:55]: ▸ - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[13:26:55]: ▸ ✓ built in 43.02s
+[13:26:56]: ▸ dist/index.js  87.9kb
+[13:26:56]: ▸ ⚡ Done in 13ms
+[13:26:56]: $ ionic info
+[13:26:58]: ▸ Ionic:
+[13:26:58]: ▸ Ionic CLI : 7.2.0 (/usr/local/nvm/versions/node/v20.18.2/lib/node_modules/@ionic/cli)
+[13:26:58]: ▸ Capacitor:
+[13:26:58]: ▸ Capacitor CLI      : 7.3.0
+[13:26:58]: ▸ @capacitor/android : 7.3.0
+[13:26:58]: ▸ @capacitor/core    : 7.3.0
+[13:26:58]: ▸ @capacitor/ios     : 7.3.0
+[13:26:58]: ▸ Utility:
+[13:26:58]: ▸ cordova-res : not installed globally
+[13:26:58]: ▸ native-run  : 2.0.1
+[13:26:58]: ▸ System:
+[13:26:58]: ▸ NodeJS : v20.18.2 (/usr/local/nvm/versions/node/v20.18.2/bin/node)
+[13:26:58]: ▸ npm    : 10.8.2
+[13:26:58]: ▸ OS     : Linux 5.10
+[13:26:58]: Generating app manifest...
+[13:26:59]: ----------------------
+[13:26:59]: --- Step: cap_sync ---
+[13:26:59]: ----------------------
+[13:27:00]: $ npx cap sync android
+[13:27:01]: ▸ ✔ Copying web assets from public to android/app/src/main/assets/public in 50.55ms
+[13:27:01]: ▸ ✔ Creating capacitor.config.json in android/app/src/main/assets in 3.04ms
+[13:27:01]: ▸ ✔ copy android in 147.66ms
+[13:27:02]: ▸ ✔ Updating Android plugins in 49.84ms
+[13:27:02]: ▸ [info] Found 5 Capacitor plugins for android:
+[13:27:02]: ▸ @capacitor/app@7.0.1
+[13:27:02]: ▸ @capacitor/browser@7.0.1
+[13:27:02]: ▸ @capacitor/filesystem@7.1.2
+[13:27:02]: ▸ @capacitor/preferences@7.0.1
+[13:27:02]: ▸ @capacitor/share@7.0.1
+[13:27:02]: ▸ ✔ update android in 234.04ms
+[13:27:02]: ▸ [info] Sync finished in 0.521s
+[13:27:02]: -------------------------------
+[13:27:02]: --- Step: cap_custom_deploy ---
+[13:27:02]: -------------------------------
+[13:27:02]: No custom native config detected.
+[13:27:02]: ----------------------------------
+[13:27:02]: --- Step: modify_gradle_config ---
+[13:27:02]: ----------------------------------
+[13:27:02]: No custom native config found... skipping
+[13:27:02]: Building android (in /builds/jichangyoon/samuapp/android)...
+[13:27:02]: -------------------------
+[13:27:02]: --- Step: bundledebug ---
+[13:27:02]: -------------------------
+[13:27:02]: ▸ Downloading https://services.gradle.org/distributions/gradle-8.4-all.zip
+[13:27:05]: ▸ ....................10%....................20%....................30%.....................40%....................50%....................60%.....................70%....................80%....................90%.....................100%
+[13:27:10]: ▸ Welcome to Gradle 8.4!
+[13:27:10]: ▸ Here are the highlights of this release:
+[13:27:10]: ▸ - Compiling and testing with Java 21
+[13:27:10]: ▸ - Faster Java compilation on Windows
+[13:27:10]: ▸ - Role focused dependency configurations creation
+[13:27:10]: ▸ For more details see https://docs.gradle.org/8.4/release-notes.html
+[13:27:10]: ▸ Starting a Gradle Daemon (subsequent builds will be faster)
+[13:28:02]: ▸ > Configure project :app
+[13:28:02]: ▸ WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+[13:28:04]: ▸ FAILURE: Build failed with an exception.
+[13:28:04]: ▸ * Where:
+[13:28:04]: ▸ Build file '/builds/jichangyoon/samuapp/android/build.gradle' line: 47
+[13:28:04]: ▸ * What went wrong:
+[13:28:04]: ▸ A problem occurred configuring project ':app'.
+[13:28:04]: ▸ > Could not get unknown property 'org' for project ':app' of type org.gradle.api.Project.
+[13:28:04]: ▸ * Try:
+[13:28:04]: ▸ > Run with --stacktrace option to get the stack trace.
+[13:28:04]: ▸ > Run with --info or --debug option to get more log output.
+[13:28:04]: ▸ > Run with --scan to get full insights.
+[13:28:04]: ▸ > Get more help at https://help.gradle.org.
+[13:28:04]: ▸ BUILD FAILED in 1m 1s
+[13:28:04]: -------------------------
+[13:28:04]: --- Step: upload_logs ---
+[13:28:04]: -------------------------
+[13:28:09]: --------------------------------------
+[13:28:09]: --- Step: sentry_capture_exception ---
+[13:28:09]: --------------------------------------
++--------------------------------------------------------+
+|                      Lane Context                      |
++----------------------+---------------------------------+
+| DEFAULT_PLATFORM     | ios                             |
+| PLATFORM_NAME        | android                         |
+| LANE_NAME            | android build_capacitor         |
+| IONIC_CLI_VERSION    | 7.2.0                           |
+| NODE_PACKAGE_MANAGER | npm                             |
+| CAP_IOS_PATH         | /builds/jichangyoon/samuapp/ios |
+| PROJECT_WEB_DIR      | dist/public                     |
+| GRADLE_BUILD_TYPE    | debug                           |
++----------------------+---------------------------------+
+[13:28:10]: Shell command exited with exit status 1 instead of 0.
+Downloading https://services.gradle.org/distributions/gradle-8.4-all.zip
+....................10%....................20%....................30%.....................40%....................50%....................60%.....................70%....................80%....................90%.....................100%
+
+Welcome to Gradle 8.4!
+
+Here are the highlights of this release:
+ - Compiling and testing with Java 21
+ - Faster Java compilation on Windows
+ - Role focused dependency configurations creation
+
+For more details see https://docs.gradle.org/8.4/release-notes.html
+
+Starting a Gradle Daemon (subsequent builds will be faster)
+
+> Configure project :app
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+FAILURE: Build failed with an exception.
+
+* Where:
+Build file '/builds/jichangyoon/samuapp/android/build.gradle' line: 47
+
+* What went wrong:
+A problem occurred configuring project ':app'.
+> Could not get unknown property 'org' for project ':app' of type org.gradle.api.Project.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 1m 1s
+
+
++-----------------------------------------------+
+|               fastlane summary                |
++------+--------------------------+-------------+
+| Step | Action                   | Time (in s) |
++------+--------------------------+-------------+
+| 1    | add_extra_platforms      | 0           |
+| 2    | default_platform         | 0           |
+| 3    | prepare_environment      | 0           |
+| 4    | sentry_init              | 0           |
+| 5    | begin_building           | 0           |
+| 6    | build_summary            | 1           |
+| 7    | set_ionic_cli            | 1           |
+| 8    | detect_package_manager   | 0           |
+| 9    | add_git_credentials      | 0           |
+| 10   | get_appflow_config       | 0           |
+| 11   | dependency_install       | 123         |
+| 12   | create_capacitor_config  | 1           |
+| 13   | get_web_dir              | 0           |
+| 14   | modify_cap_web_config    | 0           |
+| 15   | set_java_home            | 0           |
+| 16   | build_pro_app            | 46          |
+| 17   | cap_sync                 | 3           |
+| 18   | cap_custom_deploy        | 0           |
+| 19   | modify_gradle_config     | 0           |
+| 💥   | bundledebug              | 62          |
+| 21   | upload_logs              | 5           |
+| 22   | sentry_capture_exception | 0           |
++------+--------------------------+-------------+
+
+[13:28:10]: fastlane finished with errors
+/usr/local/bundle/bin/fastlane: [!] Shell command exited with exit status 1 instead of 0. (FastlaneCore::Interface::FastlaneShellError)
+Downloading https://services.gradle.org/distributions/gradle-8.4-all.zip
+....................10%....................20%....................30%.....................40%....................50%....................60%.....................70%....................80%....................90%.....................100%
+
+Welcome to Gradle 8.4!
+
+Here are the highlights of this release:
+ - Compiling and testing with Java 21
+ - Faster Java compilation on Windows
+ - Role focused dependency configurations creation
+
+For more details see https://docs.gradle.org/8.4/release-notes.html
+
+Starting a Gradle Daemon (subsequent builds will be faster)
+
+> Configure project :app
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+FAILURE: Build failed with an exception.
+
+* Where:
+Build file '/builds/jichangyoon/samuapp/android/build.gradle' line: 47
+
+* What went wrong:
+A problem occurred configuring project ':app'.
+> Could not get unknown property 'org' for project ':app' of type org.gradle.api.Project.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 1m 1s
+
+
+Running after_script
+Running after script...
+$ run "clean-up"
+
+Cleaning up project directory and file based variables
+
+ERROR: Job failed: command terminated with exit code 1
