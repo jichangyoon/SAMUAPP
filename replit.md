@@ -613,6 +613,14 @@ Changelog:
   ✅ Updated profile image upload limit in server/routes/uploads.ts
   ✅ Consistent 10MB limit across all file upload endpoints (memes, profiles, general uploads)
 
+- July 14, 2025. IMPLEMENTED COMPREHENSIVE VOTING POWER REFRESH SYSTEM:
+  ✅ Added handleVotingPowerRefresh function for manual voting power updates
+  ✅ Made all voting power cards (Total Power, Used Power, Remaining Power) clickable
+  ✅ Added hover effects and visual feedback for clickable voting power cards
+  ✅ Implemented tap-to-refresh functionality with toast notifications
+  ✅ Added user guidance text: "Tap any card above to refresh"
+  ✅ Hybrid approach: automatic updates after voting + manual refresh on demand
+
 ## CHECKPOINT - June 30, 2025
 ```
 🔄 ROLLBACK POINT CREATED - Current stable state:
