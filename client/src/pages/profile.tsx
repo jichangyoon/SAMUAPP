@@ -133,6 +133,21 @@ const Profile = memo(() => {
     }
   }, [walletAddress, queryClient, toast]);
 
+  // Voting power explanation handler
+  const handleVotingPowerExplanation = useCallback(() => {
+    if (!votingPowerData) return;
+    
+    // Calculate SAMU balance in millions from voting power
+    const samuBalance = (votingPowerData.totalPower - 3) / 10;
+    const samuFormatted = samuBalance.toFixed(2);
+    
+    toast({
+      title: "Voting Power Calculation",
+      description: `Base 3 + (SAMU/1M × 10) power\nCurrent: ${samuFormatted}M SAMU = ${votingPowerData.totalPower} power\nUpdated at contest start/end`,
+      duration: 5000
+    });
+  }, [votingPowerData, toast]);
+
   // User memes
   const { data: userMemes = [] } = useQuery({
     queryKey: ['user-memes', walletAddress],
@@ -786,6 +801,7 @@ const Profile = memo(() => {
               <div 
                 className="text-center bg-accent/30 rounded-lg p-2 cursor-pointer hover:bg-accent/50 transition-colors"
                 onClick={() => {
+                  handleVotingPowerExplanation();
                   queryClient.invalidateQueries({ queryKey: ['voting-power', walletAddress] });
                 }}
               >
@@ -894,6 +910,7 @@ const Profile = memo(() => {
               value="power" 
               className="flex flex-col items-center gap-1 p-3 text-xs"
               onClick={() => {
+                handleVotingPowerExplanation();
                 queryClient.invalidateQueries({ queryKey: ['voting-power', walletAddress] });
               }}
             >
