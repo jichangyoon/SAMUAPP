@@ -606,6 +606,13 @@ Changelog:
   ✅ Prevented user confusion by removing non-functional submit features
   ✅ Partners page now displays clean contest view without incomplete submission system
 
+- July 14, 2025. INCREASED FILE UPLOAD SIZE LIMIT FROM 5MB TO 10MB:
+  ✅ Updated server/config.ts MAX_FILE_SIZE from 5MB to 10MB
+  ✅ Updated multer file size limits in server/routes/uploads.ts
+  ✅ Updated multer file size limits in server/routes/memes.ts
+  ✅ Updated profile image upload limit in server/routes/uploads.ts
+  ✅ Consistent 10MB limit across all file upload endpoints (memes, profiles, general uploads)
+
 ## CHECKPOINT - June 30, 2025
 ```
 🔄 ROLLBACK POINT CREATED - Current stable state:

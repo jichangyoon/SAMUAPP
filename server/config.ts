@@ -11,7 +11,7 @@ export const config = {
   ],
   
   // Upload limits
-  MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
+  MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
   
   // Server
   PORT: parseInt(process.env.PORT || '5000'),

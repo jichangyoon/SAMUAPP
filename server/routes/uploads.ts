@@ -42,7 +42,7 @@ const fileFilter = (req: any, file: any, cb: any) => {
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
+    fileSize: 10 * 1024 * 1024, // 10MB limit
   },
   fileFilter: fileFilter
 });
@@ -212,7 +212,7 @@ router.post('/profile', upload.single('image'), async (req, res) => {
       req.file.buffer,
       req.file.originalname,
       'profiles',
-      5 * 1024 * 1024 // 5MB limit for profile images
+      10 * 1024 * 1024 // 10MB limit for profile images
     );
 
     if (!uploadResult.success) {
