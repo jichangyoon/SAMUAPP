@@ -1,0 +1,115 @@
+[13:36:20]: Shell command exited with exit status 1 instead of 0.
+Downloading https://services.gradle.org/distributions/gradle-8.4-all.zip
+....................10%....................20%....................30%.....................40%....................50%....................60%.....................70%....................80%....................90%.....................100%
+
+Welcome to Gradle 8.4!
+
+Here are the highlights of this release:
+ - Compiling and testing with Java 21
+ - Faster Java compilation on Windows
+ - Role focused dependency configurations creation
+
+For more details see https://docs.gradle.org/8.4/release-notes.html
+
+Starting a Gradle Daemon (subsequent builds will be faster)
+
+FAILURE: Build failed with an exception.
+
+* Where:
+Build file '/builds/jichangyoon/samuapp/android/build.gradle' line: 49
+
+* What went wrong:
+Could not compile build file '/builds/jichangyoon/samuapp/android/build.gradle'.
+> startup failed:
+  build file '/builds/jichangyoon/samuapp/android/build.gradle': 49: Unexpected input: '{\n    afterEvaluate {\n        if (project.hasProperty("android")) {\n            android {\n                compileOptions {\n                    sourceCompatibility JavaVersion.VERSION_17\n                    targetCompatibility JavaVersion.VERSION_17\n                }\n            }\n        }\n        \n        // Force Kotlin JVM target to 17\n        }\n    }\n}' @ line 49, column 1.
+     }
+     ^
+  
+  1 error
+
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 11s
+
+
++-----------------------------------------------+
+|               fastlane summary                |
++------+--------------------------+-------------+
+| Step | Action                   | Time (in s) |
++------+--------------------------+-------------+
+| 1    | add_extra_platforms      | 0           |
+| 2    | default_platform         | 0           |
+| 3    | prepare_environment      | 0           |
+| 4    | sentry_init              | 0           |
+| 5    | begin_building           | 0           |
+| 6    | build_summary            | 1           |
+| 7    | set_ionic_cli            | 1           |
+| 8    | detect_package_manager   | 0           |
+| 9    | add_git_credentials      | 0           |
+| 10   | get_appflow_config       | 0           |
+| 11   | dependency_install       | 61          |
+| 12   | create_capacitor_config  | 0           |
+| 13   | get_web_dir              | 0           |
+| 14   | modify_cap_web_config    | 0           |
+| 15   | set_java_home            | 1           |
+| 16   | build_pro_app            | 26          |
+| 17   | cap_sync                 | 2           |
+| 18   | cap_custom_deploy        | 0           |
+| 19   | modify_gradle_config     | 0           |
+| 💥   | bundledebug              | 11          |
+| 21   | upload_logs              | 3           |
+| 22   | sentry_capture_exception | 0           |
++------+--------------------------+-------------+
+
+[13:36:20]: fastlane finished with errors
+/usr/local/bundle/bin/fastlane: [!] Shell command exited with exit status 1 instead of 0. (FastlaneCore::Interface::FastlaneShellError)
+Downloading https://services.gradle.org/distributions/gradle-8.4-all.zip
+....................10%....................20%....................30%.....................40%....................50%....................60%.....................70%....................80%....................90%.....................100%
+
+Welcome to Gradle 8.4!
+
+Here are the highlights of this release:
+ - Compiling and testing with Java 21
+ - Faster Java compilation on Windows
+ - Role focused dependency configurations creation
+
+For more details see https://docs.gradle.org/8.4/release-notes.html
+
+Starting a Gradle Daemon (subsequent builds will be faster)
+
+FAILURE: Build failed with an exception.
+
+* Where:
+Build file '/builds/jichangyoon/samuapp/android/build.gradle' line: 49
+
+* What went wrong:
+Could not compile build file '/builds/jichangyoon/samuapp/android/build.gradle'.
+> startup failed:
+  build file '/builds/jichangyoon/samuapp/android/build.gradle': 49: Unexpected input: '{\n    afterEvaluate {\n        if (project.hasProperty("android")) {\n            android {\n                compileOptions {\n                    sourceCompatibility JavaVersion.VERSION_17\n                    targetCompatibility JavaVersion.VERSION_17\n                }\n            }\n        }\n        \n        // Force Kotlin JVM target to 17\n        }\n    }\n}' @ line 49, column 1.
+     }
+     ^
+  
+  1 error
+
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 11s
+
+
+Running after_script
+Running after script...
+$ run "clean-up"
+
+Cleaning up project directory and file based variables
+
+ERROR: Job failed: command terminated with exit code 1
