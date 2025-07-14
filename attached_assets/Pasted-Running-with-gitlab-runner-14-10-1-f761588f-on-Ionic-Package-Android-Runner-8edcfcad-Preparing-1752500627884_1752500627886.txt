@@ -1,0 +1,118 @@
+Running with gitlab-runner 14.10.1 (f761588f)
+  on Ionic Package Android Runner 8edcfcad
+Preparing the "kubernetes" executor
+Using Kubernetes namespace: ionic-runners
+Using Kubernetes executor with image 319312831725.dkr.ecr.us-west-2.amazonaws.com/appflow-runners/linux:2025.01 ...
+Using attach strategy to execute scripts...
+Preparing environment
+Waiting for pod ionic-runners/runner-8edcfcad-project-0-concurrent-1mz6bx to be running, status is Pending
+Waiting for pod ionic-runners/runner-8edcfcad-project-0-concurrent-1mz6bx to be running, status is Pending
+	ContainersNotReady: "containers with unready status: [build helper svc-0]"
+	ContainersNotReady: "containers with unready status: [build helper svc-0]"
+Running on runner-8edcfcad-project-0-concurrent-1mz6bx via gitlab-runner-57c5549486-866f4...
+
+Getting source from Git repository
+$ pre-clone
+[13:43:22]: Cloning repository...
+Fetching changes...
+Initialized empty Git repository in /builds/jichangyoon/samuapp/.git/
+Created fresh repository.
+Checking out 8c25701c as main...
+
+Updating/initializing submodules...
+$ setup-fastlane
+[13:43:23]: Cloning complete...
+Fetching latest build process code...
+Cloning into '/builds/appflow-runners'...
+
+Executing "step_script" stage of the job script
+$ pre-build
+[13:43:25]: Building project....
+$ run "fetch-updates"
+Checking for build process updates...
+$ run "build-android"
+[13:43:28]: ---------------------------------
+[13:43:28]: --- Step: add_extra_platforms ---
+[13:43:28]: ---------------------------------
+[13:43:28]: Setting '[:web]' as extra SupportedPlatforms
+/builds/jichangyoon/samuapp/fastlane/outsystems/errors/detectors/pdm_plugins.rb:8: warning: character class has '-' without escape
+/builds/jichangyoon/samuapp/fastlane/outsystems/errors/detectors/pdm_plugins.rb:15: warning: character class has '-' without escape
+[13:43:28]: ------------------------------
+[13:43:28]: --- Step: default_platform ---
+[13:43:28]: ------------------------------
+[13:43:28]: Driving the lane 'android build_capacitor' 🚀
+[13:43:28]: ---------------------------------
+[13:43:28]: --- Step: prepare_environment ---
+[13:43:28]: ---------------------------------
+[13:43:28]: Setting default environment variables to tidy up logs. These can be overridden by setting them in Appflow.
+[13:43:28]: 
+[13:43:28]: Set COREPACK_ENABLE_AUTO_PIN=0 (Suppress yarn warnings)
+[13:43:28]: -------------------------
+[13:43:28]: --- Step: sentry_init ---
+[13:43:28]: -------------------------
+[13:43:28]: ----------------------------
+[13:43:28]: --- Step: begin_building ---
+[13:43:28]: ----------------------------
+[13:43:28]: Began building @ 2025-07-14T13:43:28
+[13:43:28]: ---------------------------
+[13:43:28]: --- Step: build_summary ---
+[13:43:28]: ---------------------------
+
++---------------------------------------------------+
+|                   Build Summary                   |
++---------------------+-----------------------------+
+| Runners Revision    | f9ed312                     |
+| Job ID              | 10296194                    |
+| Node.js version     | v20.18.2                    |
+| Cordova CLI version | 12.0.0 (cordova-lib@12.0.2) |
+| npm version         | 10.8.2                      |
+| yarn version        | 1.22.22                     |
++---------------------+-----------------------------+
+
+[13:43:30]: No build credential specified
+[13:43:30]: ---------------------------
+[13:43:30]: --- Step: set_ionic_cli ---
+[13:43:30]: ---------------------------
+[13:43:31]: -------------------------
+[13:43:31]: --- Step: upload_logs ---
+[13:43:31]: -------------------------
+[13:43:32]: Unable to upload package list log. Skipping.
+[13:43:33]: --------------------------------------
+[13:43:33]: --- Step: sentry_capture_exception ---
+[13:43:33]: --------------------------------------
++---------------------------------------------+
+|                Lane Context                 |
++-------------------+-------------------------+
+| DEFAULT_PLATFORM  | ios                     |
+| PLATFORM_NAME     | android                 |
+| LANE_NAME         | android build_capacitor |
+| IONIC_CLI_VERSION | 7.2.0                   |
++-------------------+-------------------------+
+[13:43:33]: unexpected token at ''
+
++-----------------------------------------------+
+|               fastlane summary                |
++------+--------------------------+-------------+
+| Step | Action                   | Time (in s) |
++------+--------------------------+-------------+
+| 1    | add_extra_platforms      | 0           |
+| 2    | default_platform         | 0           |
+| 3    | prepare_environment      | 0           |
+| 4    | sentry_init              | 0           |
+| 5    | begin_building           | 0           |
+| 6    | build_summary            | 1           |
+| 💥   | set_ionic_cli            | 1           |
+| 8    | upload_logs              | 1           |
+| 9    | sentry_capture_exception | 0           |
++------+--------------------------+-------------+
+
+[13:43:33]: fastlane finished with errors
+/usr/local/bundle/bin/fastlane: [!] unexpected token at '' (JSON::ParserError)
+
+Running after_script
+Running after script...
+$ run "clean-up"
+
+Cleaning up project directory and file based variables
+
+ERROR: Job failed: command terminated with exit code 1
