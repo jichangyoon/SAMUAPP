@@ -37,6 +37,12 @@ export function ContestHeader() {
   // Fetch current memes count for active contest
   const { data: memesResponse } = useQuery({
     queryKey: ['/api/memes'],
+    queryFn: async () => {
+      const params = new URLSearchParams({ limit: '1000' });
+      const response = await fetch(`/api/memes?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch memes');
+      return response.json();
+    },
     staleTime: 5 * 1000, // 5초 캐시로 줄임
   });
 
