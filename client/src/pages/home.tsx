@@ -360,7 +360,7 @@ export default function Home() {
   const { data: memesResponse, isLoading, refetch } = useQuery({
     queryKey: ['/api/memes', { sortBy }],
     queryFn: async () => {
-      const params = new URLSearchParams({ sortBy });
+      const params = new URLSearchParams({ sortBy, limit: '1000' });
       const response = await fetch(`/api/memes?${params}`);
       if (!response.ok) throw new Error('Failed to fetch memes');
       return response.json();
