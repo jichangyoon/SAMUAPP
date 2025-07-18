@@ -62,6 +62,13 @@ router.get("/profile/:walletAddress", async (req, res) => {
     // 디바이스 ID 가져오기 (헤더에서)
     const deviceId = req.headers['x-device-id'] as string;
     
+    // 디바이스 ID 로깅 (디버깅용)
+    if (deviceId) {
+      console.log(`Device ID received: ${deviceId} for wallet: ${walletAddress}`);
+    } else {
+      console.warn(`No device ID received for wallet: ${walletAddress}`);
+    }
+    
     // IP 및 디바이스 추적 및 차단 확인
     const trackResult = await trackLogin(ipAddress, walletAddress, deviceId);
     if (trackResult.blocked) {

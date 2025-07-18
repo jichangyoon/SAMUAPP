@@ -137,12 +137,21 @@ export default function Home() {
   const [voteAmount, setVoteAmount] = useState(1);
   const [, setLocation] = useLocation();
 
-  // 디바이스 ID 초기화 (애플리케이션 시작 시)
+  // 디바이스 ID 초기화 (애플리케이션 시작 시) - 더 빠른 초기화
   useEffect(() => {
     const initializeDeviceId = async () => {
       try {
         const deviceId = await getDeviceId();
         console.log('디바이스 ID 초기화됨:', deviceId);
+        
+        // 디바이스 ID가 생성되면 즉시 localStorage에 저장
+        localStorage.setItem('samu_device_id', deviceId);
+        
+        // 디바이스 ID 생성 후 다른 API 호출들이 이를 포함할 수 있도록 잠시 대기
+        setTimeout(() => {
+          // 디바이스 ID 포함된 상태로 사용자 정보 갱신
+          queryClient.invalidateQueries({ queryKey: ['/api/users/profile'] });
+        }, 100);
       } catch (error) {
         console.warn('디바이스 ID 초기화 실패:', error);
       }
