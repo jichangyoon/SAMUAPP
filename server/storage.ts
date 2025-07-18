@@ -58,12 +58,14 @@ export interface IStorage {
   // IP 추적 시스템
   logLogin(loginLog: InsertLoginLog): Promise<LoginLog>;
   getTodayLoginsByIp(ipAddress: string): Promise<string[]>; // 오늘 해당 IP로 로그인한 고유 지갑 주소들
+  getTodayLoginsByDeviceId(deviceId: string): Promise<string[]>; // 오늘 해당 디바이스로 로그인한 고유 지갑 주소들
   blockIp(blockData: InsertBlockedIp): Promise<BlockedIp>;
   unblockIp(ipAddress: string): Promise<void>;
   isIpBlocked(ipAddress: string): Promise<boolean>;
   getBlockedIps(): Promise<BlockedIp[]>;
   getRecentLogins(limit?: number): Promise<LoginLog[]>;
   getSuspiciousIps(): Promise<{ipAddress: string, walletCount: number, wallets: string[]}[]>;
+  getSuspiciousDevices(): Promise<{deviceId: string, walletCount: number, wallets: string[]}[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -1076,6 +1078,21 @@ export class DatabaseStorage implements IStorage {
     return result.map(row => row.walletAddress);
   }
 
+  async getTodayLoginsByDeviceId(deviceId: string): Promise<string[]> {
+    if (!this.db) throw new Error("Database not available");
+    
+    // 오늘 해당 디바이스로 로그인한 고유 지갑 주소들을 반환
+    const result = await this.db
+      .selectDistinct({ walletAddress: loginLogs.walletAddress })
+      .from(loginLogs)
+      .where(and(
+        eq(loginLogs.deviceId, deviceId),
+        sql`DATE(${loginLogs.loginTime}) = CURRENT_DATE`
+      ));
+    
+    return result.map(row => row.walletAddress);
+  }
+
   async blockIp(insertBlockedIp: InsertBlockedIp): Promise<BlockedIp> {
     if (!this.db) throw new Error("Database not available");
     
@@ -1140,6 +1157,31 @@ export class DatabaseStorage implements IStorage {
       .having(sql`count(distinct ${loginLogs.walletAddress}) >= 3`);
     
     return suspiciousIps;
+  }
+
+  async getSuspiciousDevices(): Promise<{deviceId: string, walletCount: number, wallets: string[]}[]> {
+    if (!this.db) throw new Error("Database not available");
+    
+    // 오늘 3개 이상의 서로 다른 지갑으로 로그인한 의심스러운 디바이스들
+    const suspiciousDevices = await this.db
+      .select({
+        deviceId: loginLogs.deviceId,
+        walletCount: sql<number>`count(distinct ${loginLogs.walletAddress})`,
+        wallets: sql<string[]>`array_agg(distinct ${loginLogs.walletAddress})`
+      })
+      .from(loginLogs)
+      .where(and(
+        sql`DATE(${loginLogs.loginTime}) = CURRENT_DATE`,
+        sql`${loginLogs.deviceId} IS NOT NULL`
+      ))
+      .groupBy(loginLogs.deviceId)
+      .having(sql`count(distinct ${loginLogs.walletAddress}) >= 3`);
+    
+    return suspiciousDevices.map(row => ({
+      deviceId: row.deviceId!,
+      walletCount: row.walletCount,
+      wallets: row.wallets
+    }));
   }
 }
 

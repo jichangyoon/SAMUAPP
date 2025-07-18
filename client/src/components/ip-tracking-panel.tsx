@@ -15,10 +15,17 @@ interface SuspiciousIp {
   wallets: string[];
 }
 
+interface SuspiciousDevice {
+  deviceId: string;
+  walletCount: number;
+  wallets: string[];
+}
+
 interface RecentLogin {
   id: number;
   walletAddress: string;
   ipAddress: string;
+  deviceId?: string;
   loginTime: string;
 }
 
@@ -37,6 +44,12 @@ export function IPTrackingPanel() {
   // Fetch suspicious IPs
   const { data: suspiciousIps = [], isLoading: loadingSuspicious } = useQuery<SuspiciousIp[]>({
     queryKey: ["/api/admin/suspicious-ips"],
+    staleTime: 30000, // 30초 캐시
+  });
+
+  // Fetch suspicious devices
+  const { data: suspiciousDevices = [], isLoading: loadingSuspiciousDevices } = useQuery<SuspiciousDevice[]>({
+    queryKey: ["/api/admin/suspicious-devices"],
     staleTime: 30000, // 30초 캐시
   });
 
@@ -106,8 +119,9 @@ export function IPTrackingPanel() {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="suspicious" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="suspicious">Suspicious IPs</TabsTrigger>
+          <TabsTrigger value="devices">Suspicious Devices</TabsTrigger>
           <TabsTrigger value="recent">Recent Logins</TabsTrigger>
           <TabsTrigger value="blocked">Blocked IPs</TabsTrigger>
           <TabsTrigger value="block">Block IP</TabsTrigger>
@@ -169,6 +183,62 @@ export function IPTrackingPanel() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="devices" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-red-500" />
+                Suspicious Device IDs
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingSuspiciousDevices ? (
+                <div className="text-center py-4">Loading suspicious devices...</div>
+              ) : suspiciousDevices.length === 0 ? (
+                <div className="text-center py-4 text-muted-foreground">
+                  No suspicious device activity detected today
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {suspiciousDevices.map((device) => (
+                    <div key={device.deviceId} className="border rounded-lg p-4 bg-red-50 dark:bg-red-900/10">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-sm">{device.deviceId}</span>
+                          <Badge variant="destructive">
+                            {device.walletCount} wallets
+                          </Badge>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            // TODO: 디바이스 차단 기능 구현하기
+                            console.log('Device block not implemented yet');
+                          }}
+                        >
+                          <Ban className="h-4 w-4 mr-2" />
+                          Block Device
+                        </Button>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        <span className="font-medium">Wallets:</span>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {device.wallets.map((wallet) => (
+                            <Badge key={wallet} variant="outline" className="text-xs">
+                              {formatWalletAddress(wallet)}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="recent" className="space-y-4">
           <Card>
             <CardHeader>
@@ -199,6 +269,11 @@ export function IPTrackingPanel() {
                           {formatDate(login.loginTime)}
                         </span>
                       </div>
+                      {login.deviceId && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          <span className="font-medium">Device:</span> {login.deviceId}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

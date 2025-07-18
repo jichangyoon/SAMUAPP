@@ -115,6 +115,7 @@ export const users = pgTable("users", {
 export const loginLogs = pgTable("login_logs", {
   id: serial("id").primaryKey(),
   ipAddress: text("ip_address").notNull(),
+  deviceId: text("device_id"), // 디바이스 고유 ID
   walletAddress: text("wallet_address").notNull(),
   userAgent: text("user_agent"),
   loginTime: timestamp("login_time").notNull().defaultNow(),

@@ -162,6 +162,17 @@ router.get("/suspicious-ips", async (req, res) => {
   }
 });
 
+// 의심스러운 디바이스 목록 조회
+router.get("/suspicious-devices", async (req, res) => {
+  try {
+    const suspiciousDevices = await storage.getSuspiciousDevices();
+    res.json(suspiciousDevices);
+  } catch (error) {
+    console.error("Error fetching suspicious devices:", error);
+    res.status(500).json({ error: "Failed to fetch suspicious devices" });
+  }
+});
+
 // 최근 로그인 기록 조회
 router.get("/recent-logins", async (req, res) => {
   try {

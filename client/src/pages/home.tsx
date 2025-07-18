@@ -28,6 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Meme } from "@shared/schema";
 import samuLogoImg from "@/assets/samu-logo.webp";
+import { getDeviceId } from "@/utils/deviceFingerprint";
 
 // Real-time archive card component
 function RealTimeArchiveCard({ contest, isConnected, isLoadingContestDetails, onContestClick }: {
@@ -135,6 +136,20 @@ export default function Home() {
   const [isVoting, setIsVoting] = useState(false);
   const [voteAmount, setVoteAmount] = useState(1);
   const [, setLocation] = useLocation();
+
+  // 디바이스 ID 초기화 (애플리케이션 시작 시)
+  useEffect(() => {
+    const initializeDeviceId = async () => {
+      try {
+        const deviceId = await getDeviceId();
+        console.log('디바이스 ID 초기화됨:', deviceId);
+      } catch (error) {
+        console.warn('디바이스 ID 초기화 실패:', error);
+      }
+    };
+    
+    initializeDeviceId();
+  }, []);
   
   // Removed infinite scroll - using simple data fetching
 

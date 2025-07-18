@@ -12,9 +12,27 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  // 디바이스 ID 동적 가져오기
+  let deviceId: string | null = null;
+  try {
+    // 디바이스 ID 가져오기 (이미 생성된 경우 localStorage에서 바로 가져옴)
+    deviceId = localStorage.getItem('samu_device_id');
+    if (!deviceId) {
+      const { getDeviceId } = await import('@/utils/deviceFingerprint');
+      deviceId = await getDeviceId();
+    }
+  } catch (error) {
+    console.warn('Failed to get device ID:', error);
+  }
+
+  const headers: Record<string, string> = data ? { "Content-Type": "application/json" } : {};
+  if (deviceId) {
+    headers['x-device-id'] = deviceId;
+  }
+
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers,
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
@@ -29,8 +47,26 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    // 디바이스 ID 가져오기 (GET 요청에도 포함)
+    let deviceId: string | null = null;
+    try {
+      deviceId = localStorage.getItem('samu_device_id');
+      if (!deviceId) {
+        const { getDeviceId } = await import('@/utils/deviceFingerprint');
+        deviceId = await getDeviceId();
+      }
+    } catch (error) {
+      console.warn('Failed to get device ID for query:', error);
+    }
+
+    const headers: Record<string, string> = {};
+    if (deviceId) {
+      headers['x-device-id'] = deviceId;
+    }
+
     const res = await fetch(queryKey[0] as string, {
       credentials: "include",
+      headers,
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {

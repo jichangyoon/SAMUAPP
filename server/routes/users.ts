@@ -4,8 +4,8 @@ import { insertUserSchema } from "@shared/schema";
 
 const router = Router();
 
-// IP 추적 미들웨어 함수
-const trackLogin = async (ipAddress: string, walletAddress: string) => {
+// IP 및 디바이스 추적 미들웨어 함수
+const trackLogin = async (ipAddress: string, walletAddress: string, deviceId?: string) => {
   try {
     // IP가 차단되었는지 확인
     const isBlocked = await storage.isIpBlocked(ipAddress);
@@ -13,26 +13,40 @@ const trackLogin = async (ipAddress: string, walletAddress: string) => {
       return { blocked: true, message: "IP address is blocked" };
     }
 
-    // 로그인 기록 저장
+    // 로그인 기록 저장 (디바이스 ID 포함)
     await storage.logLogin({
       ipAddress,
+      deviceId,
       walletAddress,
       loginTime: new Date()
     });
 
     // 오늘 이 IP로 로그인한 고유 지갑 수 확인
-    const todayWallets = await storage.getTodayLoginsByIp(ipAddress);
+    const todayWalletsByIp = await storage.getTodayLoginsByIp(ipAddress);
+    
+    // 디바이스 ID가 있는 경우 해당 디바이스로 로그인한 고유 지갑 수도 확인
+    let todayWalletsByDevice: string[] = [];
+    if (deviceId) {
+      todayWalletsByDevice = await storage.getTodayLoginsByDeviceId(deviceId);
+    }
     
     // 3개 이상의 다른 지갑으로 로그인한 경우 의심스러운 활동으로 간주
-    if (todayWallets.length >= 3) {
-      console.warn(`Suspicious IP detected: ${ipAddress} with ${todayWallets.length} different wallets today`);
-      // 자동으로 차단하지 않고 관리자가 확인할 수 있도록 로그만 남김
+    if (todayWalletsByIp.length >= 3) {
+      console.warn(`Suspicious IP detected: ${ipAddress} with ${todayWalletsByIp.length} different wallets today`);
+    }
+    
+    if (deviceId && todayWalletsByDevice.length >= 3) {
+      console.warn(`Suspicious device detected: ${deviceId} with ${todayWalletsByDevice.length} different wallets today`);
     }
 
-    return { blocked: false, walletCount: todayWallets.length };
+    return { 
+      blocked: false, 
+      ipWalletCount: todayWalletsByIp.length,
+      deviceWalletCount: todayWalletsByDevice.length
+    };
   } catch (error) {
     console.error("Error tracking login:", error);
-    return { blocked: false, walletCount: 0 };
+    return { blocked: false, ipWalletCount: 0, deviceWalletCount: 0 };
   }
 };
 
@@ -45,8 +59,11 @@ router.get("/profile/:walletAddress", async (req, res) => {
     const clientIp = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     const ipAddress = Array.isArray(clientIp) ? clientIp[0] : clientIp;
     
-    // IP 추적 및 차단 확인
-    const trackResult = await trackLogin(ipAddress, walletAddress);
+    // 디바이스 ID 가져오기 (헤더에서)
+    const deviceId = req.headers['x-device-id'] as string;
+    
+    // IP 및 디바이스 추적 및 차단 확인
+    const trackResult = await trackLogin(ipAddress, walletAddress, deviceId);
     if (trackResult.blocked) {
       return res.status(403).json({ 
         message: "Access denied. Your IP address has been blocked.",
