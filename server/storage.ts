@@ -1,6 +1,6 @@
-import { memes, votes, nfts, nftComments, partnerMemes, partnerVotes, users, contests, archivedContests, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type NftComment, type InsertNftComment, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest } from "@shared/schema";
+import { memes, votes, nfts, nftComments, partnerMemes, partnerVotes, users, contests, archivedContests, loginLogs, blockedIps, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type NftComment, type InsertNftComment, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest, type LoginLog, type InsertLoginLog, type BlockedIp, type InsertBlockedIp } from "@shared/schema";
 import { getDatabase } from "./db";
-import { eq, and, desc, isNull, or } from "drizzle-orm";
+import { eq, and, desc, isNull, or, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -54,6 +54,16 @@ export interface IStorage {
   endContestAndArchive(contestId: number): Promise<ArchivedContest>;
   getArchivedContests(): Promise<ArchivedContest[]>;
   getCurrentActiveContest(): Promise<Contest | undefined>;
+  
+  // IP 추적 시스템
+  logLogin(loginLog: InsertLoginLog): Promise<LoginLog>;
+  getTodayLoginsByIp(ipAddress: string): Promise<string[]>; // 오늘 해당 IP로 로그인한 고유 지갑 주소들
+  blockIp(blockData: InsertBlockedIp): Promise<BlockedIp>;
+  unblockIp(ipAddress: string): Promise<void>;
+  isIpBlocked(ipAddress: string): Promise<boolean>;
+  getBlockedIps(): Promise<BlockedIp[]>;
+  getRecentLogins(limit?: number): Promise<LoginLog[]>;
+  getSuspiciousIps(): Promise<{ipAddress: string, walletCount: number, wallets: string[]}[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -1038,6 +1048,98 @@ export class DatabaseStorage implements IStorage {
 
     // Filter out contests with no winner (empty contests) for Hall of Fame
     return enrichedContests.filter(contest => contest.winnerMeme !== null);
+  }
+
+  // IP 추적 시스템 구현
+  async logLogin(insertLoginLog: InsertLoginLog): Promise<LoginLog> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [loginLog] = await this.db
+      .insert(loginLogs)
+      .values(insertLoginLog)
+      .returning();
+    return loginLog;
+  }
+
+  async getTodayLoginsByIp(ipAddress: string): Promise<string[]> {
+    if (!this.db) throw new Error("Database not available");
+    
+    // 오늘 해당 IP로 로그인한 고유 지갑 주소들을 반환
+    const result = await this.db
+      .selectDistinct({ walletAddress: loginLogs.walletAddress })
+      .from(loginLogs)
+      .where(and(
+        eq(loginLogs.ipAddress, ipAddress),
+        sql`DATE(${loginLogs.loginTime}) = CURRENT_DATE`
+      ));
+    
+    return result.map(row => row.walletAddress);
+  }
+
+  async blockIp(insertBlockedIp: InsertBlockedIp): Promise<BlockedIp> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [blockedIp] = await this.db
+      .insert(blockedIps)
+      .values(insertBlockedIp)
+      .returning();
+    return blockedIp;
+  }
+
+  async unblockIp(ipAddress: string): Promise<void> {
+    if (!this.db) throw new Error("Database not available");
+    
+    await this.db
+      .delete(blockedIps)
+      .where(eq(blockedIps.ipAddress, ipAddress));
+  }
+
+  async isIpBlocked(ipAddress: string): Promise<boolean> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const [blocked] = await this.db
+      .select()
+      .from(blockedIps)
+      .where(eq(blockedIps.ipAddress, ipAddress));
+    
+    return !!blocked;
+  }
+
+  async getBlockedIps(): Promise<BlockedIp[]> {
+    if (!this.db) throw new Error("Database not available");
+    
+    return await this.db
+      .select()
+      .from(blockedIps)
+      .orderBy(desc(blockedIps.blockedAt));
+  }
+
+  async getRecentLogins(limit: number = 50): Promise<LoginLog[]> {
+    if (!this.db) throw new Error("Database not available");
+    
+    return await this.db
+      .select()
+      .from(loginLogs)
+      .orderBy(desc(loginLogs.loginTime))
+      .limit(limit);
+  }
+
+  async getSuspiciousIps(): Promise<{ipAddress: string, walletCount: number, wallets: string[]}[]> {
+    if (!this.db) throw new Error("Database not available");
+    
+    // 오늘 5개 이상의 서로 다른 지갑으로 로그인한 의심스러운 IP들
+    const suspiciousIps = await this.db
+      .select({
+        ipAddress: loginLogs.ipAddress,
+        walletCount: sql<number>`count(distinct ${loginLogs.walletAddress})`,
+        wallets: sql<string[]>`array_agg(distinct ${loginLogs.walletAddress})`
+      })
+      .from(loginLogs)
+      .where(sql`DATE(${loginLogs.loginTime}) = CURRENT_DATE`)
+      .groupBy(loginLogs.ipAddress)
+      .having(sql`count(distinct ${loginLogs.walletAddress}) >= 5`);
+    
+    return suspiciousIps;
   }
 }
 

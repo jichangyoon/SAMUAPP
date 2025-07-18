@@ -4,10 +4,55 @@ import { insertUserSchema } from "@shared/schema";
 
 const router = Router();
 
-// Get or create user profile - with cache headers
+// IP 추적 미들웨어 함수
+const trackLogin = async (ipAddress: string, walletAddress: string) => {
+  try {
+    // IP가 차단되었는지 확인
+    const isBlocked = await storage.isIpBlocked(ipAddress);
+    if (isBlocked) {
+      return { blocked: true, message: "IP address is blocked" };
+    }
+
+    // 로그인 기록 저장
+    await storage.logLogin({
+      ipAddress,
+      walletAddress,
+      loginTime: new Date()
+    });
+
+    // 오늘 이 IP로 로그인한 고유 지갑 수 확인
+    const todayWallets = await storage.getTodayLoginsByIp(ipAddress);
+    
+    // 5개 이상의 다른 지갑으로 로그인한 경우 의심스러운 활동으로 간주
+    if (todayWallets.length >= 5) {
+      console.warn(`Suspicious IP detected: ${ipAddress} with ${todayWallets.length} different wallets today`);
+      // 자동으로 차단하지 않고 관리자가 확인할 수 있도록 로그만 남김
+    }
+
+    return { blocked: false, walletCount: todayWallets.length };
+  } catch (error) {
+    console.error("Error tracking login:", error);
+    return { blocked: false, walletCount: 0 };
+  }
+};
+
+// Get or create user profile - with cache headers and IP tracking
 router.get("/profile/:walletAddress", async (req, res) => {
   try {
     const { walletAddress } = req.params;
+    
+    // IP 추적 로직
+    const clientIp = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    const ipAddress = Array.isArray(clientIp) ? clientIp[0] : clientIp;
+    
+    // IP 추적 및 차단 확인
+    const trackResult = await trackLogin(ipAddress, walletAddress);
+    if (trackResult.blocked) {
+      return res.status(403).json({ 
+        message: "Access denied. Your IP address has been blocked.",
+        error: "IP_BLOCKED"
+      });
+    }
     
     // Set cache headers for better performance
     res.set('Cache-Control', 'public, max-age=60'); // 1분 브라우저 캐시

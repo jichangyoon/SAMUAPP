@@ -111,6 +111,23 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// IP 추적 시스템 테이블들
+export const loginLogs = pgTable("login_logs", {
+  id: serial("id").primaryKey(),
+  ipAddress: text("ip_address").notNull(),
+  walletAddress: text("wallet_address").notNull(),
+  userAgent: text("user_agent"),
+  loginTime: timestamp("login_time").notNull().defaultNow(),
+});
+
+export const blockedIps = pgTable("blocked_ips", {
+  id: serial("id").primaryKey(),
+  ipAddress: text("ip_address").notNull().unique(),
+  reason: text("reason"),
+  blockedAt: timestamp("blocked_at").notNull().defaultNow(),
+  blockedBy: text("blocked_by"), // 관리자 지갑주소
+});
+
 export const insertMemeSchema = createInsertSchema(memes).omit({
   id: true,
   votes: true,
@@ -121,6 +138,21 @@ export const insertVoteSchema = createInsertSchema(votes).omit({
   id: true,
   createdAt: true,
 });
+
+export const insertLoginLogSchema = createInsertSchema(loginLogs).omit({
+  id: true,
+  loginTime: true,
+});
+
+export const insertBlockedIpSchema = createInsertSchema(blockedIps).omit({
+  id: true,
+  blockedAt: true,
+});
+
+export type LoginLog = typeof loginLogs.$inferSelect;
+export type InsertLoginLog = typeof loginLogs.$inferInsert;
+export type BlockedIp = typeof blockedIps.$inferSelect;
+export type InsertBlockedIp = typeof blockedIps.$inferInsert;
 
 export const insertNftSchema = createInsertSchema(nfts).omit({
   id: true,

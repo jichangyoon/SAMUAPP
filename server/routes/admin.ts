@@ -150,4 +150,98 @@ router.get("/archived-contests", async (req, res) => {
   }
 });
 
+// IP 추적 관리 API들
+// 의심스러운 IP 목록 조회
+router.get("/suspicious-ips", async (req, res) => {
+  try {
+    const suspiciousIps = await storage.getSuspiciousIps();
+    res.json(suspiciousIps);
+  } catch (error) {
+    console.error("Error fetching suspicious IPs:", error);
+    res.status(500).json({ error: "Failed to fetch suspicious IPs" });
+  }
+});
+
+// 최근 로그인 기록 조회
+router.get("/recent-logins", async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 100;
+    const recentLogins = await storage.getRecentLogins(limit);
+    res.json(recentLogins);
+  } catch (error) {
+    console.error("Error fetching recent logins:", error);
+    res.status(500).json({ error: "Failed to fetch recent logins" });
+  }
+});
+
+// 차단된 IP 목록 조회
+router.get("/blocked-ips", async (req, res) => {
+  try {
+    const blockedIps = await storage.getBlockedIps();
+    res.json(blockedIps);
+  } catch (error) {
+    console.error("Error fetching blocked IPs:", error);
+    res.status(500).json({ error: "Failed to fetch blocked IPs" });
+  }
+});
+
+// IP 차단하기
+router.post("/block-ip", async (req, res) => {
+  try {
+    const { ipAddress, reason } = req.body;
+    
+    if (!ipAddress) {
+      return res.status(400).json({ error: "IP address is required" });
+    }
+    
+    const blockedIp = await storage.blockIp({
+      ipAddress,
+      reason: reason || "Suspicious activity detected",
+      blockedAt: new Date()
+    });
+    
+    res.json({ message: "IP blocked successfully", blockedIp });
+  } catch (error) {
+    console.error("Error blocking IP:", error);
+    res.status(500).json({ error: "Failed to block IP" });
+  }
+});
+
+// IP 차단 해제하기
+router.post("/unblock-ip", async (req, res) => {
+  try {
+    const { ipAddress } = req.body;
+    
+    if (!ipAddress) {
+      return res.status(400).json({ error: "IP address is required" });
+    }
+    
+    await storage.unblockIp(ipAddress);
+    res.json({ message: "IP unblocked successfully" });
+  } catch (error) {
+    console.error("Error unblocking IP:", error);
+    res.status(500).json({ error: "Failed to unblock IP" });
+  }
+});
+
+// 특정 IP의 오늘 로그인 현황 조회
+router.get("/ip-status/:ipAddress", async (req, res) => {
+  try {
+    const { ipAddress } = req.params;
+    
+    const todayWallets = await storage.getTodayLoginsByIp(ipAddress);
+    const isBlocked = await storage.isIpBlocked(ipAddress);
+    
+    res.json({
+      ipAddress,
+      todayWalletCount: todayWallets.length,
+      todayWallets,
+      isBlocked
+    });
+  } catch (error) {
+    console.error("Error fetching IP status:", error);
+    res.status(500).json({ error: "Failed to fetch IP status" });
+  }
+});
+
 export default router;

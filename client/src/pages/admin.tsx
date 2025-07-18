@@ -6,16 +6,19 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Play, Square, Archive, Plus, Clock, Trophy, ArrowLeft } from "lucide-react";
+import { Play, Square, Archive, Plus, Clock, Trophy, ArrowLeft, Shield, Eye, Ban } from "lucide-react";
 import type { Contest, ArchivedContest } from "@shared/schema";
 import { useLocation } from "wouter";
+import { IPTrackingPanel } from "@/components/ip-tracking-panel";
 
 export function Admin() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showIPTracking, setShowIPTracking] = useState(false);
   const [newContest, setNewContest] = useState({
     title: "",
     description: "",
@@ -164,21 +167,69 @@ export function Admin() {
           </div>
         </div>
 
-        {/* Create Contest Section */}
-        <Card className="border-border bg-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Plus className="h-5 w-5" />
-              Create New Contest
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {!showCreateForm ? (
-              <Button onClick={() => setShowCreateForm(true)} className="w-full">
-                Create New Contest
-              </Button>
-            ) : (
+        {/* Action Buttons */}
+        <div className="flex gap-4 justify-center">
+          <Button
+            onClick={() => setShowCreateForm(true)}
+            className="flex items-center gap-2"
+            disabled={showCreateForm}
+          >
+            <Plus className="h-4 w-4" />
+            Create Contest
+          </Button>
+          <Button
+            onClick={() => setShowIPTracking(true)}
+            variant="outline"
+            className="flex items-center gap-2"
+            disabled={showIPTracking}
+          >
+            <Shield className="h-4 w-4" />
+            IP Tracking
+          </Button>
+        </div>
+
+        {/* IP Tracking Section */}
+        {showIPTracking && (
+          <Card className="border-border bg-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                IP Tracking & Anti-Fraud
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
               <div className="space-y-4">
+                <Button
+                  onClick={() => setShowIPTracking(false)}
+                  variant="outline"
+                  className="mb-4"
+                >
+                  Close IP Tracking
+                </Button>
+                <IPTrackingPanel />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Create Contest Section */}
+        {showCreateForm && (
+          <Card className="border-border bg-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Plus className="h-5 w-5" />
+                Create New Contest
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <Button
+                  onClick={() => setShowCreateForm(false)}
+                  variant="outline"
+                  className="mb-4"
+                >
+                  Cancel
+                </Button>
                 <Input
                   placeholder="Contest Title"
                   value={newContest.title}
@@ -232,9 +283,9 @@ export function Admin() {
                   </Button>
                 </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Active Contests */}
         <Card className="border-border bg-card">
