@@ -13,6 +13,7 @@ import { PartnerContest } from "@/pages/partner-contest";
 import { Admin } from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 import { SplashScreen } from "@/components/splash-screen";
+import { getDeviceId } from "./utils/deviceFingerprint";
 
 // Global error handler for Privy iframe issues
 window.addEventListener('error', (event) => {
@@ -51,56 +52,69 @@ const Router = React.memo(() => {
 function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [preloadComplete, setPreloadComplete] = useState(false);
+  const [deviceIdReady, setDeviceIdReady] = useState(false);
 
   // Set dark mode as default and preload images
   useEffect(() => {
     document.documentElement.classList.add('dark');
     
-    // Preload critical images for instant loading
-    const preloadImages = async () => {
-      const imagesToPreload = [
-        // Partner logos
-        '/src/assets/wagus-logo.webp',
-        '/src/assets/doctorbird-logo.webp',
-        // Goods shop image
-        '/src/assets/samu-shirt.webp',
-        // SAMU logo
-        '/src/assets/samu-logo.webp'
-      ];
-      
-      // Preload NFT images (first 20 for immediate visibility)
-      for (let i = 1; i <= 20; i++) {
-        imagesToPreload.push(`/assets/nfts/${i}.webp`);
-      }
-      
-      // Load all images with Promise.all to wait for completion
-      const imagePromises = imagesToPreload.map(src => {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.onload = resolve;
-          img.onerror = resolve; // Continue even if some images fail
-          img.src = src;
-        });
-      });
-      
+    // Initialize device ID first, then preload images
+    const initializeApp = async () => {
       try {
-        await Promise.all(imagePromises);
-        setPreloadComplete(true);
+        // 1. 디바이스 ID 먼저 초기화
+        const deviceId = await getDeviceId();
+        console.log('앱 초기화 - 디바이스 ID 생성:', deviceId);
+        setDeviceIdReady(true);
+        
+        // 2. 이미지 프리로드
+        const imagesToPreload = [
+          // Partner logos
+          '/src/assets/wagus-logo.webp',
+          '/src/assets/doctorbird-logo.webp',
+          // Goods shop image
+          '/src/assets/samu-shirt.webp',
+          // SAMU logo
+          '/src/assets/samu-logo.webp'
+        ];
+        
+        // Preload NFT images (first 20 for immediate visibility)
+        for (let i = 1; i <= 20; i++) {
+          imagesToPreload.push(`/assets/nfts/${i}.webp`);
+        }
+        
+        // Load all images with Promise.all to wait for completion
+        const imagePromises = imagesToPreload.map(src => {
+          return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = resolve;
+            img.onerror = resolve; // Continue even if some images fail
+            img.src = src;
+          });
+        });
+        
+        try {
+          await Promise.all(imagePromises);
+          setPreloadComplete(true);
+        } catch (error) {
+          // Continue even if preload fails
+          setPreloadComplete(true);
+        }
       } catch (error) {
-        // Continue even if preload fails
+        console.warn('앱 초기화 실패:', error);
+        setDeviceIdReady(true);
         setPreloadComplete(true);
       }
     };
     
-    preloadImages();
+    initializeApp();
   }, []);
 
   // Show splash screen on first load
-  if (showSplash) {
+  if (showSplash || !deviceIdReady) {
     return (
       <SplashScreen 
         onComplete={() => setShowSplash(false)} 
-        preloadComplete={preloadComplete}
+        preloadComplete={preloadComplete && deviceIdReady}
       />
     );
   }
