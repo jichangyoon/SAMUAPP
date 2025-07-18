@@ -26,6 +26,10 @@ router.post("/check-admin", async (req, res) => {
 // Get all contests (excluding archived ones) - with cache headers
 router.get("/contests", async (req, res) => {
   try {
+    // 디바이스 ID 로깅
+    const deviceId = req.headers['x-device-id'] as string;
+    console.log('관리자 패널 콘테스트 요청 - 디바이스 ID:', deviceId);
+    
     // Set cache headers for better performance
     res.set('Cache-Control', 'public, max-age=60'); // 1분 브라우저 캐시
     
