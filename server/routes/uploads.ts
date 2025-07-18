@@ -1,8 +1,6 @@
 import { Router } from "express";
 import multer from "multer";
 import { uploadToR2, deleteFromR2, extractKeyFromUrl } from "../r2-storage";
-import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
-import { config } from "../config";
 
 const router = Router();
 
