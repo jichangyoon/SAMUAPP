@@ -1127,7 +1127,7 @@ export class DatabaseStorage implements IStorage {
   async getSuspiciousIps(): Promise<{ipAddress: string, walletCount: number, wallets: string[]}[]> {
     if (!this.db) throw new Error("Database not available");
     
-    // 오늘 5개 이상의 서로 다른 지갑으로 로그인한 의심스러운 IP들
+    // 오늘 3개 이상의 서로 다른 지갑으로 로그인한 의심스러운 IP들
     const suspiciousIps = await this.db
       .select({
         ipAddress: loginLogs.ipAddress,
@@ -1137,7 +1137,7 @@ export class DatabaseStorage implements IStorage {
       .from(loginLogs)
       .where(sql`DATE(${loginLogs.loginTime}) = CURRENT_DATE`)
       .groupBy(loginLogs.ipAddress)
-      .having(sql`count(distinct ${loginLogs.walletAddress}) >= 5`);
+      .having(sql`count(distinct ${loginLogs.walletAddress}) >= 3`);
     
     return suspiciousIps;
   }

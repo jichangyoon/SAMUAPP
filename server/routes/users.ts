@@ -23,8 +23,8 @@ const trackLogin = async (ipAddress: string, walletAddress: string) => {
     // 오늘 이 IP로 로그인한 고유 지갑 수 확인
     const todayWallets = await storage.getTodayLoginsByIp(ipAddress);
     
-    // 5개 이상의 다른 지갑으로 로그인한 경우 의심스러운 활동으로 간주
-    if (todayWallets.length >= 5) {
+    // 3개 이상의 다른 지갑으로 로그인한 경우 의심스러운 활동으로 간주
+    if (todayWallets.length >= 3) {
       console.warn(`Suspicious IP detected: ${ipAddress} with ${todayWallets.length} different wallets today`);
       // 자동으로 차단하지 않고 관리자가 확인할 수 있도록 로그만 남김
     }
