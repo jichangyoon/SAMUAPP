@@ -942,7 +942,19 @@ export class DatabaseStorage implements IStorage {
     const secondMemeId = sortedMemes[1]?.id || null;
     const thirdMemeId = sortedMemes[2]?.id || null;
 
-    // Archive the contest
+    // Check if contest is already archived (prevent duplicates)
+    const existingArchive = await this.db
+      .select()
+      .from(archivedContests)
+      .where(eq(archivedContests.originalContestId, contestId))
+      .limit(1);
+
+    if (existingArchive.length > 0) {
+      console.log(`Contest ${contestId} is already archived, returning existing archive`);
+      return existingArchive[0];
+    }
+
+    // Archive the contest (only if not already archived)
     const [archivedContest] = await this.db
       .insert(archivedContests)
       .values({
