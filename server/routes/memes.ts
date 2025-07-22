@@ -25,7 +25,7 @@ const upload = multer({
 router.get("/", async (req, res) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 7;
+    const limit = parseInt(req.query.limit as string) || 1000; // Archive pages need all memes
     const sortBy = req.query.sortBy as string || 'votes';
     const contestId = req.query.contestId as string;
     
