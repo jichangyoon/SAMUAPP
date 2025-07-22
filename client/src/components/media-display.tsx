@@ -1,5 +1,5 @@
-import { useRef } from "react";
-import { Play } from "lucide-react";
+import { useRef, useState } from "react";
+import { Play, ImageOff } from "lucide-react";
 import { getMediaType } from "@/utils/media-utils";
 
 interface MediaDisplayProps {
@@ -24,6 +24,7 @@ export function MediaDisplay({
   onClick 
 }: MediaDisplayProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [hasError, setHasError] = useState(false);
   const mediaType = getMediaType(src);
 
   const handleVideoClick = (e: React.MouseEvent) => {
@@ -56,7 +57,14 @@ export function MediaDisplay({
               videoRef.current.currentTime = 0.1;
             }
           }}
+          onError={() => setHasError(true)}
         />
+        {hasError && (
+          <div className="absolute inset-0 bg-accent flex flex-col items-center justify-center">
+            <ImageOff className="h-8 w-8 text-muted-foreground mb-2" />
+            <span className="text-xs text-muted-foreground text-center px-2">Video unavailable</span>
+          </div>
+        )}
         {!showControls && (
           <>
             <div className="absolute top-1 right-1 bg-black/70 text-white text-xs px-1 py-0.5 rounded font-medium text-[10px]">
@@ -73,6 +81,16 @@ export function MediaDisplay({
     );
   }
   
+  // 에러 상태 표시
+  if (hasError) {
+    return (
+      <div className={`bg-accent flex flex-col items-center justify-center ${className}`}>
+        <ImageOff className="h-8 w-8 text-muted-foreground mb-2" />
+        <span className="text-xs text-muted-foreground text-center px-2">Image unavailable</span>
+      </div>
+    );
+  }
+
   // 이미지 표시
   return (
     <img
@@ -85,6 +103,7 @@ export function MediaDisplay({
         onClick();
       } : undefined}
       loading="lazy"
+      onError={() => setHasError(true)}
     />
   );
 }

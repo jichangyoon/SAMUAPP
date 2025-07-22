@@ -39,7 +39,9 @@ router.get("/", async (req, res) => {
     let allMemes;
     if (contestId) {
       // Get memes for specific contest (archived)
+      console.log(`Fetching memes for contestId: ${contestId}`);
       allMemes = await storage.getMemesByContestId(parseInt(contestId));
+      console.log(`Found ${allMemes.length} memes for contest ${contestId}`);
     } else {
       // Get current memes (not archived) - these are memes with contest_id = null
       allMemes = await storage.getMemes();
@@ -62,7 +64,7 @@ router.get("/", async (req, res) => {
     const hasMore = endIndex < totalMemes;
     
     // Return optimized response
-    res.json({
+    const response = {
       memes: paginatedMemes,
       pagination: {
         page,
@@ -71,7 +73,13 @@ router.get("/", async (req, res) => {
         hasMore,
         totalPages: Math.ceil(totalMemes / limit)
       }
-    });
+    };
+    
+    if (contestId) {
+      console.log(`Returning ${paginatedMemes.length} memes for contest ${contestId} (total: ${totalMemes})`);
+    }
+    
+    res.json(response);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch memes" });
   }
