@@ -10,6 +10,7 @@ import partnersRouter from "./routes/partners";
 import uploadsRouter from "./routes/uploads";
 import usersRouter from "./routes/users";
 import adminRouter from "./routes/admin";
+import { actionsRouter } from "./routes/actions";
 import { votingPowerManager } from "./voting-power";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -30,6 +31,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api/users", usersRouter);
   app.use("/api/admin", adminRouter);
   app.use("/api", walletRouter);
+  app.use("/api/actions", actionsRouter);
 
   const httpServer = createServer(app);
   return httpServer;
