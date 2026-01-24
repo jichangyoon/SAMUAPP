@@ -112,7 +112,8 @@ router.get("/vote/:memeId", async (req, res) => {
       return res.set(corsHeaders).status(404).json({ error: "Meme not found" });
     }
 
-    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    const protocol = req.get("x-forwarded-proto") || req.protocol;
+    const baseUrl = `${protocol}://${req.get("host")}`;
     const iconUrl = meme.imageUrl.startsWith("http") 
       ? meme.imageUrl 
       : `${baseUrl}${meme.imageUrl}`;
@@ -226,7 +227,8 @@ router.post("/vote/:memeId", async (req, res) => {
       });
     }
 
-    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    const protocol = req.get("x-forwarded-proto") || req.protocol;
+    const baseUrl = `${protocol}://${req.get("host")}`;
     
     const transaction = new Transaction();
     
@@ -434,7 +436,8 @@ router.post("/vote/:memeId/confirm", async (req, res) => {
 router.get("/memes", async (req, res) => {
   try {
     const memes = await storage.getMemes();
-    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    const protocol = req.get("x-forwarded-proto") || req.protocol;
+    const baseUrl = `${protocol}://${req.get("host")}`;
 
     const response: ActionGetResponse = {
       type: "action",
