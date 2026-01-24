@@ -950,7 +950,12 @@ export class DatabaseStorage implements IStorage {
       .limit(1);
 
     if (existingArchive.length > 0) {
-      console.log(`Contest ${contestId} is already archived, returning existing archive`);
+      console.log(`Contest ${contestId} is already archived, ensuring status is updated`);
+      // Still update contest status to archived in case it wasn't updated before
+      await this.db
+        .update(contests)
+        .set({ status: "archived", archivedAt: new Date() })
+        .where(eq(contests.id, contestId));
       return existingArchive[0];
     }
 
