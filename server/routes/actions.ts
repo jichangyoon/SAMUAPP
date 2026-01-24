@@ -21,7 +21,30 @@ const router = Router();
 const SOLANA_RPC_URL = process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
 const SAMU_TOKEN_MINT = 'EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF';
 const HELIUS_API_KEY = process.env.VITE_HELIUS_API_KEY;
+const MEMO_PROGRAM_ID = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr";
 const connection = new Connection(SOLANA_RPC_URL, "confirmed");
+
+interface PendingVoteIntent {
+  memeId: number;
+  powerUsed: number;
+  wallet: string;
+  nonce: string;
+  createdAt: number;
+}
+
+const pendingVotes = new Map<string, PendingVoteIntent>();
+
+setInterval(() => {
+  const now = Date.now();
+  const fiveMinutes = 5 * 60 * 1000;
+  const keysToDelete: string[] = [];
+  pendingVotes.forEach((intent, nonce) => {
+    if (now - intent.createdAt > fiveMinutes) {
+      keysToDelete.push(nonce);
+    }
+  });
+  keysToDelete.forEach(key => pendingVotes.delete(key));
+}, 60 * 1000);
 
 async function getSamuBalance(walletAddress: string): Promise<number> {
   const RPC_ENDPOINTS = [
@@ -203,12 +226,16 @@ router.post("/vote/:memeId", async (req, res) => {
       });
     }
 
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    
     const transaction = new Transaction();
+    
+    const voteNonce = `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
     
     const memoInstruction = new TransactionInstruction({
       keys: [{ pubkey: userPublicKey, isSigner: true, isWritable: false }],
       programId: new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
-      data: Buffer.from(`SAMU Vote: Meme #${memeId} with ${powerUsed} power`),
+      data: Buffer.from(`SAMU Vote: Meme #${memeId}, Power: ${powerUsed}, Nonce: ${voteNonce}`),
     });
     
     transaction.add(memoInstruction);
@@ -217,6 +244,173 @@ router.post("/vote/:memeId", async (req, res) => {
     transaction.recentBlockhash = blockhash;
     transaction.lastValidBlockHeight = lastValidBlockHeight;
     transaction.feePayer = userPublicKey;
+
+    const serializedTransaction = transaction.serialize({
+      requireAllSignatures: false,
+      verifySignatures: false,
+    }).toString("base64");
+
+    pendingVotes.set(voteNonce, {
+      memeId,
+      powerUsed,
+      wallet: userWallet,
+      nonce: voteNonce,
+      createdAt: Date.now(),
+    });
+
+    const response: ActionPostResponse = {
+      type: "transaction",
+      transaction: serializedTransaction,
+      message: `Sign to vote for "${meme.title}" with ${powerUsed} power`,
+      links: {
+        next: {
+          type: "post",
+          href: `${baseUrl}/api/actions/vote/${memeId}/confirm?nonce=${voteNonce}`,
+        },
+      },
+    };
+
+    res.set(corsHeaders).json(response);
+  } catch (error) {
+    console.error("Error in POST /api/actions/vote/:memeId:", error);
+    res.set(corsHeaders).status(500).json({ error: "Failed to process vote" });
+  }
+});
+
+router.options("/vote/:memeId/confirm", (req, res) => {
+  res.set(corsHeaders).status(200).end();
+});
+
+router.post("/vote/:memeId/confirm", async (req, res) => {
+  try {
+    const memeId = parseInt(req.params.memeId);
+    const nonce = req.query.nonce as string;
+    
+    if (isNaN(memeId)) {
+      return res.set(corsHeaders).status(400).json({ error: "Invalid meme ID" });
+    }
+
+    if (!nonce) {
+      return res.set(corsHeaders).status(400).json({ error: "Vote nonce required" });
+    }
+
+    const pendingVote = pendingVotes.get(nonce);
+    if (!pendingVote) {
+      return res.set(corsHeaders).status(400).json({ 
+        error: "Vote intent not found or expired. Please start the voting process again." 
+      });
+    }
+
+    if (pendingVote.memeId !== memeId) {
+      return res.set(corsHeaders).status(400).json({ error: "Meme ID mismatch" });
+    }
+
+    const body: ActionPostRequest = req.body;
+    const userWallet = body.account;
+    const signature = (body as any).signature;
+
+    if (!userWallet) {
+      return res.set(corsHeaders).status(400).json({ error: "Wallet address required" });
+    }
+
+    if (pendingVote.wallet !== userWallet) {
+      return res.set(corsHeaders).status(400).json({ error: "Wallet address mismatch" });
+    }
+
+    if (!signature) {
+      return res.set(corsHeaders).status(400).json({ error: "Transaction signature required" });
+    }
+
+    const meme = await storage.getMemeById(memeId);
+    if (!meme) {
+      return res.set(corsHeaders).status(404).json({ error: "Meme not found" });
+    }
+
+    const hasVoted = await storage.hasUserVoted(memeId, userWallet);
+    if (hasVoted) {
+      pendingVotes.delete(nonce);
+      return res.set(corsHeaders).status(400).json({ 
+        error: "You have already voted on this meme" 
+      });
+    }
+
+    try {
+      const txInfo = await connection.getTransaction(signature, {
+        commitment: "confirmed",
+        maxSupportedTransactionVersion: 0,
+      });
+
+      if (!txInfo) {
+        return res.set(corsHeaders).status(400).json({ 
+          error: "Transaction not found or not confirmed yet. Please wait and try again." 
+        });
+      }
+
+      const accountKeys = txInfo.transaction.message.getAccountKeys();
+      const signerKey = accountKeys.get(0)?.toBase58();
+      
+      if (signerKey !== userWallet) {
+        return res.set(corsHeaders).status(400).json({ 
+          error: "Transaction signer does not match wallet address" 
+        });
+      }
+
+      const expectedMemo = `SAMU Vote: Meme #${memeId}, Power: ${pendingVote.powerUsed}, Nonce: ${nonce}`;
+      let memoValidated = false;
+      let foundMemoInstruction = false;
+      
+      const instructions = txInfo.transaction.message.compiledInstructions;
+      for (const ix of instructions) {
+        const programId = accountKeys.get(ix.programIdIndex)?.toBase58();
+        if (programId === MEMO_PROGRAM_ID) {
+          foundMemoInstruction = true;
+          try {
+            const memoData = Buffer.from(ix.data as Uint8Array).toString('utf8');
+            if (memoData === expectedMemo) {
+              memoValidated = true;
+              break;
+            }
+          } catch {
+            continue;
+          }
+        }
+      }
+
+      if (!foundMemoInstruction) {
+        return res.set(corsHeaders).status(400).json({ 
+          error: "Transaction does not contain a memo instruction." 
+        });
+      }
+
+      if (!memoValidated) {
+        return res.set(corsHeaders).status(400).json({ 
+          error: "Transaction memo does not match vote intent. The memo must exactly match the expected format including memeId, power, and nonce." 
+        });
+      }
+    } catch (txError) {
+      console.error("Error verifying transaction:", txError);
+      return res.set(corsHeaders).status(400).json({ 
+        error: "Could not verify transaction. Please try again." 
+      });
+    }
+
+    pendingVotes.delete(nonce);
+
+    const powerUsed = pendingVote.powerUsed;
+
+    let votingPowerData = await votingPowerManager.getVotingPower(userWallet);
+    
+    if (!votingPowerData) {
+      const samuBalance = await getSamuBalance(userWallet);
+      await votingPowerManager.initializeVotingPower(userWallet, samuBalance);
+      votingPowerData = await votingPowerManager.getVotingPower(userWallet);
+    }
+
+    if (!votingPowerData || votingPowerData.remainingPower < powerUsed) {
+      return res.set(corsHeaders).status(400).json({ 
+        error: `Insufficient voting power. You have ${votingPowerData?.remainingPower || 0} power remaining.` 
+      });
+    }
 
     await storage.createVote({
       memeId,
@@ -227,21 +421,13 @@ router.post("/vote/:memeId", async (req, res) => {
 
     await votingPowerManager.useVotingPower(userWallet, powerUsed);
 
-    const serializedTransaction = transaction.serialize({
-      requireAllSignatures: false,
-      verifySignatures: false,
-    }).toString("base64");
-
-    const response: ActionPostResponse = {
-      type: "transaction",
-      transaction: serializedTransaction,
-      message: `Vote submitted! Used ${powerUsed} voting power for meme "${meme.title}"`,
-    };
-
-    res.set(corsHeaders).json(response);
+    res.set(corsHeaders).json({
+      success: true,
+      message: `Vote confirmed! You used ${powerUsed} voting power for "${meme.title}". The meme now has ${meme.votes + powerUsed} total votes.`,
+    });
   } catch (error) {
-    console.error("Error in POST /api/actions/vote/:memeId:", error);
-    res.set(corsHeaders).status(500).json({ error: "Failed to process vote" });
+    console.error("Error in POST /api/actions/vote/:memeId/confirm:", error);
+    res.set(corsHeaders).status(500).json({ error: "Failed to confirm vote" });
   }
 });
 

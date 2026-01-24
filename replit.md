@@ -39,13 +39,20 @@ The application uses a modern full-stack architecture with a React frontend, an 
 - **Archive**: Stores past contest results, winners, and memes.
 - **Partners**: Allows other meme coin communities to host their own isolated contests.
 - **Hall of Fame**: Displays winners from archived contests.
+- **Solana Blinks (External Voting)**: Enables voting on memes from outside the app via Solana Actions. Users can share Blink URLs on X (Twitter), Discord, etc., and holders can vote directly using their Phantom or other Solana wallets without logging into the app. Voting power is calculated based on SAMU token balance.
+
+**Solana Blinks API:**
+- **Endpoint**: `/api/actions/vote/:memeId` - GET returns action metadata, POST processes vote
+- **actions.json**: Located at domain root for Blink client discovery
+- **Vote Options**: 1, 5, 10, or custom voting power (1-100)
+- **Flow**: Blink URL shared → Wallet detects → User clicks vote → Wallet signs memo transaction → Vote recorded in DB
 
 ## External Dependencies
 
 - **Cloud Storage**: Cloudflare R2
 - **Database**: PostgreSQL (with Drizzle ORM)
 - **Authentication**: Privy
-- **Solana Interaction**: Solana RPC endpoints
+- **Solana Interaction**: Solana RPC endpoints, @solana/actions (Blinks SDK)
 - **UI Components**: shadcn/ui (built on Radix UI primitives)
 - **Styling**: Tailwind CSS
 - **Frontend Tooling**: Vite, TypeScript
