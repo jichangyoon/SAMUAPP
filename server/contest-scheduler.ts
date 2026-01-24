@@ -41,17 +41,32 @@ class ContestScheduler {
       return;
     }
 
-    const timeout = setTimeout(async () => {
-      try {
-        console.log(`Auto-starting contest ${contestId}`);
-        await storage.updateContestStatus(contestId, "active");
-        this.intervals.delete(contestId);
-      } catch (error) {
-        console.error(`Error auto-starting contest ${contestId}:`, error);
+    // JavaScript setTimeout max is ~24.8 days (2^31-1 ms). Use 24 hours max per step.
+    const MAX_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in ms
+    
+    const scheduleNext = () => {
+      const remainingDelay = startTime.getTime() - Date.now();
+      
+      if (remainingDelay <= 0) {
+        // Time to start the contest
+        (async () => {
+          try {
+            console.log(`Auto-starting contest ${contestId}`);
+            await storage.updateContestStatus(contestId, "active");
+            this.intervals.delete(contestId);
+          } catch (error) {
+            console.error(`Error auto-starting contest ${contestId}:`, error);
+          }
+        })();
+        return;
       }
-    }, delay);
+      
+      const nextDelay = Math.min(remainingDelay, MAX_TIMEOUT);
+      const timeout = setTimeout(scheduleNext, nextDelay);
+      this.intervals.set(contestId, timeout);
+    };
 
-    this.intervals.set(contestId, timeout);
+    scheduleNext();
     console.log(`Scheduled contest ${contestId} to start at ${startTime.toISOString()}`);
   }
 
@@ -64,17 +79,32 @@ class ContestScheduler {
       return;
     }
 
-    const timeout = setTimeout(async () => {
-      try {
-        console.log(`Auto-ending contest ${contestId}`);
-        await storage.endContestAndArchive(contestId);
-        this.intervals.delete(contestId);
-      } catch (error) {
-        console.error(`Error auto-ending contest ${contestId}:`, error);
+    // JavaScript setTimeout max is ~24.8 days (2^31-1 ms). Use 24 hours max per step.
+    const MAX_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in ms
+    
+    const scheduleNext = () => {
+      const remainingDelay = endTime.getTime() - Date.now();
+      
+      if (remainingDelay <= 0) {
+        // Time to end the contest
+        (async () => {
+          try {
+            console.log(`Auto-ending contest ${contestId}`);
+            await storage.endContestAndArchive(contestId);
+            this.intervals.delete(contestId);
+          } catch (error) {
+            console.error(`Error auto-ending contest ${contestId}:`, error);
+          }
+        })();
+        return;
       }
-    }, delay);
+      
+      const nextDelay = Math.min(remainingDelay, MAX_TIMEOUT);
+      const timeout = setTimeout(scheduleNext, nextDelay);
+      this.intervals.set(contestId, timeout);
+    };
 
-    this.intervals.set(contestId, timeout);
+    scheduleNext();
     console.log(`Scheduled contest ${contestId} to end at ${endTime.toISOString()}`);
   }
 
