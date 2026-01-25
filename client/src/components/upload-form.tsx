@@ -307,7 +307,15 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
                 <FormItem>
                   <FormLabel className="text-foreground">Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter meme title" {...field} />
+                    <Input 
+                      placeholder="Enter meme title" 
+                      {...field}
+                      onFocus={(e) => {
+                        setTimeout(() => {
+                          e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 300);
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -325,6 +333,11 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
                       placeholder="Add a description for your meme"
                       rows={2}
                       {...field}
+                      onFocus={(e) => {
+                        setTimeout(() => {
+                          e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 300);
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
