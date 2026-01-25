@@ -213,13 +213,10 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
   };
 
   return (
-    <Card className="border-border bg-card">
-      <CardHeader>
-        <CardTitle className="text-lg text-primary">Submit Your Meme</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <Card className="border-border bg-card border-0 shadow-none">
+      <CardContent className="p-0">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
             <FormField
               control={form.control}
               name="image"
@@ -227,14 +224,14 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
                 <FormItem>
                   <FormLabel className="text-foreground">Meme Image</FormLabel>
                   <FormControl>
-                    <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary transition-colors duration-200">
+                    <div className="border-2 border-dashed border-border rounded-lg p-4 text-center hover:border-primary transition-colors duration-200">
                       {preview ? (
-                        <div className="space-y-4">
-                          <div className="max-w-full max-h-48 mx-auto">
+                        <div className="space-y-2">
+                          <div className="max-w-full max-h-28 mx-auto overflow-hidden">
                             {selectedFile && getMediaType(selectedFile.name) === 'video' ? (
                               <video
                                 src={preview}
-                                className="max-w-full max-h-48 rounded-lg"
+                                className="max-w-full max-h-28 rounded-lg"
                                 controls
                                 muted
                                 preload="metadata"
@@ -250,7 +247,7 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
                               <img
                                 src={preview}
                                 alt="Preview"
-                                className="max-w-full max-h-48 rounded-lg"
+                                className="max-w-full max-h-28 rounded-lg object-contain"
                               />
                             )}
                           </div>

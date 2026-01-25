@@ -84,3 +84,23 @@
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
   }
 }
+
+/* iOS Safari keyboard fix - prevent large gaps when keyboard opens */
+@supports (-webkit-touch-callout: none) {
+  /* iOS only styles */
+  [vaul-drawer] {
+    max-height: 70vh !important;
+  }
+  
+  [vaul-drawer-content] {
+    max-height: 70vh !important;
+  }
+  
+  /* When keyboard is likely open (input focused), reduce modal height further */
+  input:focus ~ [vaul-drawer],
+  textarea:focus ~ [vaul-drawer],
+  [vaul-drawer]:has(input:focus),
+  [vaul-drawer]:has(textarea:focus) {
+    max-height: 50vh !important;
+  }
+}

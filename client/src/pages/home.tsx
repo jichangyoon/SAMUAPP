@@ -1150,16 +1150,17 @@ export default function Home() {
       )}
 
       {/* Upload Form Drawer */}
-      <Drawer open={showUploadForm} onOpenChange={setShowUploadForm}>
-        <DrawerContent className="bg-card border-border max-h-[85vh]">
-          <DrawerHeader className="pb-2">
-            <DrawerTitle className="text-foreground">Submit New Meme</DrawerTitle>
-            <DrawerDescription className="text-muted-foreground">
-              Upload your meme to join the SAMU contest
-            </DrawerDescription>
+      <Drawer 
+        open={showUploadForm} 
+        onOpenChange={setShowUploadForm}
+        shouldScaleBackground={false}
+      >
+        <DrawerContent className="bg-card border-border">
+          <DrawerHeader className="py-2">
+            <DrawerTitle className="text-foreground text-base">Submit New Meme</DrawerTitle>
           </DrawerHeader>
 
-          <div className="px-4 pb-8 overflow-y-auto" style={{ maxHeight: 'calc(85vh - 80px)' }}>
+          <div className="px-4 pb-6 overflow-y-auto max-h-[60vh]">
             <UploadForm 
               onClose={() => setShowUploadForm(false)}
               onSuccess={() => {
