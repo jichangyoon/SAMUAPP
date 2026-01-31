@@ -151,9 +151,8 @@ router.get("/vote/:memeId", async (req, res) => {
             parameters: [
               {
                 name: "power",
-                label: "Voting Power (1-100)",
+                label: "# Voting Power (1-100)",
                 required: true,
-                type: "number",
               },
             ],
           },
