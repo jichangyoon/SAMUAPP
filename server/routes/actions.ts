@@ -146,18 +146,16 @@ router.get("/vote/:memeId", async (req, res) => {
           },
           {
             type: "transaction",
-            label: "25 Power",
-            href: `${baseUrl}/api/actions/vote/${memeId}?power=25`,
-          },
-          {
-            type: "transaction",
-            label: "50 Power",
-            href: `${baseUrl}/api/actions/vote/${memeId}?power=50`,
-          },
-          {
-            type: "transaction",
-            label: "100 Power",
-            href: `${baseUrl}/api/actions/vote/${memeId}?power=100`,
+            label: "Custom Amount",
+            href: `${baseUrl}/api/actions/vote/${memeId}?power={power}`,
+            parameters: [
+              {
+                name: "power",
+                label: "Enter voting power (1-100)",
+                required: true,
+                type: "number",
+              },
+            ],
           },
         ],
       },
