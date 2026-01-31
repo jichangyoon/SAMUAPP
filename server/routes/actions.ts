@@ -93,6 +93,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept-Encoding, X-Action-Version, X-Blockchain-Ids",
   "Access-Control-Expose-Headers": "X-Action-Version, X-Blockchain-Ids",
   "Content-Type": "application/json",
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+  "Pragma": "no-cache",
+  "Expires": "0",
 };
 
 router.options("/vote/:memeId", (req, res) => {
