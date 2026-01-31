@@ -454,10 +454,35 @@ router.post("/vote/:memeId/confirm", async (req, res) => {
 
     await votingPowerManager.useVotingPower(userWallet, powerUsed);
 
-    res.set(corsHeaders).json({
-      success: true,
-      message: `Vote confirmed! You used ${powerUsed} voting power for "${meme.title}". The meme now has ${meme.votes + powerUsed} total votes.`,
-    });
+    const updatedVotingPower = await votingPowerManager.getVotingPower(userWallet);
+    const remainingPower = updatedVotingPower?.remainingPower || 0;
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+    // Use action chaining to allow continued voting
+    const response = {
+      type: "post",
+      links: {
+        next: {
+          type: "inline",
+          action: {
+            type: "action",
+            title: `Vote for: ${meme.title}`,
+            icon: meme.imageUrl || `${baseUrl}/samu-logo.png`,
+            description: `Your vote was recorded! Used ${powerUsed} power. Remaining: ${remainingPower}. Vote again?`,
+            label: "Vote Again",
+            links: {
+              actions: [
+                { label: "Vote with 1 Power", href: `${baseUrl}/api/actions/vote/${memeId}?power=1` },
+                { label: "Vote with 5 Power", href: `${baseUrl}/api/actions/vote/${memeId}?power=5` },
+                { label: "Vote with 10 Power", href: `${baseUrl}/api/actions/vote/${memeId}?power=10` },
+              ],
+            },
+          },
+        },
+      },
+    };
+
+    res.set(corsHeaders).json(response);
   } catch (error) {
     console.error("Error in POST /api/actions/vote/:memeId/confirm:", error);
     res.set(corsHeaders).status(500).json({ error: "Failed to confirm vote" });
