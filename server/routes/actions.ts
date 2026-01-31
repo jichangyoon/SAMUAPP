@@ -208,14 +208,41 @@ router.post("/vote/:memeId", async (req, res) => {
       });
     }
 
+    // For Blinks voting, ALWAYS check SAMU token balance first (regardless of user existence)
+    const samuBalance = await getSamuBalance(userWallet);
+    
+    if (samuBalance <= 0) {
+      return res.set(corsHeaders).status(400).json({ 
+        error: "SAMU 토큰이 필요합니다. 투표하려면 SAMU 토큰을 보유해야 합니다. (You need SAMU tokens to vote)" 
+      });
+    }
+    
     let votingPowerData = await votingPowerManager.getVotingPower(userWallet);
     
     if (!votingPowerData) {
-      const samuBalance = await getSamuBalance(userWallet);
+      // Check if user exists in database
+      const existingUser = await storage.getUserByWallet(userWallet);
+      
+      if (!existingUser) {
+        // Auto-create user for external wallet with SAMU tokens
+        const shortWallet = `${userWallet.slice(0, 4)}...${userWallet.slice(-4)}`;
+        await storage.createUser({
+          walletAddress: userWallet,
+          username: shortWallet,
+          email: null,
+          avatarUrl: null,
+          samuBalance: samuBalance,
+          totalVotingPower: 3 + Math.floor(samuBalance / 1000000) * 10,
+        });
+        
+        console.log(`[Blinks] Auto-created user for wallet ${shortWallet} with ${samuBalance} SAMU`);
+      }
+      
+      // Initialize voting power (reuse samuBalance from above)
       const initialized = await votingPowerManager.initializeVotingPower(userWallet, samuBalance);
       if (!initialized) {
         return res.set(corsHeaders).status(400).json({ 
-          error: "Could not initialize voting power. Make sure you hold SAMU tokens." 
+          error: "Could not initialize voting power." 
         });
       }
       votingPowerData = await votingPowerManager.getVotingPower(userWallet);
