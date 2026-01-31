@@ -33,14 +33,15 @@ class VotingPowerManager {
   async initializeVotingPower(walletAddress: string, samuBalance: number): Promise<VotingPowerData> {
     if (!this.db) throw new Error("Database not available");
     
-    const totalPower = this.calculateTotalPower(samuBalance);
+    const samuBalanceInt = Math.floor(samuBalance);
+    const totalPower = this.calculateTotalPower(samuBalanceInt);
     
     // Update user's total voting power and SAMU balance
     await this.db
       .update(users)
       .set({
         totalVotingPower: totalPower,
-        samuBalance: samuBalance,
+        samuBalance: samuBalanceInt,
         updatedAt: new Date()
       })
       .where(eq(users.walletAddress, walletAddress));

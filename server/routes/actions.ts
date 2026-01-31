@@ -226,13 +226,14 @@ router.post("/vote/:memeId", async (req, res) => {
       if (!existingUser) {
         // Auto-create user for external wallet with SAMU tokens
         const shortWallet = `${userWallet.slice(0, 4)}...${userWallet.slice(-4)}`;
+        const samuBalanceInt = Math.floor(samuBalance);
         await storage.createUser({
           walletAddress: userWallet,
           username: shortWallet,
           email: null,
           avatarUrl: null,
-          samuBalance: samuBalance,
-          totalVotingPower: 3 + Math.floor(samuBalance / 1000000) * 10,
+          samuBalance: samuBalanceInt,
+          totalVotingPower: 3 + Math.floor(samuBalanceInt / 1000000) * 10,
         });
         
         console.log(`[Blinks] Auto-created user for wallet ${shortWallet} with ${samuBalance} SAMU`);
