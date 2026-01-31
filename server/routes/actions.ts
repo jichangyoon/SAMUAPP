@@ -130,24 +130,28 @@ router.get("/vote/:memeId", async (req, res) => {
       links: {
         actions: [
           {
+            type: "transaction",
             label: "1 Power",
             href: `${baseUrl}/api/actions/vote/${memeId}?power=1`,
           },
           {
+            type: "transaction",
             label: "5 Power",
             href: `${baseUrl}/api/actions/vote/${memeId}?power=5`,
           },
           {
+            type: "transaction",
             label: "10 Power",
             href: `${baseUrl}/api/actions/vote/${memeId}?power=10`,
           },
           {
+            type: "transaction",
             label: "Custom Amount",
             href: `${baseUrl}/api/actions/vote/${memeId}?power={power}`,
             parameters: [
               {
                 name: "power",
-                label: "Enter voting power (1-100)",
+                label: "Enter voting power",
                 required: true,
               },
             ],
@@ -176,8 +180,8 @@ router.post("/vote/:memeId", async (req, res) => {
       return res.set(corsHeaders).status(400).json({ error: "Invalid meme ID" });
     }
 
-    if (powerUsed < 1 || powerUsed > 100) {
-      return res.set(corsHeaders).status(400).json({ error: "Power must be between 1 and 100" });
+    if (powerUsed < 1 || powerUsed > 1000000) {
+      return res.set(corsHeaders).status(400).json({ error: "Power must be between 1 and 1,000,000" });
     }
 
     const body: ActionPostRequest = req.body;
