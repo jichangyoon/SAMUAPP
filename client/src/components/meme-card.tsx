@@ -116,11 +116,13 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
     }
   };
 
-  // Share functions
+  // Share functions - using Blinks URL for X sharing
   const shareToTwitter = () => {
-    const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername} 🔥`;
-    const url = window.location.href;
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+    // Use production URL for Blinks
+    const baseUrl = 'https://samu-meme-contest.replit.app';
+    const blinksUrl = `https://dial.to/?action=solana-action:${baseUrl}/api/actions/vote/${meme.id}`;
+    const text = `Vote for "${meme.title}" on SAMU Meme Contest! 🔥 #SAMU #Blinks`;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(blinksUrl)}`;
     window.open(twitterUrl, '_blank');
   };
 

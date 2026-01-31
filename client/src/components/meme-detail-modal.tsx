@@ -61,8 +61,11 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
 
 
   const shareToTwitter = () => {
-    const text = `Check out this awesome meme: "${meme.title}" by ${meme.authorUsername} 🔥`;
-    NativeShare.shareToTwitter(text);
+    // Use production URL for Blinks
+    const baseUrl = 'https://samu-meme-contest.replit.app';
+    const blinksUrl = `https://dial.to/?action=solana-action:${baseUrl}/api/actions/vote/${meme.id}`;
+    const text = `Vote for "${meme.title}" on SAMU Meme Contest! 🔥 #SAMU #Blinks`;
+    NativeShare.shareToTwitter(text, blinksUrl);
   };
 
   const shareToTelegram = () => {
