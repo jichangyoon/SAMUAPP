@@ -203,13 +203,6 @@ router.post("/vote/:memeId", async (req, res) => {
       return res.set(corsHeaders).status(404).json({ error: "Meme not found" });
     }
 
-    const hasVoted = await storage.hasUserVoted(memeId, userWallet);
-    if (hasVoted) {
-      return res.set(corsHeaders).status(400).json({ 
-        error: "You have already voted on this meme" 
-      });
-    }
-
     // For Blinks voting, ALWAYS check SAMU token balance first (regardless of user existence)
     const samuBalance = await getSamuBalance(userWallet);
     
@@ -356,14 +349,6 @@ router.post("/vote/:memeId/confirm", async (req, res) => {
     const meme = await storage.getMemeById(memeId);
     if (!meme) {
       return res.set(corsHeaders).status(404).json({ error: "Meme not found" });
-    }
-
-    const hasVoted = await storage.hasUserVoted(memeId, userWallet);
-    if (hasVoted) {
-      pendingVotes.delete(nonce);
-      return res.set(corsHeaders).status(400).json({ 
-        error: "You have already voted on this meme" 
-      });
     }
 
     try {
