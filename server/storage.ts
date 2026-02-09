@@ -896,6 +896,23 @@ export class DatabaseStorage implements IStorage {
       throw new Error("Contest not found");
     }
 
+    if (contest.status === "archived") {
+      console.log(`Contest ${contestId} is already archived, skipping`);
+      const existing = await this.db
+        .select()
+        .from(archivedContests)
+        .where(eq(archivedContests.originalContestId, contestId))
+        .limit(1);
+      if (existing.length > 0) return existing[0];
+      console.log(`Contest ${contestId} marked archived but no archive record, proceeding with archival`);
+    } else {
+      await this.db
+        .update(contests)
+        .set({ status: "archived" })
+        .where(eq(contests.id, contestId));
+      console.log(`Contest ${contestId} status set to archived (lock acquired)`);
+    }
+
     // Get all memes for this contest - current active contest memes have contestId = null
     // OR memes that already belong to this specific contest
     const contestMemes = await this.db
@@ -959,24 +976,38 @@ export class DatabaseStorage implements IStorage {
       return existingArchive[0];
     }
 
-    // Archive the contest (only if not already archived)
-    const [archivedContest] = await this.db
-      .insert(archivedContests)
-      .values({
-        originalContestId: contestId,
-        title: contest.title,
-        description: contest.description,
-        totalMemes,
-        totalVotes,
-        totalParticipants: uniqueParticipants,
-        winnerMemeId,
-        secondMemeId,
-        thirdMemeId,
-        prizePool: contest.prizePool,
-        startTime: contest.startTime || contest.createdAt,
-        endTime: new Date(),
-      })
-      .returning();
+    let archivedContest: ArchivedContest;
+    try {
+      const [inserted] = await this.db
+        .insert(archivedContests)
+        .values({
+          originalContestId: contestId,
+          title: contest.title,
+          description: contest.description,
+          totalMemes,
+          totalVotes,
+          totalParticipants: uniqueParticipants,
+          winnerMemeId,
+          secondMemeId,
+          thirdMemeId,
+          prizePool: contest.prizePool,
+          startTime: contest.startTime || contest.createdAt,
+          endTime: new Date(),
+        })
+        .returning();
+      archivedContest = inserted;
+    } catch (insertError: any) {
+      if (insertError?.code === '23505') {
+        console.log(`Contest ${contestId} archive insert conflict (unique constraint), returning existing`);
+        const existing = await this.db
+          .select()
+          .from(archivedContests)
+          .where(eq(archivedContests.originalContestId, contestId))
+          .limit(1);
+        if (existing.length > 0) return existing[0];
+      }
+      throw insertError;
+    }
 
     // Update contest status to archived
     await this.updateContestStatus(contestId, "archived");

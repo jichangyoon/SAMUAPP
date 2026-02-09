@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, bigint, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, bigint, timestamp, boolean, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -30,7 +30,7 @@ export const memes = pgTable("memes", {
 
 export const archivedContests = pgTable("archived_contests", {
   id: serial("id").primaryKey(),
-  originalContestId: integer("original_contest_id").notNull(),
+  originalContestId: integer("original_contest_id").notNull().unique(),
   title: text("title").notNull(),
   description: text("description"),
   totalMemes: integer("total_memes").notNull().default(0),
