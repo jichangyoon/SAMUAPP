@@ -6,7 +6,62 @@ This is a full-stack web application for a SAMU (Solana meme token) contest plat
 
 ## User Preferences
 
-Preferred communication style: Simple, everyday language.
+Preferred communication style: Simple, everyday language. Korean language preferred for communication.
+User is a non-technical founder managing the app with AI assistance.
+
+## Project Roadmap & Vision (Confirmed Feb 2026)
+
+**Core Concept: Meme Incubator**
+- The app's mission is to help memecoins evolve into IP (Intellectual Property) on Solana.
+- Pipeline: Meme Contest → NFT → Goods (via Printful) → Revenue Sharing
+
+**Dual Token Model:**
+- **SAMU Token** = Governance/Voting (community votes on memes using SAMU tokens)
+- **SOL** = Revenue/Settlement (goods revenue distributed in SOL)
+- SAMU provides community membership + voting rights, SOL is the money layer.
+
+**Voting System (To Be Implemented):**
+- SAMU token direct voting (users spend SAMU to vote, not just hold)
+- Minimum vote: very small amount (e.g. 0.000001 SAMU equivalent)
+- No upper limit on voting amount
+- Voting amount determines revenue share proportion for that contest round
+- Anti-abuse: on-chain transaction costs naturally prevent multi-account abuse
+
+**Revenue Sharing Model (To Be Implemented):**
+- Meme Creator: 30% (permanent reward for creating the IP)
+- Voters: 30% (proportional to voting amount in that contest round)
+- NFT Holder: 25% (whoever holds the winning meme's NFT, tradeable)
+- Platform: 15% (operational costs)
+- Revenue sources: Goods sales (Printful), NFT sales
+- Settlement currency: SOL
+
+**IP Pipeline (To Be Implemented):**
+1. Meme contest with SAMU voting
+2. Contest ends → Top 3 memes selected
+3. Winning memes minted as NFTs (1st, 2nd, 3rd place)
+4. NFT holders can trade NFTs (trading = transferring revenue share rights)
+5. Winning meme designs turned into goods via Printful
+6. Goods revenue distributed per revenue sharing model above
+
+**Authentication (To Be Updated):**
+- Current: Privy (email login + embedded Solana wallet)
+- Planned: Add Phantom wallet direct login alongside Privy
+- Goal: Existing Solana users can connect Phantom directly, new users use email
+
+**Technical Approach:**
+- Phase 1: Server-based (TypeScript) - all voting, revenue tracking, distribution via app server + DB
+- Phase 2: Smart contract (Rust/Anchor on Solana) - automate revenue distribution on-chain
+- Server-first approach allows easy iteration on revenue ratios and logic before locking into contracts
+
+**Hackathon Goals:**
+- Target: Solana hackathons (e.g. Colosseum)
+- Category: Consumer Applications
+- Differentiator: Community-curated meme IP incubator with full pipeline (vote → NFT → goods → revenue share)
+- Reference projects: Pudgy Penguins (IP→goods), Steemit (voter revenue share), Threadless (community voting→merchandise)
+
+**Known Issues Fixed:**
+- Duplicate contest archiving prevented via DB unique constraint on archivedContests.originalContestId
+- Race condition between interval checker and setTimeout scheduler resolved with 3-layer protection (status check, pre-insert check, DB unique constraint)
 
 ## System Architecture
 
