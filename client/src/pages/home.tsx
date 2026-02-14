@@ -371,14 +371,7 @@ export default function Home() {
 
       setSelectedMeme(null);
 
-      queryClient.setQueryData(['samu-balance', walletAddress], (old: any) => {
-        if (!old) return old;
-        return { ...old, balance: Math.max(0, (old.balance || 0) - 1) };
-      });
-
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['samu-balance', walletAddress] });
-      }, 15000);
+      queryClient.invalidateQueries({ queryKey: ['samu-balance', walletAddress] });
 
       await handleVoteUpdate();
 
