@@ -80,52 +80,9 @@ const Profile = memo(() => {
   });
 
   // 스마트 캐시 동기화 함수
-  const handleRefresh = useCallback(async () => {
-    if (!walletAddress) return;
-    
-    toast({
-      title: "Refreshing...",
-      description: "Fetching latest data",
-      duration: 1000
-    });
-
-    try {
-      // 1단계: 핵심 투표 관련 데이터 우선 새로고침
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['samu-balance', walletAddress] }),
-        queryClient.invalidateQueries({ queryKey: ['user-votes', walletAddress] })
-      ]);
-
-      // 2단계: 밈 데이터 새로고침 (투표 수 반영)
-      await queryClient.invalidateQueries({ queryKey: ['all-memes'] });
-
-      // 3단계: 사용자 통계 및 프로필 새로고침
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['user-stats', walletAddress] }),
-        queryClient.invalidateQueries({ queryKey: ['user-profile', walletAddress] }),
-        queryClient.invalidateQueries({ queryKey: ['user-memes', walletAddress] })
-      ]);
-
-      // 4단계: 토큰 잔액 새로고침
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['samu-balance', walletAddress] }),
-        queryClient.invalidateQueries({ queryKey: ['sol-balance', walletAddress] })
-      ]);
-
-      toast({
-        title: "Refreshed successfully",
-        description: "All data has been updated",
-        duration: 1200
-      });
-    } catch (error) {
-      console.error('Refresh error:', error);
-      toast({
-        title: "Refresh completed",
-        description: "Some data may still be updating",
-        duration: 1200
-      });
-    }
-  }, [walletAddress, queryClient, toast]);
+  const handleRefresh = useCallback(() => {
+    window.location.reload();
+  }, []);
 
 
   // User memes
