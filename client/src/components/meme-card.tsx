@@ -7,6 +7,8 @@ import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { usePrivy } from '@privy-io/react-auth';
+import { useSolanaWallets, useSignTransaction } from '@privy-io/react-auth/solana';
+import { Connection, Transaction } from '@solana/web3.js';
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowUp, Share2, Twitter, Send, Trash2 } from "lucide-react";
@@ -31,9 +33,15 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   const [isVoting, setIsVoting] = useState(false);
   const [voteAmount, setVoteAmount] = useState(1);
   const { authenticated, user } = usePrivy();
+  const { signTransaction } = useSignTransaction();
+  const { wallets, ready: walletsReady } = useSolanaWallets();
   const queryClient = useQueryClient();
   
-  // Listen for profile updates to refresh author info
+  const connection = new Connection(
+    `https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`,
+    'confirmed'
+  );
+  
   useEffect(() => {
     const handleProfileUpdate = () => {
       queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
@@ -43,7 +51,6 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
     return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
   }, []);
 
-  // Get wallet using same logic as WalletConnect component - prioritize Solana
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
@@ -86,28 +93,69 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
     setIsVoting(true);
     
     try {
+      toast({
+        title: "Preparing transaction...",
+        description: "Building SAMU transfer to treasury",
+        duration: 3000
+      });
+
+      const prepareRes = await fetch('/api/memes/prepare-transaction', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ voterWallet: walletAddress, samuAmount: voteAmount })
+      });
+
+      if (!prepareRes.ok) {
+        const err = await prepareRes.json();
+        throw new Error(err.message || 'Failed to prepare transaction');
+      }
+
+      const { transaction: serializedTx } = await prepareRes.json();
+      const transaction = Transaction.from(Buffer.from(serializedTx, 'base64'));
+
+      toast({
+        title: "Please sign the transaction",
+        description: `Sending ${voteAmount.toLocaleString()} SAMU to treasury`,
+        duration: 10000
+      });
+
+      const signedTx = await signTransaction({ transaction, connection });
+      const txSignature = await connection.sendRawTransaction(signedTx.serialize());
+
+      toast({
+        title: "Transaction sent!",
+        description: "Waiting for confirmation...",
+        duration: 8000
+      });
+
+      await connection.confirmTransaction(txSignature, 'confirmed');
+
       await apiRequest("POST", `/api/memes/${meme.id}/vote`, {
         voterWallet: walletAddress,
         samuAmount: voteAmount,
-        txSignature: "in-app-vote"
+        txSignature
       });
 
       toast({
         title: "Vote Submitted!",
-        description: `Used ${voteAmount.toLocaleString()} SAMU on this meme.`,
-        duration: 1000
+        description: `Sent ${voteAmount.toLocaleString()} SAMU on-chain. Tx: ${txSignature.slice(0, 8)}...`,
+        duration: 3000
       });
 
       setShowVoteDialog(false);
       
-      // 부모 컴포넌트에서 모든 캐시 동기화 처리
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['samu-balance', walletAddress] });
+      }, 5000);
+      
       onVote();
     } catch (error: any) {
+      const msg = error.message || "Failed to submit vote.";
       toast({
         title: "Voting Failed",
-        description: error.message || "Failed to submit vote. Please try again.",
+        description: msg.includes("User rejected") ? "Transaction was cancelled." : msg,
         variant: "destructive",
-        duration: 1000
+        duration: 3000
       });
     } finally {
       setIsVoting(false);

@@ -4,6 +4,8 @@ import { WalletConnect } from "@/components/wallet-connect";
 
 import { MemeCard } from "@/components/meme-card";
 import { usePrivy } from '@privy-io/react-auth';
+import { useSolanaWallets, useSignTransaction } from '@privy-io/react-auth/solana';
+import { Connection, Transaction } from '@solana/web3.js';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,7 +26,13 @@ interface PartnerContestProps {
 export function PartnerContest({ partnerId }: PartnerContestProps) {
   const [, setLocation] = useLocation();
   const { authenticated, user } = usePrivy();
+  const { signTransaction } = useSignTransaction();
   const { toast } = useToast();
+  
+  const solConnection = useMemo(() => new Connection(
+    `https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`,
+    'confirmed'
+  ), []);
   
   const [sortBy, setSortBy] = useState<"votes" | "latest">("votes");
   const [viewMode, setViewMode] = useState<"card" | "grid">("card");
@@ -83,6 +91,31 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
 
     setIsVoting(true);
     try {
+      toast({
+        title: "Preparing transaction...",
+        description: `Sending ${samuBalance.toLocaleString()} SAMU to treasury`,
+        duration: 5000
+      });
+
+      const prepareRes = await fetch('/api/memes/prepare-transaction', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ voterWallet: walletAddress, samuAmount: samuBalance })
+      });
+
+      if (!prepareRes.ok) {
+        const err = await prepareRes.json();
+        throw new Error(err.message || 'Failed to prepare transaction');
+      }
+
+      const { transaction: serializedTx } = await prepareRes.json();
+      const transaction = Transaction.from(Buffer.from(serializedTx, 'base64'));
+
+      const signedTx = await signTransaction({ transaction, connection: solConnection });
+      const txSignature = await solConnection.sendRawTransaction(signedTx.serialize());
+
+      await solConnection.confirmTransaction(txSignature, 'confirmed');
+
       await apiRequest(
         "POST",
         `/api/partners/${partnerId}/memes/${selectedMeme.id}/vote`,
@@ -90,21 +123,23 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
           memeId: selectedMeme.id,
           voterWallet: walletAddress,
           samuAmount: samuBalance,
-          txSignature: "in-app-vote"
+          txSignature
         }
       );
       
       toast({
         title: "Vote submitted!",
-        description: `You voted for "${selectedMeme.title}"`,
+        description: `Sent ${samuBalance.toLocaleString()} SAMU on-chain. Tx: ${txSignature.slice(0, 8)}...`,
+        duration: 3000
       });
       
       setShowVoteDialog(false);
       refetch();
-    } catch (error) {
+    } catch (error: any) {
+      const msg = error.message || "Something went wrong.";
       toast({
         title: "Vote failed",
-        description: "Something went wrong. Please try again.",
+        description: msg.includes("User rejected") ? "Transaction was cancelled." : msg,
         variant: "destructive"
       });
     } finally {
