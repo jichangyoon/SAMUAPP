@@ -313,28 +313,9 @@ export default function Home() {
     return txSignature;
   }, [walletAddress, signTransaction, solConnection]);
 
-  // 수동 새로고침 함수 (간단한 로직)
-  const handleRefresh = useCallback(async () => {
-    toast({
-      title: "Refreshing...",
-      description: "Fetching latest data",
-      duration: 1000
-    });
-
-    // 모든 쿼리 무효화 및 재요청
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['/api/memes'] }),
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/current-contest'] }),
-      queryClient.invalidateQueries({ queryKey: ['user-profile-header', walletAddress] }),
-      queryClient.invalidateQueries({ queryKey: ['balances', walletAddress] })
-    ]);
-
-    toast({
-      title: "Refreshed successfully",
-      description: "All data has been updated",
-      duration: 1200
-    });
-  }, [queryClient, walletAddress, toast]);
+  const handleRefresh = useCallback(() => {
+    window.location.reload();
+  }, []);
 
   const handleGridVote = useCallback(async (meme: Meme) => {
     if (!isConnected || !walletAddress) {
