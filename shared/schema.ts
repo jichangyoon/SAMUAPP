@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, bigint, timestamp, boolean, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, bigint, timestamp, boolean, uniqueIndex, doublePrecision } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -126,6 +126,47 @@ export const blockedIps = pgTable("blocked_ips", {
   blockedAt: timestamp("blocked_at").notNull().defaultNow(),
   blockedBy: text("blocked_by"), // 관리자 지갑주소
 });
+
+// 수익 분배 시스템
+export const revenues = pgTable("revenues", {
+  id: serial("id").primaryKey(),
+  contestId: integer("contest_id").notNull(),
+  source: text("source").notNull(), // 'goods', 'nft_sale', 'other'
+  description: text("description"),
+  totalAmountSol: doublePrecision("total_amount_sol").notNull(),
+  status: text("status").notNull().default("pending"), // 'pending', 'distributed', 'cancelled'
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  distributedAt: timestamp("distributed_at"),
+});
+
+export const revenueShares = pgTable("revenue_shares", {
+  id: serial("id").primaryKey(),
+  revenueId: integer("revenue_id").notNull(),
+  contestId: integer("contest_id").notNull(),
+  walletAddress: text("wallet_address").notNull(),
+  role: text("role").notNull(), // 'creator', 'voter', 'nft_holder', 'platform'
+  sharePercent: doublePrecision("share_percent").notNull(),
+  amountSol: doublePrecision("amount_sol").notNull(),
+  txSignature: text("tx_signature"),
+  status: text("status").notNull().default("pending"), // 'pending', 'paid', 'failed'
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertRevenueSchema = createInsertSchema(revenues).omit({
+  id: true,
+  createdAt: true,
+  distributedAt: true,
+});
+
+export const insertRevenueShareSchema = createInsertSchema(revenueShares).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type Revenue = typeof revenues.$inferSelect;
+export type InsertRevenue = z.infer<typeof insertRevenueSchema>;
+export type RevenueShare = typeof revenueShares.$inferSelect;
+export type InsertRevenueShare = z.infer<typeof insertRevenueShareSchema>;
 
 export const insertMemeSchema = createInsertSchema(memes).omit({
   id: true,

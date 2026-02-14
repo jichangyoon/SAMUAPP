@@ -33,13 +33,20 @@ User is a non-technical founder managing the app with AI assistance.
 - DB schema: votes table uses `samuAmount` + `txSignature` (replaced old votingPower/powerUsed columns)
 - Old voting-power.ts file deleted; no more voting power calculations
 
-**Revenue Sharing Model (To Be Implemented):**
+**Revenue Sharing Model (Implemented - Tracking/Calculation):**
 - Meme Creator: 30% (permanent reward for creating the IP)
-- Voters: 30% (proportional to voting amount in that contest round)
+- Voters: 30% (proportional to voting amount in that contest round - all voters, not just winners)
 - NFT Holder: 25% (whoever holds the winning meme's NFT, tradeable)
 - Platform: 15% (operational costs)
 - Revenue sources: Goods sales (Printful), NFT sales
 - Settlement currency: SOL
+- DB tables: `revenues` (contest revenue records), `revenue_shares` (individual distribution records)
+- API: `/api/revenue/` - create revenue, distribute, query by contest/wallet
+- Admin can create revenue entries and trigger distribution calculation
+- Users see real-time vote share % during active contests
+- Archive shows revenue distribution details after contest ends
+- Profile stats tab shows total earnings and per-contest breakdown
+- Actual SOL transfer not yet automated (manual for now)
 
 **IP Pipeline (To Be Implemented):**
 1. Meme contest with SAMU voting

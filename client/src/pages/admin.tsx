@@ -9,12 +9,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Play, Square, Archive, Plus, Clock, Trophy, ArrowLeft, Shield, Eye, Ban } from "lucide-react";
+import { Play, Square, Archive, Plus, Clock, Trophy, ArrowLeft, Shield, Eye, Ban, DollarSign } from "lucide-react";
 import type { Contest, ArchivedContest } from "@shared/schema";
 import { useLocation } from "wouter";
 import { IPTrackingPanel } from "@/components/ip-tracking-panel";
+import { usePrivy } from "@privy-io/react-auth";
 
 export function Admin() {
+  const { user } = usePrivy();
+  const adminEmail = user?.email?.address || "";
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -23,8 +26,12 @@ export function Admin() {
     title: "",
     description: "",
     prizePool: "",
-    durationDays: 7 // 기본 7일
+    durationDays: 7
   });
+  const [revenueForm, setRevenueForm] = useState<{ contestId: number | null; source: string; amount: string; description: string }>({
+    contestId: null, source: 'goods', amount: '', description: ''
+  });
+  const [distributingId, setDistributingId] = useState<number | null>(null);
 
   // Fetch current contests
   const { data: contests = [], isLoading } = useQuery<Contest[]>({
@@ -33,11 +40,22 @@ export function Admin() {
     refetchOnMount: true, // 마운트시 재요청
   });
 
-  // Fetch archived contests
   const { data: archivedContests = [] } = useQuery<ArchivedContest[]>({
     queryKey: ["/api/admin/archived-contests"],
-    staleTime: 0, // 항상 새로운 데이터 가져오기
-    refetchOnMount: true, // 마운트시 재요청
+    staleTime: 0,
+    refetchOnMount: true,
+  });
+
+  const [expandedRevenueContest, setExpandedRevenueContest] = useState<number | null>(null);
+
+  const { data: contestRevenueData } = useQuery({
+    queryKey: ['admin-revenue', expandedRevenueContest],
+    queryFn: async () => {
+      const res = await fetch(`/api/revenue/contest/${expandedRevenueContest}`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: !!expandedRevenueContest,
   });
 
   // Create contest mutation
@@ -383,7 +401,7 @@ export function Admin() {
                         </Badge>
                       </div>
                       
-                      <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div className="grid grid-cols-3 gap-4 text-sm mb-3">
                         <div>
                           <span className="text-muted-foreground">Memes: </span>
                           <span className="font-medium">{contest.totalMemes}</span>
@@ -396,6 +414,112 @@ export function Admin() {
                           <span className="text-muted-foreground">Participants: </span>
                           <span className="font-medium">{contest.totalParticipants}</span>
                         </div>
+                      </div>
+
+                      <div className="border-t border-border/50 pt-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setExpandedRevenueContest(expandedRevenueContest === contest.originalContestId ? null : contest.originalContestId)}
+                          className="flex items-center gap-1 mb-3"
+                        >
+                          <DollarSign className="h-3.5 w-3.5" />
+                          Revenue Management
+                        </Button>
+
+                        {expandedRevenueContest === contest.originalContestId && (
+                          <div className="space-y-3">
+                            {contestRevenueData?.revenues?.length > 0 && (
+                              <div className="space-y-2">
+                                {contestRevenueData.revenues.map((rev: any) => (
+                                  <div key={rev.id} className="bg-accent/30 rounded p-3 text-sm">
+                                    <div className="flex items-center justify-between mb-1">
+                                      <span className="text-foreground font-medium">{rev.source} — {rev.totalAmountSol} SOL</span>
+                                      <Badge className={rev.status === 'distributed' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}>
+                                        {rev.status}
+                                      </Badge>
+                                    </div>
+                                    {rev.description && <p className="text-xs text-muted-foreground mb-2">{rev.description}</p>}
+                                    {rev.status === 'pending' && (
+                                      <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        disabled={distributingId === rev.id}
+                                        onClick={async () => {
+                                          setDistributingId(rev.id);
+                                          try {
+                                            await apiRequest("POST", `/api/revenue/${rev.id}/distribute`, { adminEmail });
+                                            toast({ title: "Revenue distributed successfully" });
+                                            queryClient.invalidateQueries({ queryKey: ['admin-revenue', contest.originalContestId] });
+                                          } catch (e: any) {
+                                            toast({ title: "Distribution failed", description: e.message, variant: "destructive" });
+                                          } finally {
+                                            setDistributingId(null);
+                                          }
+                                        }}
+                                      >
+                                        {distributingId === rev.id ? "Distributing..." : "Distribute"}
+                                      </Button>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            <div className="bg-accent/20 rounded p-3 space-y-2">
+                              <p className="text-sm font-medium text-foreground">Add Revenue</p>
+                              <Select
+                                value={revenueForm.contestId === contest.originalContestId ? revenueForm.source : 'goods'}
+                                onValueChange={(v) => setRevenueForm({ ...revenueForm, contestId: contest.originalContestId, source: v })}
+                              >
+                                <SelectTrigger className="h-8 text-sm">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="goods">Goods</SelectItem>
+                                  <SelectItem value="nft_sale">NFT Sale</SelectItem>
+                                  <SelectItem value="other">Other</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <Input
+                                placeholder="Amount (SOL)"
+                                type="number"
+                                step="0.0001"
+                                className="h-8 text-sm"
+                                value={revenueForm.contestId === contest.originalContestId ? revenueForm.amount : ''}
+                                onChange={(e) => setRevenueForm({ ...revenueForm, contestId: contest.originalContestId, amount: e.target.value })}
+                              />
+                              <Input
+                                placeholder="Description (optional)"
+                                className="h-8 text-sm"
+                                value={revenueForm.contestId === contest.originalContestId ? revenueForm.description : ''}
+                                onChange={(e) => setRevenueForm({ ...revenueForm, contestId: contest.originalContestId, description: e.target.value })}
+                              />
+                              <Button
+                                size="sm"
+                                disabled={!revenueForm.amount || revenueForm.contestId !== contest.originalContestId}
+                                onClick={async () => {
+                                  try {
+                                    await apiRequest("POST", "/api/revenue/", {
+                                      contestId: contest.originalContestId,
+                                      source: revenueForm.source,
+                                      description: revenueForm.description,
+                                      totalAmountSol: parseFloat(revenueForm.amount),
+                                      adminEmail,
+                                    });
+                                    toast({ title: "Revenue entry created" });
+                                    setRevenueForm({ contestId: null, source: 'goods', amount: '', description: '' });
+                                    queryClient.invalidateQueries({ queryKey: ['admin-revenue', contest.originalContestId] });
+                                  } catch (e: any) {
+                                    toast({ title: "Failed to create revenue", description: e.message, variant: "destructive" });
+                                  }
+                                }}
+                              >
+                                Create Revenue Entry
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>

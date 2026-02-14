@@ -1,4 +1,4 @@
-import { memes, votes, nfts, nftComments, partnerMemes, partnerVotes, users, contests, archivedContests, loginLogs, blockedIps, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type NftComment, type InsertNftComment, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest, type LoginLog, type InsertLoginLog, type BlockedIp, type InsertBlockedIp } from "@shared/schema";
+import { memes, votes, nfts, nftComments, partnerMemes, partnerVotes, users, contests, archivedContests, loginLogs, blockedIps, revenues, revenueShares, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type NftComment, type InsertNftComment, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest, type LoginLog, type InsertLoginLog, type BlockedIp, type InsertBlockedIp, type Revenue, type InsertRevenue, type RevenueShare, type InsertRevenueShare } from "@shared/schema";
 import { getDatabase } from "./db";
 import { eq, and, desc, isNull, or, sql } from "drizzle-orm";
 
@@ -57,8 +57,8 @@ export interface IStorage {
   
   // IP 추적 시스템
   logLogin(loginLog: InsertLoginLog): Promise<LoginLog>;
-  getTodayLoginsByIp(ipAddress: string): Promise<string[]>; // 오늘 해당 IP로 로그인한 고유 지갑 주소들
-  getTodayLoginsByDeviceId(deviceId: string): Promise<string[]>; // 오늘 해당 디바이스로 로그인한 고유 지갑 주소들
+  getTodayLoginsByIp(ipAddress: string): Promise<string[]>;
+  getTodayLoginsByDeviceId(deviceId: string): Promise<string[]>;
   blockIp(blockData: InsertBlockedIp): Promise<BlockedIp>;
   unblockIp(ipAddress: string): Promise<void>;
   isIpBlocked(ipAddress: string): Promise<boolean>;
@@ -66,6 +66,18 @@ export interface IStorage {
   getRecentLogins(limit?: number): Promise<LoginLog[]>;
   getSuspiciousIps(): Promise<{ipAddress: string, walletCount: number, wallets: string[]}[]>;
   getSuspiciousDevices(): Promise<{deviceId: string, walletCount: number, wallets: string[]}[]>;
+
+  // Revenue operations
+  createRevenue(revenue: InsertRevenue): Promise<Revenue>;
+  getRevenuesByContestId(contestId: number): Promise<Revenue[]>;
+  getRevenueById(id: number): Promise<Revenue | undefined>;
+  updateRevenueStatus(id: number, status: string, distributedAt?: Date): Promise<Revenue>;
+  createRevenueShare(share: InsertRevenueShare): Promise<RevenueShare>;
+  createRevenueShares(shares: InsertRevenueShare[]): Promise<RevenueShare[]>;
+  getRevenueSharesByRevenueId(revenueId: number): Promise<RevenueShare[]>;
+  getRevenueSharesByWallet(walletAddress: string): Promise<RevenueShare[]>;
+  getRevenueSharesByContestId(contestId: number): Promise<RevenueShare[]>;
+  getContestVoteSummary(contestId: number): Promise<{voterWallet: string, totalSamuAmount: number}[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -395,6 +407,17 @@ export class MemStorage implements IStorage {
     
     meme.votes = voteCount;
   }
+
+  async createRevenue(_revenue: InsertRevenue): Promise<Revenue> { throw new Error("Not implemented"); }
+  async getRevenuesByContestId(_contestId: number): Promise<Revenue[]> { return []; }
+  async getRevenueById(_id: number): Promise<Revenue | undefined> { return undefined; }
+  async updateRevenueStatus(_id: number, _status: string): Promise<Revenue> { throw new Error("Not implemented"); }
+  async createRevenueShare(_share: InsertRevenueShare): Promise<RevenueShare> { throw new Error("Not implemented"); }
+  async createRevenueShares(_shares: InsertRevenueShare[]): Promise<RevenueShare[]> { return []; }
+  async getRevenueSharesByRevenueId(_revenueId: number): Promise<RevenueShare[]> { return []; }
+  async getRevenueSharesByWallet(_walletAddress: string): Promise<RevenueShare[]> { return []; }
+  async getRevenueSharesByContestId(_contestId: number): Promise<RevenueShare[]> { return []; }
+  async getContestVoteSummary(_contestId: number): Promise<{voterWallet: string, totalSamuAmount: number}[]> { return []; }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1214,6 +1237,78 @@ export class DatabaseStorage implements IStorage {
       walletCount: row.walletCount,
       wallets: row.wallets
     }));
+  }
+
+  // Revenue operations
+  async createRevenue(insertRevenue: InsertRevenue): Promise<Revenue> {
+    if (!this.db) throw new Error("Database not available");
+    const [revenue] = await this.db.insert(revenues).values(insertRevenue).returning();
+    return revenue;
+  }
+
+  async getRevenuesByContestId(contestId: number): Promise<Revenue[]> {
+    if (!this.db) throw new Error("Database not available");
+    return await this.db.select().from(revenues).where(eq(revenues.contestId, contestId)).orderBy(desc(revenues.createdAt));
+  }
+
+  async getRevenueById(id: number): Promise<Revenue | undefined> {
+    if (!this.db) throw new Error("Database not available");
+    const [revenue] = await this.db.select().from(revenues).where(eq(revenues.id, id));
+    return revenue;
+  }
+
+  async updateRevenueStatus(id: number, status: string, distributedAt?: Date): Promise<Revenue> {
+    if (!this.db) throw new Error("Database not available");
+    const updateData: any = { status };
+    if (distributedAt) updateData.distributedAt = distributedAt;
+    const [revenue] = await this.db.update(revenues).set(updateData).where(eq(revenues.id, id)).returning();
+    return revenue;
+  }
+
+  async createRevenueShare(insertShare: InsertRevenueShare): Promise<RevenueShare> {
+    if (!this.db) throw new Error("Database not available");
+    const [share] = await this.db.insert(revenueShares).values(insertShare).returning();
+    return share;
+  }
+
+  async createRevenueShares(insertShares: InsertRevenueShare[]): Promise<RevenueShare[]> {
+    if (!this.db) throw new Error("Database not available");
+    if (insertShares.length === 0) return [];
+    return await this.db.insert(revenueShares).values(insertShares).returning();
+  }
+
+  async getRevenueSharesByRevenueId(revenueId: number): Promise<RevenueShare[]> {
+    if (!this.db) throw new Error("Database not available");
+    return await this.db.select().from(revenueShares).where(eq(revenueShares.revenueId, revenueId));
+  }
+
+  async getRevenueSharesByWallet(walletAddress: string): Promise<RevenueShare[]> {
+    if (!this.db) throw new Error("Database not available");
+    return await this.db.select().from(revenueShares).where(eq(revenueShares.walletAddress, walletAddress)).orderBy(desc(revenueShares.createdAt));
+  }
+
+  async getRevenueSharesByContestId(contestId: number): Promise<RevenueShare[]> {
+    if (!this.db) throw new Error("Database not available");
+    return await this.db.select().from(revenueShares).where(eq(revenueShares.contestId, contestId));
+  }
+
+  async getContestVoteSummary(contestId: number): Promise<{voterWallet: string, totalSamuAmount: number}[]> {
+    if (!this.db) throw new Error("Database not available");
+    const contestMemes = await this.db.select({ id: memes.id }).from(memes).where(eq(memes.contestId, contestId));
+    if (contestMemes.length === 0) return [];
+    
+    const memeIds = contestMemes.map(m => m.id);
+    const allVotes = await this.db.select().from(votes).where(
+      sql`${votes.memeId} IN (${sql.raw(memeIds.join(','))})`
+    );
+    
+    const summary = new Map<string, number>();
+    for (const vote of allVotes) {
+      const current = summary.get(vote.voterWallet) || 0;
+      summary.set(vote.voterWallet, current + (vote.samuAmount || 0));
+    }
+    
+    return Array.from(summary.entries()).map(([voterWallet, totalSamuAmount]) => ({ voterWallet, totalSamuAmount }));
   }
 }
 
