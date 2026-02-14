@@ -604,13 +604,13 @@ export default function Home() {
                               <span className="text-primary font-medium">15%</span>
                             </div>
                           </div>
-                          {isConnected && myRevenueShare?.voting?.votePercent > 0 && (
+                          {isConnected && (
                             <div className="mt-3 bg-primary/10 rounded px-3 py-2 flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <TrendingUp className="h-3.5 w-3.5 text-primary" />
                                 <span className="text-sm text-muted-foreground">Your revenue share</span>
                               </div>
-                              <span className="text-sm text-primary font-semibold">{(myRevenueShare.voting.votePercent * 0.3).toFixed(1)}%</span>
+                              <span className="text-sm text-primary font-semibold">{((myRevenueShare?.voting?.votePercent || 0) * 0.3).toFixed(1)}%</span>
                             </div>
                           )}
                         </CardContent>
