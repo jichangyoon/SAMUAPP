@@ -3,9 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { User, Trophy, TrendingUp, Calendar, Copy, X } from "lucide-react";
+import { Trophy, Coins, Copy, X } from "lucide-react";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { MediaDisplay } from "@/components/media-display";
 import { useToast } from "@/hooks/use-toast";
@@ -24,13 +23,6 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const { toast } = useToast();
 
-  const showStatsToast = (statType: string, description: string) => {
-    toast({
-      title: statType,
-      description: description,
-      duration: 4000,
-    });
-  };
   const { data: userProfile } = useQuery({
     queryKey: [`/api/users/profile/${walletAddress}`],
     enabled: isOpen && !!walletAddress,
@@ -41,18 +33,12 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
     enabled: isOpen && !!walletAddress,
   });
 
-  const { data: userStats } = useQuery({
-    queryKey: [`/api/users/${walletAddress}/stats`],
-    enabled: isOpen && !!walletAddress,
-  });
-
   const { data: userVotes = [] } = useQuery({
     queryKey: [`/api/users/${walletAddress}/votes`],
     enabled: isOpen && !!walletAddress,
   });
 
-  const totalVotes = userMemes.reduce((sum: number, meme: any) => sum + meme.votes, 0);
-  const averageVotes = userMemes.length > 0 ? Math.round(totalVotes / userMemes.length) : 0;
+  const totalSamuSpent = userVotes.reduce((sum: number, vote: any) => sum + (Number(vote.samuAmount) || 0), 0);
 
   return (
     <Drawer open={isOpen} onOpenChange={onClose}>
@@ -107,10 +93,7 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {/* Stats Cards */}
           <div className="grid grid-cols-2 gap-4">
-            <Card 
-              className="bg-gray-900 border-gray-800 cursor-pointer hover:bg-gray-800 transition-colors"
-              onClick={() => showStatsToast("Memes Created", "Total number of memes submitted by this user. Each meme can receive votes to earn points.")}
-            >
+            <Card className="bg-gray-900 border-gray-800">
               <CardContent className="p-4 text-center">
                 <div className="flex items-center justify-center mb-2">
                   <Trophy className="h-5 w-5 text-yellow-400" />
@@ -120,42 +103,13 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
               </CardContent>
             </Card>
 
-            <Card 
-              className="bg-gray-900 border-gray-800 cursor-pointer hover:bg-gray-800 transition-colors"
-              onClick={() => showStatsToast("Total Votes", "Total votes received by all of this user's memes. Higher numbers indicate greater popularity.")}
-            >
+            <Card className="bg-gray-900 border-gray-800">
               <CardContent className="p-4 text-center">
                 <div className="flex items-center justify-center mb-2">
-                  <TrendingUp className="h-5 w-5 text-green-400" />
+                  <Coins className="h-5 w-5 text-[hsl(50,85%,75%)]" />
                 </div>
-                <div className="text-2xl font-bold text-white">{totalVotes}</div>
-                <div className="text-sm text-gray-400">Total Votes</div>
-              </CardContent>
-            </Card>
-
-            <Card 
-              className="bg-gray-900 border-gray-800 cursor-pointer hover:bg-gray-800 transition-colors"
-              onClick={() => showStatsToast("Votes Cast", "Total number of votes this user has given to other memes. Shows community engagement level.")}
-            >
-              <CardContent className="p-4 text-center">
-                <div className="flex items-center justify-center mb-2">
-                  <User className="h-5 w-5 text-blue-400" />
-                </div>
-                <div className="text-2xl font-bold text-white">{userVotes.length}</div>
-                <div className="text-sm text-gray-400">Votes Cast</div>
-              </CardContent>
-            </Card>
-
-            <Card 
-              className="bg-gray-900 border-gray-800 cursor-pointer hover:bg-gray-800 transition-colors"
-              onClick={() => showStatsToast("Avg Votes", "Average votes received per meme. Indicates consistent quality and appeal of content.")}
-            >
-              <CardContent className="p-4 text-center">
-                <div className="flex items-center justify-center mb-2">
-                  <Calendar className="h-5 w-5 text-purple-400" />
-                </div>
-                <div className="text-2xl font-bold text-white">{averageVotes}</div>
-                <div className="text-sm text-gray-400">Avg Votes</div>
+                <div className="text-2xl font-bold text-white">{totalSamuSpent.toLocaleString()}</div>
+                <div className="text-sm text-gray-400">SAMU Spent</div>
               </CardContent>
             </Card>
           </div>
@@ -190,24 +144,6 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
             </div>
           )}
 
-          {/* Recent Activity */}
-          {userVotes.length > 0 && (
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-3">Recent Votes</h3>
-              <div className="space-y-2">
-                {userVotes.slice(0, 5).map((vote: any, index: number) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-900 rounded-lg border border-gray-800">
-                    <div className="text-sm text-gray-300">
-                      Voted on meme #{vote.memeId}
-                    </div>
-                    <Badge variant="secondary" className="bg-gray-800 text-gray-300">
-                      {vote.samuAmount} SAMU
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </DrawerContent>
 
