@@ -239,6 +239,16 @@ export default function Home() {
     enabled: archiveView === 'contest' && !!selectedArchiveContest?.id,
   });
 
+  const { data: archiveMyVotes } = useQuery({
+    queryKey: ['archive-my-votes', selectedArchiveContest?.id, walletAddress],
+    queryFn: async () => {
+      const res = await fetch(`/api/memes/contest/${selectedArchiveContest.id}/my-votes/${walletAddress}`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: archiveView === 'contest' && !!selectedArchiveContest?.id && !!walletAddress && authenticated,
+  });
+
   // Profile state management
   const [profileData, setProfileData] = useState({ displayName: 'User', profileImage: '' });
 
@@ -917,6 +927,52 @@ export default function Home() {
                         </div>
                       </CardContent>
                     </Card>
+
+                    {authenticated && walletAddress && archiveMyVotes && archiveMyVotes.myTotalSamu > 0 && (
+                      <Card className="border-primary/30 bg-primary/5">
+                        <CardContent className="p-4">
+                          <h3 className="font-semibold text-foreground text-sm mb-3 flex items-center gap-2">
+                            My Voting Summary
+                          </h3>
+                          <div className="grid grid-cols-3 gap-3 text-center">
+                            <div className="bg-accent/50 rounded-lg p-2">
+                              <div className="text-primary font-bold text-sm">
+                                {archiveMyVotes.myTotalSamu.toLocaleString()}
+                              </div>
+                              <div className="text-muted-foreground text-xs">SAMU Spent</div>
+                            </div>
+                            <div className="bg-accent/50 rounded-lg p-2">
+                              <div className="text-purple-400 font-bold text-sm">
+                                {archiveMyVotes.totalContestSamu > 0
+                                  ? ((archiveMyVotes.myTotalSamu / archiveMyVotes.totalContestSamu) * 100).toFixed(1)
+                                  : '0'}%
+                              </div>
+                              <div className="text-muted-foreground text-xs">Vote Share</div>
+                            </div>
+                            <div className="bg-accent/50 rounded-lg p-2">
+                              <div className="text-green-400 font-bold text-sm">
+                                {archiveMyVotes.myRevenueSharePercent || 0}%
+                              </div>
+                              <div className="text-muted-foreground text-xs">Revenue Share</div>
+                            </div>
+                          </div>
+                          {archiveMyVotes.votes?.length > 0 && (
+                            <div className="mt-3 space-y-1.5">
+                              <div className="text-xs text-muted-foreground">Voted on {archiveMyVotes.votes.length} meme(s):</div>
+                              {archiveMyVotes.votes.map((v: any, i: number) => (
+                                <div key={i} className="flex items-center justify-between text-xs bg-accent/30 rounded px-2 py-1.5">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    {v.memeImageUrl && <img src={v.memeImageUrl} alt="" className="w-6 h-6 rounded object-cover flex-shrink-0" />}
+                                    <span className="text-foreground truncate">{v.memeTitle}</span>
+                                  </div>
+                                  <span className="font-semibold text-primary ml-2 flex-shrink-0">{(v.samuAmount || 0).toLocaleString()} SAMU</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    )}
 
                     {/* All Memes Grid */}
                     <div className="space-y-4">
