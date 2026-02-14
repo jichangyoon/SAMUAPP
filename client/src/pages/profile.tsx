@@ -72,17 +72,6 @@ const Profile = memo(() => {
     enabled: !!walletAddress,
   });
 
-  // Voting power data
-  const { data: votingPowerData } = useQuery({
-    queryKey: ['voting-power', walletAddress],
-    queryFn: async () => {
-      if (!walletAddress) return null;
-      const res = await fetch(`/api/voting-power/${walletAddress}`);
-      if (!res.ok) throw new Error('Failed to fetch voting power');
-      return res.json();
-    },
-    enabled: !!walletAddress,
-  });
 
   // 스마트 캐시 동기화 함수
   const handleRefresh = useCallback(async () => {
@@ -97,7 +86,7 @@ const Profile = memo(() => {
     try {
       // 1단계: 핵심 투표 관련 데이터 우선 새로고침
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['voting-power', walletAddress] }),
+        queryClient.invalidateQueries({ queryKey: ['samu-balance', walletAddress] }),
         queryClient.invalidateQueries({ queryKey: ['user-votes', walletAddress] })
       ]);
 
@@ -133,20 +122,6 @@ const Profile = memo(() => {
     }
   }, [walletAddress, queryClient, toast]);
 
-  // Voting power explanation handler
-  const handleVotingPowerExplanation = useCallback(() => {
-    if (!votingPowerData) return;
-    
-    // Calculate SAMU balance in millions from voting power
-    const samuBalance = (votingPowerData.totalPower - 3) / 10;
-    const samuFormatted = samuBalance.toFixed(2);
-    
-    toast({
-      title: "Voting Power Calculation",
-      description: `Base 3 + (SAMU/1M × 10) power\nCurrent: ${samuFormatted}M SAMU = ${votingPowerData.totalPower} power\nUpdated at contest start/end`,
-      duration: 5000
-    });
-  }, [votingPowerData, toast]);
 
   // User memes
   const { data: userMemes = [] } = useQuery({
@@ -554,9 +529,7 @@ const Profile = memo(() => {
     const totalMemesCreated = userStats?.totalMemes || 0;
     const totalVotesReceived = userStats?.totalMemesVotes || 0;
     const totalVotesCast = userStats?.totalVotesCast || 0;
-    const totalVotingPowerUsed = userStats?.totalVotingPowerUsed || 0;
-    const remainingVotingPower = votingPowerData?.remainingPower || 0;
-    const totalVotingPower = votingPowerData?.totalPower || 0;
+    const totalSamuSpent = userStats?.totalSamuSpent || 0;
     
     // Calculate real contest progress based on active contest
     let contestProgress = 0;
@@ -600,13 +573,11 @@ const Profile = memo(() => {
       totalMemesCreated,
       totalVotesReceived,
       totalVotesCast,
-      totalVotingPowerUsed,
-      remainingVotingPower,
-      totalVotingPower,
+      totalSamuSpent,
       contestProgress,
       contestStatus,
     };
-  }, [samuData, solData, userStats, activeContest]);
+  }, [samuData, solData, userStats, activeContest]); 
 
   // User's memes, votes, and comments - useMemo로 최적화
   const { myMemes, myVotes, myComments } = useMemo(() => ({
@@ -798,15 +769,9 @@ const Profile = memo(() => {
                 <div className="text-sm font-bold text-purple-400">{stats.currentSolBalance.toFixed(4)}</div>
                 <div className="text-xs text-muted-foreground">SOL</div>
               </div>
-              <div 
-                className="text-center bg-accent/30 rounded-lg p-2 cursor-pointer hover:bg-accent/50 transition-colors"
-                onClick={() => {
-                  handleVotingPowerExplanation();
-                  queryClient.invalidateQueries({ queryKey: ['voting-power', walletAddress] });
-                }}
-              >
-                <div className="text-sm font-bold text-green-400">{stats.remainingVotingPower.toLocaleString()}</div>
-                <div className="text-xs text-muted-foreground">Voting Power</div>
+              <div className="text-center bg-accent/30 rounded-lg p-2">
+                <div className="text-sm font-bold text-green-400">{stats.totalSamuSpent.toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground">SAMU Spent</div>
               </div>
               <div className="text-center bg-accent/30 rounded-lg p-2">
                 <div className="text-sm font-bold text-blue-400">{stats.totalMemesCreated}</div>
@@ -882,11 +847,6 @@ const Profile = memo(() => {
               <div className="text-sm text-muted-foreground">
                 {stats.contestStatus}
               </div>
-              {activeContest && activeContest.status === 'active' && (
-                <div className="text-xs text-muted-foreground">
-                  Voting power will be restored when the contest ends
-                </div>
-              )}
             </div>
           </CardContent>
         </Card>
@@ -907,15 +867,11 @@ const Profile = memo(() => {
               <span>Comments</span>
             </TabsTrigger>
             <TabsTrigger 
-              value="power" 
+              value="stats" 
               className="flex flex-col items-center gap-1 p-3 text-xs"
-              onClick={() => {
-                handleVotingPowerExplanation();
-                queryClient.invalidateQueries({ queryKey: ['voting-power', walletAddress] });
-              }}
             >
               <Zap className="h-4 w-4" />
-              <span>Power</span>
+              <span>Stats</span>
             </TabsTrigger>
           </TabsList>
 
@@ -1046,7 +1002,7 @@ const Profile = memo(() => {
                             <p className="text-xs text-muted-foreground truncate">by {meme.authorUsername}</p>
                           </div>
                           <Badge variant="secondary" className="text-green-400 text-xs">
-                            +{vote.powerUsed || vote.votingPower}
+                            +{vote.samuAmount} SAMU
                           </Badge>
                         </div>
                       ) : null;
@@ -1161,43 +1117,40 @@ const Profile = memo(() => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="power" className="flex-1 overflow-hidden">
+          <TabsContent value="stats" className="flex-1 overflow-hidden">
             <Card className="border-border bg-card h-full flex flex-col">
               <CardHeader className="flex-shrink-0">
                 <CardTitle className="text-lg text-foreground flex items-center gap-2">
                   <Zap className="h-5 w-5" />
-                  Voting Power Details
+                  Voting Stats
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex-1 overflow-y-auto space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="text-center bg-accent/30 rounded-lg p-3">
-                    <div className="text-lg font-bold text-green-400">{votingPowerData?.totalPower?.toLocaleString() || '0'}</div>
-                    <div className="text-xs text-muted-foreground">Total Power</div>
+                    <div className="text-lg font-bold text-green-400">{stats.currentSamuBalance.toLocaleString()}</div>
+                    <div className="text-xs text-muted-foreground">SAMU Balance</div>
                   </div>
                   <div className="text-center bg-accent/30 rounded-lg p-3">
-                    <div className="text-lg font-bold text-red-400">{votingPowerData?.usedPower?.toLocaleString() || '0'}</div>
-                    <div className="text-xs text-muted-foreground">Used Power</div>
+                    <div className="text-lg font-bold text-red-400">{stats.totalSamuSpent.toLocaleString()}</div>
+                    <div className="text-xs text-muted-foreground">SAMU Spent</div>
                   </div>
                 </div>
 
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-muted-foreground">Remaining Power</span>
-                    <span className="text-sm font-medium text-foreground">
-                      {votingPowerData?.remainingPower?.toLocaleString() || '0'} / {votingPowerData?.totalPower?.toLocaleString() || '0'}
-                    </span>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="text-center bg-accent/30 rounded-lg p-3">
+                    <div className="text-lg font-bold text-blue-400">{stats.totalVotesCast}</div>
+                    <div className="text-xs text-muted-foreground">Votes Cast</div>
                   </div>
-                  <Progress 
-                    value={votingPowerData?.totalPower > 0 ? (votingPowerData.remainingPower / votingPowerData.totalPower) * 100 : 0} 
-                    className="h-2"
-                  />
+                  <div className="text-center bg-accent/30 rounded-lg p-3">
+                    <div className="text-lg font-bold text-yellow-400">{stats.totalVotesReceived}</div>
+                    <div className="text-xs text-muted-foreground">Votes Received</div>
+                  </div>
                 </div>
 
                 <div className="text-xs text-muted-foreground bg-accent/50 p-3 rounded-lg space-y-1">
-                  <p>• Voting power is based on your SAMU token balance</p>
-                  <p>• Each vote consumes voting power</p>
-                  <p>• Power resets when the contest ends</p>
+                  <p>• Vote by spending SAMU tokens directly</p>
+                  <p>• The SAMU amount you vote with becomes the vote count</p>
                 </div>
               </CardContent>
             </Card>

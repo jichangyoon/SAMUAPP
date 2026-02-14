@@ -11,18 +11,14 @@ import uploadsRouter from "./routes/uploads";
 import usersRouter from "./routes/users";
 import adminRouter from "./routes/admin";
 import { actionsRouter } from "./routes/actions";
-import { votingPowerManager } from "./voting-power";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Serve attached_assets as static files under /assets
   const assetsPath = path.resolve(import.meta.dirname, "..", "attached_assets");
   app.use("/assets", express.static(assetsPath));
 
-  // Serve uploaded files as static files under /uploads
   const uploadsPath = path.resolve(import.meta.dirname, "..", "uploads");
   app.use("/uploads", express.static(uploadsPath));
 
-  // Register modular routes
   app.use("/api/memes", memesRouter);
   app.use("/api/memes", votesRouter);
   app.use("/api/nfts", nftsRouter);

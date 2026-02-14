@@ -35,3 +35,8 @@ author = "agent"
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
+
+[userenv]
+
+[userenv.shared]
+TREASURY_WALLET_ADDRESS = "4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk"

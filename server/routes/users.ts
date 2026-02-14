@@ -89,7 +89,6 @@ router.get("/profile/:walletAddress", async (req, res) => {
         walletAddress,
         username: walletAddress.slice(0, 8) + '...' + walletAddress.slice(-4),
         samuBalance: 0,
-        totalVotingPower: 0
       };
       
       user = await storage.createUser(userData);
@@ -183,15 +182,14 @@ router.get("/:walletAddress/stats", async (req, res) => {
     }
     
     const totalMemesVotes = memes.reduce((sum, meme) => sum + meme.votes, 0);
-    const totalVotingPowerUsed = votes.reduce((sum, vote) => sum + ((vote as any).powerUsed || vote.votingPower), 0);
+    const totalSamuSpent = votes.reduce((sum, vote) => sum + vote.samuAmount, 0);
     
     const stats = {
       totalMemes: memes.length,
       totalMemesVotes,
       totalVotesCast: votes.length,
-      totalVotingPowerUsed,
+      totalSamuSpent,
       samuBalance: user.samuBalance,
-      remainingVotingPower: user.totalVotingPower - totalVotingPowerUsed,
       memberSince: user.createdAt
     };
     

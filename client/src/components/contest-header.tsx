@@ -112,7 +112,7 @@ export function ContestHeader() {
         </div>
         
         <p className="text-muted-foreground text-sm mb-4">
-          Submit your best SAMU memes and vote with your voting power. The most voted meme wins!
+          Submit your best SAMU memes and vote with SAMU tokens. The most voted meme wins!
         </p>
         
         {/* Time Left - Only show if contest is active and timeLeft is valid */}

@@ -201,7 +201,7 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
                       Voted on meme #{vote.memeId}
                     </div>
                     <Badge variant="secondary" className="bg-gray-800 text-gray-300">
-                      {vote.votingPower} power
+                      {vote.samuAmount} SAMU
                     </Badge>
                   </div>
                 ))}

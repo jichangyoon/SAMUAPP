@@ -68,7 +68,7 @@ export function Admin() {
         queryClient.invalidateQueries({ queryKey: ["/api/admin/contests"] }),
         queryClient.invalidateQueries({ queryKey: ["/api/admin/current-contest"] }),
         queryClient.invalidateQueries({ queryKey: ["/api/memes"] }),
-        queryClient.invalidateQueries({ queryKey: ["/api/voting-power"] }),
+        queryClient.invalidateQueries({ queryKey: ["samu-balance"] }),
       ]);
 
       // 중요한 쿼리들 강제 리페치
@@ -97,7 +97,7 @@ export function Admin() {
         queryClient.invalidateQueries({ queryKey: ["/api/admin/archived-contests"] }),
         queryClient.invalidateQueries({ queryKey: ["/api/admin/current-contest"] }),
         queryClient.invalidateQueries({ queryKey: ["/api/memes"] }),
-        queryClient.invalidateQueries({ queryKey: ["/api/voting-power"] }),
+        queryClient.invalidateQueries({ queryKey: ["samu-balance"] }),
       ]);
 
       // 중요한 쿼리들 강제 리페치

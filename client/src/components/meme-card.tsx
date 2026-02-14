@@ -50,20 +50,19 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   const walletAddress = selectedWalletAccount?.address || '';
   const { toast } = useToast();
 
-  // Get actual voting power from backend
-  const { data: votingPowerData } = useQuery({
-    queryKey: ['voting-power', walletAddress],
+  const { data: samuBalanceData } = useQuery({
+    queryKey: ['samu-balance', walletAddress],
     queryFn: async () => {
       if (!walletAddress) return null;
-      const res = await fetch(`/api/voting-power/${walletAddress}`);
-      if (!res.ok) throw new Error('Failed to fetch voting power');
+      const res = await fetch(`/api/samu-balance/${walletAddress}`);
+      if (!res.ok) throw new Error('Failed to fetch SAMU balance');
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 5000, // Cache for 5 seconds
+    staleTime: 5000,
   });
 
-  const remainingVotingPower = votingPowerData?.remainingPower || 0;
+  const samuBalance = samuBalanceData?.balance || 0;
 
   const handleVote = async () => {
     if (!canVote || !walletAddress) {
@@ -75,11 +74,10 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
       return;
     }
 
-    // Check if user has enough voting power
-    if (remainingVotingPower < voteAmount) {
+    if (samuBalance < voteAmount) {
       toast({
-        title: "Insufficient Voting Power",
-        description: `You need ${voteAmount} voting power but only have ${remainingVotingPower}.`,
+        title: "Insufficient SAMU Balance",
+        description: `You need ${voteAmount} SAMU but only have ${samuBalance.toLocaleString()}.`,
         variant: "destructive",
       });
       return;
@@ -90,13 +88,13 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
     try {
       await apiRequest("POST", `/api/memes/${meme.id}/vote`, {
         voterWallet: walletAddress,
-        votingPower: remainingVotingPower,
-        powerUsed: voteAmount
+        samuAmount: voteAmount,
+        txSignature: "in-app-vote"
       });
 
       toast({
         title: "Vote Submitted!",
-        description: `Used ${voteAmount} voting power on this meme.`,
+        description: `Used ${voteAmount.toLocaleString()} SAMU on this meme.`,
         duration: 1000
       });
 
@@ -264,24 +262,24 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
           <div className="px-4 pb-4 overflow-y-auto flex-1">
             <div className="bg-accent rounded-lg p-4 mb-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Your remaining voting power:</span>
-                <span className="font-semibold text-primary">{remainingVotingPower.toLocaleString()}</span>
+                <span className="text-sm text-muted-foreground">Your SAMU balance:</span>
+                <span className="font-semibold text-primary">{samuBalance.toLocaleString()}</span>
               </div>
               <div className="text-xs text-muted-foreground">
-                You can allocate any amount of your voting power to this meme
+                Enter the amount of SAMU you want to vote with
               </div>
             </div>
 
             <div className="space-y-4">
               <div>
                 <Label htmlFor="vote-amount" className="text-sm font-medium text-foreground">
-                  Voting Power to Use: {voteAmount}
+                  SAMU Amount: {voteAmount.toLocaleString()}
                 </Label>
                 <div className="mt-2">
                   <Slider
                     id="vote-amount"
                     min={1}
-                    max={Math.max(1, remainingVotingPower)}
+                    max={Math.max(1, samuBalance)}
                     step={1}
                     value={[voteAmount]}
                     onValueChange={(value) => setVoteAmount(value[0])}
@@ -290,7 +288,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
                 </div>
                 <div className="flex justify-between text-xs text-muted-foreground mt-1">
                   <span>1</span>
-                  <span>{remainingVotingPower}</span>
+                  <span>{samuBalance.toLocaleString()}</span>
                 </div>
               </div>
 
@@ -302,10 +300,10 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
                   id="vote-input"
                   type="number"
                   min={1}
-                  max={remainingVotingPower}
+                  max={samuBalance}
                   value={voteAmount}
                   onChange={(e) => {
-                    const value = Math.max(1, Math.min(remainingVotingPower, parseInt(e.target.value) || 1));
+                    const value = Math.max(1, Math.min(samuBalance, parseInt(e.target.value) || 1));
                     setVoteAmount(value);
                   }}
                   className="mt-1"

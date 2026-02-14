@@ -20,12 +20,17 @@ User is a non-technical founder managing the app with AI assistance.
 - **SOL** = Revenue/Settlement (goods revenue distributed in SOL)
 - SAMU provides community membership + voting rights, SOL is the money layer.
 
-**Voting System (To Be Implemented):**
+**Voting System (Implemented - Phase 1: Server-based):**
 - SAMU token direct voting (users spend SAMU to vote, not just hold)
-- Minimum vote: very small amount (e.g. 0.000001 SAMU equivalent)
-- No upper limit on voting amount
+- Minimum vote: 1 SAMU
+- No upper limit on voting amount (capped by user's SAMU balance)
 - Voting amount determines revenue share proportion for that contest round
-- Anti-abuse: on-chain transaction costs naturally prevent multi-account abuse
+- Phase 1: Server-based voting with `txSignature: "in-app-vote"` placeholder
+- Phase 2 (planned): Real on-chain SAMU transfers to treasury wallet
+- Treasury wallet: 4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk
+- Anti-abuse: on-chain transaction costs naturally prevent multi-account abuse (Phase 2)
+- DB schema: votes table uses `samuAmount` + `txSignature` (replaced old votingPower/powerUsed columns)
+- Old voting-power.ts file deleted; no more voting power calculations
 
 **Revenue Sharing Model (To Be Implemented):**
 - Meme Creator: 30% (permanent reward for creating the IP)

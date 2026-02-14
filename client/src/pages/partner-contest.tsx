@@ -89,7 +89,8 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
         {
           memeId: selectedMeme.id,
           voterWallet: walletAddress,
-          votingPower: Math.min(1000, samuBalance)
+          samuAmount: samuBalance,
+          txSignature: "in-app-vote"
         }
       );
       
@@ -456,11 +457,11 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
             <div className="px-4 pb-4 overflow-y-auto flex-1">
               <div className="bg-accent rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">Your voting power:</span>
-                  <span className="font-semibold text-primary">1</span>
+                  <span className="text-sm text-muted-foreground">Your SAMU balance:</span>
+                  <span className="font-semibold text-primary">{samuBalance.toLocaleString()}</span>
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  Based on your {partner.symbol} token balance
+                  Your SAMU tokens will be used to vote
                 </div>
               </div>
             </div>

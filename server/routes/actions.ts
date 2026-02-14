@@ -14,7 +14,6 @@ import {
   LAMPORTS_PER_SOL
 } from "@solana/web3.js";
 import { storage } from "../storage";
-import { votingPowerManager } from "../voting-power";
 
 const router = Router();
 
@@ -26,7 +25,7 @@ const connection = new Connection(SOLANA_RPC_URL, "confirmed");
 
 interface PendingVoteIntent {
   memeId: number;
-  powerUsed: number;
+  samuAmount: number;
   wallet: string;
   nonce: string;
   createdAt: number;
@@ -125,33 +124,33 @@ router.get("/vote/:memeId", async (req, res) => {
       type: "action",
       icon: iconUrl,
       title: `Vote for: ${meme.title}`,
-      description: `Cast your vote for this meme! Your voting power is based on your SAMU token holdings. Currently has ${meme.votes} votes.`,
+      description: `Vote with SAMU tokens! Currently has ${meme.votes.toLocaleString()} SAMU votes.`,
       label: "Vote Now",
       links: {
         actions: [
           {
             type: "transaction",
-            label: "1 Power",
-            href: `${baseUrl}/api/actions/vote/${memeId}?power=1`,
+            label: "100 SAMU",
+            href: `${baseUrl}/api/actions/vote/${memeId}?amount=100`,
           },
           {
             type: "transaction",
-            label: "5 Power",
-            href: `${baseUrl}/api/actions/vote/${memeId}?power=5`,
+            label: "1,000 SAMU",
+            href: `${baseUrl}/api/actions/vote/${memeId}?amount=1000`,
           },
           {
             type: "transaction",
-            label: "10 Power",
-            href: `${baseUrl}/api/actions/vote/${memeId}?power=10`,
+            label: "10,000 SAMU",
+            href: `${baseUrl}/api/actions/vote/${memeId}?amount=10000`,
           },
           {
             type: "transaction",
             label: "Custom Amount",
-            href: `${baseUrl}/api/actions/vote/${memeId}?power={power}`,
+            href: `${baseUrl}/api/actions/vote/${memeId}?amount={amount}`,
             parameters: [
               {
-                name: "power",
-                label: "Enter voting power",
+                name: "amount",
+                label: "Enter SAMU amount",
                 required: true,
               },
             ],
@@ -167,21 +166,17 @@ router.get("/vote/:memeId", async (req, res) => {
   }
 });
 
-router.options("/vote/:memeId", (req, res) => {
-  res.set(corsHeaders).status(200).end();
-});
-
 router.post("/vote/:memeId", async (req, res) => {
   try {
     const memeId = parseInt(req.params.memeId);
-    const powerUsed = parseInt(req.query.power as string) || 1;
+    const samuAmount = parseInt(req.query.amount as string) || 100;
     
     if (isNaN(memeId)) {
       return res.set(corsHeaders).status(400).json({ error: "Invalid meme ID" });
     }
 
-    if (powerUsed < 1 || powerUsed > 1000000) {
-      return res.set(corsHeaders).status(400).json({ error: "Power must be between 1 and 1,000,000" });
+    if (samuAmount < 1) {
+      return res.set(corsHeaders).status(400).json({ error: "SAMU amount must be at least 1" });
     }
 
     const body: ActionPostRequest = req.body;
@@ -203,51 +198,25 @@ router.post("/vote/:memeId", async (req, res) => {
       return res.set(corsHeaders).status(404).json({ error: "Meme not found" });
     }
 
-    // For Blinks voting, ALWAYS check SAMU token balance first (regardless of user existence)
     const samuBalance = await getSamuBalance(userWallet);
     
-    if (samuBalance <= 0) {
+    if (samuBalance < samuAmount) {
       return res.set(corsHeaders).status(400).json({ 
-        error: "SAMU 토큰이 필요합니다. 투표하려면 SAMU 토큰을 보유해야 합니다. (You need SAMU tokens to vote)" 
+        error: `Insufficient SAMU balance. You have ${samuBalance.toLocaleString()} SAMU but need ${samuAmount.toLocaleString()}.` 
       });
-    }
-    
-    let votingPowerData = await votingPowerManager.getVotingPower(userWallet);
-    
-    if (!votingPowerData) {
-      // Check if user exists in database
-      const existingUser = await storage.getUserByWallet(userWallet);
-      
-      if (!existingUser) {
-        // Auto-create user for external wallet with SAMU tokens
-        const shortWallet = `${userWallet.slice(0, 4)}...${userWallet.slice(-4)}`;
-        const samuBalanceInt = Math.floor(samuBalance);
-        await storage.createUser({
-          walletAddress: userWallet,
-          username: shortWallet,
-          email: null,
-          avatarUrl: null,
-          samuBalance: samuBalanceInt,
-          totalVotingPower: 3 + Math.floor(samuBalanceInt / 1000000) * 10,
-        });
-        
-        console.log(`[Blinks] Auto-created user for wallet ${shortWallet} with ${samuBalance} SAMU`);
-      }
-      
-      // Initialize voting power (reuse samuBalance from above)
-      const initialized = await votingPowerManager.initializeVotingPower(userWallet, samuBalance);
-      if (!initialized) {
-        return res.set(corsHeaders).status(400).json({ 
-          error: "Could not initialize voting power." 
-        });
-      }
-      votingPowerData = await votingPowerManager.getVotingPower(userWallet);
     }
 
-    if (!votingPowerData || votingPowerData.remainingPower < powerUsed) {
-      return res.set(corsHeaders).status(400).json({ 
-        error: `Insufficient voting power. You have ${votingPowerData?.remainingPower || 0} power remaining.` 
+    const existingUser = await storage.getUserByWallet(userWallet);
+    if (!existingUser) {
+      const shortWallet = `${userWallet.slice(0, 4)}...${userWallet.slice(-4)}`;
+      await storage.createUser({
+        walletAddress: userWallet,
+        username: shortWallet,
+        email: null,
+        avatarUrl: null,
+        samuBalance: Math.floor(samuBalance),
       });
+      console.log(`[Blinks] Auto-created user for wallet ${shortWallet} with ${samuBalance} SAMU`);
     }
 
     const protocol = req.get("x-forwarded-proto") || req.protocol;
@@ -260,7 +229,7 @@ router.post("/vote/:memeId", async (req, res) => {
     const memoInstruction = new TransactionInstruction({
       keys: [{ pubkey: userPublicKey, isSigner: true, isWritable: false }],
       programId: new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
-      data: Buffer.from(`SAMU Vote: Meme #${memeId}, Power: ${powerUsed}, Nonce: ${voteNonce}`),
+      data: Buffer.from(`SAMU Vote: Meme #${memeId}, Amount: ${samuAmount}, Nonce: ${voteNonce}`),
     });
     
     transaction.add(memoInstruction);
@@ -277,7 +246,7 @@ router.post("/vote/:memeId", async (req, res) => {
 
     pendingVotes.set(voteNonce, {
       memeId,
-      powerUsed,
+      samuAmount,
       wallet: userWallet,
       nonce: voteNonce,
       createdAt: Date.now(),
@@ -286,7 +255,7 @@ router.post("/vote/:memeId", async (req, res) => {
     const response: ActionPostResponse = {
       type: "transaction",
       transaction: serializedTransaction,
-      message: `Sign to vote for "${meme.title}" with ${powerUsed} power`,
+      message: `Sign to vote for "${meme.title}" with ${samuAmount.toLocaleString()} SAMU`,
       links: {
         next: {
           type: "post",
@@ -372,7 +341,7 @@ router.post("/vote/:memeId/confirm", async (req, res) => {
         });
       }
 
-      const expectedMemo = `SAMU Vote: Meme #${memeId}, Power: ${pendingVote.powerUsed}, Nonce: ${nonce}`;
+      const expectedMemo = `SAMU Vote: Meme #${memeId}, Amount: ${pendingVote.samuAmount}, Nonce: ${nonce}`;
       let memoValidated = false;
       let foundMemoInstruction = false;
       
@@ -401,7 +370,7 @@ router.post("/vote/:memeId/confirm", async (req, res) => {
 
       if (!memoValidated) {
         return res.set(corsHeaders).status(400).json({ 
-          error: "Transaction memo does not match vote intent. The memo must exactly match the expected format including memeId, power, and nonce." 
+          error: "Transaction memo does not match vote intent." 
         });
       }
     } catch (txError) {
@@ -413,36 +382,15 @@ router.post("/vote/:memeId/confirm", async (req, res) => {
 
     pendingVotes.delete(nonce);
 
-    const powerUsed = pendingVote.powerUsed;
-
-    let votingPowerData = await votingPowerManager.getVotingPower(userWallet);
-    
-    if (!votingPowerData) {
-      const samuBalance = await getSamuBalance(userWallet);
-      await votingPowerManager.initializeVotingPower(userWallet, samuBalance);
-      votingPowerData = await votingPowerManager.getVotingPower(userWallet);
-    }
-
-    if (!votingPowerData || votingPowerData.remainingPower < powerUsed) {
-      return res.set(corsHeaders).status(400).json({ 
-        error: `Insufficient voting power. You have ${votingPowerData?.remainingPower || 0} power remaining.` 
-      });
-    }
-
     await storage.createVote({
       memeId,
       voterWallet: userWallet,
-      votingPower: votingPowerData.totalPower,
-      powerUsed,
+      samuAmount: pendingVote.samuAmount,
+      txSignature: signature,
     });
 
-    await votingPowerManager.useVotingPower(userWallet, powerUsed);
-
-    const updatedVotingPower = await votingPowerManager.getVotingPower(userWallet);
-    const remainingPower = updatedVotingPower?.remainingPower || 0;
     const baseUrl = `${req.protocol}://${req.get("host")}`;
 
-    // Use action chaining to allow continued voting
     const response = {
       type: "post",
       links: {
@@ -452,13 +400,13 @@ router.post("/vote/:memeId/confirm", async (req, res) => {
             type: "action",
             title: `Vote for: ${meme.title}`,
             icon: meme.imageUrl || `${baseUrl}/samu-logo.png`,
-            description: `Your vote was recorded! Used ${powerUsed} power. Remaining: ${remainingPower}. Vote again?`,
+            description: `Your vote of ${pendingVote.samuAmount.toLocaleString()} SAMU was recorded! Vote again?`,
             label: "Vote Again",
             links: {
               actions: [
-                { label: "Vote with 1 Power", href: `${baseUrl}/api/actions/vote/${memeId}?power=1` },
-                { label: "Vote with 5 Power", href: `${baseUrl}/api/actions/vote/${memeId}?power=5` },
-                { label: "Vote with 10 Power", href: `${baseUrl}/api/actions/vote/${memeId}?power=10` },
+                { label: "100 SAMU", href: `${baseUrl}/api/actions/vote/${memeId}?amount=100` },
+                { label: "1,000 SAMU", href: `${baseUrl}/api/actions/vote/${memeId}?amount=1000` },
+                { label: "10,000 SAMU", href: `${baseUrl}/api/actions/vote/${memeId}?amount=10000` },
               ],
             },
           },
@@ -483,13 +431,13 @@ router.get("/memes", async (req, res) => {
       type: "action",
       icon: `${baseUrl}/assets/samu-logo.webp`,
       title: "SAMU Meme Contest",
-      description: "Vote for your favorite memes using your SAMU tokens! Browse and vote on the best memes.",
+      description: "Vote for your favorite memes using SAMU tokens! Browse and vote on the best memes.",
       label: "View Memes",
       links: {
         actions: memes.slice(0, 5).map((meme, index) => ({
           type: "transaction" as const,
           label: `Vote: ${meme.title.slice(0, 20)}...`,
-          href: `${baseUrl}/api/actions/vote/${meme.id}?power=1`,
+          href: `${baseUrl}/api/actions/vote/${meme.id}?amount=100`,
         })),
       },
     };

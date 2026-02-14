@@ -49,8 +49,8 @@ export const votes = pgTable("votes", {
   id: serial("id").primaryKey(),
   memeId: integer("meme_id").notNull(),
   voterWallet: text("voter_wallet").notNull(),
-  votingPower: bigint("voting_power", { mode: "number" }).notNull(),
-  powerUsed: bigint("power_used", { mode: "number" }).notNull().default(1), // 실제 사용된 투표력
+  samuAmount: bigint("samu_amount", { mode: "number" }).notNull().default(0),
+  txSignature: text("tx_signature"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -92,8 +92,8 @@ export const partnerVotes = pgTable("partner_votes", {
   partnerId: text("partner_id").notNull(),
   memeId: integer("meme_id").notNull(),
   voterWallet: text("voter_wallet").notNull(),
-  votingPower: bigint("voting_power", { mode: "number" }).notNull(),
-  powerUsed: bigint("power_used", { mode: "number" }).notNull().default(1), // 실제 사용된 투표력
+  samuAmount: bigint("samu_amount", { mode: "number" }).notNull().default(0),
+  txSignature: text("tx_signature"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -102,11 +102,9 @@ export const users = pgTable("users", {
   walletAddress: text("wallet_address").notNull().unique(),
   email: text("email").unique(),
   username: text("username").notNull(),
-  displayName: text("display_name"), // 프로필에서 설정하는 이름
+  displayName: text("display_name"),
   avatarUrl: text("avatar_url"),
   samuBalance: bigint("samu_balance", { mode: "number" }).notNull().default(0),
-  totalVotingPower: bigint("total_voting_power", { mode: "number" }).notNull().default(0),
-  usedVotingPower: bigint("used_voting_power", { mode: "number" }).notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

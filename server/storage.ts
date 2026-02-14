@@ -104,11 +104,13 @@ export class MemStorage implements IStorage {
     const id = this.currentMemeId++;
     const meme: Meme = {
       id,
+      contestId: insertMeme.contestId ?? null,
       title: insertMeme.title,
       description: insertMeme.description || null,
       imageUrl: insertMeme.imageUrl,
       authorWallet: insertMeme.authorWallet,
       authorUsername: insertMeme.authorUsername,
+      authorAvatarUrl: insertMeme.authorAvatarUrl ?? null,
       votes: 0,
       createdAt: new Date()
     };
@@ -152,9 +154,9 @@ export class MemStorage implements IStorage {
       walletAddress: insertUser.walletAddress,
       email: insertUser.email || null,
       username: insertUser.username,
+      displayName: insertUser.displayName ?? null,
       avatarUrl: insertUser.avatarUrl || null,
       samuBalance: insertUser.samuBalance || 0,
-      totalVotingPower: insertUser.totalVotingPower || 0,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -211,8 +213,11 @@ export class MemStorage implements IStorage {
   async createVote(insertVote: InsertVote): Promise<Vote> {
     const id = this.currentVoteId++;
     const vote: Vote = {
-      ...insertVote,
       id,
+      memeId: insertVote.memeId,
+      voterWallet: insertVote.voterWallet,
+      samuAmount: insertVote.samuAmount ?? 0,
+      txSignature: insertVote.txSignature ?? null,
       createdAt: new Date()
     };
     this.votes.set(id, vote);
@@ -236,11 +241,11 @@ export class MemStorage implements IStorage {
   async updateMemeVoteCount(memeId: number): Promise<void> {
     const meme = this.memes.get(memeId);
     if (meme) {
-      const votes = Array.from(this.votes.values())
+      const totalSamu = Array.from(this.votes.values())
         .filter(vote => vote.memeId === memeId)
-        .reduce((sum, vote) => sum + vote.votingPower, 0);
+        .reduce((sum, vote) => sum + vote.samuAmount, 0);
       
-      meme.votes = votes;
+      meme.votes = totalSamu;
       this.memes.set(memeId, meme);
     }
   }
@@ -286,8 +291,13 @@ export class MemStorage implements IStorage {
   async createNftComment(insertComment: InsertNftComment): Promise<NftComment> {
     const id = this.currentCommentId++;
     const comment: NftComment = {
-      ...insertComment,
       id,
+      nftId: insertComment.nftId,
+      userWallet: insertComment.userWallet,
+      username: insertComment.username,
+      displayName: insertComment.displayName ?? null,
+      avatarUrl: insertComment.avatarUrl ?? null,
+      comment: insertComment.comment,
       createdAt: new Date()
     };
     this.nftComments.set(id, comment);
@@ -317,11 +327,13 @@ export class MemStorage implements IStorage {
     const id = this.currentMemeId++;
     const meme: Meme = {
       id,
+      contestId: insertMeme.contestId ?? null,
       title: insertMeme.title,
       description: insertMeme.description ?? null,
       imageUrl: insertMeme.imageUrl,
       authorWallet: insertMeme.authorWallet,
       authorUsername: insertMeme.authorUsername,
+      authorAvatarUrl: insertMeme.authorAvatarUrl ?? null,
       votes: 0,
       createdAt: new Date()
     };
@@ -349,8 +361,11 @@ export class MemStorage implements IStorage {
     
     const id = this.currentVoteId++;
     const vote: Vote = {
-      ...insertVote,
       id,
+      memeId: insertVote.memeId,
+      voterWallet: insertVote.voterWallet,
+      samuAmount: insertVote.samuAmount ?? 0,
+      txSignature: insertVote.txSignature ?? null,
       createdAt: new Date()
     };
     
@@ -604,15 +619,11 @@ export class DatabaseStorage implements IStorage {
     if (!this.db) throw new Error("Database not available");
     
     const memeVotes = await this.getVotesByMemeId(memeId);
-    // Use powerUsed if available, otherwise fall back to votingPower for compatibility
-    const totalVotes = memeVotes.reduce((sum, vote) => {
-      const powerUsed = (vote as any).powerUsed || vote.votingPower;
-      return sum + powerUsed;
-    }, 0);
+    const totalSamu = memeVotes.reduce((sum, vote) => sum + vote.samuAmount, 0);
     
     await this.db
       .update(memes)
-      .set({ votes: totalVotes })
+      .set({ votes: totalSamu })
       .where(eq(memes.id, memeId));
   }
 
@@ -684,11 +695,13 @@ export class DatabaseStorage implements IStorage {
     // Convert PartnerMeme to Meme format for compatibility
     return {
       id: meme.id,
+      contestId: null,
       title: meme.title,
       description: meme.description,
       imageUrl: meme.imageUrl,
       authorWallet: meme.authorWallet,
       authorUsername: meme.authorUsername,
+      authorAvatarUrl: null,
       votes: meme.votes,
       createdAt: meme.createdAt
     };
@@ -706,11 +719,13 @@ export class DatabaseStorage implements IStorage {
     // Convert PartnerMeme to Meme format for compatibility
     return partnerMemesList.map(meme => ({
       id: meme.id,
+      contestId: null,
       title: meme.title,
       description: meme.description,
       imageUrl: meme.imageUrl,
       authorWallet: meme.authorWallet,
       authorUsername: meme.authorUsername,
+      authorAvatarUrl: null,
       votes: meme.votes,
       createdAt: meme.createdAt
     }));
@@ -729,11 +744,13 @@ export class DatabaseStorage implements IStorage {
     // Convert PartnerMeme to Meme format for compatibility
     return {
       id: meme.id,
+      contestId: null,
       title: meme.title,
       description: meme.description,
       imageUrl: meme.imageUrl,
       authorWallet: meme.authorWallet,
       authorUsername: meme.authorUsername,
+      authorAvatarUrl: null,
       votes: meme.votes,
       createdAt: meme.createdAt
     };
@@ -750,12 +767,12 @@ export class DatabaseStorage implements IStorage {
     // Update partner meme vote count
     await this.updatePartnerMemeVoteCount(partnerId, insertVote.memeId);
     
-    // Convert PartnerVote to Vote format for compatibility
     return {
       id: vote.id,
       memeId: vote.memeId,
       voterWallet: vote.voterWallet,
-      votingPower: vote.votingPower,
+      samuAmount: vote.samuAmount,
+      txSignature: vote.txSignature,
       createdAt: vote.createdAt
     };
   }
@@ -783,15 +800,11 @@ export class DatabaseStorage implements IStorage {
       .from(partnerVotes)
       .where(and(eq(partnerVotes.partnerId, partnerId), eq(partnerVotes.memeId, memeId)));
     
-    // Use powerUsed if available, otherwise fall back to votingPower for compatibility
-    const totalVotes = partnerVotesList.reduce((sum, vote) => {
-      const powerUsed = (vote as any).powerUsed || vote.votingPower;
-      return sum + powerUsed;
-    }, 0);
+    const totalSamu = partnerVotesList.reduce((sum, vote) => sum + vote.samuAmount, 0);
     
     await this.db
       .update(partnerMemes)
-      .set({ votes: totalVotes })
+      .set({ votes: totalSamu })
       .where(and(eq(partnerMemes.partnerId, partnerId), eq(partnerMemes.id, memeId)));
   }
 
@@ -834,17 +847,6 @@ export class DatabaseStorage implements IStorage {
       .where(eq(contests.id, id))
       .returning();
     
-    // If contest is starting, recalculate all users' voting power
-    if (status === "active") {
-      try {
-        const { votingPowerManager } = await import('./voting-power');
-        await votingPowerManager.resetAllVotingPowerAfterContest();
-        console.log("All users' voting power recalculated for contest start");
-      } catch (error) {
-        console.error("Failed to recalculate voting power on contest start:", error);
-      }
-    }
-    
     return contest;
   }
 
@@ -861,15 +863,6 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(contests.id, id))
       .returning();
-    
-    // Contest is starting - recalculate all users' voting power
-    try {
-      const { votingPowerManager } = await import('./voting-power');
-      await votingPowerManager.resetAllVotingPowerAfterContest();
-      console.log("All users' voting power recalculated for contest start");
-    } catch (error) {
-      console.error("Failed to recalculate voting power on contest start:", error);
-    }
     
     return contest;
   }
@@ -971,7 +964,7 @@ export class DatabaseStorage implements IStorage {
       // Still update contest status to archived in case it wasn't updated before
       await this.db
         .update(contests)
-        .set({ status: "archived", archivedAt: new Date() })
+        .set({ status: "archived", updatedAt: new Date() })
         .where(eq(contests.id, contestId));
       return existingArchive[0];
     }
@@ -991,7 +984,7 @@ export class DatabaseStorage implements IStorage {
           secondMemeId,
           thirdMemeId,
           prizePool: contest.prizePool,
-          startTime: contest.startTime || contest.createdAt,
+          startTime: contest.startTime || contest.createdAt || new Date(),
           endTime: new Date(),
         })
         .returning();
@@ -1033,15 +1026,6 @@ export class DatabaseStorage implements IStorage {
     }
 
     console.log(`Contest ${contestId} archived with ${totalMemes} files moved to archives/contest-${contestId}/`);
-
-    // Reset all users' voting power after contest ends
-    try {
-      const { votingPowerManager } = await import('./voting-power');
-      await votingPowerManager.resetAllVotingPowerAfterContest();
-      console.log("All users' voting power reset after contest end");
-    } catch (error) {
-      console.error("Failed to reset voting power after contest end:", error);
-    }
 
     return archivedContest;
   }

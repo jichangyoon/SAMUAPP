@@ -196,17 +196,18 @@ export default function Home() {
     enabled: !!walletAddress && authenticated,
   });
 
-  // Get voting power data
-  const { data: votingPowerData } = useQuery({
-    queryKey: ['voting-power', walletAddress],
+  const { data: samuBalanceData } = useQuery({
+    queryKey: ['samu-balance', walletAddress],
     queryFn: async () => {
       if (!walletAddress) return null;
-      const res = await fetch(`/api/voting-power/${walletAddress}`);
+      const res = await fetch(`/api/samu-balance/${walletAddress}`);
       return res.json();
     },
     enabled: !!walletAddress && authenticated,
-    staleTime: 5000, // 5초 캐시
+    staleTime: 5000,
   });
+
+  const samuBalance = samuBalanceData?.balance || 0;
 
   // Profile state management
   const [profileData, setProfileData] = useState({ displayName: 'User', profileImage: '' });
@@ -246,18 +247,15 @@ export default function Home() {
   const displayName = authenticated ? profileData.displayName : 'SAMU';
   const profileImage = profileData.profileImage;
 
-  // Initialize vote amount when voting power changes
   useEffect(() => {
-    if (votingPowerData?.remainingPower && voteAmount > votingPowerData.remainingPower) {
-      setVoteAmount(Math.min(1, votingPowerData.remainingPower));
+    if (samuBalance && voteAmount > samuBalance) {
+      setVoteAmount(Math.min(1, samuBalance));
     }
-  }, [votingPowerData?.remainingPower, voteAmount]);
+  }, [samuBalance, voteAmount]);
 
-  // 투표 후 캐시 업데이트 함수 
   const handleVoteUpdate = useCallback(async () => {
-    // 투표력과 밈 데이터 동시 업데이트
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['voting-power'] }),
+      queryClient.invalidateQueries({ queryKey: ['samu-balance'] }),
       queryClient.invalidateQueries({ queryKey: ['/api/memes'] })
     ]);
   }, [queryClient]);
@@ -296,18 +294,18 @@ export default function Home() {
       return;
     }
 
-    const votingPower = 1; // Simplified for now
     setIsVoting(true);
 
     try {
       await apiRequest("POST", `/api/memes/${meme.id}/vote`, {
         voterWallet: walletAddress,
-        votingPower,
+        samuAmount: 1,
+        txSignature: "in-app-vote"
       });
 
       toast({
         title: "Vote Submitted!",
-        description: `Your vote with ${votingPower} voting power has been recorded.`,
+        description: "Your vote has been recorded.",
       });
 
       setSelectedMeme(null);
@@ -992,28 +990,26 @@ export default function Home() {
             </DrawerHeader>
 
             <div className="px-4 pb-4 overflow-y-auto flex-1">
-              {/* 투표력 정보 */}
               <div className="bg-accent rounded-lg p-4 mb-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">Your remaining voting power:</span>
-                  <span className="font-semibold text-primary">{votingPowerData?.remainingPower?.toLocaleString() || '0'}</span>
+                  <span className="text-sm text-muted-foreground">Your SAMU balance:</span>
+                  <span className="font-semibold text-primary">{samuBalance.toLocaleString()}</span>
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  You can allocate any amount of your voting power to this meme
+                  Enter the amount of SAMU you want to vote with
                 </div>
               </div>
 
-              {/* 투표력 슬라이더 */}
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="vote-amount" className="text-sm font-medium text-foreground">
-                    Voting Power to Use: {voteAmount}
+                    SAMU Amount: {voteAmount.toLocaleString()}
                   </Label>
                   <div className="mt-2">
                     <Slider
                       id="vote-amount"
                       min={1}
-                      max={Math.max(1, votingPowerData?.remainingPower || 1)}
+                      max={Math.max(1, samuBalance)}
                       step={1}
                       value={[voteAmount]}
                       onValueChange={(value) => setVoteAmount(value[0])}
@@ -1022,7 +1018,7 @@ export default function Home() {
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground mt-1">
                     <span>1</span>
-                    <span>{votingPowerData?.remainingPower || 1}</span>
+                    <span>{samuBalance.toLocaleString()}</span>
                   </div>
                 </div>
 
@@ -1034,10 +1030,10 @@ export default function Home() {
                     id="vote-input"
                     type="number"
                     min={1}
-                    max={votingPowerData?.remainingPower || 1}
+                    max={samuBalance}
                     value={voteAmount}
                     onChange={(e) => {
-                      const value = Math.max(1, Math.min(votingPowerData?.remainingPower || 1, parseInt(e.target.value) || 1));
+                      const value = Math.max(1, Math.min(samuBalance, parseInt(e.target.value) || 1));
                       setVoteAmount(value);
                     }}
                     className="mt-1"
@@ -1058,11 +1054,10 @@ export default function Home() {
                 onClick={async () => {
                   if (!votingMeme || !walletAddress) return;
 
-                  // 투표력 체크
-                  if ((votingPowerData?.remainingPower || 0) < voteAmount) {
+                  if (samuBalance < voteAmount) {
                     toast({
-                      title: "Insufficient Voting Power",
-                      description: `You need ${voteAmount} voting power but only have ${votingPowerData?.remainingPower || 0}.`,
+                      title: "Insufficient SAMU Balance",
+                      description: `You need ${voteAmount} SAMU but only have ${samuBalance.toLocaleString()}.`,
                       variant: "destructive",
                     });
                     return;
@@ -1073,21 +1068,20 @@ export default function Home() {
                   try {
                     await apiRequest("POST", `/api/memes/${votingMeme.id}/vote`, {
                       voterWallet: walletAddress,
-                      votingPower: votingPowerData?.remainingPower || 0,
-                      powerUsed: voteAmount
+                      samuAmount: voteAmount,
+                      txSignature: "in-app-vote"
                     });
 
                     toast({
                       title: "Vote Submitted!",
-                      description: `Used ${voteAmount} voting power on this meme.`,
+                      description: `Used ${voteAmount.toLocaleString()} SAMU on this meme.`,
                       duration: 1000
                     });
 
                     setShowVoteDialog(false);
                     setVotingMeme(null);
                     
-                    // 캐시 동기화
-                    queryClient.invalidateQueries({ queryKey: ['voting-power'] });
+                    queryClient.invalidateQueries({ queryKey: ['samu-balance'] });
                     queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
                     queryClient.invalidateQueries({ queryKey: ['user-votes'] });
                     queryClient.invalidateQueries({ queryKey: ['user-stats'] });
