@@ -1,285 +1,22 @@
-import React, { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { usePrivy } from '@privy-io/react-auth';
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { UserInfoModal } from "@/components/user-info-modal";
 import { LazyNftImage } from "@/components/lazy-nft-image";
-import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Send, Image as ImageIcon, ExternalLink, Trash2 } from "lucide-react";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import type { NftComment } from "@shared/schema";
+import { Image as ImageIcon, ExternalLink } from "lucide-react";
 import { SAMU_NFTS, type StaticNft } from "@/data/nft-data";
 import nftOwnersData from "@/data/nft-owners.json";
 
-// 실시간 프로필 동기화를 위한 댓글 아이템 컴포넌트
-function CommentItem({ comment, isOwner, onDelete, onUserClick }: {
-  comment: NftComment;
-  isOwner: boolean;
-  onDelete: () => void;
-  onUserClick: (wallet: string) => void;
-}) {
-  // 실시간 프로필 데이터 가져오기
-  const { data: userProfile } = useQuery({
-    queryKey: ['/api/users/profile', comment.userWallet],
-    queryFn: async () => {
-      const response = await fetch(`/api/users/profile/${comment.userWallet}`);
-      if (!response.ok) return null;
-      return response.json();
-    },
-    staleTime: 30000, // 30초 동안 캐시 유지
-  });
-
-  // 실시간 프로필 데이터 우선 사용, 없으면 댓글 저장 데이터 사용
-  const displayName = userProfile?.displayName || comment.displayName || comment.username || 'Anonymous';
-  const avatarUrl = userProfile?.avatarUrl || comment.avatarUrl;
-
-  return (
-    <div className="bg-muted/50 rounded-lg p-3">
-      <div className="flex items-center gap-2 mb-1">
-        <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center overflow-hidden">
-          {avatarUrl ? (
-            <img 
-              src={avatarUrl} 
-              alt={displayName}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                // 이미지 로드 실패 시 이니셜 표시
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-              }}
-            />
-          ) : (
-            <span className="text-xs font-bold text-primary-foreground">
-              {displayName.charAt(0).toUpperCase()}
-            </span>
-          )}
-        </div>
-        <span 
-          className="text-sm font-medium text-foreground cursor-pointer hover:text-primary transition-colors"
-          onClick={() => onUserClick(comment.userWallet)}
-        >
-          {displayName}
-        </span>
-        <span className="text-xs text-muted-foreground">
-          {new Date(comment.createdAt).toLocaleDateString()}
-        </span>
-        {isOwner && (
-          <button
-            onClick={onDelete}
-            className="ml-auto text-gray-500 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors"
-            title="Delete comment"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
-        )}
-      </div>
-      <p className="text-sm text-muted-foreground pl-8">{comment.comment}</p>
-    </div>
-  );
-}
-
 export function NftGallery() {
   const [selectedNft, setSelectedNft] = useState<StaticNft | null>(null);
-  const [newComment, setNewComment] = useState("");
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
-  const [selectedUser, setSelectedUser] = useState<string | null>(null);
-  const [userModalOpen, setUserModalOpen] = useState(false);
-  const { authenticated, user } = usePrivy();
-  const { toast } = useToast();
 
-  // Get NFT owner info
   const getNftOwner = (nftId: number) => {
     return nftOwnersData[nftId.toString() as keyof typeof nftOwnersData] || null;
   };
-  
-  // Profile updates are handled automatically via real-time sync in comment display
 
-  // Use static NFT data for instant loading
   const nfts = SAMU_NFTS;
-  const isLoading = false;
-
-  // Fetch comments for selected NFT
-  const { data: comments = [] } = useQuery<NftComment[]>({
-    queryKey: ['/api/nfts', selectedNft?.id, 'comments'],
-    queryFn: async () => {
-      const response = await fetch(`/api/nfts/${selectedNft?.id}/comments`);
-      if (!response.ok) throw new Error('Failed to fetch comments');
-      return response.json();
-    },
-    enabled: !!selectedNft,
-    staleTime: 0, // 항상 최신 데이터 요청 (Profile 페이지와 일관성)
-    cacheTime: 60 * 1000, // 1분 캐시 유지
-  });
-
-  // Create comment mutation
-  const createCommentMutation = useMutation({
-    mutationFn: async (commentData: { comment: string; userWallet: string; username: string }) => {
-      return apiRequest('POST', `/api/nfts/${selectedNft?.id}/comments`, commentData);
-    },
-    onSuccess: () => {
-      // Get wallet address for profile cache invalidation
-      const walletAccounts = user?.linkedAccounts?.filter(account => 
-        account.type === 'wallet' && 
-        account.connectorType !== 'injected' && 
-        account.chainType === 'solana'
-      ) || [];
-      const selectedWalletAccount = walletAccounts[0];
-      const walletAddress = (selectedWalletAccount as any)?.address;
-      
-      // Invalidate both NFT comments and user comments cache
-      queryClient.invalidateQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
-      if (walletAddress) {
-        queryClient.invalidateQueries({ queryKey: ['user-comments', walletAddress] });
-      }
-      
-      setNewComment("");
-      toast({
-        title: "Comment posted!",
-        description: "Your comment has been added successfully.",
-        duration: 1200,
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to post comment. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Delete comment mutation
-  const deleteCommentMutation = useMutation({
-    mutationFn: async (commentId: number) => {
-      // Get Solana wallet address
-      const walletAccounts = user?.linkedAccounts?.filter(account => 
-        account.type === 'wallet' && 
-        account.connectorType !== 'injected' && 
-        account.chainType === 'solana'
-      ) || [];
-      const selectedWalletAccount = walletAccounts[0];
-      const walletAddress = (selectedWalletAccount as any)?.address;
-      
-      return apiRequest('DELETE', `/api/nfts/${selectedNft?.id}/comments/${commentId}`, {
-        userWallet: walletAddress
-      });
-    },
-    onSuccess: () => {
-      // Get wallet address for profile cache invalidation
-      const walletAccounts = user?.linkedAccounts?.filter(account => 
-        account.type === 'wallet' && 
-        account.connectorType !== 'injected' && 
-        account.chainType === 'solana'
-      ) || [];
-      const selectedWalletAccount = walletAccounts[0];
-      const walletAddress = (selectedWalletAccount as any)?.address;
-      
-      // Invalidate both NFT comments and user comments cache
-      queryClient.invalidateQueries({ queryKey: ['/api/nfts', selectedNft?.id, 'comments'] });
-      if (walletAddress) {
-        queryClient.invalidateQueries({ queryKey: ['user-comments', walletAddress] });
-      }
-      
-      toast({
-        title: "Comment deleted",
-        duration: 1000,
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Failed to delete comment",
-        description: error.message || "You can only delete your own comments",
-        variant: "destructive",
-        duration: 2000,
-      });
-    },
-  });
-
-  const handleDeleteComment = (commentId: number) => {
-    setCommentToDelete(commentId);
-    setDeleteDialogOpen(true);
-  };
-
-  const confirmDelete = () => {
-    if (commentToDelete) {
-      deleteCommentMutation.mutate(commentToDelete);
-    }
-    setDeleteDialogOpen(false);
-    setCommentToDelete(null);
-  };
-
-  const handleUserClick = (walletAddress: string) => {
-    setSelectedUser(walletAddress);
-    setUserModalOpen(true);
-  };
-
-  const handleCommentSubmit = () => {
-    if (!selectedNft || !authenticated || !user) {
-      toast({
-        title: "Login Required",
-        description: "Please log in to post comments.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!newComment.trim()) {
-      toast({
-        title: "Empty Comment",
-        description: "Please enter a comment before posting.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Get Solana wallet address
-    const walletAccounts = user?.linkedAccounts?.filter(account => 
-      account.type === 'wallet' && 
-      account.connectorType !== 'injected' && 
-      account.chainType === 'solana'
-    ) || [];
-    const selectedWalletAccount = walletAccounts[0];
-
-    // Type assertion for wallet address
-    const walletAddress = (selectedWalletAccount as any)?.address;
-
-    if (!walletAddress) {
-      toast({
-        title: "Wallet Required",
-        description: "Please connect your Solana wallet to post comments.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    createCommentMutation.mutate({
-      comment: newComment.trim(),
-      userWallet: walletAddress,
-      username: user?.email?.address || 'Anonymous User'
-    });
-  };
-
-
-
-  if (isLoading) {
-    return (
-      <div className="p-4 space-y-4">
-        <div className="text-center">
-          <h2 className="text-xl font-bold text-foreground mb-2">SAMU Wolf Collection</h2>
-          <p className="text-muted-foreground">Loading NFTs...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4 pb-24">
-      {/* Header */}
       <Card className="bg-black border-0">
         <CardContent className="p-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
@@ -292,7 +29,6 @@ export function NftGallery() {
         </CardContent>
       </Card>
 
-      {/* NFT Grid - 4 columns with Lazy Loading */}
       <div className="grid grid-cols-4 gap-2">
         {nfts.map((nft) => (
           <button
@@ -308,7 +44,6 @@ export function NftGallery() {
         ))}
       </div>
 
-      {/* NFT Detail Drawer - Swipe to dismiss */}
       {selectedNft && (
         <Drawer open={!!selectedNft} onOpenChange={() => setSelectedNft(null)}>
           <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
@@ -320,7 +55,6 @@ export function NftGallery() {
             </DrawerHeader>
 
             <div className="px-4 pb-4 space-y-4 overflow-y-auto">
-              {/* NFT Image */}
               <div className="aspect-square rounded-lg overflow-hidden">
                 <img
                   src={selectedNft.imageUrl}
@@ -329,14 +63,12 @@ export function NftGallery() {
                 />
               </div>
 
-              {/* NFT Details */}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Token ID:</span>
                   <span className="text-foreground font-mono">#{selectedNft.tokenId.toString().padStart(3, '0')}</span>
                 </div>
                 
-                {/* Owner Information */}
                 {(() => {
                   const owner = getNftOwner(selectedNft.tokenId);
                   return owner ? (
@@ -344,13 +76,11 @@ export function NftGallery() {
                       <span className="text-muted-foreground">Owned by:</span>
                       <button
                         onClick={() => {
-                          // X 앱 딥링크 우선, 웹사이트 폴백
                           const username = owner.owner.replace('@', '');
                           const xAppUrl = `twitter://user?screen_name=${username}`;
                           const webUrl = owner.url;
                           
                           if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform()) {
-                            // 네이티브 앱: X 앱 딥링크 시도 후 웹 폴백
                             import('@capacitor/browser').then(({ Browser }) => {
                               Browser.open({ url: xAppUrl }).catch(() => {
                                 Browser.open({ url: webUrl });
@@ -359,7 +89,6 @@ export function NftGallery() {
                               window.open(webUrl, '_blank');
                             });
                           } else {
-                            // 웹 브라우저: X 앱 딥링크 시도 후 웹 폴백
                             const iframe = document.createElement('iframe');
                             iframe.style.display = 'none';
                             iframe.src = xAppUrl;
@@ -387,108 +116,9 @@ export function NftGallery() {
                   </div>
                 )}
               </div>
-
-              {/* Comments Section */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <MessageCircle className="h-4 w-4 text-muted-foreground" />
-                  <h4 className="font-medium text-foreground">Comments ({comments?.length || 0})</h4>
-                </div>
-
-                {/* Comment Input */}
-                {authenticated ? (
-                  <div className="space-y-2">
-                    <Textarea
-                      placeholder="Share your thoughts about this NFT..."
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      className="min-h-[80px] resize-none bg-background border-border text-foreground"
-                    />
-                    <Button
-                      onClick={handleCommentSubmit}
-                      disabled={createCommentMutation.isPending || !newComment.trim()}
-                      size="sm"
-                      className="w-full"
-                    >
-                      <Send className="h-4 w-4 mr-2" />
-                      {createCommentMutation.isPending ? "Posting..." : "Post Comment"}
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="text-center p-4 bg-muted rounded-lg">
-                    <p className="text-sm text-muted-foreground">
-                      Please log in to post comments
-                    </p>
-                  </div>
-                )}
-
-                {/* Comments List */}
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {comments.length > 0 ? (
-                    comments.map((comment) => {
-                      // Check if current user owns this comment - get Solana wallet address
-                      const walletAccounts = user?.linkedAccounts?.filter(account => 
-                        account.type === 'wallet' && 
-                        account.connectorType !== 'injected' && 
-                        account.chainType === 'solana'
-                      ) || [];
-                      const selectedWalletAccount = walletAccounts[0];
-                      const currentUserWallet = (selectedWalletAccount as any)?.address;
-                      const isOwner = authenticated && currentUserWallet === comment.userWallet;
-                      
-                      return (
-                        <CommentItem
-                          key={comment.id}
-                          comment={comment}
-                          isOwner={isOwner}
-                          onDelete={() => handleDeleteComment(comment.id)}
-                          onUserClick={handleUserClick}
-                        />
-                      );
-                    })
-                  ) : (
-                    <div className="text-center text-sm text-muted-foreground py-4">
-                      No comments yet. Be the first to comment!
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
           </DrawerContent>
         </Drawer>
-      )}
-
-      {/* Delete Comment Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="left-[46%]">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Comment</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this comment? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete Comment
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* User Info Modal */}
-      {selectedUser && (
-        <UserInfoModal
-          isOpen={userModalOpen}
-          onClose={() => {
-            setUserModalOpen(false);
-            setSelectedUser(null);
-          }}
-          walletAddress={selectedUser}
-        />
       )}
     </div>
   );
