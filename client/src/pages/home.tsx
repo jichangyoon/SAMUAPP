@@ -603,9 +603,9 @@ export default function Home() {
                             <div className="mt-3 bg-primary/10 rounded px-3 py-2 flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <TrendingUp className="h-3.5 w-3.5 text-primary" />
-                                <span className="text-sm text-muted-foreground">Your vote share</span>
+                                <span className="text-sm text-muted-foreground">Your revenue share</span>
                               </div>
-                              <span className="text-sm text-primary font-semibold">{myRevenueShare.voting.votePercent.toFixed(1)}%</span>
+                              <span className="text-sm text-primary font-semibold">{(myRevenueShare.voting.votePercent * 0.3).toFixed(1)}%</span>
                             </div>
                           )}
                         </CardContent>
