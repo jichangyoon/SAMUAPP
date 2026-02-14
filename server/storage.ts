@@ -26,6 +26,8 @@ export interface IStorage {
   getVotesByMemeId(memeId: number): Promise<Vote[]>;
   hasUserVoted(memeId: number, voterWallet: string): Promise<boolean>;
   updateMemeVoteCount(memeId: number): Promise<void>;
+  getUserVoteHistoryByContest(walletAddress: string): Promise<any[]>;
+  getUserVotesForContest(walletAddress: string, contestId: number): Promise<any[]>;
   
   // NFT operations
   getNfts(): Promise<Nft[]>;
@@ -214,6 +216,14 @@ export class MemStorage implements IStorage {
     return Array.from(this.votes.values())
       .filter(vote => vote.voterWallet === walletAddress)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getUserVoteHistoryByContest(walletAddress: string): Promise<any[]> {
+    return [];
+  }
+
+  async getUserVotesForContest(walletAddress: string, contestId: number): Promise<any[]> {
+    return [];
   }
 
   async getUserComments(walletAddress: string): Promise<NftComment[]> {
@@ -508,6 +518,121 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(votes.createdAt));
     
     return allVotes;
+  }
+
+  async getUserVoteHistoryByContest(walletAddress: string): Promise<any[]> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const userVotes = await this.db
+      .select({
+        memeId: votes.memeId,
+        samuAmount: votes.samuAmount,
+        createdAt: votes.createdAt,
+        contestId: memes.contestId,
+        memeTitle: memes.title,
+        memeImageUrl: memes.imageUrl,
+      })
+      .from(votes)
+      .innerJoin(memes, eq(votes.memeId, memes.id))
+      .where(eq(votes.voterWallet, walletAddress))
+      .orderBy(desc(votes.createdAt));
+
+    const contestIds = [...new Set(userVotes.map(v => v.contestId).filter(Boolean))] as number[];
+    
+    const contestMap: Record<number, any> = {};
+    const contestIsArchived: Record<number, boolean> = {};
+    for (const cid of contestIds) {
+      const archived = await this.db.select().from(archivedContests).where(eq(archivedContests.originalContestId, cid));
+      if (archived.length > 0) {
+        contestMap[cid] = archived[0];
+        contestIsArchived[cid] = true;
+      } else {
+        const contest = await this.db.select().from(contests).where(eq(contests.id, cid));
+        if (contest.length > 0) {
+          contestMap[cid] = contest[0];
+          contestIsArchived[cid] = false;
+        }
+      }
+    }
+
+    const grouped: Record<string, any> = {};
+    for (const v of userVotes) {
+      const cid = v.contestId || 0;
+      const key = String(cid);
+      if (!grouped[key]) {
+        const contestInfo = contestMap[cid];
+        const totalContestVotes = await this.db
+          .select({ total: sql<number>`COALESCE(SUM(${votes.samuAmount}), 0)` })
+          .from(votes)
+          .innerJoin(memes, eq(votes.memeId, memes.id))
+          .where(cid ? eq(memes.contestId, cid) : isNull(memes.contestId));
+        
+        grouped[key] = {
+          contestId: cid,
+          contestTitle: contestInfo?.title || 'Current Contest',
+          contestStatus: contestIsArchived[cid] ? 'archived' : (contestInfo?.status || 'active'),
+          startTime: contestInfo?.startTime || contestInfo?.start_time,
+          endTime: contestInfo?.endTime || contestInfo?.end_time,
+          totalContestSamu: Number(totalContestVotes[0]?.total || 0),
+          myTotalSamu: 0,
+          myRevenueSharePercent: 0,
+          votes: [],
+        };
+      }
+      grouped[key].myTotalSamu += v.samuAmount;
+      grouped[key].votes.push({
+        memeId: v.memeId,
+        memeTitle: v.memeTitle,
+        memeImageUrl: v.memeImageUrl,
+        samuAmount: v.samuAmount,
+        createdAt: v.createdAt,
+      });
+    }
+
+    for (const key of Object.keys(grouped)) {
+      const g = grouped[key];
+      if (g.totalContestSamu > 0) {
+        g.myRevenueSharePercent = parseFloat(((g.myTotalSamu / g.totalContestSamu) * 30).toFixed(2));
+      }
+    }
+
+    return Object.values(grouped).sort((a, b) => (b.contestId || 0) - (a.contestId || 0));
+  }
+
+  async getUserVotesForContest(walletAddress: string, contestId: number): Promise<any[]> {
+    if (!this.db) throw new Error("Database not available");
+    
+    const userVotes = await this.db
+      .select({
+        memeId: votes.memeId,
+        samuAmount: votes.samuAmount,
+        txSignature: votes.txSignature,
+        createdAt: votes.createdAt,
+        memeTitle: memes.title,
+        memeImageUrl: memes.imageUrl,
+      })
+      .from(votes)
+      .innerJoin(memes, eq(votes.memeId, memes.id))
+      .where(and(eq(votes.voterWallet, walletAddress), eq(memes.contestId, contestId)))
+      .orderBy(desc(votes.samuAmount));
+
+    const totalContestVotes = await this.db
+      .select({ total: sql<number>`COALESCE(SUM(${votes.samuAmount}), 0)` })
+      .from(votes)
+      .innerJoin(memes, eq(votes.memeId, memes.id))
+      .where(eq(memes.contestId, contestId));
+
+    const totalSamu = Number(totalContestVotes[0]?.total || 0);
+    const myTotalSamu = userVotes.reduce((sum, v) => sum + v.samuAmount, 0);
+    const myRevenueSharePercent = totalSamu > 0 ? parseFloat(((myTotalSamu / totalSamu) * 30).toFixed(2)) : 0;
+
+    return {
+      contestId,
+      myTotalSamu,
+      totalContestSamu: totalSamu,
+      myRevenueSharePercent,
+      votes: userVotes,
+    } as any;
   }
 
   async getUserComments(walletAddress: string): Promise<NftComment[]> {

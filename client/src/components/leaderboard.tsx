@@ -5,10 +5,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-import { Trophy, Medal, Crown, TrendingUp, Calendar, ChevronDown } from "lucide-react";
+import { Trophy, Medal, Crown, TrendingUp, Calendar, ChevronDown, ChevronUp, Vote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserInfoModal } from "@/components/user-info-modal";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
+import { usePrivy } from '@privy-io/react-auth';
+import { useSolanaWallets } from '@privy-io/react-auth/solana';
 import type { Meme } from "@shared/schema";
 
 export function Leaderboard() {
@@ -19,6 +21,11 @@ export function Leaderboard() {
   const [showUserModal, setShowUserModal] = useState(false);
   const [showAllCurrent, setShowAllCurrent] = useState(false);
   const [showAllCreators, setShowAllCreators] = useState(false);
+  const [expandedContestId, setExpandedContestId] = useState<number | null>(null);
+
+  const { authenticated } = usePrivy();
+  const { wallets: solWallets } = useSolanaWallets();
+  const walletAddress = solWallets?.[0]?.address;
 
   // Optimized data fetching - use same query as home page to avoid duplication
   const { data: memesResponse, isLoading } = useQuery({
@@ -118,6 +125,17 @@ export function Leaderboard() {
         };
       });
   }, [archivedContests]);
+
+  const { data: myContestVotes, isLoading: myVotesLoading } = useQuery({
+    queryKey: ['my-contest-votes', expandedContestId, walletAddress],
+    queryFn: async () => {
+      const res = await fetch(`/api/memes/contest/${expandedContestId}/my-votes/${walletAddress}`);
+      if (!res.ok) return { myTotalSamu: 0, myRevenueSharePercent: 0, votes: [] };
+      return res.json();
+    },
+    enabled: !!expandedContestId && !!walletAddress && authenticated,
+    staleTime: 30000,
+  });
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
@@ -355,53 +373,122 @@ export function Leaderboard() {
                   No completed contests yet
                 </div>
               ) : (
-                hallOfFameData.map((winner: any, index: number) => (
-                  <div 
-                    key={winner.id} 
-                    className="p-4 border border-primary/20 bg-primary/5 rounded-lg cursor-pointer hover:bg-primary/10 transition-colors"
-                    onClick={() => {
-                      if (winner.winnerMeme) {
-                        setSelectedMeme(winner.winnerMeme);
-                        setShowMemeModal(true);
-                      }
-                    }}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center space-x-2">
-                        <Trophy className="h-4 w-4 text-yellow-400" />
-                        <Badge className="bg-primary text-primary-foreground text-xs">
-                          {index === 0 ? "Latest Winner" : "Past Winner"}
-                        </Badge>
+                hallOfFameData.map((winner: any, index: number) => {
+                  const archivedContest = archivedContests?.find((c: any) => c.id === winner.id);
+                  const originalContestId = archivedContest?.originalContestId;
+                  const isExpanded = expandedContestId === originalContestId;
+                  
+                  return (
+                  <div key={winner.id} className="border border-primary/20 bg-primary/5 rounded-lg overflow-hidden">
+                    <div 
+                      className="p-4 cursor-pointer hover:bg-primary/10 transition-colors"
+                      onClick={() => {
+                        if (originalContestId) {
+                          setExpandedContestId(isExpanded ? null : originalContestId);
+                        }
+                      }}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <Trophy className="h-4 w-4 text-yellow-400" />
+                          <Badge className="bg-primary text-primary-foreground text-xs">
+                            {index === 0 ? "Latest Winner" : "Past Winner"}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="text-xs text-muted-foreground flex items-center">
+                            <Calendar className="h-3 w-3 mr-1" />
+                            {winner.contestDate}
+                          </div>
+                          {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                        </div>
                       </div>
-                      <div className="text-xs text-muted-foreground flex items-center">
-                        <Calendar className="h-3 w-3 mr-1" />
-                        {winner.contestDate}
+                      
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-bold text-foreground mb-1 text-sm">
+                            {winner.contestTitle}
+                          </div>
+                          <div className="text-xs text-muted-foreground mb-1">
+                            Winner: "{winner.title}" by {winner.author}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {winner.totalEntries} entries
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-primary">
+                            {winner.votes.toLocaleString()}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            winning votes
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-bold text-foreground mb-1 text-sm">
-                          {winner.contestTitle}
-                        </div>
-                        <div className="text-xs text-muted-foreground mb-1">
-                          Winner: "{winner.title}" by {winner.author}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {winner.totalEntries} entries
-                        </div>
+
+                    {isExpanded && (
+                      <div className="border-t border-primary/20 p-4 bg-accent/30 space-y-3">
+                        {winner.winnerMeme && (
+                          <div 
+                            className="flex items-center space-x-3 p-2 bg-accent rounded-lg cursor-pointer hover:bg-accent/80 transition-colors"
+                            onClick={() => {
+                              setSelectedMeme(winner.winnerMeme);
+                              setShowMemeModal(true);
+                            }}
+                          >
+                            <img src={winner.winnerMeme.imageUrl} alt={winner.winnerMeme.title} className="w-12 h-12 rounded object-cover" />
+                            <div className="flex-1">
+                              <div className="text-sm font-semibold text-foreground">{winner.winnerMeme.title}</div>
+                              <div className="text-xs text-muted-foreground">by {winner.winnerMeme.authorUsername}</div>
+                            </div>
+                            <Badge variant="outline" className="text-yellow-400 border-yellow-400">1st</Badge>
+                          </div>
+                        )}
+
+                        {authenticated && walletAddress && myVotesLoading ? (
+                          <div className="text-xs text-muted-foreground text-center py-2">Loading your votes...</div>
+                        ) : authenticated && walletAddress && myContestVotes ? (
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="text-sm font-semibold text-foreground flex items-center">
+                                <Vote className="h-4 w-4 mr-1 text-primary" />
+                                My Votes
+                              </div>
+                              <div className="text-right">
+                                <span className="text-sm font-bold text-primary">{(myContestVotes.myTotalSamu || 0).toLocaleString()} SAMU</span>
+                                <span className="text-xs text-muted-foreground ml-2">
+                                  Revenue Share: {myContestVotes.myRevenueSharePercent || 0}%
+                                </span>
+                              </div>
+                            </div>
+
+                            {myContestVotes.votes?.length > 0 ? (
+                              myContestVotes.votes.map((v: any, vi: number) => (
+                                <div key={vi} className="flex items-center justify-between p-2 bg-accent/50 rounded text-xs">
+                                  <div className="flex items-center space-x-2">
+                                    {v.memeImageUrl && <img src={v.memeImageUrl} alt="" className="w-8 h-8 rounded object-cover" />}
+                                    <span className="text-foreground">{v.memeTitle}</span>
+                                  </div>
+                                  <span className="font-bold text-primary">{(v.samuAmount || 0).toLocaleString()} SAMU</span>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="text-xs text-muted-foreground text-center py-2">
+                                No votes in this contest
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-muted-foreground text-center py-2">
+                            Log in to see your vote history
+                          </div>
+                        )}
                       </div>
-                      <div className="text-right">
-                        <div className="font-bold text-primary">
-                          {winner.votes.toLocaleString()}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          winning votes
-                        </div>
-                      </div>
-                    </div>
+                    )}
                   </div>
-                ))
+                  );
+                })
               )}
             </CardContent>
           </Card>

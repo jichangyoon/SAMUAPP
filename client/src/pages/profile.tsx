@@ -97,7 +97,6 @@ const Profile = memo(() => {
     enabled: !!walletAddress,
   });
 
-  // User votes
   const { data: userVoteHistory = [] } = useQuery({
     queryKey: ['user-votes', walletAddress],
     queryFn: async () => {
@@ -107,7 +106,19 @@ const Profile = memo(() => {
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 0, // Force fresh data
+    staleTime: 0,
+  });
+
+  const { data: voteHistoryByContest = [] } = useQuery({
+    queryKey: ['vote-history-by-contest', walletAddress],
+    queryFn: async () => {
+      if (!walletAddress) return [];
+      const res = await fetch(`/api/memes/history/${walletAddress}`);
+      if (!res.ok) throw new Error('Failed to fetch vote history');
+      return res.json();
+    },
+    enabled: !!walletAddress,
+    staleTime: 30000,
   });
 
   // All memes data to match with user votes (including archived)
@@ -864,52 +875,42 @@ const Profile = memo(() => {
           <TabsContent value="votes" className="flex-1 overflow-hidden">
             <Card className="border-border bg-card h-full flex flex-col">
               <CardHeader className="flex-shrink-0">
-                <CardTitle className="text-lg text-foreground">My Votes ({myVotes.length})</CardTitle>
+                <CardTitle className="text-lg text-foreground">Vote History</CardTitle>
               </CardHeader>
               <CardContent className="flex-1 overflow-y-auto">
-                {myVotes.length > 0 ? (
-                  <div className="space-y-2">
-                    {displayedVotes.map((vote: any) => {
-                      const meme = allMemes.find((m: any) => m.id === vote.memeId);
-                      return meme ? (
-                        <div 
-                          key={vote.id} 
-                          className="flex items-center gap-3 p-2 bg-accent/50 rounded-lg cursor-pointer hover:bg-accent/70 transition-colors"
-                          onClick={() => {
-                            setSelectedMeme(meme);
-                            setIsModalOpen(true);
-                          }}
-                        >
-                          <MediaDisplay
-                            src={meme.imageUrl}
-                            alt={meme.title}
-                            className="w-10 h-10 rounded"
-                            showControls={false}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-foreground text-sm truncate">{meme.title}</h4>
-                            <p className="text-xs text-muted-foreground truncate">by {meme.authorUsername}</p>
+                {voteHistoryByContest.length > 0 ? (
+                  <div className="space-y-3">
+                    {voteHistoryByContest.map((contest: any) => (
+                      <div key={contest.contestId} className="border border-border rounded-lg overflow-hidden">
+                        <div className="p-3 bg-accent/30 flex items-center justify-between">
+                          <div>
+                            <div className="font-semibold text-foreground text-sm">{contest.contestTitle}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {contest.contestStatus === 'active' ? 'Active' : contest.contestStatus === 'archived' ? 'Archived' : 'Ended'}
+                              {contest.endTime && ` - ${new Date(contest.endTime).toLocaleDateString()}`}
+                            </div>
                           </div>
-                          <Badge variant="secondary" className="text-green-400 text-xs">
-                            +{vote.samuAmount} SAMU
-                          </Badge>
+                          <div className="text-right">
+                            <div className="font-bold text-primary text-sm">{(contest.myTotalSamu || 0).toLocaleString()} SAMU</div>
+                            <div className="text-xs text-green-400">Revenue: {contest.myRevenueSharePercent}%</div>
+                          </div>
                         </div>
-                      ) : null;
-                    })}
-                    
-                    {/* More button - only show if there are more than 5 votes */}
-                    {myVotes.length > 5 && (
-                      <div className="flex justify-center pt-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setShowAllVotes(!showAllVotes)}
-                          className="text-foreground border-border hover:bg-accent"
-                        >
-                          {showAllVotes ? 'Show Less' : `More (${myVotes.length - 5})`}
-                        </Button>
+                        <div className="p-2 space-y-1">
+                          {contest.votes?.slice(0, 5).map((v: any, i: number) => (
+                            <div key={i} className="flex items-center gap-2 p-1.5 rounded text-xs">
+                              {v.memeImageUrl && <img src={v.memeImageUrl} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />}
+                              <span className="flex-1 text-foreground truncate">{v.memeTitle}</span>
+                              <span className="font-bold text-primary flex-shrink-0">{(v.samuAmount || 0).toLocaleString()} SAMU</span>
+                            </div>
+                          ))}
+                          {contest.votes?.length > 5 && (
+                            <div className="text-xs text-muted-foreground text-center py-1">
+                              +{contest.votes.length - 5} more votes
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    )}
+                    ))}
                   </div>
                 ) : (
                   <div className="text-center py-6 text-muted-foreground">

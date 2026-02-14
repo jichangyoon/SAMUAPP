@@ -227,6 +227,29 @@ router.post("/:id/vote", async (req, res) => {
   }
 });
 
+router.get("/history/:wallet", async (req, res) => {
+  try {
+    const walletAddress = req.params.wallet;
+    const voteHistory = await storage.getUserVoteHistoryByContest(walletAddress);
+    res.json(voteHistory);
+  } catch (error) {
+    console.error('Error fetching vote history:', error);
+    res.status(500).json({ message: "Failed to fetch vote history" });
+  }
+});
+
+router.get("/contest/:contestId/my-votes/:wallet", async (req, res) => {
+  try {
+    const contestId = parseInt(req.params.contestId);
+    const walletAddress = req.params.wallet;
+    const myVotes = await storage.getUserVotesForContest(walletAddress, contestId);
+    res.json(myVotes);
+  } catch (error) {
+    console.error('Error fetching contest votes:', error);
+    res.status(500).json({ message: "Failed to fetch contest votes" });
+  }
+});
+
 router.get("/:id/voted/:wallet", async (req, res) => {
   try {
     const memeId = parseInt(req.params.id);
