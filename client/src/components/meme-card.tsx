@@ -144,9 +144,14 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
 
       setShowVoteDialog(false);
       
+      queryClient.setQueryData(['samu-balance', walletAddress], (old: any) => {
+        if (!old) return old;
+        return { ...old, balance: Math.max(0, (old.balance || 0) - voteAmount) };
+      });
+      
       setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: ['samu-balance', walletAddress] });
-      }, 5000);
+      }, 15000);
       
       onVote();
     } catch (error: any) {
