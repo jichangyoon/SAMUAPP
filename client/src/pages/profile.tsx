@@ -789,11 +789,6 @@ const Profile = memo(() => {
               </div>
             </div>
 
-            <div className="text-center bg-accent/30 rounded-lg p-2 mt-2">
-              <div className="text-sm font-bold text-yellow-400">{stats.totalVotesReceived}</div>
-              <div className="text-xs text-muted-foreground">Total Votes Received</div>
-            </div>
-
             {/* 지갑 주소 섹션 */}
             {walletAddress && (
               <div className="mt-3 bg-accent/20 rounded-lg p-3">
@@ -1147,20 +1142,9 @@ const Profile = memo(() => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="text-center bg-accent/30 rounded-lg p-3">
-                    <div className="text-lg font-bold text-blue-400">{stats.totalVotesCast}</div>
-                    <div className="text-xs text-muted-foreground">Votes Cast</div>
-                  </div>
-                  <div className="text-center bg-accent/30 rounded-lg p-3">
-                    <div className="text-lg font-bold text-yellow-400">{stats.totalVotesReceived}</div>
-                    <div className="text-xs text-muted-foreground">Votes Received</div>
-                  </div>
-                </div>
-
                 <div className="text-xs text-muted-foreground bg-accent/50 p-3 rounded-lg space-y-1">
                   <p>• Vote by spending SAMU tokens directly</p>
-                  <p>• The SAMU amount you vote with becomes the vote count</p>
+                  <p>• Your SAMU spent determines your revenue share</p>
                 </div>
 
                 {walletRevenue && (
