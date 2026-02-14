@@ -130,6 +130,7 @@ export default function Home() {
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [archiveView, setArchiveView] = useState<'list' | 'contest'>('list');
   const [selectedArchiveContest, setSelectedArchiveContest] = useState<any>(null);
+  const [showArchiveVoteDetail, setShowArchiveVoteDetail] = useState(false);
   const [selectedArchiveMeme, setSelectedArchiveMeme] = useState<any>(null);
   const [isLoadingContestDetails, setIsLoadingContestDetails] = useState(false);
   const [showNftLoading, setShowNftLoading] = useState(false);
@@ -828,6 +829,7 @@ export default function Home() {
                                 author: meme.authorUsername
                               }))
                             });
+                            setShowArchiveVoteDetail(false);
                             setArchiveView('contest');
                           } catch (error) {
 
@@ -957,17 +959,26 @@ export default function Home() {
                             </div>
                           </div>
                           {archiveMyVotes.votes?.length > 0 && (
-                            <div className="mt-3 space-y-1.5">
-                              <div className="text-xs text-muted-foreground">Voted on {archiveMyVotes.votes.length} meme(s):</div>
-                              {archiveMyVotes.votes.map((v: any, i: number) => (
-                                <div key={i} className="flex items-center justify-between text-xs bg-accent/30 rounded px-2 py-1.5">
-                                  <div className="flex items-center gap-2 min-w-0">
-                                    {v.memeImageUrl && <img src={v.memeImageUrl} alt="" className="w-6 h-6 rounded object-cover flex-shrink-0" />}
-                                    <span className="text-foreground truncate">{v.memeTitle}</span>
-                                  </div>
-                                  <span className="font-semibold text-primary ml-2 flex-shrink-0">{(v.samuAmount || 0).toLocaleString()} SAMU</span>
+                            <div className="mt-3">
+                              <button
+                                onClick={() => setShowArchiveVoteDetail(prev => !prev)}
+                                className="text-xs text-primary hover:underline"
+                              >
+                                {showArchiveVoteDetail ? 'Hide details' : `Show details (${archiveMyVotes.votes.length} memes)`}
+                              </button>
+                              {showArchiveVoteDetail && (
+                                <div className="mt-2 space-y-1.5">
+                                  {archiveMyVotes.votes.map((v: any, i: number) => (
+                                    <div key={i} className="flex items-center justify-between text-xs bg-accent/30 rounded px-2 py-1.5">
+                                      <div className="flex items-center gap-2 min-w-0">
+                                        {v.memeImageUrl && <img src={v.memeImageUrl} alt="" className="w-6 h-6 rounded object-cover flex-shrink-0" />}
+                                        <span className="text-foreground truncate">{v.memeTitle}</span>
+                                      </div>
+                                      <span className="font-semibold text-primary ml-2 flex-shrink-0">{(v.samuAmount || 0).toLocaleString()} SAMU</span>
+                                    </div>
+                                  ))}
                                 </div>
-                              ))}
+                              )}
                             </div>
                           )}
                         </CardContent>
