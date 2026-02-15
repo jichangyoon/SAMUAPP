@@ -25,6 +25,13 @@ const STICKER_VARIANT_MAP: Record<string, number> = {
   '15"×3.75"': 16362,
 };
 
+const STICKER_PRINTFILE_SIZE: Record<number, { width: number; height: number }> = {
+  10163: { width: 900, height: 900 },
+  10164: { width: 1200, height: 1200 },
+  10165: { width: 1650, height: 1650 },
+  16362: { width: 4500, height: 1125 },
+};
+
 function getPrintfulHeaders() {
   return {
     "Authorization": `Bearer ${PRINTFUL_API_KEY}`,
@@ -229,12 +236,21 @@ router.post("/admin/generate-mockup/:id", requireAdmin, async (req, res) => {
       if (secondVariantId) variantIds.push(secondVariantId);
     }
 
+    const printfileSize = STICKER_PRINTFILE_SIZE[variantId] || { width: 900, height: 900 };
     const mockupPayload = {
       variant_ids: variantIds,
       format: "jpg",
       files: [{
         placement: "default",
         image_url: imageUrl,
+        position: {
+          area_width: printfileSize.width,
+          area_height: printfileSize.height,
+          width: printfileSize.width,
+          height: printfileSize.height,
+          top: 0,
+          left: 0,
+        },
       }],
     };
 
