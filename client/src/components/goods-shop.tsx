@@ -15,6 +15,33 @@ import { ShoppingCart, ShoppingBag, Sticker, Package, Truck, ChevronRight, Loade
 
 type OrderStep = 'browse' | 'detail' | 'options' | 'shipping' | 'payment' | 'confirm';
 
+const COUNTRIES = [
+  { code: 'US', name: 'United States', zipLabel: 'ZIP Code', zipPlaceholder: '10001', statePlaceholder: 'NY', phonePlaceholder: '+1 555 123 4567' },
+  { code: 'KR', name: 'South Korea (한국)', zipLabel: 'Postal Code (우편번호)', zipPlaceholder: '06130', statePlaceholder: 'Seoul', phonePlaceholder: '+82 10 1234 5678' },
+  { code: 'JP', name: 'Japan (日本)', zipLabel: 'Postal Code (郵便番号)', zipPlaceholder: '100-0001', statePlaceholder: 'Tokyo', phonePlaceholder: '+81 90 1234 5678' },
+  { code: 'GB', name: 'United Kingdom', zipLabel: 'Postcode', zipPlaceholder: 'SW1A 1AA', statePlaceholder: 'London', phonePlaceholder: '+44 20 7946 0958' },
+  { code: 'CA', name: 'Canada', zipLabel: 'Postal Code', zipPlaceholder: 'K1A 0B1', statePlaceholder: 'ON', phonePlaceholder: '+1 416 555 0123' },
+  { code: 'AU', name: 'Australia', zipLabel: 'Postcode', zipPlaceholder: '2000', statePlaceholder: 'NSW', phonePlaceholder: '+61 2 1234 5678' },
+  { code: 'DE', name: 'Germany (Deutschland)', zipLabel: 'PLZ', zipPlaceholder: '10115', statePlaceholder: 'Berlin', phonePlaceholder: '+49 30 123456' },
+  { code: 'FR', name: 'France', zipLabel: 'Code Postal', zipPlaceholder: '75001', statePlaceholder: 'Île-de-France', phonePlaceholder: '+33 1 23 45 67 89' },
+  { code: 'CN', name: 'China (中国)', zipLabel: 'Postal Code (邮编)', zipPlaceholder: '100000', statePlaceholder: 'Beijing', phonePlaceholder: '+86 138 0013 8000' },
+  { code: 'SG', name: 'Singapore', zipLabel: 'Postal Code', zipPlaceholder: '018956', statePlaceholder: '', phonePlaceholder: '+65 6123 4567' },
+  { code: 'TH', name: 'Thailand (ไทย)', zipLabel: 'Postal Code', zipPlaceholder: '10110', statePlaceholder: 'Bangkok', phonePlaceholder: '+66 2 123 4567' },
+  { code: 'VN', name: 'Vietnam (Việt Nam)', zipLabel: 'Postal Code', zipPlaceholder: '100000', statePlaceholder: 'Hanoi', phonePlaceholder: '+84 24 1234 5678' },
+  { code: 'PH', name: 'Philippines', zipLabel: 'ZIP Code', zipPlaceholder: '1000', statePlaceholder: 'Metro Manila', phonePlaceholder: '+63 2 1234 5678' },
+  { code: 'IN', name: 'India (भारत)', zipLabel: 'PIN Code', zipPlaceholder: '110001', statePlaceholder: 'Delhi', phonePlaceholder: '+91 98765 43210' },
+  { code: 'BR', name: 'Brazil (Brasil)', zipLabel: 'CEP', zipPlaceholder: '01001-000', statePlaceholder: 'SP', phonePlaceholder: '+55 11 91234 5678' },
+  { code: 'MX', name: 'Mexico (México)', zipLabel: 'Código Postal', zipPlaceholder: '06000', statePlaceholder: 'CDMX', phonePlaceholder: '+52 55 1234 5678' },
+  { code: 'ES', name: 'Spain (España)', zipLabel: 'Código Postal', zipPlaceholder: '28001', statePlaceholder: 'Madrid', phonePlaceholder: '+34 612 345 678' },
+  { code: 'IT', name: 'Italy (Italia)', zipLabel: 'CAP', zipPlaceholder: '00100', statePlaceholder: 'Roma', phonePlaceholder: '+39 06 1234 5678' },
+  { code: 'NL', name: 'Netherlands', zipLabel: 'Postcode', zipPlaceholder: '1012 AB', statePlaceholder: 'NH', phonePlaceholder: '+31 20 123 4567' },
+  { code: 'SE', name: 'Sweden (Sverige)', zipLabel: 'Postnummer', zipPlaceholder: '111 21', statePlaceholder: 'Stockholm', phonePlaceholder: '+46 8 123 456' },
+];
+
+function getCountryInfo(code: string) {
+  return COUNTRIES.find(c => c.code === code) || { code, name: code, zipLabel: 'Postal Code', zipPlaceholder: '00000', statePlaceholder: '', phonePlaceholder: '+1 000 000 0000' };
+}
+
 export function GoodsShop() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [orderStep, setOrderStep] = useState<OrderStep>('browse');
@@ -412,11 +439,27 @@ export function GoodsShop() {
                 <>
                   <div className="space-y-3">
                     <div>
+                      <label className="text-xs text-muted-foreground">Country / Region *</label>
+                      <Select
+                        value={shippingForm.country}
+                        onValueChange={(val) => setShippingForm(f => ({ ...f, country: val, state: '', zip: '' }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-[300px]">
+                          {COUNTRIES.map(c => (
+                            <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
                       <label className="text-xs text-muted-foreground">Full Name *</label>
                       <Input
                         value={shippingForm.name}
                         onChange={(e) => setShippingForm(f => ({ ...f, name: e.target.value }))}
-                        placeholder="John Doe"
+                        placeholder="Full Name"
                       />
                     </div>
                     <div>
@@ -425,23 +468,23 @@ export function GoodsShop() {
                         type="email"
                         value={shippingForm.email}
                         onChange={(e) => setShippingForm(f => ({ ...f, email: e.target.value }))}
-                        placeholder="john@example.com"
+                        placeholder="email@example.com"
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground">Address Line 1 *</label>
+                      <label className="text-xs text-muted-foreground">Street Address *</label>
                       <Input
                         value={shippingForm.address1}
                         onChange={(e) => setShippingForm(f => ({ ...f, address1: e.target.value }))}
-                        placeholder="123 Main St"
+                        placeholder="Street address"
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground">Address Line 2</label>
+                      <label className="text-xs text-muted-foreground">Apt / Suite / Floor</label>
                       <Input
                         value={shippingForm.address2}
                         onChange={(e) => setShippingForm(f => ({ ...f, address2: e.target.value }))}
-                        placeholder="Apt 4B"
+                        placeholder="Apt, Suite, Floor (optional)"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-2">
@@ -450,42 +493,32 @@ export function GoodsShop() {
                         <Input
                           value={shippingForm.city}
                           onChange={(e) => setShippingForm(f => ({ ...f, city: e.target.value }))}
-                          placeholder="New York"
+                          placeholder="City"
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-muted-foreground">State</label>
+                        <label className="text-xs text-muted-foreground">State / Province</label>
                         <Input
                           value={shippingForm.state}
                           onChange={(e) => setShippingForm(f => ({ ...f, state: e.target.value }))}
-                          placeholder="NY"
+                          placeholder={getCountryInfo(shippingForm.country).statePlaceholder || 'State'}
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="text-xs text-muted-foreground">Country *</label>
-                        <Input
-                          value={shippingForm.country}
-                          onChange={(e) => setShippingForm(f => ({ ...f, country: e.target.value }))}
-                          placeholder="US"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs text-muted-foreground">ZIP Code *</label>
-                        <Input
-                          value={shippingForm.zip}
-                          onChange={(e) => setShippingForm(f => ({ ...f, zip: e.target.value }))}
-                          placeholder="10001"
-                        />
-                      </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground">{getCountryInfo(shippingForm.country).zipLabel} *</label>
+                      <Input
+                        value={shippingForm.zip}
+                        onChange={(e) => setShippingForm(f => ({ ...f, zip: e.target.value }))}
+                        placeholder={getCountryInfo(shippingForm.country).zipPlaceholder}
+                      />
                     </div>
                     <div>
                       <label className="text-xs text-muted-foreground">Phone</label>
                       <Input
                         value={shippingForm.phone}
                         onChange={(e) => setShippingForm(f => ({ ...f, phone: e.target.value }))}
-                        placeholder="+1 555 123 4567"
+                        placeholder={getCountryInfo(shippingForm.country).phonePlaceholder}
                       />
                     </div>
                   </div>
@@ -626,7 +659,7 @@ export function GoodsShop() {
                         <div className="text-xs text-muted-foreground">
                           {shippingForm.address1}{shippingForm.address2 ? `, ${shippingForm.address2}` : ''}<br />
                           {shippingForm.city}, {shippingForm.state} {shippingForm.zip}<br />
-                          {shippingForm.country}
+                          {getCountryInfo(shippingForm.country).name}
                         </div>
                       </div>
                     </CardContent>
