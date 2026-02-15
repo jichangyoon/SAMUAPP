@@ -24,6 +24,7 @@ export interface IStorage {
   // Vote operations
   createVote(vote: InsertVote): Promise<Vote>;
   getVotesByMemeId(memeId: number): Promise<Vote[]>;
+  getVoteByTxSignature(txSignature: string): Promise<Vote | undefined>;
   hasUserVoted(memeId: number, voterWallet: string): Promise<boolean>;
   updateMemeVoteCount(memeId: number): Promise<void>;
   getUserVoteHistoryByContest(walletAddress: string): Promise<any[]>;
@@ -262,6 +263,10 @@ export class MemStorage implements IStorage {
 
   async getVotesByMemeId(memeId: number): Promise<Vote[]> {
     return Array.from(this.votes.values()).filter(vote => vote.memeId === memeId);
+  }
+
+  async getVoteByTxSignature(txSignature: string): Promise<Vote | undefined> {
+    return Array.from(this.votes.values()).find(vote => vote.txSignature === txSignature);
   }
 
   async hasUserVoted(memeId: number, voterWallet: string): Promise<boolean> {
@@ -769,6 +774,16 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(votes)
       .where(eq(votes.memeId, memeId));
+  }
+
+  async getVoteByTxSignature(txSignature: string): Promise<Vote | undefined> {
+    if (!this.db) throw new Error("Database not available");
+    const [vote] = await this.db
+      .select()
+      .from(votes)
+      .where(eq(votes.txSignature, txSignature))
+      .limit(1);
+    return vote;
   }
 
   async hasUserVoted(memeId: number, voterWallet: string): Promise<boolean> {

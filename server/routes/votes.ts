@@ -19,7 +19,7 @@ function getConnection(): Connection {
   return new Connection(rpcUrl, 'confirmed');
 }
 
-async function verifyTransaction(
+export async function verifyTransaction(
   connection: Connection,
   txSignature: string,
   expectedVoterWallet: string,
@@ -196,18 +196,16 @@ router.post("/:id/vote", async (req, res) => {
       return res.status(400).json({ message: "Transaction signature is required" });
     }
 
-    if (txSignature !== "in-app-vote" && txSignature !== "blinks-vote") {
-      const connection = getConnection();
-      const verification = await verifyTransaction(
-        connection,
-        txSignature,
-        voterWallet,
-        samuAmount
-      );
+    const connection = getConnection();
+    const verification = await verifyTransaction(
+      connection,
+      txSignature,
+      voterWallet,
+      samuAmount
+    );
 
-      if (!verification.valid) {
-        return res.status(400).json({ message: verification.error || "Transaction verification failed" });
-      }
+    if (!verification.valid) {
+      return res.status(400).json({ message: verification.error || "Transaction verification failed" });
     }
 
     const voteData = insertVoteSchema.parse({

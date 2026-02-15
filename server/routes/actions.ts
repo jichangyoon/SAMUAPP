@@ -8,20 +8,26 @@ import {
 import { 
   Connection, 
   PublicKey, 
-  Transaction, 
-  TransactionInstruction,
-  SystemProgram,
-  LAMPORTS_PER_SOL
+  Transaction
 } from "@solana/web3.js";
+import { createTransferInstruction, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, getAccount, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { storage } from "../storage";
+import { verifyTransaction } from "./votes";
 
 const router = Router();
 
-const SOLANA_RPC_URL = process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
-const SAMU_TOKEN_MINT = 'EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF';
 const HELIUS_API_KEY = process.env.VITE_HELIUS_API_KEY;
-const MEMO_PROGRAM_ID = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr";
-const connection = new Connection(SOLANA_RPC_URL, "confirmed");
+const SAMU_TOKEN_MINT = new PublicKey('EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF');
+const SAMU_TOKEN_MINT_STR = 'EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF';
+const SAMU_DECIMALS = 8;
+const TREASURY_WALLET = process.env.TREASURY_WALLET_ADDRESS || "4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk";
+
+function getConnection(): Connection {
+  const rpcUrl = HELIUS_API_KEY
+    ? `https://rpc.helius.xyz/?api-key=${HELIUS_API_KEY}`
+    : 'https://api.mainnet-beta.solana.com';
+  return new Connection(rpcUrl, 'confirmed');
+}
 
 interface PendingVoteIntent {
   memeId: number;
@@ -63,7 +69,7 @@ async function getSamuBalance(walletAddress: string): Promise<number> {
           method: 'getTokenAccountsByOwner',
           params: [
             walletAddress,
-            { mint: SAMU_TOKEN_MINT },
+            { mint: SAMU_TOKEN_MINT_STR },
             { encoding: 'jsonParsed' },
           ],
         }),
@@ -219,22 +225,49 @@ router.post("/vote/:memeId", async (req, res) => {
       console.log(`[Blinks] Auto-created user for wallet ${shortWallet} with ${samuBalance} SAMU`);
     }
 
+    const connection = getConnection();
     const protocol = req.get("x-forwarded-proto") || req.protocol;
     const baseUrl = `${protocol}://${req.get("host")}`;
     
+    const treasuryPubkey = new PublicKey(TREASURY_WALLET);
+    const tokenAmount = Math.round(samuAmount * Math.pow(10, SAMU_DECIMALS));
+    
+    const senderATA = await getAssociatedTokenAddress(SAMU_TOKEN_MINT, userPublicKey);
+    const treasuryATA = await getAssociatedTokenAddress(SAMU_TOKEN_MINT, treasuryPubkey);
+
     const transaction = new Transaction();
     
+    let treasuryAccountExists = false;
+    try {
+      await getAccount(connection, treasuryATA);
+      treasuryAccountExists = true;
+    } catch {
+      treasuryAccountExists = false;
+    }
+
+    if (!treasuryAccountExists) {
+      transaction.add(
+        createAssociatedTokenAccountInstruction(
+          userPublicKey,
+          treasuryATA,
+          treasuryPubkey,
+          SAMU_TOKEN_MINT
+        )
+      );
+    }
+
+    transaction.add(
+      createTransferInstruction(
+        senderATA,
+        treasuryATA,
+        userPublicKey,
+        tokenAmount
+      )
+    );
+
     const voteNonce = `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
     
-    const memoInstruction = new TransactionInstruction({
-      keys: [{ pubkey: userPublicKey, isSigner: true, isWritable: false }],
-      programId: new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
-      data: Buffer.from(`SAMU Vote: Meme #${memeId}, Amount: ${samuAmount}, Nonce: ${voteNonce}`),
-    });
-    
-    transaction.add(memoInstruction);
-    
-    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed");
     transaction.recentBlockhash = blockhash;
     transaction.lastValidBlockHeight = lastValidBlockHeight;
     transaction.feePayer = userPublicKey;
@@ -255,7 +288,7 @@ router.post("/vote/:memeId", async (req, res) => {
     const response: ActionPostResponse = {
       type: "transaction",
       transaction: serializedTransaction,
-      message: `Sign to vote for "${meme.title}" with ${samuAmount.toLocaleString()} SAMU`,
+      message: `Transfer ${samuAmount.toLocaleString()} SAMU to vote for "${meme.title}"`,
       links: {
         next: {
           type: "post",
@@ -320,63 +353,24 @@ router.post("/vote/:memeId/confirm", async (req, res) => {
       return res.set(corsHeaders).status(404).json({ error: "Meme not found" });
     }
 
-    try {
-      const txInfo = await connection.getTransaction(signature, {
-        commitment: "confirmed",
-        maxSupportedTransactionVersion: 0,
-      });
-
-      if (!txInfo) {
-        return res.set(corsHeaders).status(400).json({ 
-          error: "Transaction not found or not confirmed yet. Please wait and try again." 
-        });
-      }
-
-      const accountKeys = txInfo.transaction.message.getAccountKeys();
-      const signerKey = accountKeys.get(0)?.toBase58();
-      
-      if (signerKey !== userWallet) {
-        return res.set(corsHeaders).status(400).json({ 
-          error: "Transaction signer does not match wallet address" 
-        });
-      }
-
-      const expectedMemo = `SAMU Vote: Meme #${memeId}, Amount: ${pendingVote.samuAmount}, Nonce: ${nonce}`;
-      let memoValidated = false;
-      let foundMemoInstruction = false;
-      
-      const instructions = txInfo.transaction.message.compiledInstructions;
-      for (const ix of instructions) {
-        const programId = accountKeys.get(ix.programIdIndex)?.toBase58();
-        if (programId === MEMO_PROGRAM_ID) {
-          foundMemoInstruction = true;
-          try {
-            const memoData = Buffer.from(ix.data as Uint8Array).toString('utf8');
-            if (memoData === expectedMemo) {
-              memoValidated = true;
-              break;
-            }
-          } catch {
-            continue;
-          }
-        }
-      }
-
-      if (!foundMemoInstruction) {
-        return res.set(corsHeaders).status(400).json({ 
-          error: "Transaction does not contain a memo instruction." 
-        });
-      }
-
-      if (!memoValidated) {
-        return res.set(corsHeaders).status(400).json({ 
-          error: "Transaction memo does not match vote intent." 
-        });
-      }
-    } catch (txError) {
-      console.error("Error verifying transaction:", txError);
+    const existingVote = await storage.getVoteByTxSignature(signature);
+    if (existingVote) {
       return res.set(corsHeaders).status(400).json({ 
-        error: "Could not verify transaction. Please try again." 
+        error: "This transaction has already been used for a vote." 
+      });
+    }
+
+    const connection = getConnection();
+    const verification = await verifyTransaction(
+      connection,
+      signature,
+      userWallet,
+      pendingVote.samuAmount
+    );
+
+    if (!verification.valid) {
+      return res.set(corsHeaders).status(400).json({ 
+        error: verification.error || "Transaction verification failed" 
       });
     }
 
@@ -389,7 +383,8 @@ router.post("/vote/:memeId/confirm", async (req, res) => {
       txSignature: signature,
     });
 
-    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    const protocol = req.get("x-forwarded-proto") || req.protocol;
+    const baseUrl = `${protocol}://${req.get("host")}`;
 
     const response = {
       type: "post",
@@ -400,7 +395,7 @@ router.post("/vote/:memeId/confirm", async (req, res) => {
             type: "action",
             title: `Vote for: ${meme.title}`,
             icon: meme.imageUrl || `${baseUrl}/samu-logo.png`,
-            description: `Your vote of ${pendingVote.samuAmount.toLocaleString()} SAMU was recorded! Vote again?`,
+            description: `Your ${pendingVote.samuAmount.toLocaleString()} SAMU has been transferred to treasury. Vote recorded!`,
             label: "Vote Again",
             links: {
               actions: [
