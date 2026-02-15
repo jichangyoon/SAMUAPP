@@ -256,7 +256,7 @@ router.post("/admin/create", requireAdmin, async (req, res) => {
       memeId: memeId || null,
       title,
       description: description || null,
-      imageUrl: mockupUrls[0],
+      imageUrl: imageUrl,
       mockupUrls,
       category: "clothing",
       productType: "t-shirt",
@@ -272,6 +272,105 @@ router.post("/admin/create", requireAdmin, async (req, res) => {
   } catch (error: any) {
     console.error("Error creating goods with Printful:", error);
     res.status(500).json({ error: error.message || "Failed to create goods with Printful" });
+  }
+});
+
+router.post("/admin/generate-mockup/:id", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid goods ID" });
+    }
+
+    const item = await storage.getGoodsById(id);
+    if (!item) {
+      return res.status(404).json({ error: "Goods not found" });
+    }
+
+    if (!PRINTFUL_API_KEY) {
+      return res.status(500).json({ error: "Printful API key not configured" });
+    }
+
+    const imageUrl = item.imageUrl;
+    const firstColor = item.colors?.[0] || "Black";
+    const firstSize = item.sizes?.[0] || "M";
+    const variantId = VARIANT_MAP[firstColor]?.[firstSize] || 4018;
+
+    const secondColor = item.colors?.find((c: string) => c !== firstColor);
+    const variantIds = [variantId];
+    if (secondColor) {
+      const secondVariantId = VARIANT_MAP[secondColor]?.[firstSize];
+      if (secondVariantId) variantIds.push(secondVariantId);
+    }
+
+    const mockupPayload = {
+      variant_ids: variantIds,
+      format: "jpg",
+      files: [{
+        placement: "front",
+        image_url: imageUrl,
+        position: {
+          area_width: 1800,
+          area_height: 2400,
+          width: 1800,
+          height: 1800,
+          top: 300,
+          left: 0
+        }
+      }],
+    };
+
+    console.log("Creating mockup task for goods #" + id, JSON.stringify(mockupPayload));
+
+    const mockupTask = await printfulRequest(
+      "POST",
+      `/mockup-generator/create-task/${TSHIRT_PRODUCT_ID}`,
+      mockupPayload
+    );
+
+    if (!mockupTask.result?.task_key) {
+      return res.status(500).json({ error: "Failed to create mockup task", details: mockupTask });
+    }
+
+    const taskKey = mockupTask.result.task_key;
+    let mockupUrls: string[] = [];
+    let taskComplete = false;
+    let attempts = 0;
+
+    while (!taskComplete && attempts < 20) {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      try {
+        const taskResult = await printfulRequest(
+          "GET",
+          `/mockup-generator/task?task_key=${taskKey}`
+        );
+        console.log("Mockup task status:", taskResult.result?.status, "attempt:", attempts);
+
+        if (taskResult.result?.status === "completed") {
+          taskComplete = true;
+          const mockups = taskResult.result?.mockups || [];
+          mockupUrls = mockups.map((m: any) => m.mockup_url).filter(Boolean);
+        } else if (taskResult.result?.status === "failed") {
+          return res.status(500).json({ error: "Mockup generation failed", details: taskResult.result });
+        }
+      } catch (pollError: any) {
+        console.error("Mockup poll error:", pollError.message);
+      }
+      attempts++;
+    }
+
+    if (mockupUrls.length === 0) {
+      return res.status(500).json({ error: "Mockup generation timed out or produced no results" });
+    }
+
+    const updatedItem = await storage.updateGoods(id, {
+      mockupUrls: mockupUrls,
+    });
+
+    res.json({ mockupUrls, goods: updatedItem });
+  } catch (error: any) {
+    console.error("Error generating mockup:", error);
+    res.status(500).json({ error: error.message || "Failed to generate mockup" });
   }
 });
 

@@ -9,7 +9,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/u
 import { usePrivy } from '@privy-io/react-auth';
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ShoppingCart, ShoppingBag, Shirt, Package, Truck, ChevronRight, Loader2, X, ArrowLeft } from "lucide-react";
+import { ShoppingCart, ShoppingBag, Shirt, Package, Truck, ChevronRight, Loader2, X, ArrowLeft, ChevronLeft } from "lucide-react";
 
 type OrderStep = 'browse' | 'detail' | 'options' | 'shipping' | 'confirm';
 
@@ -99,11 +99,14 @@ export function GoodsShop() {
     setShippingEstimate(null);
   };
 
+  const [mockupIndex, setMockupIndex] = useState(0);
+
   const openProductDetail = (item: any) => {
     setSelectedItem(item);
     setOrderStep('detail');
     setSelectedSize('');
     setSelectedColor('');
+    setMockupIndex(0);
   };
 
   const getStatusBadge = (status: string) => {
@@ -197,7 +200,7 @@ export function GoodsShop() {
               <div className="flex p-3">
                 <div className="w-20 h-20 flex-shrink-0 bg-accent rounded-lg overflow-hidden">
                   <img
-                    src={item.imageUrl}
+                    src={item.mockupUrls?.find((u: string) => u !== item.imageUrl) || item.imageUrl}
                     alt={item.title}
                     className="w-full h-full object-cover"
                   />
@@ -249,9 +252,43 @@ export function GoodsShop() {
             <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4">
               {orderStep === 'detail' && (
                 <>
-                  <div className="aspect-square rounded-lg overflow-hidden bg-accent">
-                    <img src={selectedItem.imageUrl} alt={selectedItem.title} className="w-full h-full object-cover" />
-                  </div>
+                  {(() => {
+                    const mockups = selectedItem.mockupUrls?.filter((u: string) => u !== selectedItem.imageUrl) || [];
+                    const allImages = mockups.length > 0 ? mockups : [selectedItem.imageUrl];
+                    const hasMultiple = allImages.length > 1;
+                    return (
+                      <div className="relative">
+                        <div className="aspect-square rounded-lg overflow-hidden bg-accent">
+                          <img src={allImages[mockupIndex] || selectedItem.imageUrl} alt={selectedItem.title} className="w-full h-full object-contain bg-gray-900" />
+                        </div>
+                        {hasMultiple && (
+                          <>
+                            <button
+                              onClick={() => setMockupIndex(i => (i - 1 + allImages.length) % allImages.length)}
+                              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 rounded-full p-1.5"
+                            >
+                              <ChevronLeft className="h-5 w-5 text-white" />
+                            </button>
+                            <button
+                              onClick={() => setMockupIndex(i => (i + 1) % allImages.length)}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 rounded-full p-1.5"
+                            >
+                              <ChevronRight className="h-5 w-5 text-white" />
+                            </button>
+                            <div className="flex justify-center gap-1.5 mt-2">
+                              {allImages.map((_: string, i: number) => (
+                                <button
+                                  key={i}
+                                  onClick={() => setMockupIndex(i)}
+                                  className={`w-2 h-2 rounded-full transition-colors ${i === mockupIndex ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                                />
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })()}
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-2xl font-bold text-primary">${selectedItem.retailPrice}</span>

@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Play, Square, Archive, Plus, Clock, Trophy, ArrowLeft, Shield, Eye, Ban, DollarSign, Shirt, Package } from "lucide-react";
+import { Play, Square, Archive, Plus, Clock, Trophy, ArrowLeft, Shield, Eye, Ban, DollarSign, Shirt, Package, Image, Loader2 } from "lucide-react";
 import type { Contest, ArchivedContest } from "@shared/schema";
 import { useLocation } from "wouter";
 import { IPTrackingPanel } from "@/components/ip-tracking-panel";
@@ -55,6 +55,25 @@ export function Admin() {
     },
     onError: (e: any) => {
       toast({ title: "Failed to create goods", description: e.message, variant: "destructive" });
+    },
+  });
+
+  const [generatingMockupId, setGeneratingMockupId] = useState<number | null>(null);
+
+  const generateMockupMutation = useMutation({
+    mutationFn: async (goodsId: number) => {
+      setGeneratingMockupId(goodsId);
+      const res = await apiRequest("POST", `/api/goods/admin/generate-mockup/${goodsId}`, { adminEmail });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast({ title: "Mockup generated!", description: `${data.mockupUrls?.length || 0} mockup images created` });
+      queryClient.invalidateQueries({ queryKey: ['/api/goods'] });
+      setGeneratingMockupId(null);
+    },
+    onError: (e: any) => {
+      toast({ title: "Mockup generation failed", description: e.message, variant: "destructive" });
+      setGeneratingMockupId(null);
     },
   });
 
@@ -675,20 +694,54 @@ export function Admin() {
 
             {(goodsList as any[]).length > 0 && (
               <div className="space-y-2">
-                {(goodsList as any[]).map((item: any) => (
-                  <Card key={item.id} className="border-border">
-                    <CardContent className="p-3 flex items-center gap-3">
-                      <img src={item.imageUrl} alt={item.title} className="w-12 h-12 object-cover rounded" />
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-sm text-foreground truncate">{item.title}</div>
-                        <div className="text-xs text-muted-foreground">
-                          ${item.retailPrice} | {item.sizes?.join(', ')} | {item.colors?.join(', ')}
+                {(goodsList as any[]).map((item: any) => {
+                  const hasMockups = item.mockupUrls?.length > 1 || (item.mockupUrls?.length === 1 && item.mockupUrls[0] !== item.imageUrl);
+                  return (
+                    <Card key={item.id} className="border-border">
+                      <CardContent className="p-3 space-y-2">
+                        <div className="flex items-center gap-3">
+                          <img src={item.mockupUrls?.[0] || item.imageUrl} alt={item.title} className="w-12 h-12 object-cover rounded" />
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold text-sm text-foreground truncate">{item.title}</div>
+                            <div className="text-xs text-muted-foreground">
+                              ${item.retailPrice} | {item.sizes?.join(', ')} | {item.colors?.join(', ')}
+                            </div>
+                            <div className="text-xs mt-0.5">
+                              {hasMockups ? (
+                                <span className="text-green-400">Mockup ready ({item.mockupUrls?.length} images)</span>
+                              ) : (
+                                <span className="text-yellow-400">No mockup</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-1 items-end">
+                            <Badge variant={item.status === 'active' ? 'default' : 'secondary'}>{item.status}</Badge>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs h-7"
+                              onClick={() => generateMockupMutation.mutate(item.id)}
+                              disabled={generatingMockupId === item.id}
+                            >
+                              {generatingMockupId === item.id ? (
+                                <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Generating...</>
+                              ) : (
+                                <><Image className="h-3 w-3 mr-1" /> {hasMockups ? 'Regenerate' : 'Generate'} Mockup</>
+                              )}
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                      <Badge variant={item.status === 'active' ? 'default' : 'secondary'}>{item.status}</Badge>
-                    </CardContent>
-                  </Card>
-                ))}
+                        {hasMockups && (
+                          <div className="flex gap-2 overflow-x-auto py-1">
+                            {item.mockupUrls.map((url: string, i: number) => (
+                              <img key={i} src={url} alt={`Mockup ${i + 1}`} className="w-16 h-16 object-cover rounded border border-border flex-shrink-0" />
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </CardContent>
