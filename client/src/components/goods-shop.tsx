@@ -200,7 +200,7 @@ export function GoodsShop() {
               <div className="flex p-3">
                 <div className="w-20 h-20 flex-shrink-0 bg-accent rounded-lg overflow-hidden">
                   <img
-                    src={item.mockupUrls?.find((u: string) => u !== item.imageUrl) || item.imageUrl}
+                    src={item.imageUrl}
                     alt={item.title}
                     className="w-full h-full object-cover"
                   />
@@ -254,7 +254,7 @@ export function GoodsShop() {
                 <>
                   {(() => {
                     const mockups = selectedItem.mockupUrls?.filter((u: string) => u !== selectedItem.imageUrl) || [];
-                    const allImages = mockups.length > 0 ? mockups : [selectedItem.imageUrl];
+                    const allImages = [selectedItem.imageUrl, ...mockups];
                     const hasMultiple = allImages.length > 1;
                     return (
                       <div className="relative">
