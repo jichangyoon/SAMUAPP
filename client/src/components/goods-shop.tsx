@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,11 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { usePrivy } from '@privy-io/react-auth';
+import { useSolanaWallets, useSignTransaction } from '@privy-io/react-auth/solana';
+import { Connection, Transaction } from '@solana/web3.js';
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ShoppingCart, ShoppingBag, Sticker, Package, Truck, ChevronRight, Loader2, X, ArrowLeft, ChevronLeft } from "lucide-react";
+import { ShoppingCart, ShoppingBag, Sticker, Package, Truck, ChevronRight, Loader2, X, ArrowLeft, ChevronLeft, Wallet } from "lucide-react";
 
-type OrderStep = 'browse' | 'detail' | 'options' | 'shipping' | 'confirm';
+type OrderStep = 'browse' | 'detail' | 'options' | 'shipping' | 'payment' | 'confirm';
 
 export function GoodsShop() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
@@ -23,10 +25,22 @@ export function GoodsShop() {
   });
   const [shippingEstimate, setShippingEstimate] = useState<any>(null);
   const [showOrders, setShowOrders] = useState(false);
+  const [paymentInfo, setPaymentInfo] = useState<any>(null);
+  const [txSignature, setTxSignature] = useState<string>('');
+  const [isPaying, setIsPaying] = useState(false);
   const { authenticated, user } = usePrivy();
   const { toast } = useToast();
+  const { signTransaction } = useSignTransaction();
+  const { wallets: solWallets } = useSolanaWallets();
 
   const walletAddress = (user as any)?.wallet?.address || '';
+
+  const solConnection = new Connection(
+    import.meta.env.VITE_HELIUS_API_KEY
+      ? `https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`
+      : 'https://api.mainnet-beta.solana.com',
+    'confirmed'
+  );
 
   const { data: goods = [], isLoading } = useQuery({
     queryKey: ['/api/goods'],
@@ -62,6 +76,48 @@ export function GoodsShop() {
     },
   });
 
+  const handlePaySOL = useCallback(async () => {
+    if (!selectedItem || !walletAddress) return;
+
+    setIsPaying(true);
+    try {
+      const shippingCost = shippingEstimate?.shipping_rates?.[0]?.rate ||
+        (Array.isArray(shippingEstimate) ? shippingEstimate[0]?.rate : null) || 0;
+
+      toast({ title: "Preparing SOL payment...", duration: 3000 });
+
+      const prepareRes = await fetch(`/api/goods/${selectedItem.id}/prepare-payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ buyerWallet: walletAddress, shippingCostUSD: shippingCost }),
+      });
+
+      if (!prepareRes.ok) {
+        const err = await prepareRes.json();
+        throw new Error(err.error || 'Failed to prepare payment');
+      }
+
+      const payData = await prepareRes.json();
+      setPaymentInfo(payData);
+
+      toast({ title: "Please sign the transaction in your wallet", duration: 5000 });
+
+      const transaction = Transaction.from(Buffer.from(payData.transaction, 'base64'));
+      const signedTx = await signTransaction({ transaction, connection: solConnection });
+      const sig = await solConnection.sendRawTransaction(signedTx.serialize());
+      await solConnection.confirmTransaction(sig, 'confirmed');
+
+      setTxSignature(sig);
+      toast({ title: "Payment confirmed!", description: `TX: ${sig.slice(0, 8)}...` });
+      setOrderStep('confirm');
+    } catch (err: any) {
+      console.error("SOL payment error:", err);
+      toast({ title: "Payment failed", description: err.message, variant: "destructive" });
+    } finally {
+      setIsPaying(false);
+    }
+  }, [selectedItem, walletAddress, shippingEstimate, signTransaction, solConnection]);
+
   const placeOrderMutation = useMutation({
     mutationFn: async () => {
       const res = await apiRequest("POST", `/api/goods/${selectedItem.id}/order`, {
@@ -69,6 +125,8 @@ export function GoodsShop() {
         color: selectedColor,
         buyerWallet: walletAddress,
         buyerEmail: shippingForm.email,
+        txSignature,
+        solAmount: paymentInfo?.solAmount,
         shippingName: shippingForm.name,
         shippingAddress1: shippingForm.address1,
         shippingAddress2: shippingForm.address2,
@@ -81,7 +139,7 @@ export function GoodsShop() {
       return res.json();
     },
     onSuccess: () => {
-      toast({ title: "Order placed successfully!" });
+      toast({ title: "Order placed successfully! Your sticker is being prepared." });
       resetOrder();
       queryClient.invalidateQueries({ queryKey: ['/api/goods/orders', walletAddress] });
     },
@@ -97,6 +155,8 @@ export function GoodsShop() {
     setSelectedColor('');
     setShippingForm({ name: '', email: '', address1: '', address2: '', city: '', state: '', country: 'US', zip: '', phone: '' });
     setShippingEstimate(null);
+    setPaymentInfo(null);
+    setTxSignature('');
   };
 
   const [mockupIndex, setMockupIndex] = useState(0);
@@ -458,27 +518,108 @@ export function GoodsShop() {
                   )}
                   <Button
                     className="w-full"
-                    onClick={() => setOrderStep('confirm')}
+                    onClick={async () => {
+                      setOrderStep('payment');
+                      try {
+                        const shippingCost = shippingEstimate?.shipping_rates?.[0]?.rate ||
+                          (Array.isArray(shippingEstimate) ? shippingEstimate[0]?.rate : null) || 0;
+                        const prepareRes = await fetch(`/api/goods/${selectedItem.id}/prepare-payment`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ buyerWallet: walletAddress, shippingCostUSD: shippingCost }),
+                        });
+                        if (prepareRes.ok) {
+                          const payData = await prepareRes.json();
+                          setPaymentInfo(payData);
+                        }
+                      } catch {}
+                    }}
                     disabled={!shippingForm.name || !shippingForm.email || !shippingForm.address1 || !shippingForm.city || !shippingForm.country || !shippingForm.zip}
                   >
-                    Review Order
+                    Continue to Payment
                   </Button>
                 </>
               )}
 
-              {orderStep === 'confirm' && (
+              {orderStep === 'payment' && (
                 <>
                   <Card className="border-primary/30">
                     <CardContent className="p-4 space-y-3">
-                      <h3 className="font-semibold text-foreground">Order Summary</h3>
-                      <div className="flex items-center gap-3">
-                        <img src={selectedItem.imageUrl} alt="" className="w-16 h-16 rounded object-cover" />
+                      <h3 className="font-semibold text-foreground flex items-center gap-2">
+                        <Wallet className="h-4 w-4" /> SOL Payment
+                      </h3>
+                      <div className="flex items-center gap-3 p-3 bg-accent/30 rounded-lg">
+                        <img src={selectedItem.imageUrl} alt="" className="w-14 h-14 rounded object-cover" />
                         <div>
                           <div className="font-semibold text-sm text-foreground">{selectedItem.title}</div>
                           <div className="text-xs text-muted-foreground">Size: {selectedSize}</div>
                           <div className="text-primary font-bold">${selectedItem.retailPrice}</div>
                         </div>
                       </div>
+                      {paymentInfo && (
+                        <div className="space-y-1 p-3 bg-accent/20 rounded-lg">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Product</span>
+                            <span className="text-foreground">${selectedItem.retailPrice}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Shipping</span>
+                            <span className="text-foreground">${(paymentInfo.totalUSD - selectedItem.retailPrice).toFixed(2)}</span>
+                          </div>
+                          <div className="border-t border-border my-1" />
+                          <div className="flex justify-between text-sm font-bold">
+                            <span className="text-foreground">Total (USD)</span>
+                            <span className="text-foreground">${paymentInfo.totalUSD.toFixed(2)}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">SOL Price</span>
+                            <span className="text-foreground">${paymentInfo.solPriceUSD.toFixed(2)}</span>
+                          </div>
+                          <div className="flex justify-between text-sm font-bold text-primary">
+                            <span>Pay in SOL</span>
+                            <span>{paymentInfo.solAmount} SOL</span>
+                          </div>
+                        </div>
+                      )}
+                      <p className="text-xs text-muted-foreground text-center">
+                        SOL will be sent to the SAMU Treasury wallet. The transaction will be verified on-chain before your order is placed.
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Button
+                    className="w-full"
+                    onClick={handlePaySOL}
+                    disabled={isPaying}
+                  >
+                    {isPaying ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processing Payment...</>
+                    ) : (
+                      <><Wallet className="h-4 w-4 mr-2" /> Pay with SOL</>
+                    )}
+                  </Button>
+                </>
+              )}
+
+              {orderStep === 'confirm' && (
+                <>
+                  <Card className="border-green-500/30">
+                    <CardContent className="p-4 space-y-3">
+                      <h3 className="font-semibold text-green-400">Payment Confirmed</h3>
+                      <div className="flex items-center gap-3">
+                        <img src={selectedItem.imageUrl} alt="" className="w-16 h-16 rounded object-cover" />
+                        <div>
+                          <div className="font-semibold text-sm text-foreground">{selectedItem.title}</div>
+                          <div className="text-xs text-muted-foreground">Size: {selectedSize}</div>
+                          {paymentInfo && (
+                            <div className="text-primary font-bold">{paymentInfo.solAmount} SOL (${paymentInfo.totalUSD.toFixed(2)})</div>
+                          )}
+                        </div>
+                      </div>
+                      {txSignature && (
+                        <div className="text-xs text-muted-foreground break-all">
+                          TX: <a href={`https://solscan.io/tx/${txSignature}`} target="_blank" rel="noopener noreferrer" className="text-primary underline">{txSignature.slice(0, 16)}...{txSignature.slice(-8)}</a>
+                        </div>
+                      )}
                       <div className="border-t border-border pt-2 space-y-1">
                         <div className="text-xs text-muted-foreground">Ship to:</div>
                         <div className="text-sm text-foreground">{shippingForm.name}</div>
@@ -496,13 +637,13 @@ export function GoodsShop() {
                     disabled={placeOrderMutation.isPending}
                   >
                     {placeOrderMutation.isPending ? (
-                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Placing Order...</>
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Submitting Order to Printful...</>
                     ) : (
-                      <><ShoppingCart className="h-4 w-4 mr-2" /> Place Order</>
+                      <><ShoppingCart className="h-4 w-4 mr-2" /> Confirm & Submit Order</>
                     )}
                   </Button>
                   <p className="text-xs text-muted-foreground text-center">
-                    Your order will be printed and shipped by Printful. Shipping costs may apply.
+                    Your sticker will be printed and shipped by Printful to the address above.
                   </p>
                 </>
               )}

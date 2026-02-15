@@ -102,7 +102,7 @@ The application uses a modern full-stack architecture with a React frontend, an 
 
 **Feature Specifications:**
 - **Meme Contest**: Users can submit memes, view entries in card or grid view, and vote.
-- **Goods Shop**: Showcases Hall of Fame meme designs as collectibles (no commerce functionality for iOS compliance).
+- **Goods Shop**: Kiss-Cut Sticker merchandise from contest-winning memes via Printful. SOL payment flow: estimate shipping → pay SOL to Treasury → on-chain verification → Printful order creation. Product ID 358, 4 size variants.
 - **NFT Gallery**: Displays 164 SAMU Wolf NFTs with commenting system, lazy loading.
 - **Archive**: Stores past contest results, winners, and memes.
 - **Partners**: Allows other meme coin communities to host their own isolated contests.

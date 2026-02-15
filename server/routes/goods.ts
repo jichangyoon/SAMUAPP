@@ -2,6 +2,7 @@ import { Router } from "express";
 import { storage } from "../storage";
 import { insertGoodsSchema, insertOrderSchema } from "@shared/schema";
 import { config } from "../config";
+import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 const router = Router();
 
@@ -31,6 +32,26 @@ const STICKER_PRINTFILE_SIZE: Record<number, { width: number; height: number }> 
   10165: { width: 1650, height: 1650 },
   16362: { width: 4500, height: 1125 },
 };
+
+const TREASURY_WALLET = process.env.TREASURY_WALLET_ADDRESS || "4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk";
+
+function getSolConnection(): Connection {
+  const HELIUS_API_KEY = process.env.VITE_HELIUS_API_KEY;
+  const rpcUrl = HELIUS_API_KEY
+    ? `https://rpc.helius.xyz/?api-key=${HELIUS_API_KEY}`
+    : 'https://api.mainnet-beta.solana.com';
+  return new Connection(rpcUrl, 'confirmed');
+}
+
+async function getSOLPriceUSD(): Promise<number> {
+  try {
+    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
+    const data = await res.json();
+    return data.solana?.usd || 150;
+  } catch {
+    return 150;
+  }
+}
 
 function getPrintfulHeaders() {
   return {
@@ -364,6 +385,63 @@ router.post("/:id/estimate-shipping", async (req, res) => {
   }
 });
 
+router.post("/:id/prepare-payment", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid goods ID" });
+    }
+
+    const item = await storage.getGoodsById(id);
+    if (!item) {
+      return res.status(404).json({ error: "Goods not found" });
+    }
+
+    const { buyerWallet, shippingCostUSD } = req.body;
+    if (!buyerWallet) {
+      return res.status(400).json({ error: "buyerWallet is required" });
+    }
+
+    const totalUSD = item.retailPrice + (parseFloat(shippingCostUSD) || 0);
+    const solPriceUSD = await getSOLPriceUSD();
+    const solAmount = parseFloat((totalUSD / solPriceUSD).toFixed(6));
+
+    const connection = getSolConnection();
+    const buyerPubkey = new PublicKey(buyerWallet);
+    const treasuryPubkey = new PublicKey(TREASURY_WALLET);
+
+    const lamports = Math.ceil(solAmount * LAMPORTS_PER_SOL);
+
+    const transaction = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey: buyerPubkey,
+        toPubkey: treasuryPubkey,
+        lamports,
+      })
+    );
+
+    const { blockhash } = await connection.getLatestBlockhash();
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = buyerPubkey;
+
+    const serializedTx = transaction.serialize({
+      requireAllSignatures: false,
+      verifySignatures: false,
+    }).toString('base64');
+
+    res.json({
+      transaction: serializedTx,
+      solAmount,
+      solPriceUSD,
+      totalUSD,
+      lamports,
+    });
+  } catch (error: any) {
+    console.error("Error preparing payment:", error);
+    res.status(500).json({ error: error.message || "Failed to prepare payment" });
+  }
+});
+
 router.post("/:id/order", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -377,7 +455,7 @@ router.post("/:id/order", async (req, res) => {
     }
 
     const {
-      size, buyerWallet, buyerEmail,
+      size, buyerWallet, buyerEmail, txSignature, solAmount,
       shippingName, shippingAddress1, shippingAddress2,
       shippingCity, shippingState, shippingCountry, shippingZip, shippingPhone,
     } = req.body;
@@ -385,8 +463,80 @@ router.post("/:id/order", async (req, res) => {
     const color = req.body.color || "";
 
     if (!size || !buyerWallet || !buyerEmail || !shippingName ||
-        !shippingAddress1 || !shippingCity || !shippingCountry || !shippingZip) {
-      return res.status(400).json({ error: "Missing required fields: size, buyerWallet, buyerEmail, shippingName, shippingAddress1, shippingCity, shippingCountry, shippingZip" });
+        !shippingAddress1 || !shippingCity || !shippingCountry || !shippingZip || !txSignature) {
+      return res.status(400).json({ error: "Missing required fields (including txSignature for SOL payment)" });
+    }
+
+    const existingOrder = await storage.getOrderByTxSignature(txSignature);
+    if (existingOrder) {
+      return res.status(400).json({ error: "This transaction has already been used for an order (replay rejected)" });
+    }
+
+    const connection = getSolConnection();
+    const solPriceUSD = await getSOLPriceUSD();
+
+    const shippingRes = await (async () => {
+      if (!PRINTFUL_API_KEY) return 4.99;
+      try {
+        const firstSize = item.sizes?.[0] || '3"×3"';
+        const sVariantId = STICKER_VARIANT_MAP[firstSize] || 10163;
+        const data = await printfulRequest("POST", "/shipping/rates", {
+          recipient: {
+            address1: shippingAddress1,
+            city: shippingCity,
+            country_code: shippingCountry,
+            state_code: shippingState || undefined,
+            zip: shippingZip,
+          },
+          items: [{ variant_id: sVariantId, quantity: 1 }],
+        });
+        return parseFloat(data.result?.[0]?.rate) || 4.99;
+      } catch { return 4.99; }
+    })();
+
+    const expectedTotalUSD = item.retailPrice + shippingRes;
+    const expectedSOL = expectedTotalUSD / solPriceUSD;
+    const expectedLamports = Math.ceil(expectedSOL * LAMPORTS_PER_SOL);
+    const minAcceptableLamports = Math.floor(expectedLamports * 0.95);
+
+    try {
+      const txInfo = await connection.getTransaction(txSignature, { maxSupportedTransactionVersion: 0 });
+      if (!txInfo || txInfo.meta?.err) {
+        return res.status(400).json({ error: "SOL payment transaction failed or not found on-chain" });
+      }
+
+      const treasuryPubkey = new PublicKey(TREASURY_WALLET);
+      if (!txInfo.meta) {
+        return res.status(400).json({ error: "Transaction metadata not available" });
+      }
+      const preBalances = txInfo.meta.preBalances;
+      const postBalances = txInfo.meta.postBalances;
+      const accountKeys = txInfo.transaction.message.getAccountKeys().staticAccountKeys;
+
+      let treasuryIdx = -1;
+      for (let i = 0; i < accountKeys.length; i++) {
+        if (accountKeys[i].equals(treasuryPubkey)) {
+          treasuryIdx = i;
+          break;
+        }
+      }
+
+      if (treasuryIdx === -1) {
+        return res.status(400).json({ error: "Treasury wallet not found in transaction - invalid payment" });
+      }
+
+      const treasuryReceived = postBalances[treasuryIdx] - preBalances[treasuryIdx];
+      if (treasuryReceived < minAcceptableLamports) {
+        return res.status(400).json({
+          error: `Insufficient payment: received ${treasuryReceived / LAMPORTS_PER_SOL} SOL, expected ~${expectedSOL.toFixed(6)} SOL`
+        });
+      }
+
+      const computedSolAmount = treasuryReceived / LAMPORTS_PER_SOL;
+      req.body.solAmount = computedSolAmount;
+    } catch (verifyErr: any) {
+      console.error("Transaction verification error:", verifyErr);
+      return res.status(400).json({ error: "Could not verify SOL payment transaction" });
     }
 
     const variantId = STICKER_VARIANT_MAP[size];
@@ -439,6 +589,8 @@ router.post("/:id/order", async (req, res) => {
       color,
       quantity: 1,
       totalPrice: item.retailPrice,
+      solAmount: solAmount || null,
+      txSignature: txSignature || null,
       shippingName,
       shippingAddress1,
       shippingAddress2: shippingAddress2 || null,
