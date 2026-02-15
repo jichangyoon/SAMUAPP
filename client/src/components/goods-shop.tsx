@@ -16,30 +16,31 @@ import { ShoppingCart, ShoppingBag, Sticker, Package, Truck, ChevronRight, Loade
 type OrderStep = 'browse' | 'detail' | 'options' | 'shipping' | 'payment' | 'confirm';
 
 const COUNTRIES = [
-  { code: 'US', name: 'United States', zipLabel: 'ZIP Code', zipPlaceholder: '10001', statePlaceholder: 'NY', phonePlaceholder: '+1 555 123 4567' },
-  { code: 'KR', name: 'South Korea (한국)', zipLabel: 'Postal Code (우편번호)', zipPlaceholder: '06130', statePlaceholder: 'Seoul', phonePlaceholder: '+82 10 1234 5678' },
-  { code: 'JP', name: 'Japan (日本)', zipLabel: 'Postal Code (郵便番号)', zipPlaceholder: '100-0001', statePlaceholder: 'Tokyo', phonePlaceholder: '+81 90 1234 5678' },
-  { code: 'GB', name: 'United Kingdom', zipLabel: 'Postcode', zipPlaceholder: 'SW1A 1AA', statePlaceholder: 'London', phonePlaceholder: '+44 20 7946 0958' },
-  { code: 'CA', name: 'Canada', zipLabel: 'Postal Code', zipPlaceholder: 'K1A 0B1', statePlaceholder: 'ON', phonePlaceholder: '+1 416 555 0123' },
-  { code: 'AU', name: 'Australia', zipLabel: 'Postcode', zipPlaceholder: '2000', statePlaceholder: 'NSW', phonePlaceholder: '+61 2 1234 5678' },
-  { code: 'DE', name: 'Germany (Deutschland)', zipLabel: 'PLZ', zipPlaceholder: '10115', statePlaceholder: 'Berlin', phonePlaceholder: '+49 30 123456' },
-  { code: 'FR', name: 'France', zipLabel: 'Code Postal', zipPlaceholder: '75001', statePlaceholder: 'Île-de-France', phonePlaceholder: '+33 1 23 45 67 89' },
-  { code: 'CN', name: 'China (中国)', zipLabel: 'Postal Code (邮编)', zipPlaceholder: '100000', statePlaceholder: 'Beijing', phonePlaceholder: '+86 138 0013 8000' },
-  { code: 'SG', name: 'Singapore', zipLabel: 'Postal Code', zipPlaceholder: '018956', statePlaceholder: '', phonePlaceholder: '+65 6123 4567' },
-  { code: 'TH', name: 'Thailand (ไทย)', zipLabel: 'Postal Code', zipPlaceholder: '10110', statePlaceholder: 'Bangkok', phonePlaceholder: '+66 2 123 4567' },
-  { code: 'VN', name: 'Vietnam (Việt Nam)', zipLabel: 'Postal Code', zipPlaceholder: '100000', statePlaceholder: 'Hanoi', phonePlaceholder: '+84 24 1234 5678' },
-  { code: 'PH', name: 'Philippines', zipLabel: 'ZIP Code', zipPlaceholder: '1000', statePlaceholder: 'Metro Manila', phonePlaceholder: '+63 2 1234 5678' },
-  { code: 'IN', name: 'India (भारत)', zipLabel: 'PIN Code', zipPlaceholder: '110001', statePlaceholder: 'Delhi', phonePlaceholder: '+91 98765 43210' },
-  { code: 'BR', name: 'Brazil (Brasil)', zipLabel: 'CEP', zipPlaceholder: '01001-000', statePlaceholder: 'SP', phonePlaceholder: '+55 11 91234 5678' },
-  { code: 'MX', name: 'Mexico (México)', zipLabel: 'Código Postal', zipPlaceholder: '06000', statePlaceholder: 'CDMX', phonePlaceholder: '+52 55 1234 5678' },
-  { code: 'ES', name: 'Spain (España)', zipLabel: 'Código Postal', zipPlaceholder: '28001', statePlaceholder: 'Madrid', phonePlaceholder: '+34 612 345 678' },
-  { code: 'IT', name: 'Italy (Italia)', zipLabel: 'CAP', zipPlaceholder: '00100', statePlaceholder: 'Roma', phonePlaceholder: '+39 06 1234 5678' },
-  { code: 'NL', name: 'Netherlands', zipLabel: 'Postcode', zipPlaceholder: '1012 AB', statePlaceholder: 'NH', phonePlaceholder: '+31 20 123 4567' },
-  { code: 'SE', name: 'Sweden (Sverige)', zipLabel: 'Postnummer', zipPlaceholder: '111 21', statePlaceholder: 'Stockholm', phonePlaceholder: '+46 8 123 456' },
+  { code: 'US', name: 'United States', zipLabel: 'ZIP Code', zipPlaceholder: '10001', stateLabel: 'State', statePlaceholder: 'NY', cityLabel: 'City', cityPlaceholder: 'New York', addressLabel: 'Street Address', addressPlaceholder: '123 Main St', address2Label: 'Apt / Suite / Floor', address2Placeholder: 'Apt 4B (optional)', phonePlaceholder: '+1 555 123 4567' },
+  { code: 'KR', name: 'South Korea (한국)', zipLabel: '우편번호 (Postal Code)', zipPlaceholder: '06130', stateLabel: '시/도', statePlaceholder: '서울특별시', cityLabel: '구/군', cityPlaceholder: '강남구', addressLabel: '상세주소 (Address)', addressPlaceholder: '테헤란로 123', address2Label: '동/호수 (Unit)', address2Placeholder: '101동 202호 (optional)', phonePlaceholder: '+82 10 1234 5678' },
+  { code: 'JP', name: 'Japan (日本)', zipLabel: '郵便番号 (Postal Code)', zipPlaceholder: '100-0001', stateLabel: '都道府県 (Prefecture)', statePlaceholder: '東京都', cityLabel: '市区町村 (City)', cityPlaceholder: '千代田区', addressLabel: '番地 (Address)', addressPlaceholder: '丸の内1-1-1', address2Label: '建物名 (Building)', address2Placeholder: 'マンション101号 (optional)', phonePlaceholder: '+81 90 1234 5678' },
+  { code: 'CN', name: 'China (中国)', zipLabel: '邮编 (Postal Code)', zipPlaceholder: '100000', stateLabel: '省/市 (Province)', statePlaceholder: '北京市', cityLabel: '区/县 (District)', cityPlaceholder: '朝阳区', addressLabel: '详细地址 (Address)', addressPlaceholder: '建国路88号', address2Label: '楼/室 (Unit)', address2Placeholder: '1栋101室 (optional)', phonePlaceholder: '+86 138 0013 8000' },
+  { code: 'GB', name: 'United Kingdom', zipLabel: 'Postcode', zipPlaceholder: 'SW1A 1AA', stateLabel: 'County', statePlaceholder: 'London', cityLabel: 'City / Town', cityPlaceholder: 'London', addressLabel: 'Street Address', addressPlaceholder: '10 Downing Street', address2Label: 'Flat / Unit', address2Placeholder: 'Flat 2 (optional)', phonePlaceholder: '+44 20 7946 0958' },
+  { code: 'CA', name: 'Canada', zipLabel: 'Postal Code', zipPlaceholder: 'K1A 0B1', stateLabel: 'Province', statePlaceholder: 'ON', cityLabel: 'City', cityPlaceholder: 'Toronto', addressLabel: 'Street Address', addressPlaceholder: '123 Main St', address2Label: 'Apt / Suite', address2Placeholder: 'Suite 100 (optional)', phonePlaceholder: '+1 416 555 0123' },
+  { code: 'AU', name: 'Australia', zipLabel: 'Postcode', zipPlaceholder: '2000', stateLabel: 'State', statePlaceholder: 'NSW', cityLabel: 'City / Suburb', cityPlaceholder: 'Sydney', addressLabel: 'Street Address', addressPlaceholder: '123 George St', address2Label: 'Unit / Level', address2Placeholder: 'Unit 5 (optional)', phonePlaceholder: '+61 2 1234 5678' },
+  { code: 'DE', name: 'Germany (Deutschland)', zipLabel: 'PLZ', zipPlaceholder: '10115', stateLabel: 'Bundesland', statePlaceholder: 'Berlin', cityLabel: 'Stadt (City)', cityPlaceholder: 'Berlin', addressLabel: 'Straße (Street)', addressPlaceholder: 'Friedrichstr. 123', address2Label: 'Wohnung (Apt)', address2Placeholder: 'Wohnung 4 (optional)', phonePlaceholder: '+49 30 123456' },
+  { code: 'FR', name: 'France', zipLabel: 'Code Postal', zipPlaceholder: '75001', stateLabel: 'Région', statePlaceholder: 'Île-de-France', cityLabel: 'Ville (City)', cityPlaceholder: 'Paris', addressLabel: 'Adresse (Address)', addressPlaceholder: '12 Rue de Rivoli', address2Label: 'Complément', address2Placeholder: 'Bât. A, Étage 3 (optional)', phonePlaceholder: '+33 1 23 45 67 89' },
+  { code: 'SG', name: 'Singapore', zipLabel: 'Postal Code', zipPlaceholder: '018956', stateLabel: '', statePlaceholder: '', cityLabel: 'City', cityPlaceholder: 'Singapore', addressLabel: 'Street Address', addressPlaceholder: '1 Raffles Place', address2Label: 'Unit / Floor', address2Placeholder: '#01-01 (optional)', phonePlaceholder: '+65 6123 4567' },
+  { code: 'TH', name: 'Thailand (ไทย)', zipLabel: 'Postal Code', zipPlaceholder: '10110', stateLabel: 'Province', statePlaceholder: 'Bangkok', cityLabel: 'District', cityPlaceholder: 'Pathum Wan', addressLabel: 'Address', addressPlaceholder: '123 Rama I Rd', address2Label: 'Unit / Floor', address2Placeholder: 'Floor 5 (optional)', phonePlaceholder: '+66 2 123 4567' },
+  { code: 'VN', name: 'Vietnam (Việt Nam)', zipLabel: 'Postal Code', zipPlaceholder: '100000', stateLabel: 'Province', statePlaceholder: 'Hanoi', cityLabel: 'District', cityPlaceholder: 'Ba Dinh', addressLabel: 'Address', addressPlaceholder: '12 Hoang Dieu', address2Label: 'Unit', address2Placeholder: 'P.301 (optional)', phonePlaceholder: '+84 24 1234 5678' },
+  { code: 'PH', name: 'Philippines', zipLabel: 'ZIP Code', zipPlaceholder: '1000', stateLabel: 'Province', statePlaceholder: 'Metro Manila', cityLabel: 'City', cityPlaceholder: 'Makati', addressLabel: 'Street Address', addressPlaceholder: '123 Ayala Ave', address2Label: 'Unit / Floor', address2Placeholder: 'Unit 5A (optional)', phonePlaceholder: '+63 2 1234 5678' },
+  { code: 'IN', name: 'India (भारत)', zipLabel: 'PIN Code', zipPlaceholder: '110001', stateLabel: 'State', statePlaceholder: 'Delhi', cityLabel: 'City', cityPlaceholder: 'New Delhi', addressLabel: 'Street Address', addressPlaceholder: '123 MG Road', address2Label: 'Flat / Floor', address2Placeholder: 'Flat 301 (optional)', phonePlaceholder: '+91 98765 43210' },
+  { code: 'BR', name: 'Brazil (Brasil)', zipLabel: 'CEP', zipPlaceholder: '01001-000', stateLabel: 'Estado (State)', statePlaceholder: 'SP', cityLabel: 'Cidade (City)', cityPlaceholder: 'São Paulo', addressLabel: 'Endereço (Address)', addressPlaceholder: 'Rua Augusta, 123', address2Label: 'Complemento', address2Placeholder: 'Apto 45 (optional)', phonePlaceholder: '+55 11 91234 5678' },
+  { code: 'MX', name: 'Mexico (México)', zipLabel: 'Código Postal', zipPlaceholder: '06000', stateLabel: 'Estado (State)', statePlaceholder: 'CDMX', cityLabel: 'Ciudad (City)', cityPlaceholder: 'Ciudad de México', addressLabel: 'Dirección (Address)', addressPlaceholder: 'Av. Reforma 123', address2Label: 'Depto / Int.', address2Placeholder: 'Int. 4 (optional)', phonePlaceholder: '+52 55 1234 5678' },
+  { code: 'ES', name: 'Spain (España)', zipLabel: 'Código Postal', zipPlaceholder: '28001', stateLabel: 'Provincia', statePlaceholder: 'Madrid', cityLabel: 'Ciudad (City)', cityPlaceholder: 'Madrid', addressLabel: 'Dirección (Address)', addressPlaceholder: 'Calle Mayor 1', address2Label: 'Piso / Puerta', address2Placeholder: '2ºA (optional)', phonePlaceholder: '+34 612 345 678' },
+  { code: 'IT', name: 'Italy (Italia)', zipLabel: 'CAP', zipPlaceholder: '00100', stateLabel: 'Provincia', statePlaceholder: 'Roma', cityLabel: 'Città (City)', cityPlaceholder: 'Roma', addressLabel: 'Indirizzo (Address)', addressPlaceholder: 'Via Roma 1', address2Label: 'Interno (Unit)', address2Placeholder: 'Int. 3 (optional)', phonePlaceholder: '+39 06 1234 5678' },
+  { code: 'NL', name: 'Netherlands', zipLabel: 'Postcode', zipPlaceholder: '1012 AB', stateLabel: 'Province', statePlaceholder: 'NH', cityLabel: 'City', cityPlaceholder: 'Amsterdam', addressLabel: 'Street Address', addressPlaceholder: 'Herengracht 123', address2Label: 'Unit', address2Placeholder: '2e verdieping (optional)', phonePlaceholder: '+31 20 123 4567' },
+  { code: 'SE', name: 'Sweden (Sverige)', zipLabel: 'Postnummer', zipPlaceholder: '111 21', stateLabel: 'Län', statePlaceholder: 'Stockholm', cityLabel: 'Stad (City)', cityPlaceholder: 'Stockholm', addressLabel: 'Gatuadress (Address)', addressPlaceholder: 'Drottninggatan 1', address2Label: 'Lägenhet (Apt)', address2Placeholder: 'Lgh 1201 (optional)', phonePlaceholder: '+46 8 123 456' },
 ];
 
 function getCountryInfo(code: string) {
-  return COUNTRIES.find(c => c.code === code) || { code, name: code, zipLabel: 'Postal Code', zipPlaceholder: '00000', statePlaceholder: '', phonePlaceholder: '+1 000 000 0000' };
+  const fallback = { code, name: code, zipLabel: 'Postal Code', zipPlaceholder: '00000', stateLabel: 'State / Province', statePlaceholder: '', cityLabel: 'City', cityPlaceholder: 'City', addressLabel: 'Street Address', addressPlaceholder: 'Street address', address2Label: 'Apt / Suite', address2Placeholder: 'Apt (optional)', phonePlaceholder: '+1 000 000 0000' };
+  return COUNTRIES.find(c => c.code === code) || fallback;
 }
 
 export function GoodsShop() {
@@ -472,38 +473,40 @@ export function GoodsShop() {
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground">Street Address *</label>
+                      <label className="text-xs text-muted-foreground">{getCountryInfo(shippingForm.country).addressLabel} *</label>
                       <Input
                         value={shippingForm.address1}
                         onChange={(e) => setShippingForm(f => ({ ...f, address1: e.target.value }))}
-                        placeholder="Street address"
+                        placeholder={getCountryInfo(shippingForm.country).addressPlaceholder}
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground">Apt / Suite / Floor</label>
+                      <label className="text-xs text-muted-foreground">{getCountryInfo(shippingForm.country).address2Label}</label>
                       <Input
                         value={shippingForm.address2}
                         onChange={(e) => setShippingForm(f => ({ ...f, address2: e.target.value }))}
-                        placeholder="Apt, Suite, Floor (optional)"
+                        placeholder={getCountryInfo(shippingForm.country).address2Placeholder}
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className={`grid gap-2 ${getCountryInfo(shippingForm.country).stateLabel ? 'grid-cols-2' : 'grid-cols-1'}`}>
                       <div>
-                        <label className="text-xs text-muted-foreground">City *</label>
+                        <label className="text-xs text-muted-foreground">{getCountryInfo(shippingForm.country).cityLabel} *</label>
                         <Input
                           value={shippingForm.city}
                           onChange={(e) => setShippingForm(f => ({ ...f, city: e.target.value }))}
-                          placeholder="City"
+                          placeholder={getCountryInfo(shippingForm.country).cityPlaceholder}
                         />
                       </div>
-                      <div>
-                        <label className="text-xs text-muted-foreground">State / Province</label>
-                        <Input
-                          value={shippingForm.state}
-                          onChange={(e) => setShippingForm(f => ({ ...f, state: e.target.value }))}
-                          placeholder={getCountryInfo(shippingForm.country).statePlaceholder || 'State'}
-                        />
-                      </div>
+                      {getCountryInfo(shippingForm.country).stateLabel && (
+                        <div>
+                          <label className="text-xs text-muted-foreground">{getCountryInfo(shippingForm.country).stateLabel}</label>
+                          <Input
+                            value={shippingForm.state}
+                            onChange={(e) => setShippingForm(f => ({ ...f, state: e.target.value }))}
+                            placeholder={getCountryInfo(shippingForm.country).statePlaceholder || 'State'}
+                          />
+                        </div>
+                      )}
                     </div>
                     <div>
                       <label className="text-xs text-muted-foreground">{getCountryInfo(shippingForm.country).zipLabel} *</label>
