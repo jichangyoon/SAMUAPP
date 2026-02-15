@@ -16,14 +16,13 @@ function requireAdmin(req: any, res: any, next: any) {
 const PRINTFUL_API_KEY = process.env.PRINTFUL_API_KEY || "";
 const PRINTFUL_STORE_ID = "17717241";
 const PRINTFUL_BASE_URL = "https://api.printful.com";
-const TSHIRT_PRODUCT_ID = 71;
+const STICKER_PRODUCT_ID = 358;
 
-const VARIANT_MAP: Record<string, Record<string, number>> = {
-  "White": { "S": 4011, "M": 4012, "L": 4013, "XL": 4014, "2XL": 4015 },
-  "Black": { "S": 4017, "M": 4018, "L": 4019, "XL": 4020, "2XL": 4021 },
-  "Navy": { "S": 4023, "M": 4024, "L": 4025, "XL": 4026, "2XL": 4027 },
-  "Red": { "S": 4029, "M": 4030, "L": 4031, "XL": 4032, "2XL": 4033 },
-  "Royal": { "S": 4035, "M": 4036, "L": 4037, "XL": 4038, "2XL": 4039 },
+const STICKER_VARIANT_MAP: Record<string, number> = {
+  '3"×3"': 10163,
+  '4"×4"': 10164,
+  '5.5"×5.5"': 10165,
+  '15"×3.75"': 16362,
 };
 
 function getPrintfulHeaders() {
@@ -63,38 +62,11 @@ router.get("/", async (_req, res) => {
 
 router.get("/printful/variants", async (_req, res) => {
   try {
-    if (!PRINTFUL_API_KEY) {
-      return res.json({
-        productId: TSHIRT_PRODUCT_ID,
-        productName: "Bella + Canvas 3001 Unisex Short Sleeve Jersey T-Shirt",
-        variants: VARIANT_MAP,
-        availableColors: Object.keys(VARIANT_MAP),
-        availableSizes: ["S", "M", "L", "XL", "2XL"],
-      });
-    }
-
-    const data = await printfulRequest("GET", `/products/${TSHIRT_PRODUCT_ID}`);
-    const variants = data.result?.variants || [];
-
-    const colorSizeMap: Record<string, Record<string, number>> = {};
-    const allColors = new Set<string>();
-    const allSizes = new Set<string>();
-
-    for (const variant of variants) {
-      const color = variant.color || "Unknown";
-      const size = variant.size || "Unknown";
-      allColors.add(color);
-      allSizes.add(size);
-      if (!colorSizeMap[color]) colorSizeMap[color] = {};
-      colorSizeMap[color][size] = variant.id;
-    }
-
     res.json({
-      productId: TSHIRT_PRODUCT_ID,
-      productName: data.result?.product?.title || "Bella + Canvas 3001",
-      variants: colorSizeMap,
-      availableColors: Array.from(allColors),
-      availableSizes: Array.from(allSizes),
+      productId: STICKER_PRODUCT_ID,
+      productName: "Kiss-Cut Stickers",
+      variants: STICKER_VARIANT_MAP,
+      availableSizes: Object.keys(STICKER_VARIANT_MAP),
     });
   } catch (error: any) {
     console.error("Error fetching Printful variants:", error);
@@ -132,7 +104,7 @@ router.get("/:id", async (req, res) => {
 
 router.post("/admin/create-simple", requireAdmin, async (req, res) => {
   try {
-    const { title, description, imageUrl, contestId, memeId, retailPrice, sizes, colors, category, productType } = req.body;
+    const { title, description, imageUrl, contestId, memeId, retailPrice, sizes, category, productType } = req.body;
 
     if (!title || !imageUrl || !retailPrice) {
       return res.status(400).json({ error: "title, imageUrl, and retailPrice are required" });
@@ -145,12 +117,12 @@ router.post("/admin/create-simple", requireAdmin, async (req, res) => {
       mockupUrls: [imageUrl],
       contestId: contestId || null,
       memeId: memeId || null,
-      category: category || "clothing",
-      productType: productType || "t-shirt",
+      category: category || "sticker",
+      productType: productType || "sticker",
       basePrice: retailPrice * 0.6,
       retailPrice,
-      sizes: sizes || ["S", "M", "L", "XL", "2XL"],
-      colors: colors || ["Black", "White"],
+      sizes: sizes || ['3"×3"', '4"×4"', '5.5"×5.5"'],
+      colors: [],
       status: "active",
     });
 
@@ -164,7 +136,7 @@ router.post("/admin/create-simple", requireAdmin, async (req, res) => {
 
 router.post("/admin/create", requireAdmin, async (req, res) => {
   try {
-    const { title, description, imageUrl, contestId, memeId, retailPrice, sizes, colors } = req.body;
+    const { title, description, imageUrl, contestId, memeId, retailPrice, sizes } = req.body;
 
     if (!title || !imageUrl || !retailPrice) {
       return res.status(400).json({ error: "title, imageUrl, and retailPrice are required" });
@@ -174,25 +146,22 @@ router.post("/admin/create", requireAdmin, async (req, res) => {
       return res.status(500).json({ error: "Printful API key not configured" });
     }
 
-    const selectedSizes = sizes || ["S", "M", "L", "XL", "2XL"];
-    const selectedColors = colors || ["Black", "White"];
+    const selectedSizes = sizes || ['3"×3"', '4"×4"', '5.5"×5.5"'];
 
     const syncVariants: any[] = [];
-    for (const color of selectedColors) {
-      for (const size of selectedSizes) {
-        const variantId = VARIANT_MAP[color]?.[size];
-        if (variantId) {
-          syncVariants.push({
-            variant_id: variantId,
-            retail_price: retailPrice.toFixed(2),
-            files: [{ url: imageUrl }],
-          });
-        }
+    for (const size of selectedSizes) {
+      const variantId = STICKER_VARIANT_MAP[size];
+      if (variantId) {
+        syncVariants.push({
+          variant_id: variantId,
+          retail_price: retailPrice.toFixed(2),
+          files: [{ url: imageUrl }],
+        });
       }
     }
 
     if (syncVariants.length === 0) {
-      return res.status(400).json({ error: "No valid variant combinations found for the selected sizes and colors" });
+      return res.status(400).json({ error: "No valid sticker size variants found" });
     }
 
     const productPayload = {
@@ -207,48 +176,6 @@ router.post("/admin/create", requireAdmin, async (req, res) => {
     const syncProduct = productResult.result?.sync_product;
     const syncVariantsResult = productResult.result?.sync_variants || [];
 
-    let mockupUrls: string[] = [imageUrl];
-    try {
-      const mockupPayload = {
-        variant_ids: syncVariantsResult.slice(0, 1).map((v: any) => v.variant_id),
-        format: "jpg",
-        files: [{ placement: "front", image_url: imageUrl }],
-      };
-
-      const mockupTask = await printfulRequest(
-        "POST",
-        `/mockup-generator/create-task/${TSHIRT_PRODUCT_ID}`,
-        mockupPayload
-      );
-
-      if (mockupTask.result?.task_key) {
-        let taskComplete = false;
-        let attempts = 0;
-        while (!taskComplete && attempts < 10) {
-          await new Promise(resolve => setTimeout(resolve, 3000));
-          try {
-            const taskResult = await printfulRequest(
-              "GET",
-              `/mockup-generator/task?task_key=${mockupTask.result.task_key}`
-            );
-            if (taskResult.result?.status === "completed") {
-              taskComplete = true;
-              const mockups = taskResult.result?.mockups || [];
-              mockupUrls = mockups.map((m: any) => m.mockup_url).filter(Boolean);
-              if (mockupUrls.length === 0) mockupUrls = [imageUrl];
-            } else if (taskResult.result?.status === "failed") {
-              break;
-            }
-          } catch {
-            break;
-          }
-          attempts++;
-        }
-      }
-    } catch (mockupError) {
-      console.error("Mockup generation failed, using original image:", mockupError);
-    }
-
     const goodsData = insertGoodsSchema.parse({
       printfulProductId: syncProduct?.id || null,
       printfulVariantId: syncVariantsResult[0]?.id || null,
@@ -257,13 +184,13 @@ router.post("/admin/create", requireAdmin, async (req, res) => {
       title,
       description: description || null,
       imageUrl: imageUrl,
-      mockupUrls,
-      category: "clothing",
-      productType: "t-shirt",
+      mockupUrls: [imageUrl],
+      category: "sticker",
+      productType: "sticker",
       basePrice: retailPrice * 0.6,
       retailPrice,
       sizes: selectedSizes,
-      colors: selectedColors,
+      colors: [],
       status: "active",
     });
 
@@ -292,14 +219,13 @@ router.post("/admin/generate-mockup/:id", requireAdmin, async (req, res) => {
     }
 
     const imageUrl = item.imageUrl;
-    const firstColor = item.colors?.[0] || "Black";
-    const firstSize = item.sizes?.[0] || "M";
-    const variantId = VARIANT_MAP[firstColor]?.[firstSize] || 4018;
+    const firstSize = item.sizes?.[0] || '3"×3"';
+    const variantId = STICKER_VARIANT_MAP[firstSize] || 10163;
 
-    const secondColor = item.colors?.find((c: string) => c !== firstColor);
     const variantIds = [variantId];
-    if (secondColor) {
-      const secondVariantId = VARIANT_MAP[secondColor]?.[firstSize];
+    const secondSize = item.sizes?.find((s: string) => s !== firstSize);
+    if (secondSize) {
+      const secondVariantId = STICKER_VARIANT_MAP[secondSize];
       if (secondVariantId) variantIds.push(secondVariantId);
     }
 
@@ -307,24 +233,16 @@ router.post("/admin/generate-mockup/:id", requireAdmin, async (req, res) => {
       variant_ids: variantIds,
       format: "jpg",
       files: [{
-        placement: "front",
+        placement: "default",
         image_url: imageUrl,
-        position: {
-          area_width: 1800,
-          area_height: 2400,
-          width: 1800,
-          height: 1800,
-          top: 300,
-          left: 0
-        }
       }],
     };
 
-    console.log("Creating mockup task for goods #" + id, JSON.stringify(mockupPayload));
+    console.log("Creating sticker mockup task for goods #" + id, JSON.stringify(mockupPayload));
 
     const mockupTask = await printfulRequest(
       "POST",
-      `/mockup-generator/create-task/${TSHIRT_PRODUCT_ID}`,
+      `/mockup-generator/create-task/${STICKER_PRODUCT_ID}`,
       mockupPayload
     );
 
@@ -405,9 +323,8 @@ router.post("/:id/estimate-shipping", async (req, res) => {
       return res.status(400).json({ error: "address1, city, country_code, and zip are required" });
     }
 
-    const firstColor = item.colors?.[0] || "Black";
-    const firstSize = item.sizes?.[0] || "M";
-    const variantId = VARIANT_MAP[firstColor]?.[firstSize] || 4018;
+    const firstSize = item.sizes?.[0] || '3"×3"';
+    const variantId = STICKER_VARIANT_MAP[firstSize] || 10163;
 
     const shippingPayload = {
       recipient: {
@@ -444,19 +361,21 @@ router.post("/:id/order", async (req, res) => {
     }
 
     const {
-      size, color, buyerWallet, buyerEmail,
+      size, buyerWallet, buyerEmail,
       shippingName, shippingAddress1, shippingAddress2,
       shippingCity, shippingState, shippingCountry, shippingZip, shippingPhone,
     } = req.body;
 
-    if (!size || !color || !buyerWallet || !buyerEmail || !shippingName ||
+    const color = req.body.color || "";
+
+    if (!size || !buyerWallet || !buyerEmail || !shippingName ||
         !shippingAddress1 || !shippingCity || !shippingCountry || !shippingZip) {
-      return res.status(400).json({ error: "Missing required fields: size, color, buyerWallet, buyerEmail, shippingName, shippingAddress1, shippingCity, shippingCountry, shippingZip" });
+      return res.status(400).json({ error: "Missing required fields: size, buyerWallet, buyerEmail, shippingName, shippingAddress1, shippingCity, shippingCountry, shippingZip" });
     }
 
-    const variantId = VARIANT_MAP[color]?.[size];
+    const variantId = STICKER_VARIANT_MAP[size];
     if (!variantId) {
-      return res.status(400).json({ error: `Invalid size/color combination: ${size}/${color}` });
+      return res.status(400).json({ error: `Invalid sticker size: ${size}` });
     }
 
     let printfulOrderId: number | null = null;

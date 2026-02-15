@@ -9,7 +9,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/u
 import { usePrivy } from '@privy-io/react-auth';
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ShoppingCart, ShoppingBag, Shirt, Package, Truck, ChevronRight, Loader2, X, ArrowLeft, ChevronLeft } from "lucide-react";
+import { ShoppingCart, ShoppingBag, Sticker, Package, Truck, ChevronRight, Loader2, X, ArrowLeft, ChevronLeft } from "lucide-react";
 
 type OrderStep = 'browse' | 'detail' | 'options' | 'shipping' | 'confirm';
 
@@ -160,7 +160,7 @@ export function GoodsShop() {
                   <div>
                     <div className="text-sm font-semibold text-foreground">Order #{order.id}</div>
                     <div className="text-xs text-muted-foreground">
-                      {order.size} / {order.color} - ${order.totalPrice}
+                      {order.size} - ${order.totalPrice}
                     </div>
                   </div>
                   <Badge className={getStatusBadge(order.status)}>{order.status}</Badge>
@@ -184,9 +184,9 @@ export function GoodsShop() {
       ) : goodsArray.length === 0 ? (
         <Card className="bg-accent/30 border-border">
           <CardContent className="p-6 text-center">
-            <Shirt className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-            <p className="text-muted-foreground text-sm">No merchandise available yet.</p>
-            <p className="text-muted-foreground text-xs mt-1">Contest-winning memes will become merchandise here!</p>
+            <Sticker className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+            <p className="text-muted-foreground text-sm">No stickers available yet.</p>
+            <p className="text-muted-foreground text-xs mt-1">Contest-winning memes will become stickers here!</p>
           </CardContent>
         </Card>
       ) : (
@@ -302,12 +302,6 @@ export function GoodsShop() {
                       <span className="text-xs text-foreground">{selectedItem.sizes.join(', ')}</span>
                     </div>
                   )}
-                  {selectedItem.colors?.length > 0 && (
-                    <div>
-                      <span className="text-xs text-muted-foreground">Available colors: </span>
-                      <span className="text-xs text-foreground">{selectedItem.colors.join(', ')}</span>
-                    </div>
-                  )}
                   <Button
                     className="w-full"
                     onClick={() => setOrderStep('options')}
@@ -343,22 +337,11 @@ export function GoodsShop() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground mb-1 block">Color</label>
-                      <Select value={selectedColor} onValueChange={setSelectedColor}>
-                        <SelectTrigger><SelectValue placeholder="Select color" /></SelectTrigger>
-                        <SelectContent>
-                          {(selectedItem.colors || []).map((c: string) => (
-                            <SelectItem key={c} value={c}>{c}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
                   </div>
                   <Button
                     className="w-full"
                     onClick={() => setOrderStep('shipping')}
-                    disabled={!selectedSize || !selectedColor}
+                    disabled={!selectedSize}
                   >
                     Continue to Shipping
                   </Button>
@@ -492,7 +475,7 @@ export function GoodsShop() {
                         <img src={selectedItem.imageUrl} alt="" className="w-16 h-16 rounded object-cover" />
                         <div>
                           <div className="font-semibold text-sm text-foreground">{selectedItem.title}</div>
-                          <div className="text-xs text-muted-foreground">Size: {selectedSize} | Color: {selectedColor}</div>
+                          <div className="text-xs text-muted-foreground">Size: {selectedSize}</div>
                           <div className="text-primary font-bold">${selectedItem.retailPrice}</div>
                         </div>
                       </div>
