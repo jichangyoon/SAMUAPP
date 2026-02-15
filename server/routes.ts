@@ -12,6 +12,7 @@ import usersRouter from "./routes/users";
 import adminRouter from "./routes/admin";
 import { actionsRouter } from "./routes/actions";
 import revenueRouter from "./routes/revenue";
+import goodsRouter from "./routes/goods";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const assetsPath = path.resolve(import.meta.dirname, "..", "attached_assets");
@@ -30,6 +31,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api", walletRouter);
   app.use("/api/actions", actionsRouter);
   app.use("/api/revenue", revenueRouter);
+  app.use("/api/goods", goodsRouter);
 
   const httpServer = createServer(app);
   return httpServer;

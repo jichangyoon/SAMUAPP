@@ -152,6 +152,52 @@ export const revenueShares = pgTable("revenue_shares", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const goods = pgTable("goods", {
+  id: serial("id").primaryKey(),
+  printfulProductId: integer("printful_product_id"),
+  printfulVariantId: integer("printful_variant_id"),
+  contestId: integer("contest_id"),
+  memeId: integer("meme_id"),
+  title: text("title").notNull(),
+  description: text("description"),
+  imageUrl: text("image_url").notNull(),
+  mockupUrls: text("mockup_urls").array(),
+  category: text("category").notNull().default("clothing"),
+  productType: text("product_type").notNull().default("t-shirt"),
+  basePrice: doublePrecision("base_price").notNull(),
+  retailPrice: doublePrecision("retail_price").notNull(),
+  sizes: text("sizes").array(),
+  colors: text("colors").array(),
+  status: text("status").notNull().default("active"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const orders = pgTable("orders", {
+  id: serial("id").primaryKey(),
+  goodsId: integer("goods_id").notNull(),
+  buyerWallet: text("buyer_wallet").notNull(),
+  buyerEmail: text("buyer_email").notNull(),
+  printfulOrderId: integer("printful_order_id"),
+  size: text("size").notNull(),
+  color: text("color").notNull(),
+  quantity: integer("quantity").notNull().default(1),
+  totalPrice: doublePrecision("total_price").notNull(),
+  shippingName: text("shipping_name").notNull(),
+  shippingAddress1: text("shipping_address1").notNull(),
+  shippingAddress2: text("shipping_address2"),
+  shippingCity: text("shipping_city").notNull(),
+  shippingState: text("shipping_state"),
+  shippingCountry: text("shipping_country").notNull(),
+  shippingZip: text("shipping_zip").notNull(),
+  shippingPhone: text("shipping_phone"),
+  status: text("status").notNull().default("pending"),
+  printfulStatus: text("printful_status"),
+  trackingNumber: text("tracking_number"),
+  trackingUrl: text("tracking_url"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const insertRevenueSchema = createInsertSchema(revenues).omit({
   id: true,
   createdAt: true,
@@ -250,3 +296,19 @@ export type InsertContest = z.infer<typeof insertContestSchema>;
 export type Contest = typeof contests.$inferSelect;
 export type InsertArchivedContest = z.infer<typeof insertArchivedContestSchema>;
 export type ArchivedContest = typeof archivedContests.$inferSelect;
+
+export const insertGoodsSchema = createInsertSchema(goods).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertOrderSchema = createInsertSchema(orders).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type Goods = typeof goods.$inferSelect;
+export type InsertGoods = z.infer<typeof insertGoodsSchema>;
+export type Order = typeof orders.$inferSelect;
+export type InsertOrder = z.infer<typeof insertOrderSchema>;

@@ -1,4 +1,4 @@
-import { memes, votes, nfts, nftComments, partnerMemes, partnerVotes, users, contests, archivedContests, loginLogs, blockedIps, revenues, revenueShares, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type NftComment, type InsertNftComment, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest, type LoginLog, type InsertLoginLog, type BlockedIp, type InsertBlockedIp, type Revenue, type InsertRevenue, type RevenueShare, type InsertRevenueShare } from "@shared/schema";
+import { memes, votes, nfts, nftComments, partnerMemes, partnerVotes, users, contests, archivedContests, loginLogs, blockedIps, revenues, revenueShares, goods, orders, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type NftComment, type InsertNftComment, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest, type LoginLog, type InsertLoginLog, type BlockedIp, type InsertBlockedIp, type Revenue, type InsertRevenue, type RevenueShare, type InsertRevenueShare, type Goods, type InsertGoods, type Order, type InsertOrder } from "@shared/schema";
 import { getDatabase } from "./db";
 import { eq, and, desc, isNull, or, sql } from "drizzle-orm";
 
@@ -80,6 +80,15 @@ export interface IStorage {
   getRevenueSharesByWallet(walletAddress: string): Promise<RevenueShare[]>;
   getRevenueSharesByContestId(contestId: number): Promise<RevenueShare[]>;
   getContestVoteSummary(contestId: number): Promise<{voterWallet: string, totalSamuAmount: number}[]>;
+
+  // Goods operations
+  getGoods(): Promise<Goods[]>;
+  getGoodsById(id: number): Promise<Goods | undefined>;
+  createGoods(data: InsertGoods): Promise<Goods>;
+  updateGoods(id: number, data: Partial<InsertGoods>): Promise<Goods>;
+  getOrders(walletAddress: string): Promise<Order[]>;
+  createOrder(data: InsertOrder): Promise<Order>;
+  updateOrder(id: number, data: Partial<InsertOrder>): Promise<Order>;
 }
 
 export class MemStorage implements IStorage {
@@ -428,6 +437,14 @@ export class MemStorage implements IStorage {
   async getRevenueSharesByWallet(_walletAddress: string): Promise<RevenueShare[]> { return []; }
   async getRevenueSharesByContestId(_contestId: number): Promise<RevenueShare[]> { return []; }
   async getContestVoteSummary(_contestId: number): Promise<{voterWallet: string, totalSamuAmount: number}[]> { return []; }
+
+  async getGoods(): Promise<Goods[]> { return []; }
+  async getGoodsById(_id: number): Promise<Goods | undefined> { return undefined; }
+  async createGoods(_data: InsertGoods): Promise<Goods> { throw new Error("Not implemented"); }
+  async updateGoods(_id: number, _data: Partial<InsertGoods>): Promise<Goods> { throw new Error("Not implemented"); }
+  async getOrders(_walletAddress: string): Promise<Order[]> { return []; }
+  async createOrder(_data: InsertOrder): Promise<Order> { throw new Error("Not implemented"); }
+  async updateOrder(_id: number, _data: Partial<InsertOrder>): Promise<Order> { throw new Error("Not implemented"); }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1434,6 +1451,71 @@ export class DatabaseStorage implements IStorage {
     }
     
     return Array.from(summary.entries()).map(([voterWallet, totalSamuAmount]) => ({ voterWallet, totalSamuAmount }));
+  }
+
+  async getGoods(): Promise<Goods[]> {
+    if (!this.db) throw new Error("Database not available");
+    return await this.db
+      .select()
+      .from(goods)
+      .where(eq(goods.status, "active"))
+      .orderBy(desc(goods.createdAt));
+  }
+
+  async getGoodsById(id: number): Promise<Goods | undefined> {
+    if (!this.db) throw new Error("Database not available");
+    const [item] = await this.db
+      .select()
+      .from(goods)
+      .where(eq(goods.id, id));
+    return item;
+  }
+
+  async createGoods(data: InsertGoods): Promise<Goods> {
+    if (!this.db) throw new Error("Database not available");
+    const [item] = await this.db
+      .insert(goods)
+      .values(data)
+      .returning();
+    return item;
+  }
+
+  async updateGoods(id: number, data: Partial<InsertGoods>): Promise<Goods> {
+    if (!this.db) throw new Error("Database not available");
+    const [item] = await this.db
+      .update(goods)
+      .set(data)
+      .where(eq(goods.id, id))
+      .returning();
+    return item;
+  }
+
+  async getOrders(walletAddress: string): Promise<Order[]> {
+    if (!this.db) throw new Error("Database not available");
+    return await this.db
+      .select()
+      .from(orders)
+      .where(eq(orders.buyerWallet, walletAddress))
+      .orderBy(desc(orders.createdAt));
+  }
+
+  async createOrder(data: InsertOrder): Promise<Order> {
+    if (!this.db) throw new Error("Database not available");
+    const [order] = await this.db
+      .insert(orders)
+      .values(data)
+      .returning();
+    return order;
+  }
+
+  async updateOrder(id: number, data: Partial<InsertOrder>): Promise<Order> {
+    if (!this.db) throw new Error("Database not available");
+    const [order] = await this.db
+      .update(orders)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(orders.id, id))
+      .returning();
+    return order;
   }
 }
 

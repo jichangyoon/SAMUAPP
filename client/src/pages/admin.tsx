@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Play, Square, Archive, Plus, Clock, Trophy, ArrowLeft, Shield, Eye, Ban, DollarSign } from "lucide-react";
+import { Play, Square, Archive, Plus, Clock, Trophy, ArrowLeft, Shield, Eye, Ban, DollarSign, Shirt, Package } from "lucide-react";
 import type { Contest, ArchivedContest } from "@shared/schema";
 import { useLocation } from "wouter";
 import { IPTrackingPanel } from "@/components/ip-tracking-panel";
@@ -32,6 +32,47 @@ export function Admin() {
     contestId: null, source: 'goods', amount: '', description: ''
   });
   const [distributingId, setDistributingId] = useState<number | null>(null);
+  const [showGoodsCreate, setShowGoodsCreate] = useState(false);
+  const [goodsForm, setGoodsForm] = useState({
+    title: '', description: '', imageUrl: '', contestId: 0, memeId: 0,
+    retailPrice: 29.99, sizes: ['S', 'M', 'L', 'XL', '2XL'], colors: ['Black', 'White']
+  });
+
+  const { data: goodsList = [] } = useQuery({
+    queryKey: ['/api/goods'],
+  });
+
+  const createGoodsMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await apiRequest("POST", "/api/goods/admin/create-simple", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Goods product created!" });
+      setShowGoodsCreate(false);
+      setGoodsForm({ title: '', description: '', imageUrl: '', contestId: 0, memeId: 0, retailPrice: 29.99, sizes: ['S', 'M', 'L', 'XL', '2XL'], colors: ['Black', 'White'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/goods'] });
+    },
+    onError: (e: any) => {
+      toast({ title: "Failed to create goods", description: e.message, variant: "destructive" });
+    },
+  });
+
+  const createPrintfulGoodsMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await apiRequest("POST", "/api/goods/admin/create", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Printful product created and synced!" });
+      setShowGoodsCreate(false);
+      setGoodsForm({ title: '', description: '', imageUrl: '', contestId: 0, memeId: 0, retailPrice: 29.99, sizes: ['S', 'M', 'L', 'XL', '2XL'], colors: ['Black', 'White'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/goods'] });
+    },
+    onError: (e: any) => {
+      toast({ title: "Failed to create Printful product", description: e.message, variant: "destructive" });
+    },
+  });
 
   // Fetch current contests
   const { data: contests = [], isLoading } = useQuery<Contest[]>({
@@ -521,6 +562,130 @@ export function Admin() {
                           </div>
                         )}
                       </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Goods Management */}
+        <Card className="border-border bg-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shirt className="h-5 w-5" />
+              Goods Management ({(goodsList as any[]).length} products)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button
+              onClick={() => setShowGoodsCreate(!showGoodsCreate)}
+              className="flex items-center gap-2"
+            >
+              <Package className="h-4 w-4" />
+              {showGoodsCreate ? 'Cancel' : 'Create T-Shirt Product'}
+            </Button>
+
+            {showGoodsCreate && (
+              <Card className="border-primary/30">
+                <CardContent className="p-4 space-y-3">
+                  <h3 className="font-semibold text-foreground">Create T-Shirt from Meme</h3>
+                  <Input
+                    placeholder="Product title (e.g., SAMU Wolf Champion Tee)"
+                    value={goodsForm.title}
+                    onChange={(e) => setGoodsForm(f => ({ ...f, title: e.target.value }))}
+                  />
+                  <Textarea
+                    placeholder="Product description"
+                    value={goodsForm.description}
+                    onChange={(e) => setGoodsForm(f => ({ ...f, description: e.target.value }))}
+                  />
+                  <Input
+                    placeholder="Meme image URL (from R2 storage)"
+                    value={goodsForm.imageUrl}
+                    onChange={(e) => setGoodsForm(f => ({ ...f, imageUrl: e.target.value }))}
+                  />
+                  {goodsForm.imageUrl && (
+                    <img src={goodsForm.imageUrl} alt="Preview" className="w-24 h-24 object-cover rounded" />
+                  )}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs text-muted-foreground">Contest ID</label>
+                      <Input
+                        type="number"
+                        placeholder="Contest ID"
+                        value={goodsForm.contestId || ''}
+                        onChange={(e) => setGoodsForm(f => ({ ...f, contestId: parseInt(e.target.value) || 0 }))}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground">Meme ID</label>
+                      <Input
+                        type="number"
+                        placeholder="Meme ID"
+                        value={goodsForm.memeId || ''}
+                        onChange={(e) => setGoodsForm(f => ({ ...f, memeId: parseInt(e.target.value) || 0 }))}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Retail Price (USD)</label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={goodsForm.retailPrice}
+                      onChange={(e) => setGoodsForm(f => ({ ...f, retailPrice: parseFloat(e.target.value) || 0 }))}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs text-muted-foreground">Sizes (comma separated)</label>
+                      <Input
+                        value={goodsForm.sizes.join(', ')}
+                        onChange={(e) => setGoodsForm(f => ({ ...f, sizes: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }))}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground">Colors (comma separated)</label>
+                      <Input
+                        value={goodsForm.colors.join(', ')}
+                        onChange={(e) => setGoodsForm(f => ({ ...f, colors: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }))}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => createGoodsMutation.mutate(goodsForm)}
+                      disabled={!goodsForm.title || !goodsForm.imageUrl || createGoodsMutation.isPending}
+                      variant="outline"
+                    >
+                      {createGoodsMutation.isPending ? 'Creating...' : 'Save to DB Only'}
+                    </Button>
+                    <Button
+                      onClick={() => createPrintfulGoodsMutation.mutate(goodsForm)}
+                      disabled={!goodsForm.title || !goodsForm.imageUrl || createPrintfulGoodsMutation.isPending}
+                    >
+                      {createPrintfulGoodsMutation.isPending ? 'Creating on Printful...' : 'Create on Printful + Save'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {(goodsList as any[]).length > 0 && (
+              <div className="space-y-2">
+                {(goodsList as any[]).map((item: any) => (
+                  <Card key={item.id} className="border-border">
+                    <CardContent className="p-3 flex items-center gap-3">
+                      <img src={item.imageUrl} alt={item.title} className="w-12 h-12 object-cover rounded" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm text-foreground truncate">{item.title}</div>
+                        <div className="text-xs text-muted-foreground">
+                          ${item.retailPrice} | {item.sizes?.join(', ')} | {item.colors?.join(', ')}
+                        </div>
+                      </div>
+                      <Badge variant={item.status === 'active' ? 'default' : 'secondary'}>{item.status}</Badge>
                     </CardContent>
                   </Card>
                 ))}
