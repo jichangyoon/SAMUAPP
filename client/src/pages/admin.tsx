@@ -519,6 +519,49 @@ export function Admin() {
                                       </Badge>
                                     </div>
                                     {rev.description && <p className="text-xs text-muted-foreground mb-2">{rev.description}</p>}
+                                    {rev.status === 'distributed' && contestRevenueData?.shares?.filter((s: any) => s.revenueId === rev.id).length > 0 && (
+                                      <div className="mt-2 border border-border/30 rounded overflow-hidden">
+                                        <table className="w-full text-xs">
+                                          <thead>
+                                            <tr className="bg-accent/50 text-muted-foreground">
+                                              <th className="text-left px-2 py-1.5 font-medium">Role</th>
+                                              <th className="text-left px-2 py-1.5 font-medium">Wallet</th>
+                                              <th className="text-right px-2 py-1.5 font-medium">Share %</th>
+                                              <th className="text-right px-2 py-1.5 font-medium">SAMU</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            {contestRevenueData.shares
+                                              .filter((s: any) => s.revenueId === rev.id)
+                                              .sort((a: any, b: any) => b.amountSol - a.amountSol)
+                                              .map((share: any) => (
+                                                <tr key={share.id} className="border-t border-border/20">
+                                                  <td className="px-2 py-1.5">
+                                                    <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                                      share.role === 'creator' ? 'bg-purple-500/20 text-purple-400' :
+                                                      share.role === 'voter' ? 'bg-blue-500/20 text-blue-400' :
+                                                      share.role === 'nft_holder' ? 'bg-amber-500/20 text-amber-400' :
+                                                      'bg-gray-500/20 text-gray-400'
+                                                    }`}>
+                                                      {share.role === 'creator' ? 'Creator' :
+                                                       share.role === 'voter' ? 'Voter' :
+                                                       share.role === 'nft_holder' ? 'NFT Holder' :
+                                                       'Platform'}
+                                                    </span>
+                                                  </td>
+                                                  <td className="px-2 py-1.5 font-mono text-muted-foreground">
+                                                    {share.walletAddress === '4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk' ? 'Treasury' :
+                                                     share.walletAddress === 'unassigned_nft_holder' ? 'Unassigned' :
+                                                     `${share.walletAddress.slice(0, 4)}...${share.walletAddress.slice(-4)}`}
+                                                  </td>
+                                                  <td className="px-2 py-1.5 text-right text-muted-foreground">{share.sharePercent.toFixed(1)}%</td>
+                                                  <td className="px-2 py-1.5 text-right font-medium text-foreground">{Number(share.amountSol).toFixed(2)}</td>
+                                                </tr>
+                                              ))}
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    )}
                                     {rev.status === 'pending' && (
                                       <Button
                                         size="sm"
