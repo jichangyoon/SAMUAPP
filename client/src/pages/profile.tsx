@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send, Trash2, MoreVertical, Image as ImageIcon, RefreshCw } from "lucide-react";
+import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send, Trash2, MoreVertical, Image as ImageIcon, RefreshCw, Coins } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
@@ -159,8 +159,48 @@ const Profile = memo(() => {
   // Fetch current active contest for status display
   const { data: activeContest } = useQuery({
     queryKey: ["/api/admin/current-contest"],
-    staleTime: 30 * 1000, // 30초 캐시
+    staleTime: 30 * 1000,
   });
+
+  const { data: voterClaims = [], refetch: refetchClaims } = useQuery({
+    queryKey: ['voter-claims', walletAddress],
+    queryFn: async () => {
+      if (!walletAddress) return [];
+      const res = await fetch(`/api/rewards/my-claims/${walletAddress}`);
+      if (!res.ok) throw new Error('Failed to fetch claims');
+      return res.json();
+    },
+    enabled: !!walletAddress,
+  });
+
+  const [isClaiming, setIsClaiming] = useState<number | null>(null);
+
+  const handleClaim = useCallback(async (contestId: number) => {
+    if (!walletAddress) return;
+    setIsClaiming(contestId);
+    try {
+      const res = await fetch(`/api/rewards/claim/${contestId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ walletAddress }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Claim failed');
+      toast({
+        title: "Claim Successful!",
+        description: `Claimed ${result.claimedAmount.toFixed(6)} SOL from Contest #${contestId}`,
+      });
+      refetchClaims();
+    } catch (error: any) {
+      toast({
+        title: "Claim Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsClaiming(null);
+    }
+  }, [walletAddress, toast, refetchClaims]);
 
   // Profile data now comes from database, not localStorage
 
@@ -760,16 +800,20 @@ const Profile = memo(() => {
 
         {/* 탭 메뉴 */}
         <Tabs defaultValue="memes" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 h-auto">
-            <TabsTrigger value="memes" className="flex flex-col items-center gap-1 p-3 text-xs">
+          <TabsList className="grid w-full grid-cols-4 h-auto">
+            <TabsTrigger value="memes" className="flex flex-col items-center gap-1 p-2 text-xs">
               <Trophy className="h-4 w-4" />
               <span>My Memes</span>
             </TabsTrigger>
-            <TabsTrigger value="votes" className="flex flex-col items-center gap-1 p-3 text-xs">
+            <TabsTrigger value="votes" className="flex flex-col items-center gap-1 p-2 text-xs">
               <Vote className="h-4 w-4" />
               <span>My Votes</span>
             </TabsTrigger>
-            <TabsTrigger value="stats" className="flex flex-col items-center gap-1 p-3 text-xs">
+            <TabsTrigger value="claims" className="flex flex-col items-center gap-1 p-2 text-xs">
+              <Coins className="h-4 w-4" />
+              <span>Claims</span>
+            </TabsTrigger>
+            <TabsTrigger value="stats" className="flex flex-col items-center gap-1 p-2 text-xs">
               <Zap className="h-4 w-4" />
               <span>Stats</span>
             </TabsTrigger>
@@ -919,6 +963,79 @@ const Profile = memo(() => {
                     <p className="text-xs">Start voting to see your activity here!</p>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="claims" className="flex-1 overflow-hidden">
+            <Card className="border-border bg-card h-full flex flex-col">
+              <CardHeader className="flex-shrink-0">
+                <CardTitle className="text-lg text-foreground flex items-center gap-2">
+                  <Coins className="h-5 w-5 text-[hsl(50,85%,75%)]" />
+                  Voter Rewards
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 overflow-y-auto space-y-3">
+                {voterClaims.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Coins className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-sm text-muted-foreground">No claimable rewards yet</p>
+                    <p className="text-xs text-muted-foreground mt-1">Vote on memes to earn rewards when goods are sold!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {voterClaims.map((claim: any) => (
+                      <div key={`${claim.contestId}-${claim.voterWallet}`} className="border border-border/30 rounded-lg p-3">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <span className="font-medium text-foreground text-sm">Contest #{claim.contestId}</span>
+                            <div className="text-xs text-muted-foreground mt-0.5">
+                              Vote Share: {(claim.sharePercent * 100).toFixed(2)}%
+                            </div>
+                          </div>
+                          <Badge variant="outline" className="text-xs">
+                            {claim.pendingAmount > 0.000001 ? 'Claimable' : 'Claimed'}
+                          </Badge>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-xs mb-2">
+                          <div className="bg-accent/30 rounded p-2">
+                            <div className="text-muted-foreground">Total Claimed</div>
+                            <div className="font-medium text-green-400">{claim.totalClaimed.toFixed(6)} SOL</div>
+                          </div>
+                          <div className="bg-accent/30 rounded p-2">
+                            <div className="text-muted-foreground">Pending</div>
+                            <div className="font-medium text-[hsl(50,85%,75%)]">{claim.pendingAmount.toFixed(6)} SOL</div>
+                          </div>
+                        </div>
+                        {claim.pendingAmount > 0.000001 && (
+                          <Button
+                            size="sm"
+                            className="w-full bg-[hsl(50,85%,50%)] hover:bg-[hsl(50,85%,40%)] text-black font-medium"
+                            onClick={() => handleClaim(claim.contestId)}
+                            disabled={isClaiming === claim.contestId}
+                          >
+                            {isClaiming === claim.contestId ? (
+                              <>
+                                <div className="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></div>
+                                Claiming...
+                              </>
+                            ) : (
+                              <>
+                                <Coins className="h-4 w-4 mr-2" />
+                                Claim {claim.pendingAmount.toFixed(6)} SOL
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="text-xs text-muted-foreground bg-accent/50 p-3 rounded-lg space-y-1 mt-2">
+                  <p>• Voter rewards accumulate from goods sales</p>
+                  <p>• Your share is proportional to your SAMU votes</p>
+                  <p>• Claim anytime - rewards never expire</p>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

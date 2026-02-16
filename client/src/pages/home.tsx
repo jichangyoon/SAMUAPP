@@ -7,6 +7,7 @@ import { MemeCard } from "@/components/meme-card";
 import { Leaderboard } from "@/components/leaderboard";
 import { GoodsShop } from "@/components/goods-shop";
 import { NftGallery } from "@/components/nft-gallery";
+import { RewardsDashboard } from "@/components/rewards-dashboard";
 import { MediaDisplay } from "@/components/media-display";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 
@@ -24,7 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Image, Users, Plus, Lock, RefreshCw, DollarSign, TrendingUp, PieChart, ChevronDown, ChevronUp } from "lucide-react";
+import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Image, Users, Plus, Lock, RefreshCw, DollarSign, TrendingUp, PieChart, ChevronDown, ChevronUp, Coins } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -1111,6 +1112,10 @@ export default function Home() {
               <NftGallery />
             )}
           </TabsContent>
+
+          <TabsContent value="rewards" className="mt-4 space-y-4 pb-24">
+            <RewardsDashboard />
+          </TabsContent>
         </Tabs>
       </div>
 
@@ -1127,28 +1132,28 @@ export default function Home() {
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50">
         <div className="max-w-md mx-auto px-4 py-1">
-          <div className="grid grid-cols-5 gap-0">
+          <div className="grid grid-cols-6 gap-0">
             <button
               onClick={() => setCurrentTab("contest")}
-              className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors ${
+              className={`flex flex-col items-center justify-center py-2 px-0.5 rounded-lg transition-colors ${
                 currentTab === "contest" 
                   ? "bg-primary/20 text-primary" 
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Trophy className="h-4 w-4" />
-              <span className="text-xs mt-1">Contest</span>
+              <span className="text-[10px] mt-0.5">Contest</span>
             </button>
             <button
               onClick={() => setCurrentTab("archive")}
-              className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors ${
+              className={`flex flex-col items-center justify-center py-2 px-0.5 rounded-lg transition-colors ${
                 currentTab === "archive" 
                   ? "bg-primary/20 text-primary" 
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Archive className="h-4 w-4" />
-              <span className="text-xs mt-1">Archive</span>
+              <span className="text-[10px] mt-0.5">Archive</span>
             </button>
             <button
               onClick={() => {
@@ -1156,32 +1161,43 @@ export default function Home() {
                 setShowNftLoading(true);
                 setTimeout(() => setShowNftLoading(false), 1200);
               }}
-              className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors ${
+              className={`flex flex-col items-center justify-center py-2 px-0.5 rounded-lg transition-colors ${
                 currentTab === "nfts" 
                   ? "bg-primary/20 text-primary" 
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Image className="h-4 w-4" />
-              <span className="text-xs mt-1">NFT</span>
+              <span className="text-[10px] mt-0.5">NFT</span>
             </button>
             <button
               onClick={() => setCurrentTab("goods")}
-              className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors ${
+              className={`flex flex-col items-center justify-center py-2 px-0.5 rounded-lg transition-colors ${
                 currentTab === "goods" 
                   ? "bg-primary/20 text-primary" 
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <ShoppingBag className="h-4 w-4" />
-              <span className="text-xs mt-1">Goods</span>
+              <span className="text-[10px] mt-0.5">Goods</span>
+            </button>
+            <button
+              onClick={() => setCurrentTab("rewards")}
+              className={`flex flex-col items-center justify-center py-2 px-0.5 rounded-lg transition-colors ${
+                currentTab === "rewards" 
+                  ? "bg-primary/20 text-primary" 
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Coins className="h-4 w-4" />
+              <span className="text-[10px] mt-0.5">Rewards</span>
             </button>
             <button
               onClick={() => setLocation("/partners")}
-              className="flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+              className="flex flex-col items-center justify-center py-2 px-0.5 rounded-lg transition-colors text-muted-foreground hover:text-foreground"
             >
               <Users className="h-4 w-4" />
-              <span className="text-xs mt-1">Partners</span>
+              <span className="text-[10px] mt-0.5">Partners</span>
             </button>
           </div>
         </div>

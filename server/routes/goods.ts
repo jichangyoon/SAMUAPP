@@ -15,7 +15,7 @@ const SHARE_RATIOS = {
 
 const TREASURY_WALLET = process.env.TREASURY_WALLET_ADDRESS || "4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk";
 
-async function distributeGoodsRevenue(order: any, item: any) {
+async function distributeGoodsRevenue(order: any, item: any, verifiedCreatorWallet?: string | null, verifiedCreatorAmount?: number) {
   const totalSol = order.solAmount;
   if (!totalSol || totalSol <= 0) return;
 
@@ -29,13 +29,21 @@ async function distributeGoodsRevenue(order: any, item: any) {
   }
 
   const meme = item.memeId ? await storage.getMeme(item.memeId) : null;
-  const creatorWallet = meme?.walletAddress || TREASURY_WALLET;
+  const creatorWallet = verifiedCreatorWallet || meme?.walletAddress || TREASURY_WALLET;
   const nftHolderWallet = null;
 
   const creatorAmount = totalSol * SHARE_RATIOS.creator;
   const voterPoolAmount = totalSol * SHARE_RATIOS.voter;
   const nftHolderAmount = totalSol * SHARE_RATIOS.nftHolder;
   const platformAmount = totalSol * SHARE_RATIOS.platform;
+
+  const expectedCreatorAmount = totalSol * SHARE_RATIOS.creator;
+  const creatorAmountTolerance = expectedCreatorAmount * 0.05;
+  const creatorDirect = !!verifiedCreatorWallet && 
+    verifiedCreatorAmount !== undefined && 
+    verifiedCreatorAmount > 0 && 
+    Math.abs(verifiedCreatorAmount - expectedCreatorAmount) <= creatorAmountTolerance;
+  const status = creatorDirect ? "completed" : "pending_creator_transfer";
 
   await storage.createGoodsRevenueDistribution({
     orderId: order.id,
@@ -47,12 +55,13 @@ async function distributeGoodsRevenue(order: any, item: any) {
     nftHolderAmount,
     nftHolderWallet,
     platformAmount,
-    platformWallet: TREASURY_WALLET,
+    status,
   });
 
   await storage.updateVoterRewardPool(contestId, voterPoolAmount);
 
-  console.log(`Revenue distributed for order ${order.id}: Creator=${creatorAmount} SOL, Voters=${voterPoolAmount} SOL, NFT=${nftHolderAmount} SOL, Platform=${platformAmount} SOL`);
+  const transferMethod = creatorDirect ? "DIRECT (on-chain split)" : "DB RECORD (pending)";
+  console.log(`Revenue distributed for order ${order.id} [${transferMethod}]: Creator=${creatorAmount.toFixed(6)} SOL → ${creatorWallet}, Voters=${voterPoolAmount.toFixed(6)} SOL (pool), NFT=${nftHolderAmount.toFixed(6)} SOL, Platform=${platformAmount.toFixed(6)} SOL`);
 }
 
 const TRUNK_PREFIX_COUNTRIES = new Set([
@@ -582,15 +591,50 @@ router.post("/:id/prepare-payment", async (req, res) => {
     const buyerPubkey = new PublicKey(buyerWallet);
     const treasuryPubkey = new PublicKey(TREASURY_WALLET);
 
-    const lamports = Math.ceil(solAmount * LAMPORTS_PER_SOL);
+    const totalLamports = Math.ceil(solAmount * LAMPORTS_PER_SOL);
 
-    const transaction = new Transaction().add(
-      SystemProgram.transfer({
-        fromPubkey: buyerPubkey,
-        toPubkey: treasuryPubkey,
-        lamports,
-      })
+    let creatorWallet: string | null = null;
+    let nftHolderWallet: string | null = null;
+
+    if (item.memeId) {
+      const meme = await storage.getMeme(item.memeId);
+      if (meme?.walletAddress && meme.walletAddress !== TREASURY_WALLET) {
+        creatorWallet = meme.walletAddress;
+      }
+    }
+
+    const transaction = new Transaction();
+    const splits: { recipient: string; role: string; lamports: number; solAmount: number }[] = [];
+
+    const creatorLamports = Math.floor(totalLamports * SHARE_RATIOS.creator);
+    const nftHolderLamports = Math.floor(totalLamports * SHARE_RATIOS.nftHolder);
+    const platformLamports = Math.floor(totalLamports * SHARE_RATIOS.platform);
+    const voterPoolLamports = totalLamports - creatorLamports - nftHolderLamports - platformLamports;
+
+    if (creatorWallet) {
+      const creatorPubkey = new PublicKey(creatorWallet);
+      transaction.add(
+        SystemProgram.transfer({ fromPubkey: buyerPubkey, toPubkey: creatorPubkey, lamports: creatorLamports })
+      );
+      splits.push({ recipient: creatorWallet, role: "creator", lamports: creatorLamports, solAmount: creatorLamports / LAMPORTS_PER_SOL });
+    }
+
+    if (nftHolderWallet) {
+      const nftPubkey = new PublicKey(nftHolderWallet);
+      transaction.add(
+        SystemProgram.transfer({ fromPubkey: buyerPubkey, toPubkey: nftPubkey, lamports: nftHolderLamports })
+      );
+      splits.push({ recipient: nftHolderWallet, role: "nftHolder", lamports: nftHolderLamports, solAmount: nftHolderLamports / LAMPORTS_PER_SOL });
+    }
+
+    let treasuryLamports = voterPoolLamports + platformLamports;
+    if (!creatorWallet) treasuryLamports += creatorLamports;
+    if (!nftHolderWallet) treasuryLamports += nftHolderLamports;
+
+    transaction.add(
+      SystemProgram.transfer({ fromPubkey: buyerPubkey, toPubkey: treasuryPubkey, lamports: treasuryLamports })
     );
+    splits.push({ recipient: TREASURY_WALLET, role: "treasury", lamports: treasuryLamports, solAmount: treasuryLamports / LAMPORTS_PER_SOL });
 
     const { blockhash } = await connection.getLatestBlockhash();
     transaction.recentBlockhash = blockhash;
@@ -606,7 +650,14 @@ router.post("/:id/prepare-payment", async (req, res) => {
       solAmount,
       solPriceUSD,
       totalUSD,
-      lamports,
+      lamports: totalLamports,
+      splits,
+      distribution: {
+        creator: { wallet: creatorWallet || TREASURY_WALLET, amount: creatorLamports / LAMPORTS_PER_SOL, direct: !!creatorWallet },
+        nftHolder: { wallet: nftHolderWallet || TREASURY_WALLET, amount: nftHolderLamports / LAMPORTS_PER_SOL, direct: !!nftHolderWallet },
+        platform: { wallet: TREASURY_WALLET, amount: platformLamports / LAMPORTS_PER_SOL, direct: true },
+        voterPool: { wallet: TREASURY_WALLET, amount: voterPoolLamports / LAMPORTS_PER_SOL, direct: true },
+      },
     });
   } catch (error: any) {
     console.error("Error preparing payment:", error);
@@ -671,41 +722,55 @@ router.post("/:id/order", async (req, res) => {
     const expectedLamports = Math.ceil(expectedSOL * LAMPORTS_PER_SOL);
     const minAcceptableLamports = Math.floor(expectedLamports * 0.95);
 
+    let verifiedCreatorWallet: string | null = null;
+    let verifiedCreatorAmount = 0;
+
+    if (item.memeId) {
+      const meme = await storage.getMeme(item.memeId);
+      if (meme?.walletAddress && meme.walletAddress !== TREASURY_WALLET) {
+        verifiedCreatorWallet = meme.walletAddress;
+      }
+    }
+
     try {
       const txInfo = await connection.getTransaction(txSignature, { maxSupportedTransactionVersion: 0 });
       if (!txInfo || txInfo.meta?.err) {
         return res.status(400).json({ error: "SOL payment transaction failed or not found on-chain" });
       }
 
-      const treasuryPubkey = new PublicKey(TREASURY_WALLET);
       if (!txInfo.meta) {
         return res.status(400).json({ error: "Transaction metadata not available" });
       }
+
       const preBalances = txInfo.meta.preBalances;
       const postBalances = txInfo.meta.postBalances;
       const accountKeys = txInfo.transaction.message.getAccountKeys().staticAccountKeys;
 
-      let treasuryIdx = -1;
+      const treasuryPubkey = new PublicKey(TREASURY_WALLET);
+      let totalReceived = 0;
+
       for (let i = 0; i < accountKeys.length; i++) {
+        const received = postBalances[i] - preBalances[i];
+        if (received <= 0) continue;
+
         if (accountKeys[i].equals(treasuryPubkey)) {
-          treasuryIdx = i;
-          break;
+          totalReceived += received;
+        } else if (verifiedCreatorWallet && accountKeys[i].equals(new PublicKey(verifiedCreatorWallet))) {
+          totalReceived += received;
+          verifiedCreatorAmount = received / LAMPORTS_PER_SOL;
         }
       }
 
-      if (treasuryIdx === -1) {
-        return res.status(400).json({ error: "Treasury wallet not found in transaction - invalid payment" });
-      }
-
-      const treasuryReceived = postBalances[treasuryIdx] - preBalances[treasuryIdx];
-      if (treasuryReceived < minAcceptableLamports) {
+      if (totalReceived < minAcceptableLamports) {
         return res.status(400).json({
-          error: `Insufficient payment: received ${treasuryReceived / LAMPORTS_PER_SOL} SOL, expected ~${expectedSOL.toFixed(6)} SOL`
+          error: `Insufficient payment: received ${totalReceived / LAMPORTS_PER_SOL} SOL, expected ~${expectedSOL.toFixed(6)} SOL`
         });
       }
 
-      const computedSolAmount = treasuryReceived / LAMPORTS_PER_SOL;
+      const computedSolAmount = totalReceived / LAMPORTS_PER_SOL;
       req.body.solAmount = computedSolAmount;
+      req.body.verifiedCreatorWallet = verifiedCreatorWallet;
+      req.body.verifiedCreatorAmount = verifiedCreatorAmount;
     } catch (verifyErr: any) {
       console.error("Transaction verification error:", verifyErr);
       return res.status(400).json({ error: "Could not verify SOL payment transaction" });
@@ -783,7 +848,7 @@ router.post("/:id/order", async (req, res) => {
 
     if (order.solAmount && order.solAmount > 0 && item.contestId) {
       try {
-        await distributeGoodsRevenue(order, item);
+        await distributeGoodsRevenue(order, item, req.body.verifiedCreatorWallet, req.body.verifiedCreatorAmount);
       } catch (distError: any) {
         console.error("Revenue distribution failed (order still created):", distError.message);
       }

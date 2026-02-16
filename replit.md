@@ -35,20 +35,21 @@ This is a web app — not a mobile app. No mobile app packaging or mobile-first 
 - DB schema: votes table uses `samuAmount` + `txSignature` (replaced old votingPower/powerUsed columns)
 - Duplicate vote prevention via `getVoteByTxSignature` check
 
-**Ecosystem Rewards Model (Implemented - Tracking/Calculation):**
+**Ecosystem Rewards Model (Implemented - Instant Distribution + Voter Claims):**
 - Meme Creator: 30% (permanent reward for creating the IP)
 - Voters: 30% (proportional to voting amount in that contest round - all voters, not just winners)
 - NFT Holder: 25% (whoever holds the winning meme's NFT, tradeable)
 - Platform: 15% (operational costs)
 - Revenue sources: Goods sales (Printful), NFT sales
-- Reward currency: SAMU tokens (ecosystem contribution rewards, not investment returns)
-- DB tables: `revenues` (contest revenue records), `revenue_shares` (individual distribution records)
-- API: `/api/revenue/` - create revenue, distribute, query by contest/wallet
-- Admin can create revenue entries and trigger distribution calculation
-- Users see real-time vote share % during active contests
-- Archive shows reward distribution details after contest ends
-- Profile stats tab shows total earnings and per-contest breakdown
-- Actual SAMU transfer not yet automated (manual for now)
+- Reward currency: SOL (from goods sales)
+- **Instant Distribution**: Goods payment creates multi-instruction Solana TX splitting SOL directly to Creator wallet (30%) + Treasury (70%) at payment time
+- **Voter Claim System**: Voter 30% deposited to per-contest reward pool using "Reward Per Share" mechanism (DeFi pattern). Voters claim anytime via profile page.
+- DB tables: `goodsRevenueDistributions` (per-sale distribution records), `voterRewardPool` (per-contest cumulative rewards), `voterClaimRecords` (individual voter claim history), `revenues`, `revenue_shares`
+- API: `/api/rewards/dashboard` (sales summary, share breakdown, distributions), `/api/rewards/voter-pool/:contestId`, `/api/rewards/claimable/:contestId/:walletAddress`, `/api/rewards/claim/:contestId`, `/api/rewards/my-claims/:walletAddress`
+- Rewards Dashboard UI in "Rewards" tab (bottom nav) with pie chart, summary cards, distribution history
+- Profile "Claims" tab shows claimable amounts + claim button + claim history
+- Distribution status tracking: "completed" (direct on-chain split) or "pending_creator_transfer" (fallback)
+- Creator amount validation with 5% tolerance against expected 30% share
 
 **IP Pipeline (To Be Implemented):**
 1. Meme contest with SAMU voting
@@ -97,7 +98,7 @@ The application uses a modern full-stack architecture with a React frontend, an 
 **UI/UX Decisions:**
 - **Responsive Web Design**: Works well on both desktop and mobile browsers.
 - **Styling**: Tailwind CSS with shadcn/ui components, custom SAMU brand colors (yellows, grays, browns, oranges), and a default black dark theme.
-- **Navigation**: 5-tab bottom navigation (Contest, Archive, NFT, Goods, Partners) with icon and text labels.
+- **Navigation**: 6-tab bottom navigation (Contest, Archive, NFT, Goods, Rewards, Partners) with icon and text labels.
 - **Modals**: Drawer-style modals using Vaul components.
 - **Typography**: Poppins font family used throughout the application.
 - **Image Optimization**: WebP format used for all images (NFTs, logos, merchandise) for performance. Lazy loading implemented for NFT gallery.
