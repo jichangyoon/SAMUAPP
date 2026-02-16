@@ -930,7 +930,7 @@ export default function Home() {
                       </CardContent>
                     </Card>
 
-                    {authenticated && walletAddress && archiveMyVotes && archiveMyVotes.myTotalSamu > 0 && (
+                    {authenticated && walletAddress && selectedArchiveContest && (
                       <Card className="border-primary/30 bg-primary/5">
                         <CardContent className="p-4">
                           <h3 className="font-semibold text-foreground text-sm mb-3 flex items-center gap-2">
@@ -939,13 +939,13 @@ export default function Home() {
                           <div className="grid grid-cols-3 gap-3 text-center">
                             <div className="bg-accent/50 rounded-lg p-2">
                               <div className="text-primary font-bold text-sm">
-                                {archiveMyVotes.myTotalSamu.toLocaleString()}
+                                {(archiveMyVotes?.myTotalSamu || 0).toLocaleString()}
                               </div>
                               <div className="text-muted-foreground text-xs">SAMU Spent</div>
                             </div>
                             <div className="bg-accent/50 rounded-lg p-2">
                               <div className="text-purple-400 font-bold text-sm">
-                                {archiveMyVotes.totalContestSamu > 0
+                                {archiveMyVotes && archiveMyVotes.totalContestSamu > 0
                                   ? ((archiveMyVotes.myTotalSamu / archiveMyVotes.totalContestSamu) * 100).toFixed(1)
                                   : '0'}%
                               </div>
@@ -953,12 +953,12 @@ export default function Home() {
                             </div>
                             <div className="bg-accent/50 rounded-lg p-2">
                               <div className="text-green-400 font-bold text-sm">
-                                {archiveMyVotes.myRevenueSharePercent || 0}%
+                                {archiveMyVotes?.myRevenueSharePercent || 0}%
                               </div>
                               <div className="text-muted-foreground text-xs">Reward Share</div>
                             </div>
                           </div>
-                          {archiveMyVotes.votes?.length > 0 && (
+                          {archiveMyVotes?.votes?.length > 0 && (
                             <div className="mt-3">
                               <button
                                 onClick={() => setShowArchiveVoteDetail(prev => !prev)}
