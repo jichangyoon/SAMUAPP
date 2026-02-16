@@ -93,6 +93,25 @@ export function Admin() {
     },
   });
 
+  const [syncingPrintfulId, setSyncingPrintfulId] = useState<number | null>(null);
+
+  const syncPrintfulMutation = useMutation({
+    mutationFn: async (goodsId: number) => {
+      setSyncingPrintfulId(goodsId);
+      const res = await apiRequest("POST", `/api/goods/admin/sync-printful/${goodsId}`, { adminEmail });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast({ title: "Printful 연동 완료!", description: `Product ID: ${data.printfulProduct?.id}` });
+      queryClient.invalidateQueries({ queryKey: ['/api/goods'] });
+      setSyncingPrintfulId(null);
+    },
+    onError: (e: any) => {
+      toast({ title: "Printful 연동 실패", description: e.message, variant: "destructive" });
+      setSyncingPrintfulId(null);
+    },
+  });
+
   // Fetch current contests
   const { data: contests = [], isLoading } = useQuery<Contest[]>({
     queryKey: ["/api/admin/contests"],
@@ -706,7 +725,13 @@ export function Admin() {
                             <div className="text-xs text-muted-foreground">
                               ${item.retailPrice} | {item.sizes?.join(', ')} | {item.colors?.join(', ')}
                             </div>
-                            <div className="text-xs mt-0.5">
+                            <div className="text-xs mt-0.5 space-y-0.5">
+                              {item.printfulProductId ? (
+                                <span className="text-green-400">Printful synced (ID: {item.printfulProductId})</span>
+                              ) : (
+                                <span className="text-red-400">Not synced to Printful</span>
+                              )}
+                              <br />
                               {hasMockups ? (
                                 <span className="text-green-400">Mockup ready ({item.mockupUrls?.length} images)</span>
                               ) : (
@@ -716,6 +741,21 @@ export function Admin() {
                           </div>
                           <div className="flex flex-col gap-1 items-end">
                             <Badge variant={item.status === 'active' ? 'default' : 'secondary'}>{item.status}</Badge>
+                            {!item.printfulProductId && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs h-7 border-blue-500/50 text-blue-400"
+                                onClick={() => syncPrintfulMutation.mutate(item.id)}
+                                disabled={syncingPrintfulId === item.id}
+                              >
+                                {syncingPrintfulId === item.id ? (
+                                  <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Syncing...</>
+                                ) : (
+                                  <><Package className="h-3 w-3 mr-1" /> Sync to Printful</>
+                                )}
+                              </Button>
+                            )}
                             <Button
                               size="sm"
                               variant="outline"

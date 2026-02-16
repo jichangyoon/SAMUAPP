@@ -253,6 +253,69 @@ router.post("/admin/create", requireAdmin, async (req, res) => {
   }
 });
 
+router.post("/admin/sync-printful/:id", requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid goods ID" });
+    }
+
+    const item = await storage.getGoodsById(id);
+    if (!item) {
+      return res.status(404).json({ error: "Goods not found" });
+    }
+
+    if (!PRINTFUL_API_KEY) {
+      return res.status(500).json({ error: "Printful API key not configured" });
+    }
+
+    if (item.printfulProductId) {
+      return res.status(400).json({ error: "This item is already synced to Printful", printfulProductId: item.printfulProductId });
+    }
+
+    const selectedSizes = item.sizes || ['3"×3"', '4"×4"', '5.5"×5.5"'];
+    const syncVariants: any[] = [];
+    for (const size of selectedSizes) {
+      const variantId = STICKER_VARIANT_MAP[size as string];
+      if (variantId) {
+        syncVariants.push({
+          variant_id: variantId,
+          retail_price: (item.retailPrice || 4.99).toFixed(2),
+          files: [{ url: item.imageUrl }],
+        });
+      }
+    }
+
+    if (syncVariants.length === 0) {
+      return res.status(400).json({ error: "No valid sticker size variants found for this item" });
+    }
+
+    const productPayload = {
+      sync_product: {
+        name: item.title,
+        thumbnail: item.imageUrl,
+      },
+      sync_variants: syncVariants,
+    };
+
+    console.log("Syncing goods to Printful:", { goodsId: id, title: item.title });
+    const productResult = await printfulRequest("POST", "/store/products", productPayload);
+    const syncProduct = productResult.result?.sync_product;
+    const syncVariantsResult = productResult.result?.sync_variants || [];
+
+    const updatedItem = await storage.updateGoods(id, {
+      printfulProductId: syncProduct?.id || null,
+      printfulVariantId: syncVariantsResult[0]?.id || null,
+    });
+
+    console.log("Printful sync complete:", { goodsId: id, printfulProductId: syncProduct?.id, printfulVariantId: syncVariantsResult[0]?.id });
+    res.json({ goods: updatedItem, printfulProduct: syncProduct, syncVariants: syncVariantsResult });
+  } catch (error: any) {
+    console.error("Error syncing goods to Printful:", error);
+    res.status(500).json({ error: error.message || "Failed to sync to Printful" });
+  }
+});
+
 router.post("/admin/generate-mockup/:id", requireAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
