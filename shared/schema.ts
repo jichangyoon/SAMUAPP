@@ -154,8 +154,8 @@ export const revenueShares = pgTable("revenue_shares", {
 
 export const goods = pgTable("goods", {
   id: serial("id").primaryKey(),
-  printfulProductId: integer("printful_product_id"),
-  printfulVariantId: integer("printful_variant_id"),
+  printfulProductId: bigint("printful_product_id", { mode: "number" }),
+  printfulVariantId: bigint("printful_variant_id", { mode: "number" }),
   contestId: integer("contest_id"),
   memeId: integer("meme_id"),
   title: text("title").notNull(),
@@ -177,7 +177,7 @@ export const orders = pgTable("orders", {
   goodsId: integer("goods_id").notNull(),
   buyerWallet: text("buyer_wallet").notNull(),
   buyerEmail: text("buyer_email").notNull(),
-  printfulOrderId: integer("printful_order_id"),
+  printfulOrderId: bigint("printful_order_id", { mode: "number" }),
   size: text("size").notNull(),
   color: text("color").notNull(),
   quantity: integer("quantity").notNull().default(1),

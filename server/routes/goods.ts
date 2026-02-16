@@ -224,12 +224,29 @@ router.post("/admin/create", requireAdmin, async (req, res) => {
     };
 
     const productResult = await printfulRequest("POST", "/store/products", productPayload);
-    const syncProduct = productResult.result?.sync_product;
-    const syncVariantsResult = productResult.result?.sync_variants || [];
+    console.log("Printful create product response:", JSON.stringify(productResult, null, 2));
+
+    const createResult = productResult.result;
+    const printfulProductId = createResult?.sync_product?.id ?? createResult?.id ?? null;
+
+    let printfulVariantId: number | null = null;
+    if (createResult?.sync_variants?.length > 0) {
+      printfulVariantId = createResult.sync_variants[0].id;
+    } else if (printfulProductId) {
+      try {
+        const productDetail = await printfulRequest("GET", `/store/products/${printfulProductId}`);
+        const variants = productDetail.result?.sync_variants || [];
+        if (variants.length > 0) {
+          printfulVariantId = variants[0].id;
+        }
+      } catch (detailErr: any) {
+        console.error("Failed to fetch product variants:", detailErr.message);
+      }
+    }
 
     const goodsData = insertGoodsSchema.parse({
-      printfulProductId: syncProduct?.id || null,
-      printfulVariantId: syncVariantsResult[0]?.id || null,
+      printfulProductId,
+      printfulVariantId,
       contestId: contestId || null,
       memeId: memeId || null,
       title,
@@ -246,7 +263,7 @@ router.post("/admin/create", requireAdmin, async (req, res) => {
     });
 
     const item = await storage.createGoods(goodsData);
-    res.json({ goods: item, printfulProduct: syncProduct });
+    res.json({ goods: item, printfulProductId, printfulVariantId });
   } catch (error: any) {
     console.error("Error creating goods with Printful:", error);
     res.status(500).json({ error: error.message || "Failed to create goods with Printful" });
@@ -300,16 +317,34 @@ router.post("/admin/sync-printful/:id", requireAdmin, async (req, res) => {
 
     console.log("Syncing goods to Printful:", { goodsId: id, title: item.title });
     const productResult = await printfulRequest("POST", "/store/products", productPayload);
-    const syncProduct = productResult.result?.sync_product;
-    const syncVariantsResult = productResult.result?.sync_variants || [];
+    console.log("Printful create product response:", JSON.stringify(productResult, null, 2));
+
+    const result = productResult.result;
+    const printfulProductId = result?.sync_product?.id ?? result?.id ?? null;
+
+    let printfulVariantId: number | null = null;
+    if (result?.sync_variants?.length > 0) {
+      printfulVariantId = result.sync_variants[0].id;
+    } else if (printfulProductId) {
+      try {
+        const productDetail = await printfulRequest("GET", `/store/products/${printfulProductId}`);
+        console.log("Printful product detail response:", JSON.stringify(productDetail, null, 2));
+        const variants = productDetail.result?.sync_variants || [];
+        if (variants.length > 0) {
+          printfulVariantId = variants[0].id;
+        }
+      } catch (detailErr: any) {
+        console.error("Failed to fetch product variants:", detailErr.message);
+      }
+    }
 
     const updatedItem = await storage.updateGoods(id, {
-      printfulProductId: syncProduct?.id || null,
-      printfulVariantId: syncVariantsResult[0]?.id || null,
+      printfulProductId,
+      printfulVariantId,
     });
 
-    console.log("Printful sync complete:", { goodsId: id, printfulProductId: syncProduct?.id, printfulVariantId: syncVariantsResult[0]?.id });
-    res.json({ goods: updatedItem, printfulProduct: syncProduct, syncVariants: syncVariantsResult });
+    console.log("Printful sync complete:", { goodsId: id, printfulProductId, printfulVariantId });
+    res.json({ goods: updatedItem, printfulProductId, printfulVariantId });
   } catch (error: any) {
     console.error("Error syncing goods to Printful:", error);
     res.status(500).json({ error: error.message || "Failed to sync to Printful" });
