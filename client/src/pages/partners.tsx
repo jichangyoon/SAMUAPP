@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Users } from "lucide-react";
+import { ArrowLeft, Users, Rocket, Globe, Sparkles } from "lucide-react";
 import { partners } from "@/data/partners";
 
 export function Partners() {
@@ -66,18 +66,43 @@ export function Partners() {
       </header>
 
       <main className="max-w-md mx-auto px-4 py-6 pb-24">
-        {/* Partners Header */}
-        <Card className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-blue-400/20 mb-6">
-          <CardContent className="p-4 text-center">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Users className="h-5 w-5 text-blue-400" />
-              <h2 className="text-lg font-bold text-blue-400">Partner Meme Coins</h2>
+        {/* Hero Banner */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-yellow-500/20 via-orange-500/15 to-purple-600/20 border border-yellow-500/20 mb-8 p-6">
+          <div className="absolute top-2 right-3 opacity-10">
+            <Globe className="h-24 w-24 text-yellow-400" />
+          </div>
+          <div className="absolute bottom-1 left-2 opacity-10">
+            <Sparkles className="h-16 w-16 text-purple-400" />
+          </div>
+          
+          <div className="relative z-10 text-center space-y-3">
+            <div className="inline-flex items-center gap-1.5 bg-yellow-500/20 border border-yellow-500/30 rounded-full px-3 py-1 text-xs text-yellow-400 font-medium mb-1">
+              <Rocket className="h-3 w-3" />
+              Meme IP Incubator
             </div>
-            <p className="text-sm text-muted-foreground">
-              Join meme contests from other amazing communities
+            
+            <h2 className="text-xl font-bold leading-tight bg-gradient-to-r from-yellow-300 via-orange-300 to-yellow-400 bg-clip-text text-transparent">
+              Transform Your Meme<br />into a Global IP
+            </h2>
+            
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">
+              Any Solana meme coin can join SAMU to build a sustainable ecosystem. From tokens to real-world assets, we provide the ultimate IP incubation protocol.
             </p>
-          </CardContent>
-        </Card>
+            
+            <div className="flex items-center justify-center gap-4 pt-2 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+                Contest
+              </span>
+              <span>→</span>
+              <span>NFT</span>
+              <span>→</span>
+              <span>Goods</span>
+              <span>→</span>
+              <span className="text-yellow-400 font-medium">Rewards</span>
+            </div>
+          </div>
+        </div>
 
         {/* Partners Grid */}
         <div className="space-y-4">
