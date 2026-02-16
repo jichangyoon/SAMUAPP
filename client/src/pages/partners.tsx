@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Users, Rocket } from "lucide-react";
+import { ArrowLeft, Users, Rocket, Send } from "lucide-react";
 import { partners } from "@/data/partners";
 
 export function Partners() {
@@ -165,7 +165,38 @@ export function Partners() {
               <div className="text-muted-foreground space-y-2">
                 <Users className="h-8 w-8 mx-auto opacity-50" />
                 <p className="text-sm">More partner communities joining soon!</p>
-                <p className="text-xs">Want to partner with us? Contact our team.</p>
+                <p className="text-xs">Want to partner with us? Reach out below.</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Contact Section */}
+        <div className="mt-6 mb-4">
+          <Card className="bg-card border-border">
+            <CardContent className="p-5 text-center space-y-3">
+              <h3 className="text-sm font-semibold text-foreground">Contact Us</h3>
+              <div className="flex items-center justify-center gap-4">
+                <a
+                  href="https://x.com/SAMU_APP"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 bg-muted hover:bg-muted/80 rounded-lg px-4 py-2.5 transition-colors"
+                >
+                  <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current text-foreground" aria-hidden="true">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                  <span className="text-sm text-foreground">@SAMU_APP</span>
+                </a>
+                <a
+                  href="https://t.me/samu_app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 bg-muted hover:bg-muted/80 rounded-lg px-4 py-2.5 transition-colors"
+                >
+                  <Send className="h-4 w-4 text-blue-400" />
+                  <span className="text-sm text-foreground">@samu_app</span>
+                </a>
               </div>
             </CardContent>
           </Card>
