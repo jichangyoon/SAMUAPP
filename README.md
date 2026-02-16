@@ -1,62 +1,116 @@
-# 🐺 SAMU 밈 콘테스트 모바일 앱
+# SAMU - Meme Incubator on Solana
 
-SAMU 토큰 기반 밈 콘테스트 플랫폼의 모바일 앱 버전입니다.
+> Evolving memes into IP. Community-curated meme pipeline: **Contest → NFT → Merchandise → Revenue Share**
 
-## 🚀 주요 기능
+SAMU is a web-based meme incubator platform on Solana where community-voted memes evolve into intellectual property (IP). Holders vote with SAMU tokens, winning memes become NFTs, NFT designs become merchandise, and revenue flows back to creators, voters, and NFT holders.
 
-- **밈 콘테스트**: 밈 업로드, 투표, 리더보드
-- **SAMU 토큰 연동**: Privy 지갑을 통한 토큰 밸런스 조회
-- **파트너 통합**: WAGUS, DoctorBird 커뮤니티 연동
-- **X(Twitter) 딥링크**: 모바일 앱에서 X 앱 연동
-- **NFT 갤러리**: 164개 SAMU Wolf NFT 컬렉션
-- **토큰 전송**: SAMU/SOL 토큰 전송 기능
+## Live App
 
-## 📱 모바일 앱 빌드
+🌐 **[samu.ink](https://samu.ink)**
 
-### 자동 빌드 (GitHub Actions)
-푸시할 때마다 자동으로 APK가 빌드되어 Actions 탭에서 다운로드할 수 있습니다.
+## How It Works
 
-### 로컬 빌드
-```bash
-# 1. 의존성 설치
-npm install
-
-# 2. 웹 자산 빌드
-npm run build
-
-# 3. Capacitor 동기화
-npx cap sync android
-
-# 4. Android Studio에서 열기
-npx cap open android
-
-# 또는 직접 빌드
-cd android
-./gradlew assembleDebug
+```
+1. Meme Contest    →  Community submits & votes on memes using SAMU tokens
+2. NFT Minting     →  Top 3 winning memes minted as NFTs (tradeable)
+3. Merchandise     →  Winning designs turned into goods via Printful
+4. Revenue Share   →  Sales revenue distributed in SOL to all participants
 ```
 
-## 🔧 기술 스택
+## Dual Token Model
 
-- **Frontend**: React + TypeScript + Tailwind CSS
-- **Backend**: Express.js + PostgreSQL + Drizzle ORM
-- **Mobile**: Capacitor 7.3.0 + Android SDK 35
-- **Authentication**: Privy 지갑 통합
-- **Storage**: Cloudflare R2 클라우드 스토리지
-- **Blockchain**: Solana 토큰 통합
+| Token | Role | Usage |
+|-------|------|-------|
+| **SAMU** | Governance & Voting | Vote on memes by transferring SAMU to treasury (on-chain) |
+| **SOL** | Revenue & Settlement | Pay for merchandise, receive revenue share |
 
-## 📋 앱 설정
+## Revenue Distribution
 
-- **App ID**: com.samu.memecontest
-- **App Name**: SAMU
-- **Target SDK**: 35
-- **Min SDK**: 24
-- **Java Version**: 17
+| Recipient | Share | Description |
+|-----------|-------|-------------|
+| Meme Creator | 30% | Permanent reward for creating the IP |
+| All Voters | 30% | Proportional to voting amount per contest round |
+| NFT Holder | 25% | Tradeable — buy the NFT, earn the revenue |
+| Platform | 15% | Operational costs |
 
-## 🔗 링크
+## Key Features
 
-- **웹 앱**: https://meme-chain-rally-wlckddbs12345.replit.app
-- **SAMU 토큰**: EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF
+### On-Chain Voting
+- Real SAMU SPL token transfers to treasury wallet
+- Voting amount determines your revenue share proportion
+- Anti-abuse: on-chain gas fees naturally prevent multi-account manipulation
+- Transaction verified on-chain (preTokenBalances/postTokenBalances)
 
-## 📄 라이선스
+### Solana Blinks (External Voting)
+- Vote on memes from X (Twitter), Discord, or any Blink-compatible app
+- No login required — connect Phantom or any Solana wallet directly
+- Same on-chain verification as in-app voting
+- Shareable Blink URLs for each meme entry
+
+### Goods Shop (SOL Payment)
+- Kiss-Cut Sticker merchandise from winning meme designs
+- Real-time SOL/USD pricing via CoinGecko
+- International shipping to 20+ countries with localized address forms
+- Full on-chain payment verification before Printful order creation
+
+### NFT Gallery
+- 164 SAMU Wolf NFT collection with commenting system
+- Lazy loading for performance
+
+### Partner Communities
+- Other meme coin communities can host their own isolated contests
+- Each partner gets a dedicated contest space
+
+### Contest Archive & Hall of Fame
+- Complete history of past contests with winners and statistics
+- Revenue distribution details per contest
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui |
+| Backend | Express.js, TypeScript |
+| Database | PostgreSQL, Drizzle ORM |
+| Auth | Privy (email login + embedded Solana wallet) |
+| Blockchain | Solana, @solana/web3.js, @solana/spl-token, Solana Actions (Blinks) |
+| Storage | Cloudflare R2 |
+| Merchandise | Printful API |
+| Pricing | CoinGecko API (SOL/USD) |
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────┐
+│                 Frontend                     │
+│         React + Vite + Tailwind             │
+│      Privy Auth · Solana Wallet SDK         │
+└──────────────────┬──────────────────────────┘
+                   │
+┌──────────────────▼──────────────────────────┐
+│              Express.js API                  │
+│   Contests · Votes · Goods · Revenue · NFT  │
+│   Blinks (Solana Actions) · Admin Panel     │
+└──────┬───────────┬──────────────┬───────────┘
+       │           │              │
+┌──────▼───┐ ┌─────▼─────┐ ┌─────▼─────┐
+│PostgreSQL│ │ Solana RPC │ │Cloudflare │
+│(Drizzle) │ │ (Helius)   │ │    R2     │
+└──────────┘ └───────────┘ └───────────┘
+```
+
+## Solana Integration
+
+- **SAMU Token**: `EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF`
+- **Treasury Wallet**: `4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk`
+- **Blinks Endpoint**: `GET/POST /api/actions/vote/:memeId`
+
+## Inspiration
+
+- **Pudgy Penguins** — NFT IP → Physical goods pipeline
+- **Steemit** — Voter revenue sharing model
+- **Threadless** — Community voting → Merchandise creation
+
+## License
 
 MIT License
