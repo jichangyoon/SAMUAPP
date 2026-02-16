@@ -16,30 +16,30 @@ import { ShoppingCart, ShoppingBag, Sticker, Package, Truck, ChevronRight, Loade
 type OrderStep = 'browse' | 'detail' | 'options' | 'shipping' | 'payment' | 'confirm';
 
 const COUNTRIES = [
-  { code: 'US', name: 'United States', zipLabel: 'ZIP Code', zipPlaceholder: '10001', stateLabel: 'State', statePlaceholder: 'NY', cityLabel: 'City', cityPlaceholder: 'New York', addressLabel: 'Street Address', addressPlaceholder: '123 Main St', address2Label: 'Apt / Suite / Floor', address2Placeholder: 'Apt 4B (optional)', phonePlaceholder: '+1 555 123 4567' },
-  { code: 'KR', name: 'South Korea (한국)', zipLabel: '우편번호 (Postal Code)', zipPlaceholder: '06130', stateLabel: '시/도', statePlaceholder: '서울특별시', cityLabel: '구/군', cityPlaceholder: '강남구', addressLabel: '상세주소 (Address)', addressPlaceholder: '테헤란로 123', address2Label: '동/호수 (Unit)', address2Placeholder: '101동 202호 (optional)', phonePlaceholder: '+82 10 1234 5678' },
-  { code: 'JP', name: 'Japan (日本)', zipLabel: '郵便番号 (Postal Code)', zipPlaceholder: '100-0001', stateLabel: '都道府県 (Prefecture)', statePlaceholder: '東京都', cityLabel: '市区町村 (City)', cityPlaceholder: '千代田区', addressLabel: '番地 (Address)', addressPlaceholder: '丸の内1-1-1', address2Label: '建物名 (Building)', address2Placeholder: 'マンション101号 (optional)', phonePlaceholder: '+81 90 1234 5678' },
-  { code: 'CN', name: 'China (中国)', zipLabel: '邮编 (Postal Code)', zipPlaceholder: '100000', stateLabel: '省/市 (Province)', statePlaceholder: '北京市', cityLabel: '区/县 (District)', cityPlaceholder: '朝阳区', addressLabel: '详细地址 (Address)', addressPlaceholder: '建国路88号', address2Label: '楼/室 (Unit)', address2Placeholder: '1栋101室 (optional)', phonePlaceholder: '+86 138 0013 8000' },
-  { code: 'GB', name: 'United Kingdom', zipLabel: 'Postcode', zipPlaceholder: 'SW1A 1AA', stateLabel: 'County', statePlaceholder: 'London', cityLabel: 'City / Town', cityPlaceholder: 'London', addressLabel: 'Street Address', addressPlaceholder: '10 Downing Street', address2Label: 'Flat / Unit', address2Placeholder: 'Flat 2 (optional)', phonePlaceholder: '+44 20 7946 0958' },
-  { code: 'CA', name: 'Canada', zipLabel: 'Postal Code', zipPlaceholder: 'K1A 0B1', stateLabel: 'Province', statePlaceholder: 'ON', cityLabel: 'City', cityPlaceholder: 'Toronto', addressLabel: 'Street Address', addressPlaceholder: '123 Main St', address2Label: 'Apt / Suite', address2Placeholder: 'Suite 100 (optional)', phonePlaceholder: '+1 416 555 0123' },
-  { code: 'AU', name: 'Australia', zipLabel: 'Postcode', zipPlaceholder: '2000', stateLabel: 'State', statePlaceholder: 'NSW', cityLabel: 'City / Suburb', cityPlaceholder: 'Sydney', addressLabel: 'Street Address', addressPlaceholder: '123 George St', address2Label: 'Unit / Level', address2Placeholder: 'Unit 5 (optional)', phonePlaceholder: '+61 2 1234 5678' },
-  { code: 'DE', name: 'Germany (Deutschland)', zipLabel: 'PLZ', zipPlaceholder: '10115', stateLabel: 'Bundesland', statePlaceholder: 'Berlin', cityLabel: 'Stadt (City)', cityPlaceholder: 'Berlin', addressLabel: 'Straße (Street)', addressPlaceholder: 'Friedrichstr. 123', address2Label: 'Wohnung (Apt)', address2Placeholder: 'Wohnung 4 (optional)', phonePlaceholder: '+49 30 123456' },
-  { code: 'FR', name: 'France', zipLabel: 'Code Postal', zipPlaceholder: '75001', stateLabel: 'Région', statePlaceholder: 'Île-de-France', cityLabel: 'Ville (City)', cityPlaceholder: 'Paris', addressLabel: 'Adresse (Address)', addressPlaceholder: '12 Rue de Rivoli', address2Label: 'Complément', address2Placeholder: 'Bât. A, Étage 3 (optional)', phonePlaceholder: '+33 1 23 45 67 89' },
-  { code: 'SG', name: 'Singapore', zipLabel: 'Postal Code', zipPlaceholder: '018956', stateLabel: '', statePlaceholder: '', cityLabel: 'City', cityPlaceholder: 'Singapore', addressLabel: 'Street Address', addressPlaceholder: '1 Raffles Place', address2Label: 'Unit / Floor', address2Placeholder: '#01-01 (optional)', phonePlaceholder: '+65 6123 4567' },
-  { code: 'TH', name: 'Thailand (ไทย)', zipLabel: 'Postal Code', zipPlaceholder: '10110', stateLabel: 'Province', statePlaceholder: 'Bangkok', cityLabel: 'District', cityPlaceholder: 'Pathum Wan', addressLabel: 'Address', addressPlaceholder: '123 Rama I Rd', address2Label: 'Unit / Floor', address2Placeholder: 'Floor 5 (optional)', phonePlaceholder: '+66 2 123 4567' },
-  { code: 'VN', name: 'Vietnam (Việt Nam)', zipLabel: 'Postal Code', zipPlaceholder: '100000', stateLabel: 'Province', statePlaceholder: 'Hanoi', cityLabel: 'District', cityPlaceholder: 'Ba Dinh', addressLabel: 'Address', addressPlaceholder: '12 Hoang Dieu', address2Label: 'Unit', address2Placeholder: 'P.301 (optional)', phonePlaceholder: '+84 24 1234 5678' },
-  { code: 'PH', name: 'Philippines', zipLabel: 'ZIP Code', zipPlaceholder: '1000', stateLabel: 'Province', statePlaceholder: 'Metro Manila', cityLabel: 'City', cityPlaceholder: 'Makati', addressLabel: 'Street Address', addressPlaceholder: '123 Ayala Ave', address2Label: 'Unit / Floor', address2Placeholder: 'Unit 5A (optional)', phonePlaceholder: '+63 2 1234 5678' },
-  { code: 'IN', name: 'India (भारत)', zipLabel: 'PIN Code', zipPlaceholder: '110001', stateLabel: 'State', statePlaceholder: 'Delhi', cityLabel: 'City', cityPlaceholder: 'New Delhi', addressLabel: 'Street Address', addressPlaceholder: '123 MG Road', address2Label: 'Flat / Floor', address2Placeholder: 'Flat 301 (optional)', phonePlaceholder: '+91 98765 43210' },
-  { code: 'BR', name: 'Brazil (Brasil)', zipLabel: 'CEP', zipPlaceholder: '01001-000', stateLabel: 'Estado (State)', statePlaceholder: 'SP', cityLabel: 'Cidade (City)', cityPlaceholder: 'São Paulo', addressLabel: 'Endereço (Address)', addressPlaceholder: 'Rua Augusta, 123', address2Label: 'Complemento', address2Placeholder: 'Apto 45 (optional)', phonePlaceholder: '+55 11 91234 5678' },
-  { code: 'MX', name: 'Mexico (México)', zipLabel: 'Código Postal', zipPlaceholder: '06000', stateLabel: 'Estado (State)', statePlaceholder: 'CDMX', cityLabel: 'Ciudad (City)', cityPlaceholder: 'Ciudad de México', addressLabel: 'Dirección (Address)', addressPlaceholder: 'Av. Reforma 123', address2Label: 'Depto / Int.', address2Placeholder: 'Int. 4 (optional)', phonePlaceholder: '+52 55 1234 5678' },
-  { code: 'ES', name: 'Spain (España)', zipLabel: 'Código Postal', zipPlaceholder: '28001', stateLabel: 'Provincia', statePlaceholder: 'Madrid', cityLabel: 'Ciudad (City)', cityPlaceholder: 'Madrid', addressLabel: 'Dirección (Address)', addressPlaceholder: 'Calle Mayor 1', address2Label: 'Piso / Puerta', address2Placeholder: '2ºA (optional)', phonePlaceholder: '+34 612 345 678' },
-  { code: 'IT', name: 'Italy (Italia)', zipLabel: 'CAP', zipPlaceholder: '00100', stateLabel: 'Provincia', statePlaceholder: 'Roma', cityLabel: 'Città (City)', cityPlaceholder: 'Roma', addressLabel: 'Indirizzo (Address)', addressPlaceholder: 'Via Roma 1', address2Label: 'Interno (Unit)', address2Placeholder: 'Int. 3 (optional)', phonePlaceholder: '+39 06 1234 5678' },
-  { code: 'NL', name: 'Netherlands', zipLabel: 'Postcode', zipPlaceholder: '1012 AB', stateLabel: 'Province', statePlaceholder: 'NH', cityLabel: 'City', cityPlaceholder: 'Amsterdam', addressLabel: 'Street Address', addressPlaceholder: 'Herengracht 123', address2Label: 'Unit', address2Placeholder: '2e verdieping (optional)', phonePlaceholder: '+31 20 123 4567' },
-  { code: 'SE', name: 'Sweden (Sverige)', zipLabel: 'Postnummer', zipPlaceholder: '111 21', stateLabel: 'Län', statePlaceholder: 'Stockholm', cityLabel: 'Stad (City)', cityPlaceholder: 'Stockholm', addressLabel: 'Gatuadress (Address)', addressPlaceholder: 'Drottninggatan 1', address2Label: 'Lägenhet (Apt)', address2Placeholder: 'Lgh 1201 (optional)', phonePlaceholder: '+46 8 123 456' },
+  { code: 'US', dialCode: '+1', name: 'United States', zipLabel: 'ZIP Code', zipPlaceholder: '10001', stateLabel: 'State', statePlaceholder: 'NY', cityLabel: 'City', cityPlaceholder: 'New York', addressLabel: 'Street Address', addressPlaceholder: '123 Main St', address2Label: 'Apt / Suite / Floor', address2Placeholder: 'Apt 4B (optional)', phoneLocalPlaceholder: '555 123 4567' },
+  { code: 'KR', dialCode: '+82', name: 'South Korea (한국)', zipLabel: '우편번호 (Postal Code)', zipPlaceholder: '06130', stateLabel: '시/도', statePlaceholder: '서울특별시', cityLabel: '구/군', cityPlaceholder: '강남구', addressLabel: '상세주소 (Address)', addressPlaceholder: '테헤란로 123', address2Label: '동/호수 (Unit)', address2Placeholder: '101동 202호 (optional)', phoneLocalPlaceholder: '010-1234-5678' },
+  { code: 'JP', dialCode: '+81', name: 'Japan (日本)', zipLabel: '郵便番号 (Postal Code)', zipPlaceholder: '100-0001', stateLabel: '都道府県 (Prefecture)', statePlaceholder: '東京都', cityLabel: '市区町村 (City)', cityPlaceholder: '千代田区', addressLabel: '番地 (Address)', addressPlaceholder: '丸の内1-1-1', address2Label: '建物名 (Building)', address2Placeholder: 'マンション101号 (optional)', phoneLocalPlaceholder: '90 1234 5678' },
+  { code: 'CN', dialCode: '+86', name: 'China (中国)', zipLabel: '邮编 (Postal Code)', zipPlaceholder: '100000', stateLabel: '省/市 (Province)', statePlaceholder: '北京市', cityLabel: '区/县 (District)', cityPlaceholder: '朝阳区', addressLabel: '详细地址 (Address)', addressPlaceholder: '建国路88号', address2Label: '楼/室 (Unit)', address2Placeholder: '1栋101室 (optional)', phoneLocalPlaceholder: '138 0013 8000' },
+  { code: 'GB', dialCode: '+44', name: 'United Kingdom', zipLabel: 'Postcode', zipPlaceholder: 'SW1A 1AA', stateLabel: 'County', statePlaceholder: 'London', cityLabel: 'City / Town', cityPlaceholder: 'London', addressLabel: 'Street Address', addressPlaceholder: '10 Downing Street', address2Label: 'Flat / Unit', address2Placeholder: 'Flat 2 (optional)', phoneLocalPlaceholder: '20 7946 0958' },
+  { code: 'CA', dialCode: '+1', name: 'Canada', zipLabel: 'Postal Code', zipPlaceholder: 'K1A 0B1', stateLabel: 'Province', statePlaceholder: 'ON', cityLabel: 'City', cityPlaceholder: 'Toronto', addressLabel: 'Street Address', addressPlaceholder: '123 Main St', address2Label: 'Apt / Suite', address2Placeholder: 'Suite 100 (optional)', phoneLocalPlaceholder: '416 555 0123' },
+  { code: 'AU', dialCode: '+61', name: 'Australia', zipLabel: 'Postcode', zipPlaceholder: '2000', stateLabel: 'State', statePlaceholder: 'NSW', cityLabel: 'City / Suburb', cityPlaceholder: 'Sydney', addressLabel: 'Street Address', addressPlaceholder: '123 George St', address2Label: 'Unit / Level', address2Placeholder: 'Unit 5 (optional)', phoneLocalPlaceholder: '2 1234 5678' },
+  { code: 'DE', dialCode: '+49', name: 'Germany (Deutschland)', zipLabel: 'PLZ', zipPlaceholder: '10115', stateLabel: 'Bundesland', statePlaceholder: 'Berlin', cityLabel: 'Stadt (City)', cityPlaceholder: 'Berlin', addressLabel: 'Straße (Street)', addressPlaceholder: 'Friedrichstr. 123', address2Label: 'Wohnung (Apt)', address2Placeholder: 'Wohnung 4 (optional)', phoneLocalPlaceholder: '30 123456' },
+  { code: 'FR', dialCode: '+33', name: 'France', zipLabel: 'Code Postal', zipPlaceholder: '75001', stateLabel: 'Région', statePlaceholder: 'Île-de-France', cityLabel: 'Ville (City)', cityPlaceholder: 'Paris', addressLabel: 'Adresse (Address)', addressPlaceholder: '12 Rue de Rivoli', address2Label: 'Complément', address2Placeholder: 'Bât. A, Étage 3 (optional)', phoneLocalPlaceholder: '1 23 45 67 89' },
+  { code: 'SG', dialCode: '+65', name: 'Singapore', zipLabel: 'Postal Code', zipPlaceholder: '018956', stateLabel: '', statePlaceholder: '', cityLabel: 'City', cityPlaceholder: 'Singapore', addressLabel: 'Street Address', addressPlaceholder: '1 Raffles Place', address2Label: 'Unit / Floor', address2Placeholder: '#01-01 (optional)', phoneLocalPlaceholder: '6123 4567' },
+  { code: 'TH', dialCode: '+66', name: 'Thailand (ไทย)', zipLabel: 'Postal Code', zipPlaceholder: '10110', stateLabel: 'Province', statePlaceholder: 'Bangkok', cityLabel: 'District', cityPlaceholder: 'Pathum Wan', addressLabel: 'Address', addressPlaceholder: '123 Rama I Rd', address2Label: 'Unit / Floor', address2Placeholder: 'Floor 5 (optional)', phoneLocalPlaceholder: '2 123 4567' },
+  { code: 'VN', dialCode: '+84', name: 'Vietnam (Việt Nam)', zipLabel: 'Postal Code', zipPlaceholder: '100000', stateLabel: 'Province', statePlaceholder: 'Hanoi', cityLabel: 'District', cityPlaceholder: 'Ba Dinh', addressLabel: 'Address', addressPlaceholder: '12 Hoang Dieu', address2Label: 'Unit', address2Placeholder: 'P.301 (optional)', phoneLocalPlaceholder: '24 1234 5678' },
+  { code: 'PH', dialCode: '+63', name: 'Philippines', zipLabel: 'ZIP Code', zipPlaceholder: '1000', stateLabel: 'Province', statePlaceholder: 'Metro Manila', cityLabel: 'City', cityPlaceholder: 'Makati', addressLabel: 'Street Address', addressPlaceholder: '123 Ayala Ave', address2Label: 'Unit / Floor', address2Placeholder: 'Unit 5A (optional)', phoneLocalPlaceholder: '2 1234 5678' },
+  { code: 'IN', dialCode: '+91', name: 'India (भारत)', zipLabel: 'PIN Code', zipPlaceholder: '110001', stateLabel: 'State', statePlaceholder: 'Delhi', cityLabel: 'City', cityPlaceholder: 'New Delhi', addressLabel: 'Street Address', addressPlaceholder: '123 MG Road', address2Label: 'Flat / Floor', address2Placeholder: 'Flat 301 (optional)', phoneLocalPlaceholder: '98765 43210' },
+  { code: 'BR', dialCode: '+55', name: 'Brazil (Brasil)', zipLabel: 'CEP', zipPlaceholder: '01001-000', stateLabel: 'Estado (State)', statePlaceholder: 'SP', cityLabel: 'Cidade (City)', cityPlaceholder: 'São Paulo', addressLabel: 'Endereço (Address)', addressPlaceholder: 'Rua Augusta, 123', address2Label: 'Complemento', address2Placeholder: 'Apto 45 (optional)', phoneLocalPlaceholder: '11 91234 5678' },
+  { code: 'MX', dialCode: '+52', name: 'Mexico (México)', zipLabel: 'Código Postal', zipPlaceholder: '06000', stateLabel: 'Estado (State)', statePlaceholder: 'CDMX', cityLabel: 'Ciudad (City)', cityPlaceholder: 'Ciudad de México', addressLabel: 'Dirección (Address)', addressPlaceholder: 'Av. Reforma 123', address2Label: 'Depto / Int.', address2Placeholder: 'Int. 4 (optional)', phoneLocalPlaceholder: '55 1234 5678' },
+  { code: 'ES', dialCode: '+34', name: 'Spain (España)', zipLabel: 'Código Postal', zipPlaceholder: '28001', stateLabel: 'Provincia', statePlaceholder: 'Madrid', cityLabel: 'Ciudad (City)', cityPlaceholder: 'Madrid', addressLabel: 'Dirección (Address)', addressPlaceholder: 'Calle Mayor 1', address2Label: 'Piso / Puerta', address2Placeholder: '2ºA (optional)', phoneLocalPlaceholder: '612 345 678' },
+  { code: 'IT', dialCode: '+39', name: 'Italy (Italia)', zipLabel: 'CAP', zipPlaceholder: '00100', stateLabel: 'Provincia', statePlaceholder: 'Roma', cityLabel: 'Città (City)', cityPlaceholder: 'Roma', addressLabel: 'Indirizzo (Address)', addressPlaceholder: 'Via Roma 1', address2Label: 'Interno (Unit)', address2Placeholder: 'Int. 3 (optional)', phoneLocalPlaceholder: '06 1234 5678' },
+  { code: 'NL', dialCode: '+31', name: 'Netherlands', zipLabel: 'Postcode', zipPlaceholder: '1012 AB', stateLabel: 'Province', statePlaceholder: 'NH', cityLabel: 'City', cityPlaceholder: 'Amsterdam', addressLabel: 'Street Address', addressPlaceholder: 'Herengracht 123', address2Label: 'Unit', address2Placeholder: '2e verdieping (optional)', phoneLocalPlaceholder: '20 123 4567' },
+  { code: 'SE', dialCode: '+46', name: 'Sweden (Sverige)', zipLabel: 'Postnummer', zipPlaceholder: '111 21', stateLabel: 'Län', statePlaceholder: 'Stockholm', cityLabel: 'Stad (City)', cityPlaceholder: 'Stockholm', addressLabel: 'Gatuadress (Address)', addressPlaceholder: 'Drottninggatan 1', address2Label: 'Lägenhet (Apt)', address2Placeholder: 'Lgh 1201 (optional)', phoneLocalPlaceholder: '8 123 456' },
 ];
 
 function getCountryInfo(code: string) {
-  const fallback = { code, name: code, zipLabel: 'Postal Code', zipPlaceholder: '00000', stateLabel: 'State / Province', statePlaceholder: '', cityLabel: 'City', cityPlaceholder: 'City', addressLabel: 'Street Address', addressPlaceholder: 'Street address', address2Label: 'Apt / Suite', address2Placeholder: 'Apt (optional)', phonePlaceholder: '+1 000 000 0000' };
+  const fallback = { code, dialCode: '+1', name: code, zipLabel: 'Postal Code', zipPlaceholder: '00000', stateLabel: 'State / Province', statePlaceholder: '', cityLabel: 'City', cityPlaceholder: 'City', addressLabel: 'Street Address', addressPlaceholder: 'Street address', address2Label: 'Apt / Suite', address2Placeholder: 'Apt (optional)', phoneLocalPlaceholder: '000 000 0000' };
   return COUNTRIES.find(c => c.code === code) || fallback;
 }
 
@@ -49,7 +49,7 @@ export function GoodsShop() {
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [shippingForm, setShippingForm] = useState({
-    name: '', email: '', address1: '', address2: '', city: '', state: '', country: 'US', zip: '', phone: ''
+    name: '', email: '', address1: '', address2: '', city: '', state: '', country: 'KR', zip: '', phone: '', phoneDialCode: '+82'
   });
   const [shippingEstimate, setShippingEstimate] = useState<any>(null);
   const [showOrders, setShowOrders] = useState(false);
@@ -162,7 +162,7 @@ export function GoodsShop() {
         shippingState: shippingForm.state,
         shippingCountry: shippingForm.country,
         shippingZip: shippingForm.zip,
-        shippingPhone: shippingForm.phone,
+        shippingPhone: `${shippingForm.phoneDialCode} ${shippingForm.phone}`.trim(),
       });
       return res.json();
     },
@@ -181,7 +181,7 @@ export function GoodsShop() {
     setOrderStep('browse');
     setSelectedSize('');
     setSelectedColor('');
-    setShippingForm({ name: '', email: '', address1: '', address2: '', city: '', state: '', country: 'US', zip: '', phone: '' });
+    setShippingForm({ name: '', email: '', address1: '', address2: '', city: '', state: '', country: 'KR', zip: '', phone: '', phoneDialCode: '+82' });
     setShippingEstimate(null);
     setPaymentInfo(null);
     setTxSignature('');
@@ -443,7 +443,10 @@ export function GoodsShop() {
                       <label className="text-xs text-muted-foreground">Country / Region *</label>
                       <Select
                         value={shippingForm.country}
-                        onValueChange={(val) => setShippingForm(f => ({ ...f, country: val, state: '', zip: '' }))}
+                        onValueChange={(val) => {
+                          const countryInfo = getCountryInfo(val);
+                          setShippingForm(f => ({ ...f, country: val, state: '', zip: '', phoneDialCode: countryInfo.dialCode }));
+                        }}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select country" />
@@ -518,11 +521,42 @@ export function GoodsShop() {
                     </div>
                     <div>
                       <label className="text-xs text-muted-foreground">Phone</label>
-                      <Input
-                        value={shippingForm.phone}
-                        onChange={(e) => setShippingForm(f => ({ ...f, phone: e.target.value }))}
-                        placeholder={getCountryInfo(shippingForm.country).phonePlaceholder}
-                      />
+                      <div className="flex gap-1.5">
+                        <Select
+                          value={shippingForm.phoneDialCode}
+                          onValueChange={(v) => setShippingForm(f => ({ ...f, phoneDialCode: v }))}
+                        >
+                          <SelectTrigger className="w-[90px] flex-shrink-0">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.from(new Set(COUNTRIES.map(c => c.dialCode))).sort().map(dc => (
+                              <SelectItem key={dc} value={dc}>
+                                {dc}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Input
+                          className="flex-1"
+                          value={shippingForm.phone}
+                          onChange={(e) => {
+                            let raw = e.target.value.replace(/[^\d]/g, '');
+                            if (shippingForm.country === 'KR' && raw.startsWith('010')) {
+                              if (raw.length > 11) raw = raw.slice(0, 11);
+                              if (raw.length > 7) raw = `${raw.slice(0, 3)}-${raw.slice(3, 7)}-${raw.slice(7)}`;
+                              else if (raw.length > 3) raw = `${raw.slice(0, 3)}-${raw.slice(3)}`;
+                            } else if (shippingForm.country === 'JP' && raw.startsWith('0')) {
+                              if (raw.length > 11) raw = raw.slice(0, 11);
+                              if (raw.length > 5) raw = `${raw.slice(0, 3)}-${raw.slice(3, raw.length - 4)}-${raw.slice(-4)}`;
+                              else if (raw.length > 3) raw = `${raw.slice(0, 3)}-${raw.slice(3)}`;
+                            }
+                            setShippingForm(f => ({ ...f, phone: raw }));
+                          }}
+                          placeholder={getCountryInfo(shippingForm.country).phoneLocalPlaceholder}
+                          type="tel"
+                        />
+                      </div>
                     </div>
                   </div>
                   <Button

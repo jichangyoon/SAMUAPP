@@ -6,6 +6,29 @@ import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } f
 
 const router = Router();
 
+const TRUNK_PREFIX_COUNTRIES = new Set([
+  'KR', 'JP', 'CN', 'TW', 'HK', 'TH', 'VN', 'PH', 'IN', 'ID', 'MY', 'SG',
+  'GB', 'DE', 'FR', 'AU', 'IT', 'ES', 'NL', 'SE', 'BR', 'MX', 'RU', 'TR',
+  'ZA', 'NZ', 'IE', 'PT', 'AT', 'CH', 'BE', 'DK', 'NO', 'FI', 'PL', 'CZ',
+]);
+
+function normalizePhoneForPrintful(rawPhone: string, countryCode: string): string {
+  if (!rawPhone) return '';
+  const parts = rawPhone.trim().split(/\s+/);
+  if (parts.length < 2) return rawPhone.trim();
+
+  const dialCode = parts[0];
+  let localPart = parts.slice(1).join(' ');
+
+  localPart = localPart.replace(/[-().]/g, ' ').replace(/\s+/g, ' ').trim();
+
+  if (TRUNK_PREFIX_COUNTRIES.has(countryCode) && localPart.startsWith('0')) {
+    localPart = localPart.substring(1).trim();
+  }
+
+  return `${dialCode} ${localPart}`;
+}
+
 function requireAdmin(req: any, res: any, next: any) {
   const email = req.headers["x-admin-email"] || req.body?.adminEmail;
   if (!email || !config.ADMIN_EMAILS.includes(String(email).toLowerCase())) {
@@ -551,6 +574,8 @@ router.post("/:id/order", async (req, res) => {
       try {
         const syncVariantId = item.printfulVariantId;
 
+        const normalizedPhone = shippingPhone ? normalizePhoneForPrintful(shippingPhone, shippingCountry) : undefined;
+
         const orderPayload = {
           recipient: {
             name: shippingName,
@@ -560,7 +585,7 @@ router.post("/:id/order", async (req, res) => {
             state_code: shippingState || undefined,
             country_code: shippingCountry,
             zip: shippingZip,
-            phone: shippingPhone || undefined,
+            phone: normalizedPhone,
             email: buyerEmail,
           },
           items: [{
