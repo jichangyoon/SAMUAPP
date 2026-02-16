@@ -79,7 +79,7 @@ export function Partners() {
             </h2>
             
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">
-              Vote, mint, sell — turn any Solana meme into real-world IP.
+              Vote, Build, Earn — Turn Any Solana Meme into Real-World IP.
             </p>
             
             <div className="flex items-center justify-center gap-4 pt-2 text-xs text-muted-foreground">
