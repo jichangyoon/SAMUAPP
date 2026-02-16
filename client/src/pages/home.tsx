@@ -565,7 +565,7 @@ export default function Home() {
                       >
                         <div className="flex items-center gap-2">
                           <DollarSign className="h-4 w-4 text-primary" />
-                          <span className="text-sm font-medium text-primary">Revenue Share Info</span>
+                          <span className="text-sm font-medium text-primary">Ecosystem Rewards Info</span>
                         </div>
                         {showRevenueInfo ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                       </button>
@@ -593,7 +593,7 @@ export default function Home() {
                             <div className="mt-3 bg-primary/10 rounded px-3 py-2 flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <TrendingUp className="h-3.5 w-3.5 text-primary" />
-                                <span className="text-sm text-muted-foreground">Your revenue share</span>
+                                <span className="text-sm text-muted-foreground">Your reward share</span>
                               </div>
                               <span className="text-sm text-primary font-semibold">{((myRevenueShare?.voting?.votePercent || 0) * 0.3).toFixed(1)}%</span>
                             </div>
@@ -955,7 +955,7 @@ export default function Home() {
                               <div className="text-green-400 font-bold text-sm">
                                 {archiveMyVotes.myRevenueSharePercent || 0}%
                               </div>
-                              <div className="text-muted-foreground text-xs">Revenue Share</div>
+                              <div className="text-muted-foreground text-xs">Reward Share</div>
                             </div>
                           </div>
                           {archiveMyVotes.votes?.length > 0 && (
@@ -1027,7 +1027,7 @@ export default function Home() {
                       <div className="space-y-3">
                         <h3 className="font-semibold text-foreground flex items-center gap-2">
                           <PieChart className="h-4 w-4 text-primary" />
-                          Revenue Distribution
+                          Ecosystem Rewards
                         </h3>
                         {archiveRevenueData.revenues.map((rev: any) => {
                           const revShares = archiveRevenueData.shares?.filter((s: any) => s.revenueId === rev.id) || [];
@@ -1041,24 +1041,24 @@ export default function Home() {
                             <CardContent className="p-4 space-y-3">
                               <div className="flex items-center justify-between">
                                 <span className="text-sm text-muted-foreground">{rev.source} — {rev.description || 'N/A'}</span>
-                                <span className="text-primary font-semibold">{rev.totalAmountSol} SOL</span>
+                                <span className="text-primary font-semibold">{rev.totalAmountSol} SAMU</span>
                               </div>
                               <div className="grid grid-cols-2 gap-2 text-xs">
                                 <div className="flex justify-between bg-accent/30 rounded px-2 py-1.5">
                                   <span className="text-muted-foreground">Creator</span>
-                                  <span className="text-primary">{getShareAmount('creator')} SOL</span>
+                                  <span className="text-primary">{getShareAmount('creator')} SAMU</span>
                                 </div>
                                 <div className="flex justify-between bg-accent/30 rounded px-2 py-1.5">
                                   <span className="text-muted-foreground">Voters</span>
-                                  <span className="text-primary">{revShares.length > 0 ? voterTotal.toFixed(4) : getShareAmount('voter')} SOL</span>
+                                  <span className="text-primary">{revShares.length > 0 ? voterTotal.toFixed(4) : getShareAmount('voter')} SAMU</span>
                                 </div>
                                 <div className="flex justify-between bg-accent/30 rounded px-2 py-1.5">
                                   <span className="text-muted-foreground">NFT Holder</span>
-                                  <span className="text-primary">{getShareAmount('nft_holder')} SOL</span>
+                                  <span className="text-primary">{getShareAmount('nft_holder')} SAMU</span>
                                 </div>
                                 <div className="flex justify-between bg-accent/30 rounded px-2 py-1.5">
                                   <span className="text-muted-foreground">Platform</span>
-                                  <span className="text-primary">{getShareAmount('platform')} SOL</span>
+                                  <span className="text-primary">{getShareAmount('platform')} SAMU</span>
                                 </div>
                               </div>
                               <Badge className={rev.status === 'distributed' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}>

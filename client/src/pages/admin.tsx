@@ -484,7 +484,7 @@ export function Admin() {
                           className="flex items-center gap-1 mb-3"
                         >
                           <DollarSign className="h-3.5 w-3.5" />
-                          Revenue Management
+                          Rewards Management
                         </Button>
 
                         {expandedRevenueContest === contest.originalContestId && (
@@ -494,7 +494,7 @@ export function Admin() {
                                 {contestRevenueData.revenues.map((rev: any) => (
                                   <div key={rev.id} className="bg-accent/30 rounded p-3 text-sm">
                                     <div className="flex items-center justify-between mb-1">
-                                      <span className="text-foreground font-medium">{rev.source} — {rev.totalAmountSol} SOL</span>
+                                      <span className="text-foreground font-medium">{rev.source} — {rev.totalAmountSol} SAMU</span>
                                       <Badge className={rev.status === 'distributed' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}>
                                         {rev.status}
                                       </Badge>
@@ -509,7 +509,7 @@ export function Admin() {
                                           setDistributingId(rev.id);
                                           try {
                                             await apiRequest("POST", `/api/revenue/${rev.id}/distribute`, { adminEmail });
-                                            toast({ title: "Revenue distributed successfully" });
+                                            toast({ title: "Rewards distributed successfully" });
                                             queryClient.invalidateQueries({ queryKey: ['admin-revenue', contest.originalContestId] });
                                           } catch (e: any) {
                                             toast({ title: "Distribution failed", description: e.message, variant: "destructive" });
@@ -527,7 +527,7 @@ export function Admin() {
                             )}
 
                             <div className="bg-accent/20 rounded p-3 space-y-2">
-                              <p className="text-sm font-medium text-foreground">Add Revenue</p>
+                              <p className="text-sm font-medium text-foreground">Add Reward Entry</p>
                               <Select
                                 value={revenueForm.contestId === contest.originalContestId ? revenueForm.source : 'goods'}
                                 onValueChange={(v) => setRevenueForm({ ...revenueForm, contestId: contest.originalContestId, source: v })}
@@ -542,7 +542,7 @@ export function Admin() {
                                 </SelectContent>
                               </Select>
                               <Input
-                                placeholder="Amount (SOL)"
+                                placeholder="Amount (SAMU)"
                                 type="number"
                                 step="0.0001"
                                 className="h-8 text-sm"
@@ -567,15 +567,15 @@ export function Admin() {
                                       totalAmountSol: parseFloat(revenueForm.amount),
                                       adminEmail,
                                     });
-                                    toast({ title: "Revenue entry created" });
+                                    toast({ title: "Reward entry created" });
                                     setRevenueForm({ contestId: null, source: 'goods', amount: '', description: '' });
                                     queryClient.invalidateQueries({ queryKey: ['admin-revenue', contest.originalContestId] });
                                   } catch (e: any) {
-                                    toast({ title: "Failed to create revenue", description: e.message, variant: "destructive" });
+                                    toast({ title: "Failed to create reward entry", description: e.message, variant: "destructive" });
                                   }
                                 }}
                               >
-                                Create Revenue Entry
+                                Create Reward Entry
                               </Button>
                             </div>
                           </div>

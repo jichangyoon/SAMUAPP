@@ -892,7 +892,7 @@ const Profile = memo(() => {
                           </div>
                           <div className="text-right">
                             <div className="font-bold text-primary text-sm">{(contest.myTotalSamu || 0).toLocaleString()} SAMU</div>
-                            <div className="text-xs text-green-400">Revenue: {contest.myRevenueSharePercent}%</div>
+                            <div className="text-xs text-green-400">Reward: {contest.myRevenueSharePercent}%</div>
                           </div>
                         </div>
                         <div className="p-2 space-y-1">
@@ -945,18 +945,18 @@ const Profile = memo(() => {
 
                 <div className="text-xs text-muted-foreground bg-accent/50 p-3 rounded-lg space-y-1">
                   <p>• Vote by spending SAMU tokens directly</p>
-                  <p>• Your SAMU spent determines your revenue share</p>
+                  <p>• Your SAMU spent determines your reward share</p>
                 </div>
 
                 {walletRevenue && (
                   <div className="mt-4 space-y-3">
                     <h3 className="text-sm font-semibold text-[hsl(50,85%,75%)] flex items-center gap-2">
                       <Trophy className="h-4 w-4" />
-                      Revenue Earnings
+                      Ecosystem Rewards
                     </h3>
                     <div className="text-center bg-accent/30 rounded-lg p-4">
                       <div className="text-2xl font-bold text-[hsl(50,85%,75%)]">
-                        {walletRevenue.totalEarnedSol?.toFixed(4) || '0.0000'} SOL
+                        {walletRevenue.totalEarnedSol?.toFixed(4) || '0.0000'} SAMU
                       </div>
                       <div className="text-xs text-muted-foreground">Total Earned</div>
                     </div>
@@ -970,13 +970,13 @@ const Profile = memo(() => {
                                 {share.role === 'voter' ? 'Voter' : share.role === 'creator' ? 'Creator' : share.role}
                               </Badge>
                             </div>
-                            <span className="font-semibold text-[hsl(50,85%,75%)]">{share.amountSol.toFixed(4)} SOL</span>
+                            <span className="font-semibold text-[hsl(50,85%,75%)]">{share.amountSol.toFixed(4)} SAMU</span>
                           </div>
                         ))}
                       </div>
                     )}
                     {(!walletRevenue.shares || walletRevenue.shares.length === 0) && (
-                      <p className="text-xs text-muted-foreground text-center">No revenue distributions yet</p>
+                      <p className="text-xs text-muted-foreground text-center">No rewards distributed yet</p>
                     )}
                   </div>
                 )}

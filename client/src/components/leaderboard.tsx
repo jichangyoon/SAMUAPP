@@ -458,7 +458,7 @@ export function Leaderboard() {
                               <div className="text-right">
                                 <span className="text-sm font-bold text-primary">{(myContestVotes.myTotalSamu || 0).toLocaleString()} SAMU</span>
                                 <span className="text-xs text-muted-foreground ml-2">
-                                  Revenue Share: {myContestVotes.myRevenueSharePercent || 0}%
+                                  Reward Share: {myContestVotes.myRevenueSharePercent || 0}%
                                 </span>
                               </div>
                             </div>

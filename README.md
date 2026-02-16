@@ -1,8 +1,8 @@
 # SAMU - Meme Incubator on Solana
 
-> Evolving memes into IP. Community-curated meme pipeline: **Contest → NFT → Merchandise → Revenue Share**
+> Evolving memes into IP. Community-curated meme pipeline: **Contest → NFT → Merchandise → Ecosystem Rewards**
 
-SAMU is a web-based meme incubator platform on Solana where community-voted memes evolve into intellectual property (IP). Holders vote with SAMU tokens, winning memes become NFTs, NFT designs become merchandise, and revenue flows back to creators, voters, and NFT holders.
+SAMU is a web-based meme incubator platform on Solana where community-voted memes evolve into intellectual property (IP). Holders vote with SAMU tokens, winning memes become NFTs, NFT designs become merchandise, and SAMU token rewards flow back to creators, voters, and NFT holders as ecosystem contributions.
 
 ## Live App
 
@@ -14,30 +14,32 @@ SAMU is a web-based meme incubator platform on Solana where community-voted meme
 1. Meme Contest    →  Community submits & votes on memes using SAMU tokens
 2. NFT Minting     →  Top 3 winning memes minted as NFTs (tradeable)
 3. Merchandise     →  Winning designs turned into goods via Printful
-4. Revenue Share   →  Sales revenue distributed in SOL to all participants
+4. Ecosystem Rewards → SAMU token rewards distributed to all participants
 ```
 
 ## Dual Token Model
 
 | Token | Role | Usage |
 |-------|------|-------|
-| **SAMU** | Governance & Voting | Vote on memes by transferring SAMU to treasury (on-chain) |
-| **SOL** | Revenue & Settlement | Pay for merchandise, receive revenue share |
+| **SAMU** | Governance, Voting & Rewards | Vote on memes by transferring SAMU to treasury (on-chain), receive ecosystem rewards |
+| **SOL** | Merchandise Payment | Pay for goods in the shop |
 
-## Revenue Distribution
+## Ecosystem Rewards Distribution
 
 | Recipient | Share | Description |
 |-----------|-------|-------------|
 | Meme Creator | 30% | Permanent reward for creating the IP |
 | All Voters | 30% | Proportional to voting amount per contest round |
-| NFT Holder | 25% | Tradeable — buy the NFT, earn the revenue |
+| NFT Holder | 25% | Tradeable — buy the NFT, earn the rewards |
 | Platform | 15% | Operational costs |
+
+Rewards are distributed in SAMU tokens as ecosystem contributions, not as investment returns.
 
 ## Key Features
 
 ### On-Chain Voting
 - Real SAMU SPL token transfers to treasury wallet
-- Voting amount determines your revenue share proportion
+- Voting amount determines your reward share proportion
 - Anti-abuse: on-chain gas fees naturally prevent multi-account manipulation
 - Transaction verified on-chain (preTokenBalances/postTokenBalances)
 
@@ -63,7 +65,7 @@ SAMU is a web-based meme incubator platform on Solana where community-voted meme
 
 ### Contest Archive & Hall of Fame
 - Complete history of past contests with winners and statistics
-- Revenue distribution details per contest
+- Reward distribution details per contest
 
 ## Tech Stack
 
@@ -89,7 +91,7 @@ SAMU is a web-based meme incubator platform on Solana where community-voted meme
                    │
 ┌──────────────────▼──────────────────────────┐
 │              Express.js API                  │
-│   Contests · Votes · Goods · Revenue · NFT  │
+│  Contests · Votes · Goods · Rewards · NFT   │
 │   Blinks (Solana Actions) · Admin Panel     │
 └──────┬───────────┬──────────────┬───────────┘
        │           │              │
@@ -108,7 +110,7 @@ SAMU is a web-based meme incubator platform on Solana where community-voted meme
 ## Inspiration
 
 - **Pudgy Penguins** — NFT IP → Physical goods pipeline
-- **Steemit** — Voter revenue sharing model
+- **Steemit** — Voter ecosystem rewards model
 - **Threadless** — Community voting → Merchandise creation
 
 ## License

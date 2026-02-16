@@ -14,18 +14,18 @@ This is a web app — not a mobile app. No mobile app packaging or mobile-first 
 
 **Core Concept: Meme Incubator**
 - The app's mission is to help memecoins evolve into IP (Intellectual Property) on Solana.
-- Pipeline: Meme Contest → NFT → Goods (via Printful) → Revenue Sharing
+- Pipeline: Meme Contest → NFT → Goods (via Printful) → Ecosystem Rewards (SAMU)
 
 **Dual Token Model:**
-- **SAMU Token** = Governance/Voting (community votes on memes using SAMU tokens)
-- **SOL** = Revenue/Settlement (goods revenue distributed in SOL)
-- SAMU provides community membership + voting rights, SOL is the money layer.
+- **SAMU Token** = Governance/Voting/Rewards (community votes on memes using SAMU tokens, ecosystem rewards distributed in SAMU)
+- **SOL** = Merchandise Payment (goods shop payment only)
+- SAMU provides community membership + voting rights + ecosystem rewards, SOL is for goods purchases.
 
 **Voting System (Implemented - Phase 2: On-chain):**
 - SAMU token direct voting (users spend SAMU to vote, not just hold)
 - Minimum vote: 1 SAMU
 - No upper limit on voting amount (capped by user's SAMU balance)
-- Voting amount determines revenue share proportion for that contest round
+- Voting amount determines reward share proportion for that contest round
 - Real on-chain SAMU transfers to treasury wallet via SPL token transfer (both in-app and Blinks)
 - Backend `/api/memes/prepare-transaction` builds serialized SPL transfer tx, frontend signs via Privy `useSignTransaction`
 - Treasury wallet: 4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk
@@ -35,28 +35,28 @@ This is a web app — not a mobile app. No mobile app packaging or mobile-first 
 - DB schema: votes table uses `samuAmount` + `txSignature` (replaced old votingPower/powerUsed columns)
 - Duplicate vote prevention via `getVoteByTxSignature` check
 
-**Revenue Sharing Model (Implemented - Tracking/Calculation):**
+**Ecosystem Rewards Model (Implemented - Tracking/Calculation):**
 - Meme Creator: 30% (permanent reward for creating the IP)
 - Voters: 30% (proportional to voting amount in that contest round - all voters, not just winners)
 - NFT Holder: 25% (whoever holds the winning meme's NFT, tradeable)
 - Platform: 15% (operational costs)
 - Revenue sources: Goods sales (Printful), NFT sales
-- Settlement currency: SOL
+- Reward currency: SAMU tokens (ecosystem contribution rewards, not investment returns)
 - DB tables: `revenues` (contest revenue records), `revenue_shares` (individual distribution records)
 - API: `/api/revenue/` - create revenue, distribute, query by contest/wallet
 - Admin can create revenue entries and trigger distribution calculation
 - Users see real-time vote share % during active contests
-- Archive shows revenue distribution details after contest ends
+- Archive shows reward distribution details after contest ends
 - Profile stats tab shows total earnings and per-contest breakdown
-- Actual SOL transfer not yet automated (manual for now)
+- Actual SAMU transfer not yet automated (manual for now)
 
 **IP Pipeline (To Be Implemented):**
 1. Meme contest with SAMU voting
 2. Contest ends → Top 3 memes selected
 3. Winning memes minted as NFTs (1st, 2nd, 3rd place)
-4. NFT holders can trade NFTs (trading = transferring revenue share rights)
+4. NFT holders can trade NFTs (trading = transferring reward rights)
 5. Winning meme designs turned into goods via Printful
-6. Goods revenue distributed per revenue sharing model above
+6. SAMU token rewards distributed per ecosystem rewards model above
 
 **Authentication (To Be Updated):**
 - Current: Privy (email login + embedded Solana wallet)
@@ -64,8 +64,8 @@ This is a web app — not a mobile app. No mobile app packaging or mobile-first 
 - Goal: Existing Solana users can connect Phantom directly, new users use email
 
 **Technical Approach:**
-- Phase 1: Server-based (TypeScript) - all voting, revenue tracking, distribution via app server + DB
-- Phase 2: Smart contract (Rust/Anchor on Solana) - automate revenue distribution on-chain
+- Phase 1: Server-based (TypeScript) - all voting, reward tracking, distribution via app server + DB
+- Phase 2: Smart contract (Rust/Anchor on Solana) - automate reward distribution on-chain
 - Server-first approach allows easy iteration on revenue ratios and logic before locking into contracts
 
 **Hackathon Goals:**
