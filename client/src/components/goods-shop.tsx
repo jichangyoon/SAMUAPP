@@ -109,8 +109,8 @@ export function GoodsShop() {
 
     setIsPaying(true);
     try {
-      const shippingCost = shippingEstimate?.shipping_rates?.[0]?.rate ||
-        (Array.isArray(shippingEstimate) ? shippingEstimate[0]?.rate : null) || 0;
+      const rates = shippingEstimate?.shipping_rates || [];
+      const shippingCost = rates[0]?.rate || 0;
 
       toast({ title: "Preparing SOL payment...", duration: 3000 });
 
@@ -575,13 +575,15 @@ export function GoodsShop() {
                     <Card className="border-green-500/30 bg-green-500/5">
                       <CardContent className="p-3">
                         <div className="text-sm font-semibold text-green-400 mb-1">Shipping Options:</div>
-                        {Array.isArray(shippingEstimate) ? shippingEstimate.map((opt: any, i: number) => (
-                          <div key={i} className="flex justify-between text-xs text-foreground py-1">
-                            <span>{opt.name}</span>
-                            <span className="font-semibold">${opt.rate} ({opt.minDeliveryDays}-{opt.maxDeliveryDays} days)</span>
-                          </div>
-                        )) : (
-                          <div className="text-xs text-foreground">${shippingEstimate.rate || 'See confirmation'}</div>
+                        {(shippingEstimate.shipping_rates || []).length > 0 ? (
+                          (shippingEstimate.shipping_rates as any[]).map((opt: any, i: number) => (
+                            <div key={i} className="flex justify-between text-xs text-foreground py-1">
+                              <span>{opt.name}</span>
+                              <span className="font-semibold">${opt.rate} ({opt.minDeliveryDays}-{opt.maxDeliveryDays} days)</span>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-xs text-foreground">No shipping options available</div>
                         )}
                       </CardContent>
                     </Card>
@@ -591,8 +593,8 @@ export function GoodsShop() {
                     onClick={async () => {
                       setOrderStep('payment');
                       try {
-                        const shippingCost = shippingEstimate?.shipping_rates?.[0]?.rate ||
-                          (Array.isArray(shippingEstimate) ? shippingEstimate[0]?.rate : null) || 0;
+                        const rates = shippingEstimate?.shipping_rates || [];
+                        const shippingCost = rates[0]?.rate || 0;
                         const prepareRes = await fetch(`/api/goods/${selectedItem.id}/prepare-payment`, {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
