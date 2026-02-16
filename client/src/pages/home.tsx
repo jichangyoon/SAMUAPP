@@ -25,7 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Image, Users, Plus, Lock, RefreshCw, DollarSign, TrendingUp, PieChart, ChevronDown, ChevronUp, Coins } from "lucide-react";
+import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Image, Users, Plus, Lock, RefreshCw, DollarSign, TrendingUp, ChevronDown, ChevronUp, Coins } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -231,15 +231,6 @@ export default function Home() {
     enabled: isConnected && !!walletAddress && !!currentContest?.id,
   });
 
-  const { data: archiveRevenueData } = useQuery({
-    queryKey: ['revenue-contest', selectedArchiveContest?.id],
-    queryFn: async () => {
-      const res = await fetch(`/api/revenue/contest/${selectedArchiveContest.id}`);
-      if (!res.ok) return null;
-      return res.json();
-    },
-    enabled: archiveView === 'contest' && !!selectedArchiveContest?.id,
-  });
 
   const { data: archiveMyVotes } = useQuery({
     queryKey: ['archive-my-votes', selectedArchiveContest?.id, walletAddress],
@@ -1024,74 +1015,6 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {archiveRevenueData && archiveRevenueData.revenues?.length > 0 && (
-                      <div className="space-y-3">
-                        <h3 className="font-semibold text-foreground flex items-center gap-2">
-                          <PieChart className="h-4 w-4 text-primary" />
-                          Ecosystem Rewards
-                        </h3>
-                        {archiveRevenueData.revenues.map((rev: any) => {
-                          const revShares = archiveRevenueData.shares?.filter((s: any) => s.revenueId === rev.id) || [];
-                          const getShareAmount = (role: string) => {
-                            const share = revShares.find((s: any) => s.role === role);
-                            return share ? share.amountSol.toFixed(4) : (rev.totalAmountSol * (role === 'creator' ? 0.3 : role === 'voter' ? 0.3 : role === 'nft_holder' ? 0.25 : 0.15)).toFixed(4);
-                          };
-                          const voterTotal = revShares.filter((s: any) => s.role === 'voter').reduce((sum: number, s: any) => sum + s.amountSol, 0);
-                          return (
-                          <Card key={rev.id} className="bg-black border-0">
-                            <CardContent className="p-4 space-y-3">
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-muted-foreground">{rev.source} — {rev.description || 'N/A'}</span>
-                                <span className="text-primary font-semibold">{rev.totalAmountSol} SAMU</span>
-                              </div>
-                              <div className="grid grid-cols-2 gap-2 text-xs">
-                                <div className="flex justify-between bg-accent/30 rounded px-2 py-1.5">
-                                  <span className="text-muted-foreground">Creator</span>
-                                  <span className="text-primary">{getShareAmount('creator')} SAMU</span>
-                                </div>
-                                <div className="flex justify-between bg-accent/30 rounded px-2 py-1.5">
-                                  <span className="text-muted-foreground">Voters</span>
-                                  <span className="text-primary">{revShares.length > 0 ? voterTotal.toFixed(4) : getShareAmount('voter')} SAMU</span>
-                                </div>
-                                <div className="flex justify-between bg-accent/30 rounded px-2 py-1.5">
-                                  <span className="text-muted-foreground">NFT Holder</span>
-                                  <span className="text-primary">{getShareAmount('nft_holder')} SAMU</span>
-                                </div>
-                                <div className="flex justify-between bg-accent/30 rounded px-2 py-1.5">
-                                  <span className="text-muted-foreground">Platform</span>
-                                  <span className="text-primary">{getShareAmount('platform')} SAMU</span>
-                                </div>
-                              </div>
-                              <Badge className={rev.status === 'distributed' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}>
-                                {rev.status}
-                              </Badge>
-                            </CardContent>
-                          </Card>
-                          );
-                        })}
-                        {archiveRevenueData.voteSummary?.voterBreakdown?.length > 0 && (
-                          <Card className="bg-black border-0">
-                            <CardContent className="p-4">
-                              <div className="flex items-center gap-2 mb-3">
-                                <Users className="h-4 w-4 text-primary" />
-                                <span className="text-sm font-medium text-foreground">Top Voters</span>
-                              </div>
-                              <div className="space-y-2">
-                                {archiveRevenueData.voteSummary.voterBreakdown.slice(0, 10).map((voter: any, i: number) => (
-                                  <div key={i} className="flex items-center justify-between text-xs">
-                                    <span className="text-muted-foreground truncate max-w-[180px]">{voter.wallet.slice(0, 6)}...{voter.wallet.slice(-4)}</span>
-                                    <div className="flex items-center gap-3">
-                                      <span className="text-foreground">{voter.samuVoted} SAMU</span>
-                                      <span className="text-primary font-medium">{voter.votePercent.toFixed(1)}%</span>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </CardContent>
-                          </Card>
-                        )}
-                      </div>
-                    )}
                   </>
                 )}
               </div>

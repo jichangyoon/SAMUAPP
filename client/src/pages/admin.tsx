@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Play, Square, Archive, Plus, Clock, Trophy, ArrowLeft, Shield, Eye, Ban, DollarSign, Shirt, Package, Image, Loader2 } from "lucide-react";
+import { Play, Square, Archive, Plus, Clock, Trophy, ArrowLeft, Shield, Eye, Ban, Shirt, Package, Image, Loader2 } from "lucide-react";
 import type { Contest, ArchivedContest } from "@shared/schema";
 import { useLocation } from "wouter";
 import { IPTrackingPanel } from "@/components/ip-tracking-panel";
@@ -28,10 +28,6 @@ export function Admin() {
     prizePool: "",
     durationDays: 7
   });
-  const [revenueForm, setRevenueForm] = useState<{ contestId: number | null; source: string; amount: string; description: string }>({
-    contestId: null, source: 'goods', amount: '', description: ''
-  });
-  const [distributingId, setDistributingId] = useState<number | null>(null);
   const [showGoodsCreate, setShowGoodsCreate] = useState(false);
   const [goodsForm, setGoodsForm] = useState({
     title: '', description: '', imageUrl: '', contestId: 0, memeId: 0,
@@ -125,17 +121,6 @@ export function Admin() {
     refetchOnMount: true,
   });
 
-  const [expandedRevenueContest, setExpandedRevenueContest] = useState<number | null>(null);
-
-  const { data: contestRevenueData } = useQuery({
-    queryKey: ['admin-revenue', expandedRevenueContest],
-    queryFn: async () => {
-      const res = await fetch(`/api/revenue/contest/${expandedRevenueContest}`);
-      if (!res.ok) return null;
-      return res.json();
-    },
-    enabled: !!expandedRevenueContest,
-  });
 
   // Create contest mutation
   const createContestMutation = useMutation({
@@ -495,154 +480,6 @@ export function Admin() {
                         </div>
                       </div>
 
-                      <div className="border-t border-border/50 pt-3">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setExpandedRevenueContest(expandedRevenueContest === contest.originalContestId ? null : contest.originalContestId)}
-                          className="flex items-center gap-1 mb-3"
-                        >
-                          <DollarSign className="h-3.5 w-3.5" />
-                          Rewards Management
-                        </Button>
-
-                        {expandedRevenueContest === contest.originalContestId && (
-                          <div className="space-y-3">
-                            {contestRevenueData?.revenues?.length > 0 && (
-                              <div className="space-y-2">
-                                {contestRevenueData.revenues.map((rev: any) => (
-                                  <div key={rev.id} className="bg-accent/30 rounded p-3 text-sm">
-                                    <div className="flex items-center justify-between mb-1">
-                                      <span className="text-foreground font-medium">{rev.source} — {rev.totalAmountSol} SAMU</span>
-                                      <Badge className={rev.status === 'distributed' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}>
-                                        {rev.status}
-                                      </Badge>
-                                    </div>
-                                    {rev.description && <p className="text-xs text-muted-foreground mb-2">{rev.description}</p>}
-                                    {rev.status === 'distributed' && contestRevenueData?.shares?.filter((s: any) => s.revenueId === rev.id).length > 0 && (
-                                      <div className="mt-2 border border-border/30 rounded overflow-hidden">
-                                        <table className="w-full text-xs">
-                                          <thead>
-                                            <tr className="bg-accent/50 text-muted-foreground">
-                                              <th className="text-left px-2 py-1.5 font-medium">Role</th>
-                                              <th className="text-left px-2 py-1.5 font-medium">Wallet</th>
-                                              <th className="text-right px-2 py-1.5 font-medium">Share %</th>
-                                              <th className="text-right px-2 py-1.5 font-medium">SAMU</th>
-                                            </tr>
-                                          </thead>
-                                          <tbody>
-                                            {contestRevenueData.shares
-                                              .filter((s: any) => s.revenueId === rev.id)
-                                              .sort((a: any, b: any) => b.amountSol - a.amountSol)
-                                              .map((share: any) => (
-                                                <tr key={share.id} className="border-t border-border/20">
-                                                  <td className="px-2 py-1.5">
-                                                    <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                                                      share.role === 'creator' ? 'bg-purple-500/20 text-purple-400' :
-                                                      share.role === 'voter' ? 'bg-blue-500/20 text-blue-400' :
-                                                      share.role === 'nft_holder' ? 'bg-amber-500/20 text-amber-400' :
-                                                      'bg-gray-500/20 text-gray-400'
-                                                    }`}>
-                                                      {share.role === 'creator' ? 'Creator' :
-                                                       share.role === 'voter' ? 'Voter' :
-                                                       share.role === 'nft_holder' ? 'NFT Holder' :
-                                                       'Platform'}
-                                                    </span>
-                                                  </td>
-                                                  <td className="px-2 py-1.5 font-mono text-muted-foreground">
-                                                    {share.walletAddress === '4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk' ? 'Treasury' :
-                                                     share.walletAddress === 'unassigned_nft_holder' ? 'Unassigned' :
-                                                     `${share.walletAddress.slice(0, 4)}...${share.walletAddress.slice(-4)}`}
-                                                  </td>
-                                                  <td className="px-2 py-1.5 text-right text-muted-foreground">{share.sharePercent.toFixed(1)}%</td>
-                                                  <td className="px-2 py-1.5 text-right font-medium text-foreground">{Number(share.amountSol).toFixed(2)}</td>
-                                                </tr>
-                                              ))}
-                                          </tbody>
-                                        </table>
-                                      </div>
-                                    )}
-                                    {rev.status === 'pending' && (
-                                      <Button
-                                        size="sm"
-                                        variant="secondary"
-                                        disabled={distributingId === rev.id}
-                                        onClick={async () => {
-                                          setDistributingId(rev.id);
-                                          try {
-                                            await apiRequest("POST", `/api/revenue/${rev.id}/distribute`, { adminEmail });
-                                            toast({ title: "Rewards distributed successfully" });
-                                            queryClient.invalidateQueries({ queryKey: ['admin-revenue', contest.originalContestId] });
-                                          } catch (e: any) {
-                                            toast({ title: "Distribution failed", description: e.message, variant: "destructive" });
-                                          } finally {
-                                            setDistributingId(null);
-                                          }
-                                        }}
-                                      >
-                                        {distributingId === rev.id ? "Distributing..." : "Distribute"}
-                                      </Button>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-
-                            <div className="bg-accent/20 rounded p-3 space-y-2">
-                              <p className="text-sm font-medium text-foreground">Add Reward Entry</p>
-                              <Select
-                                value={revenueForm.contestId === contest.originalContestId ? revenueForm.source : 'goods'}
-                                onValueChange={(v) => setRevenueForm({ ...revenueForm, contestId: contest.originalContestId, source: v })}
-                              >
-                                <SelectTrigger className="h-8 text-sm">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="goods">Goods</SelectItem>
-                                  <SelectItem value="nft_sale">NFT Sale</SelectItem>
-                                  <SelectItem value="other">Other</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <Input
-                                placeholder="Amount (SAMU)"
-                                type="number"
-                                step="0.0001"
-                                className="h-8 text-sm"
-                                value={revenueForm.contestId === contest.originalContestId ? revenueForm.amount : ''}
-                                onChange={(e) => setRevenueForm({ ...revenueForm, contestId: contest.originalContestId, amount: e.target.value })}
-                              />
-                              <Input
-                                placeholder="Description (optional)"
-                                className="h-8 text-sm"
-                                value={revenueForm.contestId === contest.originalContestId ? revenueForm.description : ''}
-                                onChange={(e) => setRevenueForm({ ...revenueForm, contestId: contest.originalContestId, description: e.target.value })}
-                              />
-                              <Button
-                                size="sm"
-                                disabled={!revenueForm.amount || revenueForm.contestId !== contest.originalContestId}
-                                onClick={async () => {
-                                  try {
-                                    await apiRequest("POST", "/api/revenue/", {
-                                      contestId: contest.originalContestId,
-                                      source: revenueForm.source,
-                                      description: revenueForm.description,
-                                      totalAmountSol: parseFloat(revenueForm.amount),
-                                      adminEmail,
-                                    });
-                                    toast({ title: "Reward entry created" });
-                                    setRevenueForm({ contestId: null, source: 'goods', amount: '', description: '' });
-                                    queryClient.invalidateQueries({ queryKey: ['admin-revenue', contest.originalContestId] });
-                                  } catch (e: any) {
-                                    toast({ title: "Failed to create reward entry", description: e.message, variant: "destructive" });
-                                  }
-                                }}
-                              >
-                                Create Reward Entry
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
                     </CardContent>
                   </Card>
                 ))}
