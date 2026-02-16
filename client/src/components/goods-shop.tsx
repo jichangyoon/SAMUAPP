@@ -61,7 +61,7 @@ export function GoodsShop() {
   const { signTransaction } = useSignTransaction();
   const { wallets: solWallets } = useSolanaWallets();
 
-  const walletAddress = (user as any)?.wallet?.address || '';
+  const walletAddress = solWallets?.[0]?.address || '';
 
   const solConnection = new Connection(
     import.meta.env.VITE_HELIUS_API_KEY
