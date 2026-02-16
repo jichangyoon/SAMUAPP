@@ -64,9 +64,20 @@ This is a web app — not a mobile app. No mobile app packaging or mobile-first 
 - Goal: Existing Solana users can connect Phantom directly, new users use email
 
 **Technical Approach:**
-- Phase 1: Server-based (TypeScript) - all voting, reward tracking, distribution via app server + DB
-- Phase 2: Smart contract (Rust/Anchor on Solana) - automate reward distribution on-chain
+- Phase 1: Server-based (TypeScript) - all voting, reward tracking, distribution via app server + DB (CURRENT)
+- Phase 2: Smart contract (Rust/Anchor on Solana) - automate reward distribution on-chain (IN PROGRESS)
 - Server-first approach allows easy iteration on revenue ratios and logic before locking into contracts
+
+**Smart Contract (contracts/ folder):**
+- Location: `contracts/programs/samu-rewards/src/lib.rs`
+- Framework: Anchor 0.30.1 + anchor-spl for SPL token transfers
+- Build/Deploy: Use Solana Playground (beta.solpg.io) — not built within Replit
+- Guide: `contracts/DEPLOYMENT_GUIDE.md`
+- Features: initialize config, update share ratios, lock config, distribute rewards (batch up to 50), transfer admin
+- Share ratios in basis points (3000 = 30%), must total 10000
+- On-chain distribution records per contest (PDA: seeds = ["distribution", contest_id])
+- Config PDA (seeds = ["config"]) stores admin, treasury, mint, ratios, totals, lock status
+- Hybrid model: server calculates revenue/recipients, smart contract executes on-chain distribution
 
 **Hackathon Goals:**
 - Target: Solana hackathons (e.g. Colosseum)
