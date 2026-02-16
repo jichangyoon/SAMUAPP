@@ -10,6 +10,10 @@ const TRUNK_PREFIX_COUNTRIES = new Set([
   'KR', 'JP', 'CN', 'TW', 'HK', 'TH', 'VN', 'PH', 'IN', 'ID', 'MY', 'SG',
   'GB', 'DE', 'FR', 'AU', 'IT', 'ES', 'NL', 'SE', 'BR', 'MX', 'RU', 'TR',
   'ZA', 'NZ', 'IE', 'PT', 'AT', 'CH', 'BE', 'DK', 'NO', 'FI', 'PL', 'CZ',
+  'NG', 'EG', 'KE', 'GH', 'TZ', 'UG', 'ET', 'CM', 'CI', 'SN', 'MA', 'TN',
+  'SA', 'AE', 'IL', 'JO', 'LB', 'IQ', 'PK', 'BD', 'LK', 'NP', 'MM',
+  'AR', 'CL', 'CO', 'PE', 'VE', 'EC', 'BO', 'PY', 'UY',
+  'HU', 'RO', 'BG', 'HR', 'RS', 'SK', 'SI', 'LT', 'LV', 'EE', 'GR',
 ]);
 
 function normalizePhoneForPrintful(rawPhone: string, countryCode: string): string {
