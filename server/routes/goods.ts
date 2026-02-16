@@ -6,6 +6,55 @@ import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } f
 
 const router = Router();
 
+const SHARE_RATIOS = {
+  creator: 0.30,
+  voter: 0.30,
+  nftHolder: 0.25,
+  platform: 0.15,
+};
+
+const TREASURY_WALLET = process.env.TREASURY_WALLET_ADDRESS || "4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk";
+
+async function distributeGoodsRevenue(order: any, item: any) {
+  const totalSol = order.solAmount;
+  if (!totalSol || totalSol <= 0) return;
+
+  const contestId = item.contestId;
+  if (!contestId) return;
+
+  const contest = await storage.getContestById(contestId);
+  if (!contest) {
+    console.log("No contest found for distribution, contestId:", contestId);
+    return;
+  }
+
+  const meme = item.memeId ? await storage.getMeme(item.memeId) : null;
+  const creatorWallet = meme?.walletAddress || TREASURY_WALLET;
+  const nftHolderWallet = null;
+
+  const creatorAmount = totalSol * SHARE_RATIOS.creator;
+  const voterPoolAmount = totalSol * SHARE_RATIOS.voter;
+  const nftHolderAmount = totalSol * SHARE_RATIOS.nftHolder;
+  const platformAmount = totalSol * SHARE_RATIOS.platform;
+
+  await storage.createGoodsRevenueDistribution({
+    orderId: order.id,
+    contestId,
+    totalSolAmount: totalSol,
+    creatorAmount,
+    creatorWallet,
+    voterPoolAmount,
+    nftHolderAmount,
+    nftHolderWallet,
+    platformAmount,
+    platformWallet: TREASURY_WALLET,
+  });
+
+  await storage.updateVoterRewardPool(contestId, voterPoolAmount);
+
+  console.log(`Revenue distributed for order ${order.id}: Creator=${creatorAmount} SOL, Voters=${voterPoolAmount} SOL, NFT=${nftHolderAmount} SOL, Platform=${platformAmount} SOL`);
+}
+
 const TRUNK_PREFIX_COUNTRIES = new Set([
   'KR', 'JP', 'CN', 'TW', 'HK', 'TH', 'VN', 'PH', 'IN', 'ID', 'MY', 'SG',
   'GB', 'DE', 'FR', 'AU', 'IT', 'ES', 'NL', 'SE', 'BR', 'MX', 'RU', 'TR',
@@ -59,8 +108,6 @@ const STICKER_PRINTFILE_SIZE: Record<number, { width: number; height: number }> 
   10165: { width: 1650, height: 1650 },
   16362: { width: 4500, height: 1125 },
 };
-
-const TREASURY_WALLET = process.env.TREASURY_WALLET_ADDRESS || "4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk";
 
 function getSolConnection(): Connection {
   const HELIUS_API_KEY = process.env.VITE_HELIUS_API_KEY;
@@ -733,6 +780,15 @@ router.post("/:id/order", async (req, res) => {
     });
 
     const order = await storage.createOrder(orderData);
+
+    if (order.solAmount && order.solAmount > 0 && item.contestId) {
+      try {
+        await distributeGoodsRevenue(order, item);
+      } catch (distError: any) {
+        console.error("Revenue distribution failed (order still created):", distError.message);
+      }
+    }
+
     res.json({ order, printfulOrderId });
   } catch (error: any) {
     console.error("Error placing order:", error);

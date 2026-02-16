@@ -200,6 +200,41 @@ export const orders = pgTable("orders", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const goodsRevenueDistributions = pgTable("goods_revenue_distributions", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").notNull(),
+  contestId: integer("contest_id").notNull(),
+  totalSolAmount: doublePrecision("total_sol_amount").notNull(),
+  creatorWallet: text("creator_wallet").notNull(),
+  creatorAmount: doublePrecision("creator_amount").notNull(),
+  nftHolderWallet: text("nft_holder_wallet"),
+  nftHolderAmount: doublePrecision("nft_holder_amount").notNull(),
+  platformAmount: doublePrecision("platform_amount").notNull(),
+  voterPoolAmount: doublePrecision("voter_pool_amount").notNull(),
+  status: text("status").notNull().default("completed"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const voterRewardPool = pgTable("voter_reward_pool", {
+  id: serial("id").primaryKey(),
+  contestId: integer("contest_id").notNull(),
+  rewardPerShare: doublePrecision("reward_per_share").notNull().default(0),
+  totalDeposited: doublePrecision("total_deposited").notNull().default(0),
+  totalClaimed: doublePrecision("total_claimed").notNull().default(0),
+  totalShares: doublePrecision("total_shares").notNull().default(0),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const voterClaimRecords = pgTable("voter_claim_records", {
+  id: serial("id").primaryKey(),
+  contestId: integer("contest_id").notNull(),
+  voterWallet: text("voter_wallet").notNull(),
+  sharePercent: doublePrecision("share_percent").notNull(),
+  lastClaimedRewardPerShare: doublePrecision("last_claimed_reward_per_share").notNull().default(0),
+  totalClaimed: doublePrecision("total_claimed").notNull().default(0),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const insertRevenueSchema = createInsertSchema(revenues).omit({
   id: true,
   createdAt: true,
@@ -211,10 +246,31 @@ export const insertRevenueShareSchema = createInsertSchema(revenueShares).omit({
   createdAt: true,
 });
 
+export const insertGoodsRevenueDistributionSchema = createInsertSchema(goodsRevenueDistributions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertVoterRewardPoolSchema = createInsertSchema(voterRewardPool).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export const insertVoterClaimRecordSchema = createInsertSchema(voterClaimRecords).omit({
+  id: true,
+  updatedAt: true,
+});
+
 export type Revenue = typeof revenues.$inferSelect;
 export type InsertRevenue = z.infer<typeof insertRevenueSchema>;
 export type RevenueShare = typeof revenueShares.$inferSelect;
 export type InsertRevenueShare = z.infer<typeof insertRevenueShareSchema>;
+export type GoodsRevenueDistribution = typeof goodsRevenueDistributions.$inferSelect;
+export type InsertGoodsRevenueDistribution = z.infer<typeof insertGoodsRevenueDistributionSchema>;
+export type VoterRewardPool = typeof voterRewardPool.$inferSelect;
+export type InsertVoterRewardPool = z.infer<typeof insertVoterRewardPoolSchema>;
+export type VoterClaimRecord = typeof voterClaimRecords.$inferSelect;
+export type InsertVoterClaimRecord = z.infer<typeof insertVoterClaimRecordSchema>;
 
 export const insertMemeSchema = createInsertSchema(memes).omit({
   id: true,

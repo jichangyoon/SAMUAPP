@@ -1,4 +1,4 @@
-import { memes, votes, nfts, nftComments, partnerMemes, partnerVotes, users, contests, archivedContests, loginLogs, blockedIps, revenues, revenueShares, goods, orders, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type NftComment, type InsertNftComment, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest, type LoginLog, type InsertLoginLog, type BlockedIp, type InsertBlockedIp, type Revenue, type InsertRevenue, type RevenueShare, type InsertRevenueShare, type Goods, type InsertGoods, type Order, type InsertOrder } from "@shared/schema";
+import { memes, votes, nfts, nftComments, partnerMemes, partnerVotes, users, contests, archivedContests, loginLogs, blockedIps, revenues, revenueShares, goods, orders, goodsRevenueDistributions, voterRewardPool, voterClaimRecords, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type NftComment, type InsertNftComment, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest, type LoginLog, type InsertLoginLog, type BlockedIp, type InsertBlockedIp, type Revenue, type InsertRevenue, type RevenueShare, type InsertRevenueShare, type Goods, type InsertGoods, type Order, type InsertOrder, type GoodsRevenueDistribution, type InsertGoodsRevenueDistribution, type VoterRewardPool, type InsertVoterRewardPool, type VoterClaimRecord, type InsertVoterClaimRecord } from "@shared/schema";
 import { getDatabase } from "./db";
 import { eq, and, desc, isNull, or, sql } from "drizzle-orm";
 
@@ -88,9 +88,26 @@ export interface IStorage {
   createGoods(data: InsertGoods): Promise<Goods>;
   updateGoods(id: number, data: Partial<InsertGoods>): Promise<Goods>;
   getOrders(walletAddress: string): Promise<Order[]>;
+  getAllOrders(): Promise<Order[]>;
   getOrderByTxSignature(txSignature: string): Promise<Order | undefined>;
   createOrder(data: InsertOrder): Promise<Order>;
   updateOrder(id: number, data: Partial<InsertOrder>): Promise<Order>;
+
+  // Goods Revenue Distribution operations
+  createGoodsRevenueDistribution(data: InsertGoodsRevenueDistribution): Promise<GoodsRevenueDistribution>;
+  getGoodsRevenueDistributions(contestId?: number): Promise<GoodsRevenueDistribution[]>;
+  getAllGoodsRevenueDistributions(): Promise<GoodsRevenueDistribution[]>;
+
+  // Voter Reward Pool operations
+  getOrCreateVoterRewardPool(contestId: number, totalShares: number): Promise<VoterRewardPool>;
+  updateVoterRewardPool(contestId: number, depositAmount: number): Promise<VoterRewardPool>;
+  getVoterRewardPool(contestId: number): Promise<VoterRewardPool | undefined>;
+
+  // Voter Claim operations
+  getOrCreateVoterClaimRecord(contestId: number, voterWallet: string, sharePercent: number): Promise<VoterClaimRecord>;
+  getClaimableAmount(contestId: number, voterWallet: string): Promise<{ claimable: number; totalClaimed: number; sharePercent: number }>;
+  claimVoterReward(contestId: number, voterWallet: string): Promise<{ claimedAmount: number }>;
+  getVoterClaimsByWallet(walletAddress: string): Promise<VoterClaimRecord[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -449,9 +466,20 @@ export class MemStorage implements IStorage {
   async createGoods(_data: InsertGoods): Promise<Goods> { throw new Error("Not implemented"); }
   async updateGoods(_id: number, _data: Partial<InsertGoods>): Promise<Goods> { throw new Error("Not implemented"); }
   async getOrders(_walletAddress: string): Promise<Order[]> { return []; }
+  async getAllOrders(): Promise<Order[]> { return []; }
   async getOrderByTxSignature(_txSignature: string): Promise<Order | undefined> { return undefined; }
   async createOrder(_data: InsertOrder): Promise<Order> { throw new Error("Not implemented"); }
   async updateOrder(_id: number, _data: Partial<InsertOrder>): Promise<Order> { throw new Error("Not implemented"); }
+  async createGoodsRevenueDistribution(_data: InsertGoodsRevenueDistribution): Promise<GoodsRevenueDistribution> { throw new Error("Not implemented"); }
+  async getGoodsRevenueDistributions(_contestId?: number): Promise<GoodsRevenueDistribution[]> { return []; }
+  async getAllGoodsRevenueDistributions(): Promise<GoodsRevenueDistribution[]> { return []; }
+  async getOrCreateVoterRewardPool(_contestId: number, _totalShares: number): Promise<VoterRewardPool> { throw new Error("Not implemented"); }
+  async updateVoterRewardPool(_contestId: number, _depositAmount: number): Promise<VoterRewardPool> { throw new Error("Not implemented"); }
+  async getVoterRewardPool(_contestId: number): Promise<VoterRewardPool | undefined> { return undefined; }
+  async getOrCreateVoterClaimRecord(_contestId: number, _voterWallet: string, _sharePercent: number): Promise<VoterClaimRecord> { throw new Error("Not implemented"); }
+  async getClaimableAmount(_contestId: number, _voterWallet: string): Promise<{ claimable: number; totalClaimed: number; sharePercent: number }> { return { claimable: 0, totalClaimed: 0, sharePercent: 0 }; }
+  async claimVoterReward(_contestId: number, _voterWallet: string): Promise<{ claimedAmount: number }> { throw new Error("Not implemented"); }
+  async getVoterClaimsByWallet(_walletAddress: string): Promise<VoterClaimRecord[]> { return []; }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1543,6 +1571,151 @@ export class DatabaseStorage implements IStorage {
       .where(eq(orders.id, id))
       .returning();
     return order;
+  }
+
+  async getAllOrders(): Promise<Order[]> {
+    if (!this.db) throw new Error("Database not available");
+    return this.db.select().from(orders).orderBy(desc(orders.createdAt));
+  }
+
+  async createGoodsRevenueDistribution(data: InsertGoodsRevenueDistribution): Promise<GoodsRevenueDistribution> {
+    if (!this.db) throw new Error("Database not available");
+    const [dist] = await this.db.insert(goodsRevenueDistributions).values(data).returning();
+    return dist;
+  }
+
+  async getGoodsRevenueDistributions(contestId?: number): Promise<GoodsRevenueDistribution[]> {
+    if (!this.db) throw new Error("Database not available");
+    if (contestId) {
+      return this.db.select().from(goodsRevenueDistributions)
+        .where(eq(goodsRevenueDistributions.contestId, contestId))
+        .orderBy(desc(goodsRevenueDistributions.createdAt));
+    }
+    return this.db.select().from(goodsRevenueDistributions)
+      .orderBy(desc(goodsRevenueDistributions.createdAt));
+  }
+
+  async getAllGoodsRevenueDistributions(): Promise<GoodsRevenueDistribution[]> {
+    if (!this.db) throw new Error("Database not available");
+    return this.db.select().from(goodsRevenueDistributions)
+      .orderBy(desc(goodsRevenueDistributions.createdAt));
+  }
+
+  async getOrCreateVoterRewardPool(contestId: number, totalShares: number): Promise<VoterRewardPool> {
+    if (!this.db) throw new Error("Database not available");
+    const [existing] = await this.db.select().from(voterRewardPool)
+      .where(eq(voterRewardPool.contestId, contestId)).limit(1);
+    if (existing) return existing;
+    const [pool] = await this.db.insert(voterRewardPool).values({
+      contestId,
+      rewardPerShare: 0,
+      totalDeposited: 0,
+      totalClaimed: 0,
+      totalShares: totalShares,
+    }).returning();
+    return pool;
+  }
+
+  async updateVoterRewardPool(contestId: number, depositAmount: number): Promise<VoterRewardPool> {
+    if (!this.db) throw new Error("Database not available");
+    const pool = await this.getVoterRewardPool(contestId);
+    if (!pool) throw new Error("Voter reward pool not found for contest " + contestId);
+    if (pool.totalShares <= 0) throw new Error("No voters in this contest");
+    const addedRewardPerShare = depositAmount / pool.totalShares;
+    const [updated] = await this.db.update(voterRewardPool)
+      .set({
+        rewardPerShare: pool.rewardPerShare + addedRewardPerShare,
+        totalDeposited: pool.totalDeposited + depositAmount,
+        updatedAt: new Date(),
+      })
+      .where(eq(voterRewardPool.contestId, contestId))
+      .returning();
+    return updated;
+  }
+
+  async getVoterRewardPool(contestId: number): Promise<VoterRewardPool | undefined> {
+    if (!this.db) throw new Error("Database not available");
+    const [pool] = await this.db.select().from(voterRewardPool)
+      .where(eq(voterRewardPool.contestId, contestId)).limit(1);
+    return pool;
+  }
+
+  async getOrCreateVoterClaimRecord(contestId: number, voterWallet: string, sharePercent: number): Promise<VoterClaimRecord> {
+    if (!this.db) throw new Error("Database not available");
+    const [existing] = await this.db.select().from(voterClaimRecords)
+      .where(and(eq(voterClaimRecords.contestId, contestId), eq(voterClaimRecords.voterWallet, voterWallet)))
+      .limit(1);
+    if (existing) return existing;
+    const [record] = await this.db.insert(voterClaimRecords).values({
+      contestId,
+      voterWallet,
+      sharePercent,
+      lastClaimedRewardPerShare: 0,
+      totalClaimed: 0,
+    }).returning();
+    return record;
+  }
+
+  async getClaimableAmount(contestId: number, voterWallet: string): Promise<{ claimable: number; totalClaimed: number; sharePercent: number }> {
+    if (!this.db) throw new Error("Database not available");
+    const pool = await this.getVoterRewardPool(contestId);
+    if (!pool) return { claimable: 0, totalClaimed: 0, sharePercent: 0 };
+    const [claimRecord] = await this.db.select().from(voterClaimRecords)
+      .where(and(eq(voterClaimRecords.contestId, contestId), eq(voterClaimRecords.voterWallet, voterWallet)))
+      .limit(1);
+    if (!claimRecord) {
+      const voteSummary = await this.getContestVoteSummary(contestId);
+      const voterEntry = voteSummary.find(v => v.voterWallet === voterWallet);
+      if (!voterEntry) return { claimable: 0, totalClaimed: 0, sharePercent: 0 };
+      const totalVotes = voteSummary.reduce((sum, v) => sum + v.totalSamuAmount, 0);
+      const sharePercent = totalVotes > 0 ? (voterEntry.totalSamuAmount / totalVotes) * 100 : 0;
+      const claimable = pool.rewardPerShare * sharePercent;
+      return { claimable, totalClaimed: 0, sharePercent };
+    }
+    const unclaimedRewardPerShare = pool.rewardPerShare - claimRecord.lastClaimedRewardPerShare;
+    const claimable = unclaimedRewardPerShare * claimRecord.sharePercent;
+    return { claimable, totalClaimed: claimRecord.totalClaimed, sharePercent: claimRecord.sharePercent };
+  }
+
+  async claimVoterReward(contestId: number, voterWallet: string): Promise<{ claimedAmount: number }> {
+    if (!this.db) throw new Error("Database not available");
+    const pool = await this.getVoterRewardPool(contestId);
+    if (!pool) throw new Error("No reward pool found");
+
+    const voteSummary = await this.getContestVoteSummary(contestId);
+    const voterEntry = voteSummary.find(v => v.voterWallet === voterWallet);
+    if (!voterEntry) throw new Error("You have no votes in this contest");
+    const totalVotes = voteSummary.reduce((sum, v) => sum + v.totalSamuAmount, 0);
+    const sharePercent = totalVotes > 0 ? (voterEntry.totalSamuAmount / totalVotes) * 100 : 0;
+
+    const claimRecord = await this.getOrCreateVoterClaimRecord(contestId, voterWallet, sharePercent);
+    const unclaimedRewardPerShare = pool.rewardPerShare - claimRecord.lastClaimedRewardPerShare;
+    const claimable = unclaimedRewardPerShare * claimRecord.sharePercent;
+
+    if (claimable <= 0) throw new Error("No rewards to claim");
+
+    await this.db.update(voterClaimRecords)
+      .set({
+        lastClaimedRewardPerShare: pool.rewardPerShare,
+        totalClaimed: claimRecord.totalClaimed + claimable,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(voterClaimRecords.contestId, contestId), eq(voterClaimRecords.voterWallet, voterWallet)));
+
+    await this.db.update(voterRewardPool)
+      .set({
+        totalClaimed: pool.totalClaimed + claimable,
+        updatedAt: new Date(),
+      })
+      .where(eq(voterRewardPool.contestId, contestId));
+
+    return { claimedAmount: claimable };
+  }
+
+  async getVoterClaimsByWallet(walletAddress: string): Promise<VoterClaimRecord[]> {
+    if (!this.db) throw new Error("Database not available");
+    return this.db.select().from(voterClaimRecords)
+      .where(eq(voterClaimRecords.voterWallet, walletAddress));
   }
 }
 
