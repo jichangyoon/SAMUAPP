@@ -97,6 +97,9 @@ ios/
 # Ionic
 www/
 
+# Attached assets (chat reference images)
+attached_assets/
+
 # Build artifacts
 *.apk
 *.aab
