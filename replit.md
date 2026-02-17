@@ -94,8 +94,9 @@ This is a web app — not a mobile app. No mobile app packaging or mobile-first 
 - **Individual Tracking**: Each buyer sees their SAMU character carrying their sticker across the map, with real-time position updates from Printful tracking data.
 - **Gamification**: Delivery progress = reward unlock progress. Users watch their escrow funds get closer to release as package moves through checkpoints (warehouse → airport → customs → delivered).
 - **Shipping Incident Visibility**: If delivery stalls, SAMU character shows sleeping/crying state with message like "SAMU is stuck at customs! Reward unlock is delayed."
-- **Technical Plan**: Printful tracking API polled every 3 hours → coordinates updated in DB → react-simple-maps for world map visualization → escrow state machine (locked → in_transit → delivered → unlocked / refunded)
-- **Implementation Order**: 1) Escrow logic (change instant transfer → escrow vault) 2) Printful tracking API integration 3) Global SAMU Map UI 4) Individual tracking + unlock progress 5) Shipping incident handling
+- **Technical Plan**: Printful Webhook integration (not polling) — Printful sends real-time HTTP POST to our server whenever order/shipping status changes → DB updated instantly → react-simple-maps for world map visualization → escrow state machine (locked → in_transit → delivered → unlocked / refunded). Webhook approach eliminates API rate limit concerns and provides instant status updates without periodic polling overhead.
+- **Webhook Events**: `package_shipped` (tracking number assigned), `package_in_transit` (carrier scan updates), `package_delivered` (delivery confirmed → triggers escrow unlock), `order_failed` / `order_canceled` (triggers escrow refund)
+- **Implementation Order**: 1) Escrow logic (change instant transfer → escrow vault) 2) Printful Webhook endpoint + event handling 3) Global SAMU Map UI 4) Individual tracking + unlock progress 5) Shipping incident handling
 
 **Known Issues Fixed:**
 - Duplicate contest archiving prevented via DB unique constraint on archivedContests.originalContestId
