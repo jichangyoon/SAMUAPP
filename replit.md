@@ -86,6 +86,17 @@ This is a web app — not a mobile app. No mobile app packaging or mobile-first 
 - Differentiator: Community-curated meme IP incubator with full pipeline (vote → NFT → goods → revenue share)
 - Reference projects: Pudgy Penguins (IP→goods), Steemit (voter revenue share), Threadless (community voting→merchandise)
 
+**Escrow + Gamified Logistics System (Planned - Next Phase):**
+- **Escrow Vault**: SOL payment goes to escrow instead of direct wallet transfers. Funds are locked until delivery is confirmed.
+- **Delivery-based Unlock**: When Printful reports `status: delivered`, escrow funds are released and officially added to reward pools.
+- **Refund Safety**: Escrow enables handling of shipping incidents, payment errors, and refund requests before funds are distributed.
+- **Global SAMU Map (Community Dashboard)**: World map showing all in-transit orders as moving dots. Social proof — "SAMU is currently traveling to NYC, Seoul, London..."
+- **Individual Tracking**: Each buyer sees their SAMU character carrying their sticker across the map, with real-time position updates from Printful tracking data.
+- **Gamification**: Delivery progress = reward unlock progress. Users watch their escrow funds get closer to release as package moves through checkpoints (warehouse → airport → customs → delivered).
+- **Shipping Incident Visibility**: If delivery stalls, SAMU character shows sleeping/crying state with message like "SAMU is stuck at customs! Reward unlock is delayed."
+- **Technical Plan**: Printful tracking API polled every 3 hours → coordinates updated in DB → react-simple-maps for world map visualization → escrow state machine (locked → in_transit → delivered → unlocked / refunded)
+- **Implementation Order**: 1) Escrow logic (change instant transfer → escrow vault) 2) Printful tracking API integration 3) Global SAMU Map UI 4) Individual tracking + unlock progress 5) Shipping incident handling
+
 **Known Issues Fixed:**
 - Duplicate contest archiving prevented via DB unique constraint on archivedContests.originalContestId
 - Race condition between interval checker and setTimeout scheduler resolved with 3-layer protection (status check, pre-insert check, DB unique constraint)
