@@ -767,11 +767,29 @@ export class DatabaseStorage implements IStorage {
   async getMemesByContestId(contestId: number): Promise<Meme[]> {
     if (!this.db) throw new Error("Database not available");
     
-    return await this.db
+    const contestMemes = await this.db
       .select()
       .from(memes)
       .where(eq(memes.contestId, contestId))
       .orderBy(desc(memes.votes));
+
+    const enrichedMemes = await Promise.all(
+      contestMemes.map(async (meme) => {
+        const [user] = await this.db!
+          .select()
+          .from(users)
+          .where(eq(users.walletAddress, meme.authorWallet))
+          .limit(1);
+        if (user) {
+          const updatedUsername = user.displayName || user.username || meme.authorUsername;
+          const updatedAvatar = user.avatarUrl || meme.authorAvatarUrl;
+          return { ...meme, authorUsername: updatedUsername, authorAvatarUrl: updatedAvatar };
+        }
+        return meme;
+      })
+    );
+
+    return enrichedMemes;
   }
 
   async deleteMeme(id: number): Promise<void> {
@@ -1254,7 +1272,21 @@ export class DatabaseStorage implements IStorage {
       .from(archivedContests)
       .orderBy(desc(archivedContests.archivedAt));
 
-    // Enrich with winner meme details
+    const enrichMemeWithUserProfile = async (meme: Meme | null) => {
+      if (!meme) return null;
+      const [user] = await this.db!
+        .select()
+        .from(users)
+        .where(eq(users.walletAddress, meme.authorWallet))
+        .limit(1);
+      if (user) {
+        const updatedUsername = user.displayName || user.username || meme.authorUsername;
+        const updatedAvatar = user.avatarUrl || meme.authorAvatarUrl;
+        return { ...meme, authorUsername: updatedUsername, authorAvatarUrl: updatedAvatar };
+      }
+      return meme;
+    };
+
     const enrichedContests = await Promise.all(
       archived.map(async (contest) => {
         let winnerMeme = null;
@@ -1266,7 +1298,7 @@ export class DatabaseStorage implements IStorage {
             .select()
             .from(memes)
             .where(eq(memes.id, contest.winnerMemeId));
-          winnerMeme = winner || null;
+          winnerMeme = await enrichMemeWithUserProfile(winner || null);
         }
 
         if (contest.secondMemeId) {
@@ -1274,7 +1306,7 @@ export class DatabaseStorage implements IStorage {
             .select()
             .from(memes)
             .where(eq(memes.id, contest.secondMemeId));
-          secondMeme = second || null;
+          secondMeme = await enrichMemeWithUserProfile(second || null);
         }
 
         if (contest.thirdMemeId) {
@@ -1282,17 +1314,15 @@ export class DatabaseStorage implements IStorage {
             .select()
             .from(memes)
             .where(eq(memes.id, contest.thirdMemeId));
-          thirdMeme = third || null;
+          thirdMeme = await enrichMemeWithUserProfile(third || null);
         }
 
-        const enriched = {
+        return {
           ...contest,
           winnerMeme,
           secondMeme,
           thirdMeme
         };
-        
-        return enriched;
       })
     );
 

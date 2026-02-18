@@ -75,7 +75,7 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
 
   return (
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DrawerContent className="h-[92vh] bg-black text-white border-gray-800">
+      <DrawerContent className="max-h-[90dvh] bg-black text-white border-gray-800">
         <DrawerHeader className="border-b border-gray-800 pb-4">
           <DrawerTitle className="text-xl font-bold text-white">
             {meme.title}
@@ -164,7 +164,7 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
 
       {/* Share Dialog */}
       <Drawer open={showShareDialog} onOpenChange={setShowShareDialog}>
-        <DrawerContent className="bg-black border-gray-800 max-h-[92vh] h-[50vh]">
+        <DrawerContent className="bg-black border-gray-800 max-h-[90dvh]">
           <DrawerHeader>
             <DrawerTitle className="text-white">Share Meme</DrawerTitle>
             <DrawerDescription className="text-gray-400">

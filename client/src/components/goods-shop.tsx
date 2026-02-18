@@ -485,7 +485,7 @@ export function GoodsShop() {
       )}
 
       <Drawer open={orderStep !== 'browse'} onOpenChange={(open) => { if (!open && !isPaying) resetOrder(); }}>
-        <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+        <DrawerContent className="bg-card border-border max-h-[85dvh]">
           <DrawerHeader className="flex items-center gap-2">
             {orderStep !== 'detail' && (
               <Button

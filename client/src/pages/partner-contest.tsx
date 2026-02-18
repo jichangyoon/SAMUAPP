@@ -419,7 +419,7 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
       {/* Grid View Meme Detail Drawer */}
       {selectedMeme && (
         <Drawer open={!!selectedMeme} onOpenChange={() => setSelectedMeme(null)}>
-          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+          <DrawerContent className="bg-card border-border max-h-[90dvh]">
             <DrawerHeader>
               <DrawerTitle className="text-foreground">{selectedMeme.title}</DrawerTitle>
             </DrawerHeader>
@@ -481,7 +481,7 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
       {/* Vote Confirmation Drawer */}
       {selectedMeme && (
         <Drawer open={showVoteDialog} onOpenChange={setShowVoteDialog}>
-          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+          <DrawerContent className="bg-card border-border max-h-[85dvh]">
             <DrawerHeader>
               <DrawerTitle className="text-foreground">Confirm Your Vote</DrawerTitle>
               <DrawerDescription className="text-muted-foreground">
@@ -525,7 +525,7 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
       {/* Share Drawer */}
       {selectedMeme && (
         <Drawer open={showShareDialog} onOpenChange={setShowShareDialog}>
-          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+          <DrawerContent className="bg-card border-border max-h-[90dvh]">
             <DrawerHeader>
               <DrawerTitle className="text-foreground">Share Meme</DrawerTitle>
               <DrawerDescription className="text-muted-foreground">

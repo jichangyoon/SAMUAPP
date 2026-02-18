@@ -1146,7 +1146,7 @@ export default function Home() {
       {/* Grid View Vote Confirmation Drawer */}
       {votingMeme && (
         <Drawer open={showVoteDialog} onOpenChange={setShowVoteDialog}>
-          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+          <DrawerContent className="bg-card border-border max-h-[85dvh]">
             <DrawerHeader>
               <DrawerTitle className="text-foreground">Confirm Your Vote</DrawerTitle>
               <DrawerDescription className="text-muted-foreground">
@@ -1285,7 +1285,7 @@ export default function Home() {
       {/* Share Drawer */}
       {selectedMeme && (
         <Drawer open={showShareDialog} onOpenChange={setShowShareDialog}>
-          <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
+          <DrawerContent className="bg-card border-border max-h-[90dvh]">
             <DrawerHeader>
               <DrawerTitle className="text-foreground">Share Meme</DrawerTitle>
               <DrawerDescription className="text-muted-foreground">
@@ -1325,12 +1325,12 @@ export default function Home() {
         onOpenChange={setShowUploadForm}
         shouldScaleBackground={false}
       >
-        <DrawerContent className="bg-card border-border">
+        <DrawerContent className="bg-card border-border max-h-[85dvh]">
           <DrawerHeader className="py-2">
             <DrawerTitle className="text-foreground text-base">Submit New Meme</DrawerTitle>
           </DrawerHeader>
 
-          <div className="px-4 pb-6 overflow-y-auto max-h-[60vh]">
+          <div className="px-4 pb-6 overflow-y-auto flex-1">
             <UploadForm 
               onClose={() => setShowUploadForm(false)}
               onSuccess={() => {
