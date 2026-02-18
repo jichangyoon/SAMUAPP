@@ -62,8 +62,7 @@ function App() {
     const initializeApp = async () => {
       try {
         // 1. 디바이스 ID 먼저 초기화
-        const deviceId = await getDeviceId();
-        console.log('앱 초기화 - 디바이스 ID 생성:', deviceId);
+        await getDeviceId();
         setDeviceIdReady(true);
         
         // 2. 이미지 프리로드

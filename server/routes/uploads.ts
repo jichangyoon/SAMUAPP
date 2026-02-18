@@ -25,13 +25,6 @@ const fileFilter = (req: any, file: any, cb: any) => {
   const extname = allowedExtensions.test(file.originalname);
   const mimetype = allowedMimeTypes.includes(file.mimetype);
 
-  console.log('File upload attempt:', {
-    originalname: file.originalname,
-    mimetype: file.mimetype,
-    extname,
-    mimetypeValid: mimetype
-  });
-
   if (mimetype && extname) {
     return cb(null, true);
   } else {
@@ -48,25 +41,9 @@ const upload = multer({
 });
 
 // Upload single file endpoint
-router.post("/upload", (req, res, next) => {
-  console.log('Upload request received:', {
-    method: req.method,
-    contentType: req.headers['content-type'],
-    contentLength: req.headers['content-length']
-  });
-  next();
-}, upload.single("file"), async (req, res) => {
+router.post("/upload", upload.single("file"), async (req, res) => {
   try {
-    console.log('File upload processing:', {
-      file: req.file ? {
-        originalname: req.file.originalname,
-        size: req.file.size,
-        mimetype: req.file.mimetype
-      } : 'No file received'
-    });
-
     if (!req.file) {
-      console.log('No file in request');
       return res.status(400).json({ error: "No file uploaded" });
     }
 
@@ -93,7 +70,6 @@ router.post("/upload", (req, res, next) => {
       size: req.file.size
     };
 
-    console.log('R2 upload successful:', response);
     res.json(response);
   } catch (error: any) {
     console.error("Upload error:", error);

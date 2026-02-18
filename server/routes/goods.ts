@@ -284,8 +284,6 @@ router.post("/admin/create", requireAdmin, async (req, res) => {
     };
 
     const productResult = await printfulRequest("POST", "/store/products", productPayload);
-    console.log("Printful create product response:", JSON.stringify(productResult, null, 2));
-
     const createResult = productResult.result;
     const printfulProductId = createResult?.sync_product?.id ?? createResult?.id ?? null;
 
@@ -375,10 +373,7 @@ router.post("/admin/sync-printful/:id", requireAdmin, async (req, res) => {
       sync_variants: syncVariants,
     };
 
-    console.log("Syncing goods to Printful:", { goodsId: id, title: item.title });
     const productResult = await printfulRequest("POST", "/store/products", productPayload);
-    console.log("Printful create product response:", JSON.stringify(productResult, null, 2));
-
     const result = productResult.result;
     const printfulProductId = result?.sync_product?.id ?? result?.id ?? null;
 
@@ -388,7 +383,6 @@ router.post("/admin/sync-printful/:id", requireAdmin, async (req, res) => {
     } else if (printfulProductId) {
       try {
         const productDetail = await printfulRequest("GET", `/store/products/${printfulProductId}`);
-        console.log("Printful product detail response:", JSON.stringify(productDetail, null, 2));
         const variants = productDetail.result?.sync_variants || [];
         if (variants.length > 0) {
           printfulVariantId = variants[0].id;
@@ -403,7 +397,6 @@ router.post("/admin/sync-printful/:id", requireAdmin, async (req, res) => {
       printfulVariantId,
     });
 
-    console.log("Printful sync complete:", { goodsId: id, printfulProductId, printfulVariantId });
     res.json({ goods: updatedItem, printfulProductId, printfulVariantId });
   } catch (error: any) {
     console.error("Error syncing goods to Printful:", error);
@@ -456,8 +449,6 @@ router.post("/admin/generate-mockup/:id", requireAdmin, async (req, res) => {
       }],
     };
 
-    console.log("Creating sticker mockup task for goods #" + id, JSON.stringify(mockupPayload));
-
     const mockupTask = await printfulRequest(
       "POST",
       `/mockup-generator/create-task/${STICKER_PRODUCT_ID}`,
@@ -480,8 +471,6 @@ router.post("/admin/generate-mockup/:id", requireAdmin, async (req, res) => {
           "GET",
           `/mockup-generator/task?task_key=${taskKey}`
         );
-        console.log("Mockup task status:", taskResult.result?.status, "attempt:", attempts);
-
         if (taskResult.result?.status === "completed") {
           taskComplete = true;
           const mockups = taskResult.result?.mockups || [];

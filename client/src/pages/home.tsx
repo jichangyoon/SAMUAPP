@@ -418,7 +418,7 @@ export default function Home() {
   });
 
   // Use memes directly from API response
-  const sortedMemes = memesResponse?.memes || [];
+  const sortedMemes: Meme[] = memesResponse?.memes || [];
 
   // Click handlers
   const handleMemeClick = useCallback((meme: Meme) => {

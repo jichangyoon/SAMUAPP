@@ -461,6 +461,13 @@ export class MemStorage implements IStorage {
   async getRevenueSharesByContestId(_contestId: number): Promise<RevenueShare[]> { return []; }
   async getContestVoteSummary(_contestId: number): Promise<{voterWallet: string, totalSamuAmount: number}[]> { return []; }
 
+  async createContest(_contest: InsertContest): Promise<Contest> { throw new Error("Not implemented"); }
+  async getContests(): Promise<Contest[]> { return []; }
+  async getContestById(_id: number): Promise<Contest | undefined> { return undefined; }
+  async updateContestStatus(_id: number, _status: string): Promise<Contest> { throw new Error("Not implemented"); }
+  async updateContestTimes(_id: number, _startTime: Date, _endTime: Date): Promise<Contest> { throw new Error("Not implemented"); }
+  async getCurrentActiveContest(): Promise<Contest | undefined> { return undefined; }
+
   async getGoods(): Promise<Goods[]> { return []; }
   async getGoodsById(_id: number): Promise<Goods | undefined> { return undefined; }
   async createGoods(_data: InsertGoods): Promise<Goods> { throw new Error("Not implemented"); }
@@ -1086,7 +1093,6 @@ export class DatabaseStorage implements IStorage {
       .where(eq(contests.status, "active"))
       .limit(1);
     
-    console.log("getCurrentActiveContest result:", contest);
     return contest;
   }
 

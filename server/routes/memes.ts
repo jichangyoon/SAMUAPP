@@ -39,9 +39,7 @@ router.get("/", async (req, res) => {
     let allMemes;
     if (contestId) {
       // Get memes for specific contest (archived)
-      console.log(`Fetching memes for contestId: ${contestId}`);
       allMemes = await storage.getMemesByContestId(parseInt(contestId));
-      console.log(`Found ${allMemes.length} memes for contest ${contestId}`);
     } else {
       // Get current memes (not archived) - these are memes with contest_id = null
       allMemes = await storage.getMemes();
@@ -74,10 +72,6 @@ router.get("/", async (req, res) => {
         totalPages: Math.ceil(totalMemes / limit)
       }
     };
-    
-    if (contestId) {
-      console.log(`Returning ${paginatedMemes.length} memes for contest ${contestId} (total: ${totalMemes})`);
-    }
     
     res.json(response);
   } catch (error) {

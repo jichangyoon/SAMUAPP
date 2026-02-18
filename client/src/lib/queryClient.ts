@@ -18,9 +18,6 @@ export async function apiRequest(
   const headers: Record<string, string> = data ? { "Content-Type": "application/json" } : {};
   if (deviceId) {
     headers['x-device-id'] = deviceId;
-    console.log(`API 요청에 디바이스 ID 포함: ${deviceId} -> ${url}`);
-  } else {
-    console.warn(`API 요청에 디바이스 ID 없음: ${url}`);
   }
 
   const res = await fetch(url, {
@@ -46,9 +43,6 @@ export const getQueryFn: <T>(options: {
     const headers: Record<string, string> = {};
     if (deviceId) {
       headers['x-device-id'] = deviceId;
-      console.log(`쿼리 요청에 디바이스 ID 포함: ${deviceId} -> ${queryKey[0]}`);
-    } else {
-      console.warn(`쿼리 요청에 디바이스 ID 없음: ${queryKey[0]}`);
     }
 
     const res = await fetch(queryKey[0] as string, {
