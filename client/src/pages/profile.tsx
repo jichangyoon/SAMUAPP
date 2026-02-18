@@ -1073,7 +1073,7 @@ const Profile = memo(() => {
                     </h3>
                     <div className="text-center bg-accent/30 rounded-lg p-4">
                       <div className="text-2xl font-bold text-[hsl(50,85%,75%)]">
-                        {walletRevenue.totalEarnedSol?.toFixed(4) || '0.0000'} SAMU
+                        {walletRevenue.totalEarnedSol?.toFixed(4) || '0.0000'} SOL
                       </div>
                       <div className="text-xs text-muted-foreground">Total Earned</div>
                     </div>
@@ -1087,7 +1087,7 @@ const Profile = memo(() => {
                                 {share.role === 'voter' ? 'Voter' : share.role === 'creator' ? 'Creator' : share.role}
                               </Badge>
                             </div>
-                            <span className="font-semibold text-[hsl(50,85%,75%)]">{share.amountSol.toFixed(4)} SAMU</span>
+                            <span className="font-semibold text-[hsl(50,85%,75%)]">{share.amountSol.toFixed(4)} SOL</span>
                           </div>
                         ))}
                       </div>
