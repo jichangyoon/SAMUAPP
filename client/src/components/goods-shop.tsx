@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -230,6 +230,7 @@ export function GoodsShop() {
   const [paymentInfo, setPaymentInfo] = useState<any>(null);
   const [txSignature, setTxSignature] = useState<string>('');
   const [isPaying, setIsPaying] = useState(false);
+  const orderDataRef = useRef<{ item: any; size: string; color: string; paymentInfo: any; txSignature: string; shippingForm: any } | null>(null);
   const { authenticated, user } = usePrivy();
   const { toast } = useToast();
   const { signTransaction } = useSignTransaction();
@@ -281,6 +282,15 @@ export function GoodsShop() {
   const handlePaySOL = useCallback(async () => {
     if (!selectedItem || !walletAddress || !paymentInfo) return;
 
+    orderDataRef.current = {
+      item: selectedItem,
+      size: selectedSize,
+      color: selectedColor,
+      paymentInfo: paymentInfo,
+      txSignature: '',
+      shippingForm: { ...shippingForm },
+    };
+
     setIsPaying(true);
     try {
       toast({ title: "Please sign the transaction in your wallet", duration: 5000 });
@@ -290,7 +300,9 @@ export function GoodsShop() {
       const sig = await solConnection.sendRawTransaction(signedTx.serialize());
       await solConnection.confirmTransaction(sig, 'confirmed');
 
+      orderDataRef.current.txSignature = sig;
       setTxSignature(sig);
+      if (!selectedItem) setSelectedItem(orderDataRef.current.item);
       toast({ title: "Payment confirmed!", description: `TX: ${sig.slice(0, 8)}...` });
       setOrderStep('confirm');
     } catch (err: any) {
@@ -299,25 +311,33 @@ export function GoodsShop() {
     } finally {
       setIsPaying(false);
     }
-  }, [selectedItem, walletAddress, paymentInfo, signTransaction, solConnection]);
+  }, [selectedItem, walletAddress, paymentInfo, selectedSize, selectedColor, shippingForm, signTransaction, solConnection]);
 
   const placeOrderMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiRequest("POST", `/api/goods/${selectedItem.id}/order`, {
-        size: selectedSize,
-        color: selectedColor,
+      const data = orderDataRef.current;
+      const item = selectedItem || data?.item;
+      const size = selectedSize || data?.size;
+      const color = selectedColor || data?.color;
+      const sig = txSignature || data?.txSignature;
+      const payment = paymentInfo || data?.paymentInfo;
+      const shipping = shippingForm.name ? shippingForm : data?.shippingForm || shippingForm;
+      if (!item?.id) throw new Error('Order data lost. Please try again.');
+      const res = await apiRequest("POST", `/api/goods/${item.id}/order`, {
+        size,
+        color,
         buyerWallet: walletAddress,
-        buyerEmail: shippingForm.email,
-        txSignature,
-        solAmount: paymentInfo?.solAmount,
-        shippingName: shippingForm.name,
-        shippingAddress1: shippingForm.address1,
-        shippingAddress2: shippingForm.address2,
-        shippingCity: shippingForm.city,
-        shippingState: shippingForm.state,
-        shippingCountry: shippingForm.country,
-        shippingZip: shippingForm.zip,
-        shippingPhone: `${shippingForm.phoneDialCode} ${shippingForm.phone}`.trim(),
+        buyerEmail: shipping.email,
+        txSignature: sig,
+        solAmount: payment?.solAmount,
+        shippingName: shipping.name,
+        shippingAddress1: shipping.address1,
+        shippingAddress2: shipping.address2,
+        shippingCity: shipping.city,
+        shippingState: shipping.state,
+        shippingCountry: shipping.country,
+        shippingZip: shipping.zip,
+        shippingPhone: `${shipping.phoneDialCode} ${shipping.phone}`.trim(),
       });
       return res.json();
     },
@@ -340,6 +360,7 @@ export function GoodsShop() {
     setShippingEstimate(null);
     setPaymentInfo(null);
     setTxSignature('');
+    orderDataRef.current = null;
   };
 
   const [mockupIndex, setMockupIndex] = useState(0);
@@ -491,9 +512,9 @@ export function GoodsShop() {
             </Button>
           </DrawerHeader>
 
-          {selectedItem && (
+          {(selectedItem || (orderStep === 'confirm' && orderDataRef.current)) && (
             <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4">
-              {orderStep === 'detail' && (
+              {orderStep === 'detail' && selectedItem && (
                 <>
                   {(() => {
                     const mockups = selectedItem.mockupUrls?.filter((u: string) => u !== selectedItem.imageUrl) || [];
@@ -827,53 +848,62 @@ export function GoodsShop() {
                 </>
               )}
 
-              {orderStep === 'confirm' && (
-                <>
-                  <Card className="border-green-500/30">
-                    <CardContent className="p-4 space-y-3">
-                      <h3 className="font-semibold text-green-400">Payment Confirmed</h3>
-                      <div className="flex items-center gap-3">
-                        <img src={selectedItem.imageUrl} alt="" className="w-16 h-16 rounded object-cover" />
-                        <div>
-                          <div className="font-semibold text-sm text-foreground">{selectedItem.title}</div>
-                          <div className="text-xs text-muted-foreground">Size: {selectedSize}</div>
-                          {paymentInfo && (
-                            <div className="text-primary font-bold">{paymentInfo.solAmount} SOL (${paymentInfo.totalUSD.toFixed(2)})</div>
-                          )}
+              {orderStep === 'confirm' && (() => {
+                const data = orderDataRef.current;
+                const item = selectedItem || data?.item;
+                const payment = paymentInfo || data?.paymentInfo;
+                const sig = txSignature || data?.txSignature;
+                const size = selectedSize || data?.size;
+                const shipping = shippingForm.name ? shippingForm : data?.shippingForm || shippingForm;
+                if (!item) return <div className="text-center text-muted-foreground p-4">Order data lost. Please try again.</div>;
+                return (
+                  <>
+                    <Card className="border-green-500/30">
+                      <CardContent className="p-4 space-y-3">
+                        <h3 className="font-semibold text-green-400">Payment Confirmed</h3>
+                        <div className="flex items-center gap-3">
+                          <img src={item.imageUrl} alt="" className="w-16 h-16 rounded object-cover" />
+                          <div>
+                            <div className="font-semibold text-sm text-foreground">{item.title}</div>
+                            <div className="text-xs text-muted-foreground">Size: {size}</div>
+                            {payment && (
+                              <div className="text-primary font-bold">{payment.solAmount} SOL (${payment.totalUSD.toFixed(2)})</div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                      {txSignature && (
-                        <div className="text-xs text-muted-foreground break-all">
-                          TX: <a href={`https://solscan.io/tx/${txSignature}`} target="_blank" rel="noopener noreferrer" className="text-primary underline">{txSignature.slice(0, 16)}...{txSignature.slice(-8)}</a>
+                        {sig && (
+                          <div className="text-xs text-muted-foreground break-all">
+                            TX: <a href={`https://solscan.io/tx/${sig}`} target="_blank" rel="noopener noreferrer" className="text-primary underline">{sig.slice(0, 16)}...{sig.slice(-8)}</a>
+                          </div>
+                        )}
+                        <div className="border-t border-border pt-2 space-y-1">
+                          <div className="text-xs text-muted-foreground">Ship to:</div>
+                          <div className="text-sm text-foreground">{shipping.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {shipping.address1}{shipping.address2 ? `, ${shipping.address2}` : ''}<br />
+                            {shipping.city}, {shipping.state} {shipping.zip}<br />
+                            {getCountryInfo(shipping.country).name}
+                          </div>
                         </div>
+                      </CardContent>
+                    </Card>
+                    <Button
+                      className="w-full"
+                      onClick={() => placeOrderMutation.mutate()}
+                      disabled={placeOrderMutation.isPending}
+                    >
+                      {placeOrderMutation.isPending ? (
+                        <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Submitting Order to Printful...</>
+                      ) : (
+                        <><ShoppingCart className="h-4 w-4 mr-2" /> Confirm & Submit Order</>
                       )}
-                      <div className="border-t border-border pt-2 space-y-1">
-                        <div className="text-xs text-muted-foreground">Ship to:</div>
-                        <div className="text-sm text-foreground">{shippingForm.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {shippingForm.address1}{shippingForm.address2 ? `, ${shippingForm.address2}` : ''}<br />
-                          {shippingForm.city}, {shippingForm.state} {shippingForm.zip}<br />
-                          {getCountryInfo(shippingForm.country).name}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Button
-                    className="w-full"
-                    onClick={() => placeOrderMutation.mutate()}
-                    disabled={placeOrderMutation.isPending}
-                  >
-                    {placeOrderMutation.isPending ? (
-                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Submitting Order to Printful...</>
-                    ) : (
-                      <><ShoppingCart className="h-4 w-4 mr-2" /> Confirm & Submit Order</>
-                    )}
-                  </Button>
-                  <p className="text-xs text-muted-foreground text-center">
-                    Your sticker will be printed and shipped by Printful to the address above.
-                  </p>
-                </>
-              )}
+                    </Button>
+                    <p className="text-xs text-muted-foreground text-center">
+                      Your sticker will be printed and shipped by Printful to the address above.
+                    </p>
+                  </>
+                );
+              })()}
             </div>
           )}
         </DrawerContent>
