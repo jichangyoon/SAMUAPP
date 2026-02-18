@@ -810,9 +810,10 @@ router.post("/:id/order", async (req, res) => {
           }],
         };
 
-        const orderResult = await printfulRequest("POST", "/orders", orderPayload);
+        const orderResult = await printfulRequest("POST", "/orders?confirm=true", orderPayload);
         printfulOrderId = orderResult.result?.id || null;
         printfulStatus = orderResult.result?.status || null;
+        console.log("Printful order created:", { printfulOrderId, printfulStatus });
       } catch (printfulError: any) {
         console.error("Printful order creation failed:", printfulError);
         printfulStatus = "printful_error";

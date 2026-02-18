@@ -1618,9 +1618,30 @@ export class DatabaseStorage implements IStorage {
 
   async updateVoterRewardPool(contestId: number, depositAmount: number): Promise<VoterRewardPool> {
     if (!this.db) throw new Error("Database not available");
-    const pool = await this.getVoterRewardPool(contestId);
-    if (!pool) throw new Error("Voter reward pool not found for contest " + contestId);
-    if (pool.totalShares <= 0) throw new Error("No voters in this contest");
+    let pool = await this.getVoterRewardPool(contestId);
+    if (!pool) {
+      console.log(`Voter reward pool not found for contest ${contestId}, creating one automatically`);
+      const [newPool] = await this.db.insert(voterRewardPool)
+        .values({
+          contestId,
+          totalShares: 0,
+          rewardPerShare: 0,
+          totalDeposited: 0,
+        })
+        .returning();
+      pool = newPool;
+    }
+    if (pool.totalShares <= 0) {
+      console.log(`No voters in contest ${contestId} yet. Depositing ${depositAmount} SOL to pool (will be distributed when voters join)`);
+      const [updated] = await this.db.update(voterRewardPool)
+        .set({
+          totalDeposited: pool.totalDeposited + depositAmount,
+          updatedAt: new Date(),
+        })
+        .where(eq(voterRewardPool.contestId, contestId))
+        .returning();
+      return updated;
+    }
     const addedRewardPerShare = depositAmount / pool.totalShares;
     const [updated] = await this.db.update(voterRewardPool)
       .set({
