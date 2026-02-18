@@ -279,32 +279,13 @@ export function GoodsShop() {
   });
 
   const handlePaySOL = useCallback(async () => {
-    if (!selectedItem || !walletAddress) return;
+    if (!selectedItem || !walletAddress || !paymentInfo) return;
 
     setIsPaying(true);
     try {
-      const rates = shippingEstimate?.shipping_rates || [];
-      const shippingCost = rates[0]?.rate || 0;
-
-      toast({ title: "Preparing SOL payment...", duration: 3000 });
-
-      const prepareRes = await fetch(`/api/goods/${selectedItem.id}/prepare-payment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ buyerWallet: walletAddress, shippingCostUSD: shippingCost }),
-      });
-
-      if (!prepareRes.ok) {
-        const err = await prepareRes.json();
-        throw new Error(err.error || 'Failed to prepare payment');
-      }
-
-      const payData = await prepareRes.json();
-      setPaymentInfo(payData);
-
       toast({ title: "Please sign the transaction in your wallet", duration: 5000 });
 
-      const transaction = Transaction.from(Buffer.from(payData.transaction, 'base64'));
+      const transaction = Transaction.from(Buffer.from(paymentInfo.transaction, 'base64'));
       const signedTx = await signTransaction({ transaction, connection: solConnection });
       const sig = await solConnection.sendRawTransaction(signedTx.serialize());
       await solConnection.confirmTransaction(sig, 'confirmed');
@@ -318,7 +299,7 @@ export function GoodsShop() {
     } finally {
       setIsPaying(false);
     }
-  }, [selectedItem, walletAddress, shippingEstimate, signTransaction, solConnection]);
+  }, [selectedItem, walletAddress, paymentInfo, signTransaction, solConnection]);
 
   const placeOrderMutation = useMutation({
     mutationFn: async () => {
@@ -482,7 +463,7 @@ export function GoodsShop() {
         </div>
       )}
 
-      <Drawer open={orderStep !== 'browse'} onOpenChange={(open) => { if (!open) resetOrder(); }}>
+      <Drawer open={orderStep !== 'browse'} onOpenChange={(open) => { if (!open && !isPaying) resetOrder(); }}>
         <DrawerContent className="bg-card border-border max-h-[92vh] h-[92vh]">
           <DrawerHeader className="flex items-center gap-2">
             {orderStep !== 'detail' && (
