@@ -1,6 +1,6 @@
 import { memes, votes, nfts, nftComments, partnerMemes, partnerVotes, users, contests, archivedContests, loginLogs, blockedIps, revenues, revenueShares, goods, orders, goodsRevenueDistributions, voterRewardPool, voterClaimRecords, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type NftComment, type InsertNftComment, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest, type LoginLog, type InsertLoginLog, type BlockedIp, type InsertBlockedIp, type Revenue, type InsertRevenue, type RevenueShare, type InsertRevenueShare, type Goods, type InsertGoods, type Order, type InsertOrder, type GoodsRevenueDistribution, type InsertGoodsRevenueDistribution, type VoterRewardPool, type InsertVoterRewardPool, type VoterClaimRecord, type InsertVoterClaimRecord } from "@shared/schema";
 import { getDatabase } from "./db";
-import { eq, and, desc, isNull, or, sql } from "drizzle-orm";
+import { eq, and, desc, isNull, or, sql, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -492,6 +492,33 @@ export class MemStorage implements IStorage {
 export class DatabaseStorage implements IStorage {
   private db = getDatabase();
 
+  private async enrichMemesWithProfiles<T extends Meme | null>(memeList: T[]): Promise<T[]> {
+    if (!this.db) return memeList;
+    const validMemes = memeList.filter((m): m is Meme & T => m !== null);
+    if (validMemes.length === 0) return memeList;
+
+    const wallets = [...new Set(validMemes.map(m => m.authorWallet))];
+    const userRows = await this.db
+      .select()
+      .from(users)
+      .where(inArray(users.walletAddress, wallets));
+
+    const userMap = new Map(userRows.map(u => [u.walletAddress, u]));
+
+    return memeList.map(meme => {
+      if (!meme) return meme;
+      const user = userMap.get(meme.authorWallet);
+      if (user) {
+        return {
+          ...meme,
+          authorUsername: user.displayName || user.username || meme.authorUsername,
+          authorAvatarUrl: user.avatarUrl || meme.authorAvatarUrl,
+        } as T;
+      }
+      return meme;
+    }) as T[];
+  }
+
   // User operations
   async createUser(insertUser: InsertUser): Promise<User> {
     if (!this.db) throw new Error("Database not available");
@@ -773,23 +800,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(memes.contestId, contestId))
       .orderBy(desc(memes.votes));
 
-    const enrichedMemes = await Promise.all(
-      contestMemes.map(async (meme) => {
-        const [user] = await this.db!
-          .select()
-          .from(users)
-          .where(eq(users.walletAddress, meme.authorWallet))
-          .limit(1);
-        if (user) {
-          const updatedUsername = user.displayName || user.username || meme.authorUsername;
-          const updatedAvatar = user.avatarUrl || meme.authorAvatarUrl;
-          return { ...meme, authorUsername: updatedUsername, authorAvatarUrl: updatedAvatar };
-        }
-        return meme;
-      })
-    );
-
-    return enrichedMemes;
+    return this.enrichMemesWithProfiles(contestMemes);
   }
 
   async deleteMeme(id: number): Promise<void> {
@@ -1272,59 +1283,26 @@ export class DatabaseStorage implements IStorage {
       .from(archivedContests)
       .orderBy(desc(archivedContests.archivedAt));
 
-    const enrichMemeWithUserProfile = async (meme: Meme | null) => {
-      if (!meme) return null;
-      const [user] = await this.db!
-        .select()
-        .from(users)
-        .where(eq(users.walletAddress, meme.authorWallet))
-        .limit(1);
-      if (user) {
-        const updatedUsername = user.displayName || user.username || meme.authorUsername;
-        const updatedAvatar = user.avatarUrl || meme.authorAvatarUrl;
-        return { ...meme, authorUsername: updatedUsername, authorAvatarUrl: updatedAvatar };
-      }
-      return meme;
-    };
-
-    const enrichedContests = await Promise.all(
-      archived.map(async (contest) => {
-        let winnerMeme = null;
-        let secondMeme = null;
-        let thirdMeme = null;
-
-        if (contest.winnerMemeId) {
-          const [winner] = await this.db!
-            .select()
-            .from(memes)
-            .where(eq(memes.id, contest.winnerMemeId));
-          winnerMeme = await enrichMemeWithUserProfile(winner || null);
-        }
-
-        if (contest.secondMemeId) {
-          const [second] = await this.db!
-            .select()
-            .from(memes)
-            .where(eq(memes.id, contest.secondMemeId));
-          secondMeme = await enrichMemeWithUserProfile(second || null);
-        }
-
-        if (contest.thirdMemeId) {
-          const [third] = await this.db!
-            .select()
-            .from(memes)
-            .where(eq(memes.id, contest.thirdMemeId));
-          thirdMeme = await enrichMemeWithUserProfile(third || null);
-        }
-
-        return {
-          ...contest,
-          winnerMeme,
-          secondMeme,
-          thirdMeme
-        };
-      })
+    const allMemeIds = archived.flatMap(c => 
+      [c.winnerMemeId, c.secondMemeId, c.thirdMemeId].filter((id): id is number => id !== null)
     );
+
+    let memeMap = new Map<number, Meme>();
+    if (allMemeIds.length > 0) {
+      const allMemes = await this.db
+        .select()
+        .from(memes)
+        .where(inArray(memes.id, allMemeIds));
+      const enriched = await this.enrichMemesWithProfiles(allMemes);
+      memeMap = new Map(enriched.map(m => [m.id, m]));
+    }
+
+    const enrichedContests = archived.map(contest => ({
+      ...contest,
+      winnerMeme: contest.winnerMemeId ? memeMap.get(contest.winnerMemeId) || null : null,
+      secondMeme: contest.secondMemeId ? memeMap.get(contest.secondMemeId) || null : null,
+      thirdMeme: contest.thirdMemeId ? memeMap.get(contest.thirdMemeId) || null : null,
+    }));
 
     // Filter out contests with no winner (empty contests) for Hall of Fame
     return enrichedContests.filter(contest => contest.winnerMeme !== null);
