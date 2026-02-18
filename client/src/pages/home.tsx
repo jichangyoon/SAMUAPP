@@ -563,17 +563,17 @@ export default function Home() {
                       </button>
                       {showRevenueInfo && (
                         <CardContent className="px-4 pb-4 pt-0">
-                          <div className="grid grid-cols-3 gap-2 text-sm">
-                            <div className="flex justify-between bg-accent/30 rounded px-3 py-2">
-                              <span className="text-muted-foreground">Creator</span>
+                          <div className="grid grid-cols-3 gap-3 text-sm">
+                            <div className="flex items-center justify-center gap-1.5 bg-accent/30 rounded px-2 py-2">
+                              <span className="text-muted-foreground text-xs">Creator</span>
                               <span className="text-primary font-medium">45%</span>
                             </div>
-                            <div className="flex justify-between bg-accent/30 rounded px-3 py-2">
-                              <span className="text-muted-foreground">Voters</span>
+                            <div className="flex items-center justify-center gap-1.5 bg-accent/30 rounded px-2 py-2">
+                              <span className="text-muted-foreground text-xs">Voters</span>
                               <span className="text-primary font-medium">40%</span>
                             </div>
-                            <div className="flex justify-between bg-accent/30 rounded px-3 py-2">
-                              <span className="text-muted-foreground">Platform</span>
+                            <div className="flex items-center justify-center gap-1.5 bg-accent/30 rounded px-2 py-2">
+                              <span className="text-muted-foreground text-xs">Platform</span>
                               <span className="text-primary font-medium">15%</span>
                             </div>
                           </div>
