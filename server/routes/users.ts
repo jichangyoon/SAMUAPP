@@ -62,11 +62,8 @@ router.get("/profile/:walletAddress", async (req, res) => {
     // 디바이스 ID 가져오기 (헤더에서)
     const deviceId = req.headers['x-device-id'] as string;
     
-    // 디바이스 ID 로깅 (디버깅용)
     if (deviceId) {
-      console.log(`Device ID received: ${deviceId} for wallet: ${walletAddress}`);
-    } else {
-      console.warn(`No device ID received for wallet: ${walletAddress}`);
+      // Silent tracking
     }
     
     // IP 및 디바이스 추적 및 차단 확인
@@ -154,17 +151,6 @@ router.get("/:walletAddress/votes", async (req, res) => {
   }
 });
 
-// Get user's comments
-router.get("/:walletAddress/comments", async (req, res) => {
-  try {
-    const { walletAddress } = req.params;
-    const comments = await storage.getUserComments(walletAddress);
-    res.json(comments);
-  } catch (error) {
-    console.error("Error fetching user comments:", error);
-    res.status(500).json({ message: "Failed to fetch user comments" });
-  }
-});
 
 // Get user statistics
 router.get("/:walletAddress/stats", async (req, res) => {

@@ -49,8 +49,6 @@ async function distributeGoodsRevenue(order: any, item: any, verifiedCreatorWall
     creatorAmount,
     creatorWallet,
     voterPoolAmount,
-    nftHolderAmount: 0,
-    nftHolderWallet: null,
     platformAmount,
     status,
   });

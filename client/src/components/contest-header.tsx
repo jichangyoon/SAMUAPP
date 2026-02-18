@@ -1,21 +1,17 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Trophy, Settings } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
-import { usePrivy } from "@privy-io/react-auth";
 import type { Contest } from "@shared/schema";
 
-export function ContestHeader() {
-  const { user, authenticated } = usePrivy();
+interface ContestHeaderProps {
+  entriesCount?: number;
+}
+
+export function ContestHeader({ entriesCount }: ContestHeaderProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
   
-  // Check if user is admin - allow authenticated users to access admin panel
-  const isAdmin = authenticated;
-  
-  // Fetch current active contest
   const { data: activeContest } = useQuery<Contest>({
     queryKey: ["/api/admin/current-contest"],
     queryFn: async () => {
@@ -29,36 +25,11 @@ export function ContestHeader() {
       if (!response.ok) return null;
       return response.json();
     },
-    staleTime: 0, // 실시간 업데이트를 위해 캐시 비활성화
+    staleTime: 0,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
   });
 
-  // Fetch current memes count for active contest
-  const { data: memesResponse } = useQuery({
-    queryKey: ['/api/memes'],
-    queryFn: async () => {
-      const params = new URLSearchParams({ limit: '1000' });
-      const response = await fetch(`/api/memes?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch memes');
-      return response.json();
-    },
-    staleTime: 5 * 1000, // 5초 캐시로 줄임
-  });
-
-  // Calculate entries count based on contest status
-  const getCurrentEntriesCount = () => {
-    if (!activeContest || activeContest.status !== "active") {
-      return 0; // No active contest = 0 entries
-    }
-    // Active contest: count memes with contestId matching active contest OR null (current contest memes)
-    const memes = (memesResponse as any)?.memes || [];
-    return memes.filter((meme: any) => 
-      meme.contestId === activeContest.id || meme.contestId === null
-    ).length;
-  };
-
-  // 1초마다 현재 시간 업데이트 (활성 콘테스트가 있을 때만)
   useEffect(() => {
     if (activeContest && activeContest.status === "active") {
       const timer = setInterval(() => {
@@ -67,14 +38,13 @@ export function ContestHeader() {
 
       return () => clearInterval(timer);
     }
-    // 활성 콘테스트가 없으면 타이머 중지
   }, [activeContest?.status, activeContest?.id]);
 
   const contestData = {
     timeLeft: activeContest && activeContest.status === "active" && activeContest.endTime ? 
       calculateTimeLeft(new Date(activeContest.endTime)) : null,
     prizePool: activeContest?.prizePool || "TBA",
-    totalEntries: getCurrentEntriesCount(),
+    totalEntries: entriesCount ?? 0,
     status: activeContest?.status === "active" ? "Live" : 
             activeContest?.status === "draft" ? "Not Started" : "Ended"
   };
@@ -115,7 +85,6 @@ export function ContestHeader() {
           Submit your best SAMU memes and vote with SAMU tokens. The most voted meme wins!
         </p>
         
-        {/* Time Left - Only show if contest is active and timeLeft is valid */}
         {contestData.timeLeft && contestData.status === "Live" && (
           <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-2 mb-4 text-center">
             <div className="text-lg font-bold text-green-400">
@@ -125,7 +94,6 @@ export function ContestHeader() {
           </div>
         )}
         
-        {/* Prize Pool and Entries - Bottom row */}
         <div className="grid grid-cols-2 gap-3 text-center">
           <div className="bg-accent rounded-lg p-2">
             <div className="text-lg font-bold text-primary">

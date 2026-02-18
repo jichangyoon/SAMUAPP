@@ -522,7 +522,7 @@ export default function Home() {
               <TabsContent value="contest-main" className="mt-0">
                 <main className="space-y-4 pb-20">
                   {/* Contest Header */}
-                  <ContestHeader />
+                  <ContestHeader entriesCount={sortedMemes.length} />
 
                   {/* Submit Button - Only show when logged in AND there's an active contest */}
                   {isConnected && currentContest?.status === "active" ? (
