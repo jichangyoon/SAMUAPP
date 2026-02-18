@@ -6,7 +6,7 @@ import { UploadForm } from "@/components/upload-form";
 import { MemeCard } from "@/components/meme-card";
 import { Leaderboard } from "@/components/leaderboard";
 import { GoodsShop } from "@/components/goods-shop";
-import { NftGallery } from "@/components/nft-gallery";
+
 import { RewardsDashboard } from "@/components/rewards-dashboard";
 import { MediaDisplay } from "@/components/media-display";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
@@ -25,7 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Image, Users, Plus, Lock, RefreshCw, DollarSign, TrendingUp, ChevronDown, ChevronUp, Coins } from "lucide-react";
+import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Users, Plus, Lock, RefreshCw, DollarSign, TrendingUp, ChevronDown, ChevronUp, Coins } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -134,7 +134,7 @@ export default function Home() {
   const [showArchiveVoteDetail, setShowArchiveVoteDetail] = useState(false);
   const [selectedArchiveMeme, setSelectedArchiveMeme] = useState<any>(null);
   const [isLoadingContestDetails, setIsLoadingContestDetails] = useState(false);
-  const [showNftLoading, setShowNftLoading] = useState(false);
+
   const [showVoteDialog, setShowVoteDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showRevenueInfo, setShowRevenueInfo] = useState(false);
@@ -563,18 +563,14 @@ export default function Home() {
                       </button>
                       {showRevenueInfo && (
                         <CardContent className="px-4 pb-4 pt-0">
-                          <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div className="grid grid-cols-3 gap-2 text-sm">
                             <div className="flex justify-between bg-accent/30 rounded px-3 py-2">
                               <span className="text-muted-foreground">Creator</span>
-                              <span className="text-primary font-medium">30%</span>
+                              <span className="text-primary font-medium">45%</span>
                             </div>
                             <div className="flex justify-between bg-accent/30 rounded px-3 py-2">
                               <span className="text-muted-foreground">Voters</span>
-                              <span className="text-primary font-medium">30%</span>
-                            </div>
-                            <div className="flex justify-between bg-accent/30 rounded px-3 py-2">
-                              <span className="text-muted-foreground">NFT Holder</span>
-                              <span className="text-primary font-medium">25%</span>
+                              <span className="text-primary font-medium">40%</span>
                             </div>
                             <div className="flex justify-between bg-accent/30 rounded px-3 py-2">
                               <span className="text-muted-foreground">Platform</span>
@@ -1025,17 +1021,6 @@ export default function Home() {
             <GoodsShop />
           </TabsContent>
 
-          <TabsContent value="nfts" className="mt-4 space-y-4 pb-24">
-            {showNftLoading ? (
-              <div className="min-h-[50vh] flex flex-col items-center justify-center space-y-4">
-                <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full"></div>
-                <p className="text-muted-foreground">Loading SAMU Wolf Collection...</p>
-              </div>
-            ) : (
-              <NftGallery />
-            )}
-          </TabsContent>
-
           <TabsContent value="rewards" className="mt-4 space-y-4 pb-24">
             <RewardsDashboard />
           </TabsContent>
@@ -1055,7 +1040,7 @@ export default function Home() {
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50">
         <div className="max-w-md mx-auto px-4 py-1">
-          <div className="grid grid-cols-6 gap-0">
+          <div className="grid grid-cols-5 gap-0">
             <button
               onClick={() => setCurrentTab("contest")}
               className={`flex flex-col items-center justify-center py-2 px-0.5 rounded-lg transition-colors ${
@@ -1077,21 +1062,6 @@ export default function Home() {
             >
               <Archive className="h-4 w-4" />
               <span className="text-[10px] mt-0.5">Archive</span>
-            </button>
-            <button
-              onClick={() => {
-                setCurrentTab("nfts");
-                setShowNftLoading(true);
-                setTimeout(() => setShowNftLoading(false), 1200);
-              }}
-              className={`flex flex-col items-center justify-center py-2 px-0.5 rounded-lg transition-colors ${
-                currentTab === "nfts" 
-                  ? "bg-primary/20 text-primary" 
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Image className="h-4 w-4" />
-              <span className="text-[10px] mt-0.5">NFT</span>
             </button>
             <button
               onClick={() => setCurrentTab("goods")}

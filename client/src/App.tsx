@@ -76,11 +76,6 @@ function App() {
           '/src/assets/samu-logo.webp'
         ];
         
-        // Preload NFT images (first 20 for immediate visibility)
-        for (let i = 1; i <= 20; i++) {
-          imagesToPreload.push(`/assets/nfts/${i}.webp`);
-        }
-        
         // Load all images with Promise.all to wait for completion
         const imagePromises = imagesToPreload.map(src => {
           return new Promise((resolve, reject) => {

@@ -6,14 +6,12 @@ import { config } from "../config";
 const router = Router();
 
 const REVENUE_SHARES = {
-  CREATOR: 0.30,
-  VOTERS: 0.30,
-  NFT_HOLDER: 0.25,
+  CREATOR: 0.45,
+  VOTERS: 0.40,
   PLATFORM: 0.15,
 };
 
 const PLATFORM_WALLET = process.env.TREASURY_WALLET_ADDRESS || "4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk";
-const NFT_HOLDER_UNASSIGNED = "unassigned_nft_holder";
 
 async function requireAdmin(req: any, res: any): Promise<boolean> {
   const email = req.headers["x-admin-email"] || req.body?.adminEmail;
@@ -121,17 +119,6 @@ router.post("/:id/distribute", async (req, res) => {
         });
       }
     }
-
-    const nftHolderWallet = req.body?.nftHolderWallet || NFT_HOLDER_UNASSIGNED;
-    shares.push({
-      revenueId,
-      contestId,
-      walletAddress: nftHolderWallet,
-      role: "nft_holder",
-      sharePercent: REVENUE_SHARES.NFT_HOLDER * 100,
-      amountSol: totalSol * REVENUE_SHARES.NFT_HOLDER,
-      status: "pending",
-    });
 
     shares.push({
       revenueId,

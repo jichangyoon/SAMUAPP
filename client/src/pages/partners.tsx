@@ -88,8 +88,6 @@ export function Partners() {
                 Contest
               </span>
               <span>→</span>
-              <span>NFT</span>
-              <span>→</span>
               <span>Goods</span>
               <span>→</span>
               <span className="text-yellow-400 font-medium">Rewards</span>

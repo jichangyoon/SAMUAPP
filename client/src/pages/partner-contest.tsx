@@ -253,7 +253,7 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
                 </p>
                 <button
                   onClick={() => {
-                    // X 앱 딥링크 우선, 웹사이트 폴백 - NFT 갤러리와 동일한 방식
+                    // X 앱 딥링크 우선, 웹사이트 폴백
                     const webUrl = partner.twitterUrl;
                     const username = partner.twitterUrl.split('/').pop();
                     const xAppUrl = `twitter://user?screen_name=${username}`;

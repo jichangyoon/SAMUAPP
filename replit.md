@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a full-stack web application for a SAMU (Solana meme token) contest platform. Users can submit memes, vote using their token holdings, and compete for prizes. The application features a goods shop for merchandise, an NFT gallery, and a system for partner communities to host their own contests.
+This is a full-stack web application for a SAMU (Solana meme token) contest platform. Users can submit memes, vote using their token holdings, and compete for prizes. The application features a goods shop for merchandise and a system for partner communities to host their own contests.
 
 ## User Preferences
 
@@ -14,7 +14,7 @@ This is a web app — not a mobile app. No mobile app packaging or mobile-first 
 
 **Core Concept: Meme Incubator**
 - The app's mission is to help memecoins evolve into IP (Intellectual Property) on Solana.
-- Pipeline: Meme Contest → NFT → Goods (via Printful) → Ecosystem Rewards (SAMU)
+- Pipeline: Meme Contest → Goods (via Printful) → Ecosystem Rewards (SAMU)
 
 **Dual Token Model:**
 - **SAMU Token** = Governance/Voting/Rewards (community votes on memes using SAMU tokens, ecosystem rewards distributed in SAMU)
@@ -36,28 +36,25 @@ This is a web app — not a mobile app. No mobile app packaging or mobile-first 
 - Duplicate vote prevention via `getVoteByTxSignature` check
 
 **Ecosystem Rewards Model (Implemented - Instant Distribution + Voter Claims):**
-- Meme Creator: 30% (permanent reward for creating the IP)
-- Voters: 30% (proportional to voting amount in that contest round - all voters, not just winners)
-- NFT Holder: 25% (whoever holds the winning meme's NFT, tradeable)
+- Meme Creator: 45% (permanent reward for creating the IP)
+- Voters: 40% (proportional to voting amount in that contest round - all voters, not just winners)
 - Platform: 15% (operational costs)
-- Revenue sources: Goods sales (Printful), NFT sales
+- Revenue sources: Goods sales (Printful)
 - Reward currency: SOL (from goods sales)
-- **Instant Distribution**: Goods payment creates multi-instruction Solana TX splitting SOL directly to Creator wallet (30%) + Treasury (70%) at payment time
-- **Voter Claim System**: Voter 30% deposited to per-contest reward pool using "Reward Per Share" mechanism (DeFi pattern). Voters claim anytime via profile page.
+- **Instant Distribution**: Goods payment creates multi-instruction Solana TX splitting SOL directly to Creator wallet (45%) + Treasury (55%) at payment time
+- **Voter Claim System**: Voter 40% deposited to per-contest reward pool using "Reward Per Share" mechanism (DeFi pattern). Voters claim anytime via profile page.
 - DB tables: `goodsRevenueDistributions` (per-sale distribution records), `voterRewardPool` (per-contest cumulative rewards), `voterClaimRecords` (individual voter claim history), `revenues`, `revenue_shares`
 - API: `/api/rewards/dashboard` (sales summary, share breakdown, distributions), `/api/rewards/voter-pool/:contestId`, `/api/rewards/claimable/:contestId/:walletAddress`, `/api/rewards/claim/:contestId`, `/api/rewards/my-claims/:walletAddress`
 - Rewards Dashboard UI in "Rewards" tab (bottom nav) with pie chart, summary cards, distribution history
 - Profile "Claims" tab shows claimable amounts + claim button + claim history
 - Distribution status tracking: "completed" (direct on-chain split) or "pending_creator_transfer" (fallback)
-- Creator amount validation with 5% tolerance against expected 30% share
+- Creator amount validation with 5% tolerance against expected 45% share
 
-**IP Pipeline (To Be Implemented):**
+**IP Pipeline:**
 1. Meme contest with SAMU voting
-2. Contest ends → Top 3 memes selected
-3. Winning memes minted as NFTs (1st, 2nd, 3rd place)
-4. NFT holders can trade NFTs (trading = transferring reward rights)
-5. Winning meme designs turned into goods via Printful
-6. SAMU token rewards distributed per ecosystem rewards model above
+2. Contest ends → Top memes selected
+3. Winning meme designs turned into goods via Printful
+4. SAMU token rewards distributed per ecosystem rewards model above
 
 **Authentication (To Be Updated):**
 - Current: Privy (email login + embedded Solana wallet)
@@ -83,7 +80,7 @@ This is a web app — not a mobile app. No mobile app packaging or mobile-first 
 **Hackathon Goals:**
 - Target: Solana hackathons (e.g. Colosseum)
 - Category: Consumer Applications
-- Differentiator: Community-curated meme IP incubator with full pipeline (vote → NFT → goods → revenue share)
+- Differentiator: Community-curated meme IP incubator with full pipeline (vote → goods → revenue share)
 - Reference projects: Pudgy Penguins (IP→goods), Steemit (voter revenue share), Threadless (community voting→merchandise)
 
 **Escrow + Gamified Logistics System (Planned - Next Phase):**
@@ -110,10 +107,10 @@ The application uses a modern full-stack architecture with a React frontend, an 
 **UI/UX Decisions:**
 - **Responsive Web Design**: Works well on both desktop and mobile browsers.
 - **Styling**: Tailwind CSS with shadcn/ui components, custom SAMU brand colors (yellows, grays, browns, oranges), and a default black dark theme.
-- **Navigation**: 6-tab bottom navigation (Contest, Archive, NFT, Goods, Rewards, Partners) with icon and text labels.
+- **Navigation**: 5-tab bottom navigation (Contest, Archive, Goods, Rewards, Partners) with icon and text labels.
 - **Modals**: Drawer-style modals using Vaul components.
 - **Typography**: Poppins font family used throughout the application.
-- **Image Optimization**: WebP format used for all images (NFTs, logos, merchandise) for performance. Lazy loading implemented for NFT gallery.
+- **Image Optimization**: WebP format used for all images (logos, merchandise) for performance.
 
 **Technical Implementations:**
 - **Frontend**: React 18 with TypeScript, Vite for tooling, TanStack Query for server state management, Wouter for routing, React Hook Form with Zod for forms.
@@ -130,7 +127,6 @@ The application uses a modern full-stack architecture with a React frontend, an 
 **Feature Specifications:**
 - **Meme Contest**: Users can submit memes, view entries in card or grid view, and vote.
 - **Goods Shop**: Kiss-Cut Sticker merchandise from contest-winning memes via Printful. SOL payment flow: estimate shipping → pay SOL to Treasury → on-chain verification → Printful order creation. Product ID 358, 4 size variants.
-- **NFT Gallery**: Displays 164 SAMU Wolf NFTs with commenting system, lazy loading.
 - **Archive**: Stores past contest results, winners, and memes.
 - **Partners**: Allows other meme coin communities to host their own isolated contests.
 - **Hall of Fame**: Displays winners from archived contests.

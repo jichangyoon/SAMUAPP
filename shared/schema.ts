@@ -54,26 +54,6 @@ export const votes = pgTable("votes", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const nfts = pgTable("nfts", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  imageUrl: text("image_url").notNull(),
-  tokenId: integer("token_id").notNull().unique(),
-  creator: text("creator").notNull(),
-  description: text("description"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
-
-export const nftComments = pgTable("nft_comments", {
-  id: serial("id").primaryKey(),
-  nftId: integer("nft_id").notNull(),
-  userWallet: text("user_wallet").notNull(),
-  username: text("username").notNull(),
-  displayName: text("display_name"), // 사용자가 설정한 표시 이름
-  avatarUrl: text("avatar_url"), // 사용자 프로필 사진
-  comment: text("comment").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
 
 export const partnerMemes = pgTable("partner_memes", {
   id: serial("id").primaryKey(),
@@ -131,7 +111,7 @@ export const blockedIps = pgTable("blocked_ips", {
 export const revenues = pgTable("revenues", {
   id: serial("id").primaryKey(),
   contestId: integer("contest_id").notNull(),
-  source: text("source").notNull(), // 'goods', 'nft_sale', 'other'
+  source: text("source").notNull(), // 'goods', 'other'
   description: text("description"),
   totalAmountSol: doublePrecision("total_amount_sol").notNull(),
   status: text("status").notNull().default("pending"), // 'pending', 'distributed', 'cancelled'
@@ -144,7 +124,7 @@ export const revenueShares = pgTable("revenue_shares", {
   revenueId: integer("revenue_id").notNull(),
   contestId: integer("contest_id").notNull(),
   walletAddress: text("wallet_address").notNull(),
-  role: text("role").notNull(), // 'creator', 'voter', 'nft_holder', 'platform'
+  role: text("role").notNull(), // 'creator', 'voter', 'platform'
   sharePercent: doublePrecision("share_percent").notNull(),
   amountSol: doublePrecision("amount_sol").notNull(),
   txSignature: text("tx_signature"),
@@ -298,15 +278,6 @@ export type InsertLoginLog = typeof loginLogs.$inferInsert;
 export type BlockedIp = typeof blockedIps.$inferSelect;
 export type InsertBlockedIp = typeof blockedIps.$inferInsert;
 
-export const insertNftSchema = createInsertSchema(nfts).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertNftCommentSchema = createInsertSchema(nftComments).omit({
-  id: true,
-  createdAt: true,
-});
 
 export const insertPartnerMemeSchema = createInsertSchema(partnerMemes).omit({
   id: true,
@@ -340,10 +311,7 @@ export type InsertMeme = z.infer<typeof insertMemeSchema>;
 export type Meme = typeof memes.$inferSelect;
 export type InsertVote = z.infer<typeof insertVoteSchema>;
 export type Vote = typeof votes.$inferSelect;
-export type InsertNft = z.infer<typeof insertNftSchema>;
-export type Nft = typeof nfts.$inferSelect;
-export type InsertNftComment = z.infer<typeof insertNftCommentSchema>;
-export type NftComment = typeof nftComments.$inferSelect;
+
 export type InsertPartnerMeme = z.infer<typeof insertPartnerMemeSchema>;
 export type PartnerMeme = typeof partnerMemes.$inferSelect;
 export type InsertPartnerVote = z.infer<typeof insertPartnerVoteSchema>;

@@ -10,8 +10,6 @@ interface Distribution {
   totalSolAmount: number;
   creatorWallet: string;
   creatorAmount: number;
-  nftHolderWallet: string | null;
-  nftHolderAmount: number;
   platformAmount: number;
   voterPoolAmount: number;
   status: string;
@@ -27,25 +25,22 @@ interface DashboardData {
   shareBreakdown: {
     creator: { percent: number; totalSol: number; wallets: string[] };
     voter: { percent: number; totalSol: number };
-    nftHolder: { percent: number; totalSol: number; wallets: string[] };
     platform: { percent: number; totalSol: number; wallet: string };
   };
   recentDistributions: Distribution[];
-  shareRatios: { creator: number; voter: number; nftHolder: number; platform: number };
+  shareRatios: { creator: number; voter: number; platform: number };
 }
 
-function PieChartSVG({ ratios }: { ratios: { creator: number; voter: number; nftHolder: number; platform: number } }) {
+function PieChartSVG({ ratios }: { ratios: { creator: number; voter: number; platform: number } }) {
   const colors = {
     creator: "hsl(50, 85%, 65%)",
     voter: "hsl(30, 80%, 55%)",
-    nftHolder: "hsl(200, 70%, 50%)",
     platform: "hsl(0, 0%, 50%)",
   };
 
   const segments = [
     { key: "creator", value: ratios.creator, color: colors.creator, label: "Creator" },
     { key: "voter", value: ratios.voter, color: colors.voter, label: "Voters" },
-    { key: "nftHolder", value: ratios.nftHolder, color: colors.nftHolder, label: "NFT Holder" },
     { key: "platform", value: ratios.platform, color: colors.platform, label: "Platform" },
   ];
 
@@ -166,7 +161,7 @@ export function RewardsDashboard() {
 
           <div className="mt-4 space-y-2">
             <div className="flex justify-between items-center text-sm p-2 rounded bg-accent/50">
-              <span className="text-muted-foreground">Creator (30%)</span>
+              <span className="text-muted-foreground">Creator (45%)</span>
               <div className="text-right">
                 <span className="font-medium">{shareBreakdown.creator.totalSol.toFixed(6)} SOL</span>
                 {shareBreakdown.creator.wallets.length > 0 && (
@@ -177,21 +172,10 @@ export function RewardsDashboard() {
               </div>
             </div>
             <div className="flex justify-between items-center text-sm p-2 rounded bg-accent/50">
-              <span className="text-muted-foreground">Voters (30%)</span>
+              <span className="text-muted-foreground">Voters (40%)</span>
               <div className="text-right">
                 <span className="font-medium">{shareBreakdown.voter.totalSol.toFixed(6)} SOL</span>
                 <div className="text-xs text-muted-foreground">Claimable Pool</div>
-              </div>
-            </div>
-            <div className="flex justify-between items-center text-sm p-2 rounded bg-accent/50">
-              <span className="text-muted-foreground">NFT Holder (25%)</span>
-              <div className="text-right">
-                <span className="font-medium">{shareBreakdown.nftHolder.totalSol.toFixed(6)} SOL</span>
-                {shareBreakdown.nftHolder.wallets.length > 0 && (
-                  <div className="text-xs text-muted-foreground">
-                    {shareBreakdown.nftHolder.wallets.map(w => shortenWallet(w)).join(', ')}
-                  </div>
-                )}
               </div>
             </div>
             <div className="flex justify-between items-center text-sm p-2 rounded bg-accent/50">
@@ -241,7 +225,7 @@ export function RewardsDashboard() {
                       Voters: <span className="text-[hsl(30,80%,55%)]">{dist.voterPoolAmount.toFixed(6)}</span>
                     </div>
                     <div className="text-muted-foreground">
-                      NFT: <span className="text-[hsl(200,70%,50%)]">{dist.nftHolderAmount.toFixed(6)}</span>
+                      Platform: <span className="text-muted-foreground">{dist.platformAmount.toFixed(6)}</span>
                     </div>
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">

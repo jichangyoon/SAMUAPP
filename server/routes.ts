@@ -5,7 +5,7 @@ import path from "path";
 import { memesRouter } from "./routes/memes";
 import { votesRouter } from "./routes/votes";
 import { walletRouter } from "./routes/wallet";
-import nftsRouter from "./routes/nfts";
+
 import partnersRouter from "./routes/partners";
 import uploadsRouter from "./routes/uploads";
 import usersRouter from "./routes/users";
@@ -24,7 +24,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.use("/api/memes", memesRouter);
   app.use("/api/memes", votesRouter);
-  app.use("/api/nfts", nftsRouter);
+
   app.use("/api/partners", partnersRouter);
   app.use("/api/uploads", uploadsRouter);
   app.use("/api/users", usersRouter);

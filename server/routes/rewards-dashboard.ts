@@ -4,9 +4,8 @@ import { storage } from "../storage";
 const router = Router();
 
 const SHARE_RATIOS = {
-  creator: 0.30,
-  voter: 0.30,
-  nftHolder: 0.25,
+  creator: 0.45,
+  voter: 0.40,
   platform: 0.15,
 };
 
@@ -25,12 +24,10 @@ router.get("/dashboard", async (_req, res) => {
     const totalDistributed = distributions.reduce((sum, d) => sum + d.totalSolAmount, 0);
     const creatorTotal = distributions.reduce((sum, d) => sum + d.creatorAmount, 0);
     const voterTotal = distributions.reduce((sum, d) => sum + d.voterPoolAmount, 0);
-    const nftHolderTotal = distributions.reduce((sum, d) => sum + d.nftHolderAmount, 0);
+
     const platformTotal = distributions.reduce((sum, d) => sum + d.platformAmount, 0);
 
     const creatorWallets = Array.from(new Set(distributions.map(d => d.creatorWallet)));
-    const nftHolderWallets = Array.from(new Set(distributions.filter(d => d.nftHolderWallet).map(d => d.nftHolderWallet!)));
-
     res.json({
       summary: {
         totalSalesSol,
@@ -40,7 +37,6 @@ router.get("/dashboard", async (_req, res) => {
       shareBreakdown: {
         creator: { percent: SHARE_RATIOS.creator * 100, totalSol: creatorTotal, wallets: creatorWallets },
         voter: { percent: SHARE_RATIOS.voter * 100, totalSol: voterTotal },
-        nftHolder: { percent: SHARE_RATIOS.nftHolder * 100, totalSol: nftHolderTotal, wallets: nftHolderWallets },
         platform: { percent: SHARE_RATIOS.platform * 100, totalSol: platformTotal, wallet: TREASURY_WALLET },
       },
       recentDistributions: distributions.slice(0, 20),

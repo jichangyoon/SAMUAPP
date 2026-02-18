@@ -7,9 +7,8 @@ import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } f
 const router = Router();
 
 const SHARE_RATIOS = {
-  creator: 0.30,
-  voter: 0.30,
-  nftHolder: 0.25,
+  creator: 0.45,
+  voter: 0.40,
   platform: 0.15,
 };
 
@@ -30,11 +29,9 @@ async function distributeGoodsRevenue(order: any, item: any, verifiedCreatorWall
 
   const meme = item.memeId ? await storage.getMemeById(item.memeId) : null;
   const creatorWallet = verifiedCreatorWallet || meme?.authorWallet || TREASURY_WALLET;
-  const nftHolderWallet = null;
 
   const creatorAmount = totalSol * SHARE_RATIOS.creator;
   const voterPoolAmount = totalSol * SHARE_RATIOS.voter;
-  const nftHolderAmount = totalSol * SHARE_RATIOS.nftHolder;
   const platformAmount = totalSol * SHARE_RATIOS.platform;
 
   const expectedCreatorAmount = totalSol * SHARE_RATIOS.creator;
@@ -52,8 +49,8 @@ async function distributeGoodsRevenue(order: any, item: any, verifiedCreatorWall
     creatorAmount,
     creatorWallet,
     voterPoolAmount,
-    nftHolderAmount,
-    nftHolderWallet,
+    nftHolderAmount: 0,
+    nftHolderWallet: null,
     platformAmount,
     status,
   });
@@ -61,7 +58,7 @@ async function distributeGoodsRevenue(order: any, item: any, verifiedCreatorWall
   await storage.updateVoterRewardPool(contestId, voterPoolAmount);
 
   const transferMethod = creatorDirect ? "DIRECT (on-chain split)" : "DB RECORD (pending)";
-  console.log(`Revenue distributed for order ${order.id} [${transferMethod}]: Creator=${creatorAmount.toFixed(6)} SOL → ${creatorWallet}, Voters=${voterPoolAmount.toFixed(6)} SOL (pool), NFT=${nftHolderAmount.toFixed(6)} SOL, Platform=${platformAmount.toFixed(6)} SOL`);
+  console.log(`Revenue distributed for order ${order.id} [${transferMethod}]: Creator=${creatorAmount.toFixed(6)} SOL → ${creatorWallet}, Voters=${voterPoolAmount.toFixed(6)} SOL (pool), Platform=${platformAmount.toFixed(6)} SOL`);
 }
 
 const TRUNK_PREFIX_COUNTRIES = new Set([
@@ -583,7 +580,6 @@ router.post("/:id/prepare-payment", async (req, res) => {
     const totalLamports = Math.ceil(solAmount * LAMPORTS_PER_SOL);
 
     let creatorWallet: string | null = null;
-    let nftHolderWallet: string | null = null;
 
     if (item.memeId) {
       const meme = await storage.getMemeById(item.memeId);
@@ -596,9 +592,8 @@ router.post("/:id/prepare-payment", async (req, res) => {
     const splits: { recipient: string; role: string; lamports: number; solAmount: number }[] = [];
 
     const creatorLamports = Math.floor(totalLamports * SHARE_RATIOS.creator);
-    const nftHolderLamports = Math.floor(totalLamports * SHARE_RATIOS.nftHolder);
     const platformLamports = Math.floor(totalLamports * SHARE_RATIOS.platform);
-    const voterPoolLamports = totalLamports - creatorLamports - nftHolderLamports - platformLamports;
+    const voterPoolLamports = totalLamports - creatorLamports - platformLamports;
 
     if (creatorWallet) {
       const creatorPubkey = new PublicKey(creatorWallet);
@@ -608,17 +603,8 @@ router.post("/:id/prepare-payment", async (req, res) => {
       splits.push({ recipient: creatorWallet, role: "creator", lamports: creatorLamports, solAmount: creatorLamports / LAMPORTS_PER_SOL });
     }
 
-    if (nftHolderWallet) {
-      const nftPubkey = new PublicKey(nftHolderWallet);
-      transaction.add(
-        SystemProgram.transfer({ fromPubkey: buyerPubkey, toPubkey: nftPubkey, lamports: nftHolderLamports })
-      );
-      splits.push({ recipient: nftHolderWallet, role: "nftHolder", lamports: nftHolderLamports, solAmount: nftHolderLamports / LAMPORTS_PER_SOL });
-    }
-
     let treasuryLamports = voterPoolLamports + platformLamports;
     if (!creatorWallet) treasuryLamports += creatorLamports;
-    if (!nftHolderWallet) treasuryLamports += nftHolderLamports;
 
     transaction.add(
       SystemProgram.transfer({ fromPubkey: buyerPubkey, toPubkey: treasuryPubkey, lamports: treasuryLamports })
@@ -643,7 +629,6 @@ router.post("/:id/prepare-payment", async (req, res) => {
       splits,
       distribution: {
         creator: { wallet: creatorWallet || TREASURY_WALLET, amount: creatorLamports / LAMPORTS_PER_SOL, direct: !!creatorWallet },
-        nftHolder: { wallet: nftHolderWallet || TREASURY_WALLET, amount: nftHolderLamports / LAMPORTS_PER_SOL, direct: !!nftHolderWallet },
         platform: { wallet: TREASURY_WALLET, amount: platformLamports / LAMPORTS_PER_SOL, direct: true },
         voterPool: { wallet: TREASURY_WALLET, amount: voterPoolLamports / LAMPORTS_PER_SOL, direct: true },
       },

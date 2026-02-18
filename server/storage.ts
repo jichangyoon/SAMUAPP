@@ -1,4 +1,4 @@
-import { memes, votes, nfts, nftComments, partnerMemes, partnerVotes, users, contests, archivedContests, loginLogs, blockedIps, revenues, revenueShares, goods, orders, goodsRevenueDistributions, voterRewardPool, voterClaimRecords, type Meme, type InsertMeme, type Vote, type InsertVote, type Nft, type InsertNft, type NftComment, type InsertNftComment, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest, type LoginLog, type InsertLoginLog, type BlockedIp, type InsertBlockedIp, type Revenue, type InsertRevenue, type RevenueShare, type InsertRevenueShare, type Goods, type InsertGoods, type Order, type InsertOrder, type GoodsRevenueDistribution, type InsertGoodsRevenueDistribution, type VoterRewardPool, type InsertVoterRewardPool, type VoterClaimRecord, type InsertVoterClaimRecord } from "@shared/schema";
+import { memes, votes, partnerMemes, partnerVotes, users, contests, archivedContests, loginLogs, blockedIps, revenues, revenueShares, goods, orders, goodsRevenueDistributions, voterRewardPool, voterClaimRecords, type Meme, type InsertMeme, type Vote, type InsertVote, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest, type LoginLog, type InsertLoginLog, type BlockedIp, type InsertBlockedIp, type Revenue, type InsertRevenue, type RevenueShare, type InsertRevenueShare, type Goods, type InsertGoods, type Order, type InsertOrder, type GoodsRevenueDistribution, type InsertGoodsRevenueDistribution, type VoterRewardPool, type InsertVoterRewardPool, type VoterClaimRecord, type InsertVoterClaimRecord } from "@shared/schema";
 import { getDatabase } from "./db";
 import { eq, and, desc, isNull, or, sql, inArray } from "drizzle-orm";
 
@@ -11,8 +11,6 @@ export interface IStorage {
   updateUserMemeAuthorInfo(walletAddress: string, newDisplayName: string, newAvatarUrl?: string): Promise<void>;
   getUserMemes(walletAddress: string): Promise<Meme[]>;
   getUserVotes(walletAddress: string): Promise<Vote[]>;
-  getUserComments(walletAddress: string): Promise<NftComment[]>;
-  
   // Meme operations
   createMeme(meme: InsertMeme): Promise<Meme>;
   getMemes(): Promise<Meme[]>;
@@ -29,16 +27,6 @@ export interface IStorage {
   updateMemeVoteCount(memeId: number): Promise<void>;
   getUserVoteHistoryByContest(walletAddress: string): Promise<any[]>;
   getUserVotesForContest(walletAddress: string, contestId: number): Promise<any[]>;
-  
-  // NFT operations
-  getNfts(): Promise<Nft[]>;
-  getNftById(id: number): Promise<Nft | undefined>;
-  
-  // NFT Comment operations
-  createNftComment(comment: InsertNftComment): Promise<NftComment>;
-  getNftComments(nftId: number): Promise<NftComment[]>;
-  getNftCommentById(commentId: number): Promise<NftComment | undefined>;
-  deleteNftComment(commentId: number): Promise<void>;
   
   // Partner Meme operations
   createPartnerMeme(meme: InsertMeme, partnerId: string): Promise<Meme>;
@@ -113,33 +101,23 @@ export interface IStorage {
 export class MemStorage implements IStorage {
   private memes: Map<number, Meme>;
   private votes: Map<number, Vote>;
-  private nfts: Map<number, Nft>;
-  private nftComments: Map<number, NftComment>;
   private partnerMemes: Map<string, Map<number, Meme>>;
   private partnerVotes: Map<string, Map<number, Vote>>;
   private users: Map<string, User>;
   private currentMemeId: number;
   private currentVoteId: number;
-  private currentNftId: number;
-  private currentCommentId: number;
   private currentUserId: number;
 
   constructor() {
     this.memes = new Map();
     this.votes = new Map();
-    this.nfts = new Map();
-    this.nftComments = new Map();
     this.partnerMemes = new Map();
     this.partnerVotes = new Map();
     this.users = new Map();
     this.currentMemeId = 1;
     this.currentVoteId = 1;
-    this.currentNftId = 1;
-    this.currentCommentId = 1;
     this.currentUserId = 1;
     
-    // Initialize 164 NFTs (keeping for gallery display)
-    this.initializeNftData();
   }
 
   async createMeme(insertMeme: InsertMeme): Promise<Meme> {
@@ -254,12 +232,6 @@ export class MemStorage implements IStorage {
     return [];
   }
 
-  async getUserComments(walletAddress: string): Promise<NftComment[]> {
-    return Array.from(this.nftComments.values())
-      .filter(comment => comment.userWallet === walletAddress)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-  }
-
   async createVote(insertVote: InsertVote): Promise<Vote> {
     const id = this.currentVoteId++;
     const vote: Vote = {
@@ -302,74 +274,6 @@ export class MemStorage implements IStorage {
       meme.votes = totalSamu;
       this.memes.set(memeId, meme);
     }
-  }
-
-  private initializeNftData() {
-    // Create 164 unique NFTs with URL-based images for better performance
-    const nftImageUrls = this.generateNftImageUrls();
-    
-    for (let i = 1; i <= 164; i++) {
-      const nft: Nft = {
-        id: i,
-        title: `SAMU Wolf #${String(i).padStart(3, '0')}`,
-        tokenId: i,
-        creator: "SAMU Official",
-        description: `Unique SAMU Wolf NFT with special traits. Part of the legendary 164 collection.`,
-        imageUrl: nftImageUrls[i - 1],
-        createdAt: new Date()
-      };
-      this.nfts.set(i, nft);
-    }
-  }
-
-  private generateNftImageUrls(): string[] {
-    // High-performance NFT image URLs - using WebP format for 98% size reduction
-    const urls: string[] = [];
-    for (let i = 1; i <= 164; i++) {
-      // Using WebP optimized images for faster loading
-      urls.push(`/assets/nfts/${i}.webp`);
-    }
-    return urls;
-  }
-
-  // NFT operations
-  async getNfts(): Promise<Nft[]> {
-    return Array.from(this.nfts.values()).sort((a, b) => a.tokenId - b.tokenId);
-  }
-
-  async getNftById(id: number): Promise<Nft | undefined> {
-    return this.nfts.get(id);
-  }
-
-  // NFT Comment operations
-  async createNftComment(insertComment: InsertNftComment): Promise<NftComment> {
-    const id = this.currentCommentId++;
-    const comment: NftComment = {
-      id,
-      nftId: insertComment.nftId,
-      userWallet: insertComment.userWallet,
-      username: insertComment.username,
-      displayName: insertComment.displayName ?? null,
-      avatarUrl: insertComment.avatarUrl ?? null,
-      comment: insertComment.comment,
-      createdAt: new Date()
-    };
-    this.nftComments.set(id, comment);
-    return comment;
-  }
-
-  async getNftComments(nftId: number): Promise<NftComment[]> {
-    return Array.from(this.nftComments.values())
-      .filter(comment => comment.nftId === nftId)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-  }
-
-  async getNftCommentById(commentId: number): Promise<NftComment | undefined> {
-    return this.nftComments.get(commentId);
-  }
-
-  async deleteNftComment(commentId: number): Promise<void> {
-    this.nftComments.delete(commentId);
   }
 
   // Partner Meme operations
@@ -721,16 +625,6 @@ export class DatabaseStorage implements IStorage {
     } as any;
   }
 
-  async getUserComments(walletAddress: string): Promise<NftComment[]> {
-    if (!this.db) throw new Error("Database not available");
-    
-    return await this.db
-      .select()
-      .from(nftComments)
-      .where(eq(nftComments.userWallet, walletAddress))
-      .orderBy(desc(nftComments.createdAt));
-  }
-
   async createMeme(insertMeme: InsertMeme): Promise<Meme> {
     if (!this.db) throw new Error("Database not available");
     
@@ -873,62 +767,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(memes.id, memeId));
   }
 
-  async getNfts(): Promise<Nft[]> {
-    if (!this.db) throw new Error("Database not available");
-    
-    return await this.db
-      .select()
-      .from(nfts)
-      .orderBy(desc(nfts.createdAt));
-  }
 
-  async getNftById(id: number): Promise<Nft | undefined> {
-    if (!this.db) throw new Error("Database not available");
-    
-    const [nft] = await this.db
-      .select()
-      .from(nfts)
-      .where(eq(nfts.id, id));
-    return nft;
-  }
-
-  async createNftComment(insertComment: InsertNftComment): Promise<NftComment> {
-    if (!this.db) throw new Error("Database not available");
-    
-    const [comment] = await this.db
-      .insert(nftComments)
-      .values(insertComment)
-      .returning();
-    return comment;
-  }
-
-  async getNftComments(nftId: number): Promise<NftComment[]> {
-    if (!this.db) throw new Error("Database not available");
-    
-    return await this.db
-      .select()
-      .from(nftComments)
-      .where(eq(nftComments.nftId, nftId))
-      .orderBy(desc(nftComments.createdAt));
-  }
-
-  async getNftCommentById(commentId: number): Promise<NftComment | undefined> {
-    if (!this.db) throw new Error("Database not available");
-    
-    const [comment] = await this.db
-      .select()
-      .from(nftComments)
-      .where(eq(nftComments.id, commentId));
-    return comment;
-  }
-
-  async deleteNftComment(commentId: number): Promise<void> {
-    if (!this.db) throw new Error("Database not available");
-    
-    await this.db
-      .delete(nftComments)
-      .where(eq(nftComments.id, commentId));
-  }
 
   async createPartnerMeme(insertMeme: InsertMeme, partnerId: string): Promise<Meme> {
     if (!this.db) throw new Error("Database not available");
