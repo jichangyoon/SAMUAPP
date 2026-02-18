@@ -28,8 +28,8 @@ async function distributeGoodsRevenue(order: any, item: any, verifiedCreatorWall
     return;
   }
 
-  const meme = item.memeId ? await storage.getMeme(item.memeId) : null;
-  const creatorWallet = verifiedCreatorWallet || meme?.walletAddress || TREASURY_WALLET;
+  const meme = item.memeId ? await storage.getMemeById(item.memeId) : null;
+  const creatorWallet = verifiedCreatorWallet || meme?.authorWallet || TREASURY_WALLET;
   const nftHolderWallet = null;
 
   const creatorAmount = totalSol * SHARE_RATIOS.creator;
@@ -597,9 +597,9 @@ router.post("/:id/prepare-payment", async (req, res) => {
     let nftHolderWallet: string | null = null;
 
     if (item.memeId) {
-      const meme = await storage.getMeme(item.memeId);
-      if (meme?.walletAddress && meme.walletAddress !== TREASURY_WALLET) {
-        creatorWallet = meme.walletAddress;
+      const meme = await storage.getMemeById(item.memeId);
+      if (meme?.authorWallet && meme.authorWallet !== TREASURY_WALLET) {
+        creatorWallet = meme.authorWallet;
       }
     }
 
@@ -726,9 +726,9 @@ router.post("/:id/order", async (req, res) => {
     let verifiedCreatorAmount = 0;
 
     if (item.memeId) {
-      const meme = await storage.getMeme(item.memeId);
-      if (meme?.walletAddress && meme.walletAddress !== TREASURY_WALLET) {
-        verifiedCreatorWallet = meme.walletAddress;
+      const meme = await storage.getMemeById(item.memeId);
+      if (meme?.authorWallet && meme.authorWallet !== TREASURY_WALLET) {
+        verifiedCreatorWallet = meme.authorWallet;
       }
     }
 
