@@ -476,7 +476,7 @@ export default function Home() {
                       </div>
                     )}
                   </div>
-                  <span className="text-lg font-bold text-primary truncate max-w-[140px]">{displayName}</span>
+                  <span className="text-lg font-bold text-primary truncate">{displayName}</span>
                 </>
               ) : (
                 <>

@@ -645,7 +645,7 @@ const Profile = memo(() => {
                   </label>
                 )}
               </div>
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 {isEditing ? (
                   <div className="space-y-2">
                     <Label htmlFor="displayName">Display Name</Label>
@@ -659,7 +659,7 @@ const Profile = memo(() => {
                   </div>
                 ) : (
                   <div>
-                    <h3 className="text-sm font-bold text-foreground truncate max-w-[180px]">{displayName}</h3>
+                    <h3 className="text-sm font-bold text-foreground truncate">{displayName}</h3>
                     <p className="text-xs text-muted-foreground">
                       {user?.email?.address || "Guest User - Please login to edit profile"}
                     </p>

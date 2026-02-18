@@ -237,8 +237,8 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
 
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-2">
-              <Avatar className="h-6 w-6">
+            <div className="flex items-center space-x-2 min-w-0">
+              <Avatar className="h-6 w-6 flex-shrink-0">
                 <AvatarImage 
                   src={(meme as any).authorAvatarUrl} 
                   alt={meme.authorUsername}
@@ -250,7 +250,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
               </Avatar>
               <button 
                 onClick={() => setShowUserModal(true)}
-                className="text-sm text-muted-foreground cursor-pointer truncate max-w-[150px]"
+                className="text-sm text-muted-foreground cursor-pointer truncate"
               >
                 {meme.authorUsername}
               </button>
