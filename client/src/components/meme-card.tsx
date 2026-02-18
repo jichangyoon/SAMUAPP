@@ -250,7 +250,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
               </Avatar>
               <button 
                 onClick={() => setShowUserModal(true)}
-                className="text-sm text-muted-foreground cursor-pointer"
+                className="text-sm text-muted-foreground cursor-pointer truncate max-w-[150px]"
               >
                 {meme.authorUsername}
               </button>

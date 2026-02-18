@@ -457,11 +457,11 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <button 
               onClick={() => setLocation('/profile')}
-              className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+              className="flex items-center space-x-2 hover:opacity-80 transition-opacity min-w-0 flex-shrink"
             >
               {authenticated ? (
                 <>
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden flex-shrink-0">
                     {profileImage ? (
                       <img 
                         src={profileImage} 
@@ -476,11 +476,11 @@ export default function Home() {
                       </div>
                     )}
                   </div>
-                  <span className="text-lg font-bold text-primary">{displayName}</span>
+                  <span className="text-lg font-bold text-primary truncate max-w-[140px]">{displayName}</span>
                 </>
               ) : (
                 <>
-                  <div className="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center samu-wolf-logo overflow-hidden">
+                  <div className="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center samu-wolf-logo overflow-hidden flex-shrink-0">
                     <img 
                       src={samuLogoImg} 
                       alt="SAMU Wolf" 
