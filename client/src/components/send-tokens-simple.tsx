@@ -177,11 +177,11 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
           Send Tokens
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="bg-black border-gray-800">
+      <DrawerContent className="bg-black border-gray-800 max-h-[85dvh]">
         <DrawerHeader>
           <DrawerTitle className="text-[hsl(50,85%,75%)]">Send Tokens</DrawerTitle>
         </DrawerHeader>
-        <div className="p-6 space-y-4">
+        <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="tokenType" className="text-gray-300">Token Type</Label>
             <Select value={tokenType} onValueChange={setTokenType}>
