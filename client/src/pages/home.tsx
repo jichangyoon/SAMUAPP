@@ -17,7 +17,6 @@ import { useSolanaWallets, useSignTransaction } from '@privy-io/react-auth/solan
 import { Connection, Transaction } from '@solana/web3.js';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { getSamuTokenBalance, getSolBalance } from "@/lib/solana";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -150,19 +149,12 @@ export default function Home() {
   const { data: currentContest } = useQuery({
     queryKey: ['/api/admin/current-contest'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/current-contest', {
-        cache: 'no-cache',
-        headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
-      });
+      const response = await fetch('/api/admin/current-contest');
       if (!response.ok) return null;
       return response.json();
     },
-    staleTime: 0, // 실시간 업데이트
-    refetchOnMount: true, // 마운트시 재요청
-    refetchOnWindowFocus: true, // 윈도우 포커스시 재요청
+    staleTime: 10000,
+    refetchOnWindowFocus: true,
   });
 
   // Privy authentication
@@ -186,15 +178,13 @@ export default function Home() {
 
   const isConnected = authenticated && !!selectedWalletAccount;
   const walletAddress = (selectedWalletAccount as any)?.address || '';
-  const isSolana = true; // 항상 Solana
 
 
 
   // Get archived contests
   const { data: archivedContests = [], isLoading: isLoadingArchives } = useQuery({
     queryKey: ["/api/admin/archived-contests"],
-    staleTime: 0, // 항상 새로운 데이터 가져오기
-    refetchOnMount: true, // 마운트시 재요청
+    staleTime: 60000,
   });
 
   // User profile data from database
@@ -206,6 +196,7 @@ export default function Home() {
       return res.json();
     },
     enabled: !!walletAddress && authenticated,
+    staleTime: 30000,
   });
 
   const { data: samuBalanceData } = useQuery({
@@ -388,27 +379,11 @@ export default function Home() {
 
 
 
-  // Balance query (optimized)
-  const { data: balanceData } = useQuery({
-    queryKey: ['balances', walletAddress],
-    queryFn: async () => {
-      if (!walletAddress || !isSolana) return { samu: 0, sol: 0 };
-
-      const [samuBal, solBal] = await Promise.all([
-        getSamuTokenBalance(walletAddress),
-        getSolBalance(walletAddress)
-      ]);
-
-      return { samu: samuBal, sol: solBal };
-    },
-    enabled: isConnected && !!walletAddress && isSolana,
-  });
-
   // Simple data fetching - current contest memes only
   const { data: memesResponse, isLoading, refetch } = useQuery({
     queryKey: ['/api/memes', { sortBy }],
     queryFn: async () => {
-      const params = new URLSearchParams({ sortBy, limit: '1000' });
+      const params = new URLSearchParams({ sortBy, limit: '50' });
       const response = await fetch(`/api/memes?${params}`);
       if (!response.ok) throw new Error('Failed to fetch memes');
       return response.json();
@@ -643,9 +618,9 @@ export default function Home() {
                                   key={meme.id}
                                   className="animate-fade-in"
                                   style={{ 
-                                    animationDelay: `${index * 50}ms`,
+                                    animationDelay: `${Math.min(index * 50, 300)}ms`,
                                     opacity: 0,
-                                    animation: `fadeIn 0.5s ease-out ${index * 50}ms forwards`
+                                    animation: `fadeIn 0.4s ease-out ${Math.min(index * 50, 300)}ms forwards`
                                   }}
                                 >
                                   <MemeCard 
@@ -675,9 +650,9 @@ export default function Home() {
                                   }}
                                   className="aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-all duration-200 relative group animate-fade-in"
                                   style={{ 
-                                    animationDelay: `${index * 30}ms`,
+                                    animationDelay: `${Math.min(index * 30, 200)}ms`,
                                     opacity: 0,
-                                    animation: `fadeIn 0.4s ease-out ${index * 30}ms forwards`
+                                    animation: `fadeIn 0.3s ease-out ${Math.min(index * 30, 200)}ms forwards`
                                   }}
                                 >
                                   <MediaDisplay

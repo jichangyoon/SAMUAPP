@@ -103,6 +103,7 @@ export function MediaDisplay({
         onClick();
       } : undefined}
       loading="lazy"
+      decoding="async"
       onError={() => setHasError(true)}
     />
   );
