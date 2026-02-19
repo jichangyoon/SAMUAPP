@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, Suspense, lazy } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { WalletConnect } from "@/components/wallet-connect";
 import { ContestHeader } from "@/components/contest-header";
-import { UploadForm } from "@/components/upload-form";
 import { MemeCard } from "@/components/meme-card";
-import { Leaderboard } from "@/components/leaderboard";
-import { GoodsShop } from "@/components/goods-shop";
-
-import { RewardsDashboard } from "@/components/rewards-dashboard";
 import { MediaDisplay } from "@/components/media-display";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
+
+const UploadForm = lazy(() => import("@/components/upload-form").then(m => ({ default: m.UploadForm })));
+const Leaderboard = lazy(() => import("@/components/leaderboard").then(m => ({ default: m.Leaderboard })));
+const GoodsShop = lazy(() => import("@/components/goods-shop").then(m => ({ default: m.GoodsShop })));
+const RewardsDashboard = lazy(() => import("@/components/rewards-dashboard").then(m => ({ default: m.RewardsDashboard })));
 
 
 import { usePrivy } from '@privy-io/react-auth';
@@ -663,6 +663,7 @@ export default function Home() {
                                     autoPlay={false}
                                     muted={true}
                                     loop={true}
+                                    preload="none"
                                   />
                                   <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <div className="text-white text-center">
@@ -699,7 +700,9 @@ export default function Home() {
               </TabsContent>
 
               <TabsContent value="leaderboard">
-                <Leaderboard />
+                <Suspense fallback={<div className="flex justify-center py-8"><RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" /></div>}>
+                  <Leaderboard />
+                </Suspense>
               </TabsContent>
             </Tabs>
           </TabsContent>
@@ -991,11 +994,15 @@ export default function Home() {
           </TabsContent>
 
           <TabsContent value="goods" className="mt-4 space-y-4 pb-24">
-            <GoodsShop />
+            <Suspense fallback={<div className="flex justify-center py-8"><RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" /></div>}>
+              <GoodsShop />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="rewards" className="mt-4 space-y-4 pb-24">
-            <RewardsDashboard />
+            <Suspense fallback={<div className="flex justify-center py-8"><RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" /></div>}>
+              <RewardsDashboard />
+            </Suspense>
           </TabsContent>
         </Tabs>
       </div>
@@ -1274,13 +1281,15 @@ export default function Home() {
           </DrawerHeader>
 
           <div className="px-4 pb-6 overflow-y-auto flex-1">
-            <UploadForm 
-              onClose={() => setShowUploadForm(false)}
-              onSuccess={() => {
-                setShowUploadForm(false);
-                queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
-              }}
-            />
+            <Suspense fallback={<div className="flex justify-center py-8"><RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" /></div>}>
+              <UploadForm 
+                onClose={() => setShowUploadForm(false)}
+                onSuccess={() => {
+                  setShowUploadForm(false);
+                  queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+                }}
+              />
+            </Suspense>
           </div>
         </DrawerContent>
       </Drawer>

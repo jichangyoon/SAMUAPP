@@ -11,6 +11,7 @@ interface MediaDisplayProps {
   muted?: boolean;
   loop?: boolean;
   onClick?: () => void;
+  preload?: "auto" | "metadata" | "none";
 }
 
 export function MediaDisplay({ 
@@ -21,7 +22,8 @@ export function MediaDisplay({
   autoPlay = false,
   muted = true,
   loop = false,
-  onClick 
+  onClick,
+  preload = "metadata"
 }: MediaDisplayProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [hasError, setHasError] = useState(false);
@@ -46,7 +48,7 @@ export function MediaDisplay({
           muted={muted}
           loop={loop}
           playsInline
-          preload="metadata"
+          preload={preload}
           controls={showControls}
           controlsList="nodownload"
           disablePictureInPicture
