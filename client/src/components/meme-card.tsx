@@ -232,6 +232,9 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
             className="w-full h-full"
             showControls={false}
             onClick={() => setShowDetailDialog(true)}
+            muted={true}
+            loop={true}
+            autoPlayOnVisible={true}
           />
         </div>
 
