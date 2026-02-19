@@ -14,7 +14,7 @@ if (typeof window !== 'undefined') {
 }
 
 // Global error handlers for wallet and network issues
-const IGNORED_PATTERNS = ['Privy', 'iframe', 'wallet', 'fetch', 'Failed to fetch'];
+const IGNORED_PATTERNS = ['Privy', 'iframe', 'wallet', 'fetch', 'Failed to fetch', 'EmptyRanges'];
 
 const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
   const reason = event.reason?.message || '';
@@ -24,13 +24,13 @@ const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
 };
 
 const handleError = (event: ErrorEvent) => {
-  const message = event.error?.message || '';
+  const message = event.error?.message || event.message || '';
   if (IGNORED_PATTERNS.some(pattern => message.includes(pattern))) {
     event.preventDefault();
   }
 };
 
 window.addEventListener('unhandledrejection', handleUnhandledRejection, { passive: true });
-window.addEventListener('error', handleError, { passive: true });
+window.addEventListener('error', handleError, true);
 
 createRoot(document.getElementById("root")!).render(<App />);
