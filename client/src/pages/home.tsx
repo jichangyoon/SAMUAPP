@@ -660,10 +660,9 @@ export default function Home() {
                                     alt={meme.title}
                                     className="w-full h-full"
                                     showControls={false}
-                                    autoPlay={false}
                                     muted={true}
                                     loop={true}
-                                    preload="none"
+                                    autoPlayOnVisible={true}
                                   />
                                   <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <div className="text-white text-center">

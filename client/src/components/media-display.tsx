@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Play, ImageOff } from "lucide-react";
 import { getMediaType } from "@/utils/media-utils";
 
@@ -12,6 +12,7 @@ interface MediaDisplayProps {
   loop?: boolean;
   onClick?: () => void;
   preload?: "auto" | "metadata" | "none";
+  autoPlayOnVisible?: boolean;
 }
 
 export function MediaDisplay({ 
@@ -23,11 +24,36 @@ export function MediaDisplay({
   muted = true,
   loop = false,
   onClick,
-  preload = "metadata"
+  preload = "metadata",
+  autoPlayOnVisible = false
 }: MediaDisplayProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [hasError, setHasError] = useState(false);
   const mediaType = getMediaType(src);
+
+  useEffect(() => {
+    if (!autoPlayOnVisible || mediaType !== 'video') return;
+    const videoEl = videoRef.current;
+    const containerEl = containerRef.current;
+    if (!videoEl || !containerEl) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            videoEl.play().catch(() => {});
+          } else {
+            videoEl.pause();
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    observer.observe(containerEl);
+    return () => observer.disconnect();
+  }, [autoPlayOnVisible, mediaType]);
 
   const handleVideoClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -39,7 +65,7 @@ export function MediaDisplay({
   
   if (mediaType === 'video') {
     return (
-      <div className={`relative group ${className}`}>
+      <div ref={containerRef} className={`relative group ${className}`}>
         <video
           ref={videoRef}
           src={src}
@@ -48,7 +74,7 @@ export function MediaDisplay({
           muted={muted}
           loop={loop}
           playsInline
-          preload={preload}
+          preload={autoPlayOnVisible ? "metadata" : preload}
           controls={showControls}
           controlsList="nodownload"
           disablePictureInPicture
@@ -67,7 +93,7 @@ export function MediaDisplay({
             <span className="text-xs text-muted-foreground text-center px-2">Video unavailable</span>
           </div>
         )}
-        {!showControls && (
+        {!showControls && !autoPlayOnVisible && (
           <>
             <div className="absolute top-1 right-1 bg-black/70 text-white text-xs px-1 py-0.5 rounded font-medium text-[10px]">
               VID
@@ -79,11 +105,15 @@ export function MediaDisplay({
             </div>
           </>
         )}
+        {autoPlayOnVisible && (
+          <div className="absolute top-1 right-1 bg-black/70 text-white text-xs px-1 py-0.5 rounded font-medium text-[10px]">
+            VID
+          </div>
+        )}
       </div>
     );
   }
   
-  // 에러 상태 표시
   if (hasError) {
     return (
       <div className={`bg-accent flex flex-col items-center justify-center ${className}`}>
@@ -93,7 +123,6 @@ export function MediaDisplay({
     );
   }
 
-  // 이미지 표시
   return (
     <img
       src={src}
