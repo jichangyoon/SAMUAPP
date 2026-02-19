@@ -994,13 +994,13 @@ export default function Home() {
           </TabsContent>
 
           <TabsContent value="goods" className="mt-4 space-y-4 pb-24">
-            <Suspense fallback={<div className="flex justify-center py-8"><RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" /></div>}>
+            <Suspense fallback={<div className="min-h-[200px]" />}>
               <GoodsShop />
             </Suspense>
           </TabsContent>
 
           <TabsContent value="rewards" className="mt-4 space-y-4 pb-24">
-            <Suspense fallback={<div className="flex justify-center py-8"><RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" /></div>}>
+            <Suspense fallback={<div className="min-h-[200px]" />}>
               <RewardsDashboard />
             </Suspense>
           </TabsContent>
