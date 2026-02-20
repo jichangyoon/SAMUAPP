@@ -31,11 +31,7 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
   const { signTransaction } = useSignTransaction();
   const { wallets, ready } = useSolanaWallets();
   
-  // Helius RPC connection (same as PrivyProvider)
-  const connection = new Connection(
-    `https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`,
-    'confirmed'
-  );
+  const connection = getSharedConnection();
 
   // SAMU token configuration
   const SAMU_MINT = new PublicKey("EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF");

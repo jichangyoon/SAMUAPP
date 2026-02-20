@@ -1,3 +1,17 @@
+import { Connection } from '@solana/web3.js';
+
+let _sharedConnection: Connection | null = null;
+
+export function getSharedConnection(): Connection {
+  if (!_sharedConnection) {
+    const rpcUrl = import.meta.env.VITE_HELIUS_API_KEY
+      ? `https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`
+      : 'https://api.mainnet-beta.solana.com';
+    _sharedConnection = new Connection(rpcUrl, 'confirmed');
+  }
+  return _sharedConnection;
+}
+
 export async function getSamuTokenBalance(walletAddress: string): Promise<number> {
   // Return 0 immediately for non-Solana addresses
   if (!walletAddress || walletAddress.startsWith('0x')) {

@@ -163,10 +163,7 @@ export default function Home() {
   const { wallets: solWallets, ready: solWalletsReady } = useSolanaWallets();
   const { toast } = useToast();
   
-  const solConnection = useMemo(() => new Connection(
-    `https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`,
-    'confirmed'
-  ), []);
+  const solConnection = useMemo(() => getSharedConnection(), []);
 
   // Solana 지갑만 사용 - 간단하고 깔끔한 로직
   const walletAccounts = user?.linkedAccounts?.filter(account => 

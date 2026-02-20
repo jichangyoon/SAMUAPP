@@ -37,10 +37,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   const { wallets, ready: walletsReady } = useSolanaWallets();
   const queryClient = useQueryClient();
   
-  const connection = new Connection(
-    `https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`,
-    'confirmed'
-  );
+  const connection = getSharedConnection();
   
   useEffect(() => {
     const handleProfileUpdate = () => {

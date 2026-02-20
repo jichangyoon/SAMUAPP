@@ -238,12 +238,7 @@ export function GoodsShop() {
 
   const walletAddress = solWallets?.[0]?.address || '';
 
-  const solConnection = new Connection(
-    import.meta.env.VITE_HELIUS_API_KEY
-      ? `https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`
-      : 'https://api.mainnet-beta.solana.com',
-    'confirmed'
-  );
+  const solConnection = getSharedConnection();
 
   const { data: goods = [], isLoading } = useQuery({
     queryKey: ['/api/goods'],

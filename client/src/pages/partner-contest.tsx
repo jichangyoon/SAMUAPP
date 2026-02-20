@@ -29,10 +29,7 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
   const { signTransaction } = useSignTransaction();
   const { toast } = useToast();
   
-  const solConnection = useMemo(() => new Connection(
-    `https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`,
-    'confirmed'
-  ), []);
+  const solConnection = useMemo(() => getSharedConnection(), []);
   
   const [sortBy, setSortBy] = useState<"votes" | "latest">("votes");
   const [viewMode, setViewMode] = useState<"card" | "grid">("card");
