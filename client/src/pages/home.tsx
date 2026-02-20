@@ -938,7 +938,7 @@ export default function Home() {
                             <div className="mt-3">
                               <button
                                 onClick={() => setShowArchiveVoteDetail(prev => !prev)}
-                                className="text-xs text-primary hover:underline"
+                                className="text-xs text-primary hover:text-primary/80"
                               >
                                 {showArchiveVoteDetail ? 'Hide details' : `Show details (${archiveMyVotes.votes.length} memes)`}
                               </button>
