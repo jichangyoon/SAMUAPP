@@ -192,15 +192,15 @@ export function Leaderboard() {
                        setSelectedMeme(meme);
                        setShowMemeModal(true);
                      }}>
-                  <div className="flex items-center space-x-3">
-                    <div className="flex items-center justify-center w-8 h-8">
+                  <div className="flex items-center space-x-3 min-w-0 flex-1">
+                    <div className="flex items-center justify-center w-8 h-8 shrink-0">
                       {getRankIcon(index + 1)}
                     </div>
-                    <div>
-                      <div className="font-semibold text-foreground text-sm">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-foreground text-sm truncate">
                         {meme.title}
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-xs text-muted-foreground truncate">
                         by <span 
                           className="cursor-pointer"
                           onClick={(e) => {
@@ -277,12 +277,12 @@ export function Leaderboard() {
                        setSelectedUser({ walletAddress: creator.walletAddress, username: creator.username });
                        setShowUserModal(true);
                      }}>
-                  <div className="flex items-center space-x-3">
-                    <div className="flex items-center justify-center w-8 h-8">
+                  <div className="flex items-center space-x-3 min-w-0 flex-1">
+                    <div className="flex items-center justify-center w-8 h-8 shrink-0">
                       {getRankIcon(index + 1)}
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Avatar className="h-8 w-8 bg-primary">
+                    <div className="flex items-center space-x-2 min-w-0">
+                      <Avatar className="h-8 w-8 bg-primary shrink-0">
                         {creator.avatarUrl ? (
                           <img 
                             src={creator.avatarUrl} 
@@ -295,8 +295,8 @@ export function Leaderboard() {
                           </AvatarFallback>
                         )}
                       </Avatar>
-                      <div>
-                        <div className="font-semibold text-foreground text-sm">
+                      <div className="min-w-0">
+                        <div className="font-semibold text-foreground text-sm truncate">
                           {creator.username}
                         </div>
                         <div className="text-xs text-muted-foreground">
@@ -404,19 +404,19 @@ export function Leaderboard() {
                         </div>
                       </div>
                       
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-bold text-foreground mb-1 text-sm">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="font-bold text-foreground mb-1 text-sm truncate">
                             {winner.contestTitle}
                           </div>
-                          <div className="text-xs text-muted-foreground mb-1">
+                          <div className="text-xs text-muted-foreground mb-1 truncate">
                             Winner: "{winner.title}" by {winner.author}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {winner.totalEntries} entries
                           </div>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right shrink-0">
                           <div className="font-bold text-primary">
                             {winner.votes.toLocaleString()}
                           </div>
@@ -437,10 +437,10 @@ export function Leaderboard() {
                               setShowMemeModal(true);
                             }}
                           >
-                            <img src={winner.winnerMeme.imageUrl} alt={winner.winnerMeme.title} className="w-12 h-12 rounded object-cover" />
-                            <div className="flex-1">
-                              <div className="text-sm font-semibold text-foreground">{winner.winnerMeme.title}</div>
-                              <div className="text-xs text-muted-foreground">by {winner.winnerMeme.authorUsername}</div>
+                            <img src={winner.winnerMeme.imageUrl} alt={winner.winnerMeme.title} className="w-12 h-12 rounded object-cover shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-semibold text-foreground truncate">{winner.winnerMeme.title}</div>
+                              <div className="text-xs text-muted-foreground truncate">by {winner.winnerMeme.authorUsername}</div>
                             </div>
                             <Badge variant="outline" className="text-yellow-400 border-yellow-400">1st</Badge>
                           </div>
