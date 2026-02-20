@@ -38,6 +38,7 @@ const Profile = memo(() => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showAllMemes, setShowAllMemes] = useState(false);
   const [showAllVotes, setShowAllVotes] = useState(false);
+  const [expandedVoteContests, setExpandedVoteContests] = useState<Set<number>>(new Set());
   // 지갑 주소 가져오기 (홈과 동일한 로직)
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
@@ -940,17 +941,42 @@ const Profile = memo(() => {
                           </div>
                         </div>
                         <div className="p-2 space-y-1">
-                          {contest.votes?.slice(0, 5).map((v: any, i: number) => (
-                            <div key={i} className="flex items-center gap-2 p-1.5 rounded text-xs">
+                          {(expandedVoteContests.has(contest.contestId) ? contest.votes : contest.votes?.slice(0, 5))?.map((v: any, i: number) => (
+                            <div 
+                              key={i} 
+                              className="flex items-center gap-2 p-1.5 rounded text-xs cursor-pointer hover:bg-accent/50 transition-colors"
+                              onClick={async () => {
+                                try {
+                                  const res = await fetch(`/api/memes/${v.memeId}`);
+                                  if (res.ok) {
+                                    const fullMeme = await res.json();
+                                    setSelectedMeme(fullMeme);
+                                    setIsModalOpen(true);
+                                  }
+                                } catch {}
+                              }}
+                            >
                               {v.memeImageUrl && <img src={v.memeImageUrl} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />}
                               <span className="flex-1 text-foreground truncate">{v.memeTitle}</span>
                               <span className="font-bold text-primary flex-shrink-0">{(v.samuAmount || 0).toLocaleString()} SAMU</span>
                             </div>
                           ))}
                           {contest.votes?.length > 5 && (
-                            <div className="text-xs text-muted-foreground text-center py-1">
-                              +{contest.votes.length - 5} more votes
-                            </div>
+                            <button
+                              onClick={() => {
+                                setExpandedVoteContests(prev => {
+                                  const next = new Set(prev);
+                                  if (next.has(contest.contestId)) next.delete(contest.contestId);
+                                  else next.add(contest.contestId);
+                                  return next;
+                                });
+                              }}
+                              className="w-full text-xs text-primary hover:text-primary/80 text-center py-1.5"
+                            >
+                              {expandedVoteContests.has(contest.contestId) 
+                                ? 'Show less' 
+                                : `+${contest.votes.length - 5} more votes`}
+                            </button>
                           )}
                         </div>
                       </div>
