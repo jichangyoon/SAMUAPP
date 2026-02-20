@@ -166,8 +166,11 @@ export const MemeCard = memo(function MemeCard({ meme, onVote, canVote }: MemeCa
 
       setShowVoteDialog(false);
       
-      queryClient.invalidateQueries({ queryKey: ['samu-balance', walletAddress] });
       queryClient.invalidateQueries({ queryKey: ['/api/memes'], exact: false });
+      
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['samu-balance', walletAddress] });
+      }, 5000);
       
       onVote();
     } catch (error: any) {

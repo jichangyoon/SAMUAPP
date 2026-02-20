@@ -276,10 +276,10 @@ export default function Home() {
   }, [samuBalance, voteAmount]);
 
   const handleVoteUpdate = useCallback(async () => {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['samu-balance'] }),
-      queryClient.invalidateQueries({ queryKey: ['/api/memes'], exact: false })
-    ]);
+    await queryClient.invalidateQueries({ queryKey: ['/api/memes'], exact: false });
+    setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey: ['samu-balance'] });
+    }, 5000);
   }, [queryClient]);
 
   const executeOnChainVote = useCallback(async (memeId: number, amount: number): Promise<string> => {
