@@ -13,6 +13,13 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useSolanaWallets } from '@privy-io/react-auth/solana';
 import type { Meme } from "@shared/schema";
 
+function formatCompactNumber(num: number): string {
+  if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'B';
+  if (num >= 1_000_000) return (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (num >= 1_000) return (num / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+  return num.toLocaleString();
+}
+
 export function Leaderboard() {
   const [activeTab, setActiveTab] = useState("current");
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
@@ -502,19 +509,19 @@ export function Leaderboard() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-accent rounded-lg overflow-hidden">
-                  <div className="text-xl sm:text-2xl font-bold text-primary truncate">
-                    {(memesArray.length + (archivedContests?.reduce((sum: number, contest: any) => sum + (contest.totalMemes || 0), 0) || 0)).toLocaleString()}
+                <div className="text-center p-3 bg-accent rounded-lg">
+                  <div className="text-2xl font-bold text-primary">
+                    {formatCompactNumber(memesArray.length + (archivedContests?.reduce((sum: number, contest: any) => sum + (contest.totalMemes || 0), 0) || 0))}
                   </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Total Memes</div>
+                  <div className="text-sm text-muted-foreground">Total Memes</div>
                 </div>
-                <div className="text-center p-3 bg-accent rounded-lg overflow-hidden">
-                  <div className="text-xl sm:text-2xl font-bold text-primary truncate">
-                    {(memesArray.reduce((sum, meme) => sum + meme.votes, 0) + 
+                <div className="text-center p-3 bg-accent rounded-lg">
+                  <div className="text-2xl font-bold text-primary">
+                    {formatCompactNumber(memesArray.reduce((sum, meme) => sum + meme.votes, 0) + 
                       (archivedContests?.reduce((sum: number, contest: any) => sum + (contest.totalVotes || 0), 0) || 0)
-                    ).toLocaleString()}
+                    )}
                   </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Total Votes</div>
+                  <div className="text-sm text-muted-foreground">Total Votes</div>
                 </div>
               </div>
             </CardContent>
