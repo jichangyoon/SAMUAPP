@@ -67,6 +67,8 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
   const [showVoters, setShowVoters] = useState(false);
+  const [selectedVoterWallet, setSelectedVoterWallet] = useState<string | null>(null);
+  const [selectedVoterName, setSelectedVoterName] = useState<string>("");
 
   const { data: votersData, isLoading: votersLoading, isError: votersError, refetch: refetchVoters } = useQuery<{ voters: Voter[]; totalVoters: number }>({
     queryKey: [`/api/memes/${meme.id}/voters`],
@@ -184,7 +186,14 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
                 ) : votersData && votersData.voters.length > 0 ? (
                   <div className="max-h-48 overflow-y-auto divide-y divide-gray-800/50">
                     {votersData.voters.map((voter, idx) => (
-                      <div key={voter.walletAddress} className="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-800/30">
+                      <div
+                        key={voter.walletAddress}
+                        className="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-800/30 cursor-pointer"
+                        onClick={() => {
+                          setSelectedVoterWallet(voter.walletAddress);
+                          setSelectedVoterName(voter.username);
+                        }}
+                      >
                         <span className="text-xs text-gray-500 w-5 text-right font-mono">{idx + 1}</span>
                         <Avatar className="h-7 w-7">
                           <AvatarImage src={voter.avatarUrl || undefined} alt={voter.username} />
@@ -193,7 +202,7 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm text-white truncate">{voter.username}</div>
+                          <div className="text-sm text-white truncate underline decoration-gray-600">{voter.username}</div>
                           <div className="text-xs text-gray-500">
                             {new Date(voter.votedAt).toLocaleDateString()}
                           </div>
@@ -270,13 +279,23 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
         </DrawerContent>
       </Drawer>
 
-      {/* User Info Modal */}
+      {/* User Info Modal - Meme Author */}
       <UserInfoModal
         isOpen={showUserModal}
         onClose={() => setShowUserModal(false)}
         walletAddress={meme.authorWallet}
         username={meme.authorUsername}
       />
+
+      {/* User Info Modal - Voter */}
+      {selectedVoterWallet && (
+        <UserInfoModal
+          isOpen={!!selectedVoterWallet}
+          onClose={() => setSelectedVoterWallet(null)}
+          walletAddress={selectedVoterWallet}
+          username={selectedVoterName}
+        />
+      )}
     </Drawer>
   );
 }
