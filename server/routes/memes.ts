@@ -121,6 +121,23 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.get("/:id", async (req, res) => {
+  try {
+    const memeId = parseInt(req.params.id);
+    if (isNaN(memeId)) {
+      return res.status(400).json({ message: "Invalid meme ID" });
+    }
+    const meme = await storage.getMemeById(memeId);
+    if (!meme) {
+      return res.status(404).json({ message: "Meme not found" });
+    }
+    res.json(meme);
+  } catch (error) {
+    console.error('Error fetching meme:', error);
+    res.status(500).json({ message: "Failed to fetch meme" });
+  }
+});
+
 // Delete a meme (only by author)
 router.delete("/:id", async (req, res) => {
   try {
