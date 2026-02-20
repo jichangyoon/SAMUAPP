@@ -502,19 +502,19 @@ export function Leaderboard() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-accent rounded-lg">
-                  <div className="text-2xl font-bold text-primary">
-                    {memesArray.length + (archivedContests?.reduce((sum: number, contest: any) => sum + (contest.totalMemes || 0), 0) || 0)}
+                <div className="text-center p-3 bg-accent rounded-lg overflow-hidden">
+                  <div className="text-xl sm:text-2xl font-bold text-primary truncate">
+                    {(memesArray.length + (archivedContests?.reduce((sum: number, contest: any) => sum + (contest.totalMemes || 0), 0) || 0)).toLocaleString()}
                   </div>
-                  <div className="text-sm text-muted-foreground">Total Memes</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Total Memes</div>
                 </div>
-                <div className="text-center p-3 bg-accent rounded-lg">
-                  <div className="text-2xl font-bold text-primary">
+                <div className="text-center p-3 bg-accent rounded-lg overflow-hidden">
+                  <div className="text-xl sm:text-2xl font-bold text-primary truncate">
                     {(memesArray.reduce((sum, meme) => sum + meme.votes, 0) + 
                       (archivedContests?.reduce((sum: number, contest: any) => sum + (contest.totalVotes || 0), 0) || 0)
                     ).toLocaleString()}
                   </div>
-                  <div className="text-sm text-muted-foreground">Total Votes</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Total Votes</div>
                 </div>
               </div>
             </CardContent>
