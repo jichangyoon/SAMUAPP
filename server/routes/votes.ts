@@ -248,6 +248,53 @@ router.get("/contest/:contestId/my-votes/:wallet", async (req, res) => {
   }
 });
 
+router.get("/:id/voters", async (req, res) => {
+  try {
+    const memeId = parseInt(req.params.id);
+    if (isNaN(memeId)) {
+      return res.status(400).json({ message: "Invalid meme ID" });
+    }
+
+    const memeVotes = await storage.getVotesByMemeId(memeId);
+    
+    const voterMap = new Map<string, { totalSamu: number; latestVoteAt: string }>();
+    for (const vote of memeVotes) {
+      const existing = voterMap.get(vote.voterWallet);
+      const voteTime = vote.createdAt ? new Date(vote.createdAt).toISOString() : new Date().toISOString();
+      if (existing) {
+        existing.totalSamu += vote.samuAmount;
+        if (voteTime > existing.latestVoteAt) existing.latestVoteAt = voteTime;
+      } else {
+        voterMap.set(vote.voterWallet, { totalSamu: vote.samuAmount, latestVoteAt: voteTime });
+      }
+    }
+
+    const wallets = Array.from(voterMap.keys());
+    const userProfiles = await Promise.all(
+      wallets.map(w => storage.getUserByWallet(w))
+    );
+
+    const voters = wallets.map((wallet, i) => {
+      const data = voterMap.get(wallet)!;
+      const user = userProfiles[i];
+      return {
+        walletAddress: wallet,
+        username: user?.displayName || user?.username || wallet.slice(0, 6) + '...',
+        avatarUrl: user?.avatarUrl || null,
+        totalSamu: data.totalSamu,
+        votedAt: data.latestVoteAt,
+      };
+    });
+
+    voters.sort((a, b) => b.totalSamu - a.totalSamu);
+
+    res.json({ voters, totalVoters: voters.length });
+  } catch (error) {
+    console.error('Error fetching meme voters:', error);
+    res.status(500).json({ message: "Failed to fetch voters" });
+  }
+});
+
 router.get("/:id/voted/:wallet", async (req, res) => {
   try {
     const memeId = parseInt(req.params.id);

@@ -2,8 +2,9 @@ import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } f
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowUp, Share2, Twitter, Send, Calendar, Trophy } from "lucide-react";
+import { ArrowUp, Share2, Twitter, Send, Calendar, Trophy, ChevronDown, ChevronUp, Users, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { MediaDisplay } from "@/components/media-display";
 import { UserInfoModal } from "@/components/user-info-modal";
 import { NativeShare } from "@/utils/native-share";
@@ -54,10 +55,25 @@ const getUserRole = (walletAddress: string, username: string) => {
   return 'Creator';
 };
 
+interface Voter {
+  walletAddress: string;
+  username: string;
+  avatarUrl: string | null;
+  totalSamu: number;
+  votedAt: string;
+}
+
 export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false }: MemeDetailModalProps) {
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
-  
+  const [showVoters, setShowVoters] = useState(false);
+
+  const { data: votersData, isLoading: votersLoading, isError: votersError, refetch: refetchVoters } = useQuery<{ voters: Voter[]; totalVoters: number }>({
+    queryKey: [`/api/memes/${meme.id}/voters`],
+    enabled: isOpen && showVoters,
+    staleTime: 30000,
+  });
+
 
 
   const shareToTwitter = () => {
@@ -122,16 +138,78 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
                   <div className="text-sm text-gray-400">{getUserRole(meme.authorWallet, meme.authorUsername)}</div>
                 </div>
               </div>
-              <div className="text-right">
+              <button
+                onClick={() => setShowVoters(!showVoters)}
+                className="text-right cursor-pointer hover:opacity-80 transition-opacity"
+              >
                 <div className="flex items-center gap-1 text-yellow-400">
                   <Trophy className="h-4 w-4" />
                   <span className="font-bold">{meme.votes.toLocaleString()}</span>
+                  {showVoters ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
                 </div>
-                <div className="text-xs text-gray-400">Total Votes</div>
-              </div>
+                <div className="text-xs text-gray-400 flex items-center gap-1 justify-end">
+                  <Users className="h-3 w-3" />
+                  <span>Tap to see voters</span>
+                </div>
+              </button>
             </div>
 
-
+            {showVoters && (
+              <div className="bg-gray-900/50 rounded-lg border border-gray-800 overflow-hidden">
+                <div className="px-3 py-2 border-b border-gray-800 flex items-center gap-2">
+                  <Users className="h-4 w-4 text-yellow-400" />
+                  <span className="text-sm font-semibold text-white">Voters</span>
+                  {votersData && (
+                    <Badge variant="secondary" className="bg-gray-800 text-gray-300 text-xs">
+                      {votersData.totalVoters}
+                    </Badge>
+                  )}
+                </div>
+                {votersLoading ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+                  </div>
+                ) : votersError ? (
+                  <div className="text-center py-4 space-y-2">
+                    <div className="text-sm text-red-400">Failed to load voters</div>
+                    <Button
+                      onClick={() => refetchVoters()}
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs text-gray-400 hover:text-white"
+                    >
+                      Retry
+                    </Button>
+                  </div>
+                ) : votersData && votersData.voters.length > 0 ? (
+                  <div className="max-h-48 overflow-y-auto divide-y divide-gray-800/50">
+                    {votersData.voters.map((voter, idx) => (
+                      <div key={voter.walletAddress} className="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-800/30">
+                        <span className="text-xs text-gray-500 w-5 text-right font-mono">{idx + 1}</span>
+                        <Avatar className="h-7 w-7">
+                          <AvatarImage src={voter.avatarUrl || undefined} alt={voter.username} />
+                          <AvatarFallback className="bg-gray-700 text-white text-xs">
+                            {voter.username.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm text-white truncate">{voter.username}</div>
+                          <div className="text-xs text-gray-500">
+                            {new Date(voter.votedAt).toLocaleDateString()}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-semibold text-yellow-400">{voter.totalSamu.toLocaleString()}</div>
+                          <div className="text-xs text-gray-500">SAMU</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4 text-sm text-gray-500">No votes yet</div>
+                )}
+              </div>
+            )}
 
             <div className="flex items-center gap-2 text-sm text-gray-400">
               <Calendar className="h-4 w-4" />
