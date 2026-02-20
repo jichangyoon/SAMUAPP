@@ -163,8 +163,6 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
         contestId: currentContest?.id || null // Auto-assign to current active contest
       };
 
-      // No optimistic updates - wait for server response
-
       const endpoint = partnerId 
         ? `/api/partners/${partnerId}/memes`
         : "/api/memes";
@@ -181,8 +179,18 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
         throw new Error('Failed to submit meme');
       }
 
-      // Success - invalidate queries to get real data from server
-      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+      const newMeme = await response.json();
+
+      if (!partnerId) {
+        const addMemeToCache = (old: any) => {
+          if (!old?.memes) return old;
+          return { ...old, memes: [newMeme, ...old.memes] };
+        };
+        queryClient.setQueryData(['/api/memes', { sortBy: 'latest' }], addMemeToCache);
+        queryClient.setQueryData(['/api/memes', { sortBy: 'votes' }], addMemeToCache);
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'], exact: false });
       queryClient.invalidateQueries({ queryKey: ['user-stats'] });
 
       // Dispatch event to notify home page of new meme upload
@@ -199,8 +207,7 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       onSuccess();
       onClose?.();
     } catch (error: any) {
-      // Rollback optimistic update on error
-      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'], exact: false });
 
       toast({
         title: "Upload Failed",

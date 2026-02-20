@@ -280,7 +280,7 @@ export default function Home() {
   const handleVoteUpdate = useCallback(async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['samu-balance'] }),
-      queryClient.invalidateQueries({ queryKey: ['/api/memes'] })
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'], exact: false })
     ]);
   }, [queryClient]);
 
@@ -332,6 +332,20 @@ export default function Home() {
 
       const txSignature = await executeOnChainVote(meme.id, 1);
 
+      queryClient.setQueryData(['/api/memes', { sortBy }], (old: any) => {
+        if (!old?.memes) return old;
+        return {
+          ...old,
+          memes: old.memes.map((m: any) =>
+            m.id === meme.id ? { ...m, votes: m.votes + 1 } : m
+          )
+        };
+      });
+      queryClient.setQueryData(['samu-balance', walletAddress], (old: any) => {
+        if (!old) return old;
+        return { ...old, balance: Math.max(0, old.balance - 1) };
+      });
+
       await apiRequest("POST", `/api/memes/${meme.id}/vote`, {
         voterWallet: walletAddress,
         samuAmount: 1,
@@ -346,11 +360,12 @@ export default function Home() {
 
       setSelectedMeme(null);
 
-      queryClient.invalidateQueries({ queryKey: ['samu-balance', walletAddress] });
-
       await handleVoteUpdate();
 
     } catch (error: any) {
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'], exact: false });
+      queryClient.invalidateQueries({ queryKey: ['samu-balance', walletAddress] });
+
       const msg = error.message || "Failed to submit vote.";
       toast({
         title: "Voting Failed",
@@ -360,7 +375,7 @@ export default function Home() {
     } finally {
       setIsVoting(false);
     }
-  }, [isConnected, walletAddress, toast, handleVoteUpdate, executeOnChainVote]);
+  }, [isConnected, walletAddress, toast, handleVoteUpdate, executeOnChainVote, sortBy]);
 
   // Share functions
   const shareToTwitter = useCallback((meme: Meme) => {

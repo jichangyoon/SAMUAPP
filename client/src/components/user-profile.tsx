@@ -103,25 +103,56 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
       if (!response.ok) throw new Error('Failed to update profile');
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/users/profile'] });
-      
-      // Update native storage for display name only
+    onMutate: async ({ name, image }) => {
+      await queryClient.cancelQueries({ queryKey: ['/api/users/profile'], exact: false });
+      const prev = queryClient.getQueryData(['/api/users/profile', walletAddress]);
+      const prevDisplayName = displayName;
+      queryClient.setQueryData(['/api/users/profile', walletAddress], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          ...(name ? { displayName: name, username: name } : {}),
+          ...(image ? { avatarUrl: image } : {})
+        };
+      });
+
       if (user?.id) {
         NativeStorage.setItem(`privy_profile_${user.id}`, JSON.stringify({
-          displayName: displayName
+          displayName: name || displayName
         }));
       }
-
-      // Dispatch custom events for header synchronization
       window.dispatchEvent(new CustomEvent('profileUpdated', { 
-        detail: { displayName: displayName } 
+        detail: { displayName: name || displayName } 
       }));
-      if (profileImage) {
+      if (image) {
         window.dispatchEvent(new CustomEvent('imageUpdated', { 
-          detail: { avatarUrl: profileImage } 
+          detail: { avatarUrl: image } 
         }));
       }
+      return { prev, prevDisplayName };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/users/profile'], exact: false });
+    },
+    onError: (_err: any, _vars: any, context: any) => {
+      if (context?.prev) {
+        queryClient.setQueryData(['/api/users/profile', walletAddress], context.prev);
+        const prevData = context.prev as any;
+        window.dispatchEvent(new CustomEvent('profileUpdated', { 
+          detail: { displayName: prevData?.displayName || context.prevDisplayName } 
+        }));
+        if (prevData?.avatarUrl) {
+          window.dispatchEvent(new CustomEvent('imageUpdated', { 
+            detail: { avatarUrl: prevData.avatarUrl } 
+          }));
+        }
+        if (user?.id) {
+          NativeStorage.setItem(`privy_profile_${user.id}`, JSON.stringify({
+            displayName: prevData?.displayName || context.prevDisplayName
+          }));
+        }
+      }
+      queryClient.invalidateQueries({ queryKey: ['/api/users/profile'], exact: false });
     }
   });
 

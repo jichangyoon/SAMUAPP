@@ -44,7 +44,7 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   
   useEffect(() => {
     const handleProfileUpdate = () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'], exact: false });
     };
 
     window.addEventListener('profileUpdated', handleProfileUpdate);
@@ -130,6 +130,30 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
 
       await connection.confirmTransaction(txSignature, 'confirmed');
 
+      queryClient.setQueryData(['/api/memes', { sortBy: 'votes' }], (old: any) => {
+        if (!old?.memes) return old;
+        return {
+          ...old,
+          memes: old.memes.map((m: any) =>
+            m.id === meme.id ? { ...m, votes: m.votes + voteAmount } : m
+          )
+        };
+      });
+      queryClient.setQueryData(['/api/memes', { sortBy: 'latest' }], (old: any) => {
+        if (!old?.memes) return old;
+        return {
+          ...old,
+          memes: old.memes.map((m: any) =>
+            m.id === meme.id ? { ...m, votes: m.votes + voteAmount } : m
+          )
+        };
+      });
+
+      queryClient.setQueryData(['samu-balance', walletAddress], (old: any) => {
+        if (!old) return old;
+        return { ...old, balance: Math.max(0, old.balance - voteAmount) };
+      });
+
       await apiRequest("POST", `/api/memes/${meme.id}/vote`, {
         voterWallet: walletAddress,
         samuAmount: voteAmount,
@@ -145,9 +169,13 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
       setShowVoteDialog(false);
       
       queryClient.invalidateQueries({ queryKey: ['samu-balance', walletAddress] });
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'], exact: false });
       
       onVote();
     } catch (error: any) {
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'], exact: false });
+      queryClient.invalidateQueries({ queryKey: ['samu-balance', walletAddress] });
+      
       const msg = error.message || "Failed to submit vote.";
       toast({
         title: "Voting Failed",
@@ -185,7 +213,6 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
     }
   };
 
-  // Delete meme mutation
   const deleteMutation = useMutation({
     mutationFn: async () => {
       const response = await fetch(`/api/memes/${meme.id}`, {
@@ -201,12 +228,26 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
       }
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
-      toast({ title: "Meme deleted successfully" });
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['/api/memes'], exact: false });
+      const removeMeme = (old: any) => {
+        if (!old?.memes) return old;
+        return { ...old, memes: old.memes.filter((m: any) => m.id !== meme.id) };
+      };
+      const prevVotes = queryClient.getQueryData(['/api/memes', { sortBy: 'votes' }]);
+      const prevLatest = queryClient.getQueryData(['/api/memes', { sortBy: 'latest' }]);
+      queryClient.setQueryData(['/api/memes', { sortBy: 'votes' }], removeMeme);
+      queryClient.setQueryData(['/api/memes', { sortBy: 'latest' }], removeMeme);
       setShowDeleteDialog(false);
+      return { prevVotes, prevLatest };
     },
-    onError: (error: any) => {
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/memes'], exact: false });
+      toast({ title: "Meme deleted successfully" });
+    },
+    onError: (error: any, _, context: any) => {
+      if (context?.prevVotes) queryClient.setQueryData(['/api/memes', { sortBy: 'votes' }], context.prevVotes);
+      if (context?.prevLatest) queryClient.setQueryData(['/api/memes', { sortBy: 'latest' }], context.prevLatest);
       toast({ 
         title: "Failed to delete meme", 
         description: error.message || "Please try again",
