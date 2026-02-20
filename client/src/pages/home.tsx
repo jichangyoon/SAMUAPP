@@ -14,7 +14,8 @@ const RewardsDashboard = lazy(() => import("@/components/rewards-dashboard").the
 
 import { usePrivy } from '@privy-io/react-auth';
 import { useSolanaWallets, useSignTransaction } from '@privy-io/react-auth/solana';
-import { Connection, Transaction } from '@solana/web3.js';
+import { Transaction } from '@solana/web3.js';
+import { getSharedConnection } from "@/lib/solana";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

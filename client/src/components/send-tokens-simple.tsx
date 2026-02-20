@@ -9,7 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useSendTransaction, useSolanaWallets, useSignTransaction } from '@privy-io/react-auth/solana';
 import { usePrivy } from '@privy-io/react-auth';
 import { useQueryClient } from "@tanstack/react-query";
-import { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { getSharedConnection } from "@/lib/solana";
 import { createTransferInstruction, getAssociatedTokenAddress } from '@solana/spl-token';
 
 interface SendTokensProps {

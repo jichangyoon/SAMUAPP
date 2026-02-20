@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { usePrivy } from '@privy-io/react-auth';
 import { useSolanaWallets, useSignTransaction } from '@privy-io/react-auth/solana';
-import { Connection, Transaction } from '@solana/web3.js';
+import { Transaction } from '@solana/web3.js';
+import { getSharedConnection } from "@/lib/solana";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { ShoppingCart, ShoppingBag, Sticker, Package, Truck, ChevronRight, Loader2, X, ArrowLeft, ChevronLeft, Wallet } from "lucide-react";

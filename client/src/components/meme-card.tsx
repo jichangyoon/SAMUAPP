@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { usePrivy } from '@privy-io/react-auth';
 import { useSolanaWallets, useSignTransaction } from '@privy-io/react-auth/solana';
-import { Connection, Transaction } from '@solana/web3.js';
+import { Transaction } from '@solana/web3.js';
+import { getSharedConnection } from "@/lib/solana";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowUp, Share2, Twitter, Send, Trash2 } from "lucide-react";
@@ -24,7 +25,7 @@ interface MemeCardProps {
   canVote: boolean;
 }
 
-export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
+export const MemeCard = memo(function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
   const [showVoteDialog, setShowVoteDialog] = useState(false);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
@@ -502,4 +503,4 @@ export function MemeCard({ meme, onVote, canVote }: MemeCardProps) {
       />
     </>
   );
-}
+});
