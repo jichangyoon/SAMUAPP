@@ -29,6 +29,7 @@ export function Leaderboard() {
   const [showAllCurrent, setShowAllCurrent] = useState(false);
   const [showAllCreators, setShowAllCreators] = useState(false);
   const [expandedContestId, setExpandedContestId] = useState<number | null>(null);
+  const [showAllVotes, setShowAllVotes] = useState(false);
 
   const { authenticated } = usePrivy();
   const { wallets: solWallets } = useSolanaWallets();
@@ -392,6 +393,7 @@ export function Leaderboard() {
                       onClick={() => {
                         if (originalContestId) {
                           setExpandedContestId(isExpanded ? null : originalContestId);
+                          setShowAllVotes(false);
                         }
                       }}
                     >
@@ -456,32 +458,42 @@ export function Leaderboard() {
                         {authenticated && walletAddress && myVotesLoading ? (
                           <div className="text-xs text-muted-foreground text-center py-2">Loading your votes...</div>
                         ) : authenticated && walletAddress && myContestVotes ? (
-                          <div className="space-y-2">
+                          <div className="space-y-1.5">
                             <div className="flex items-center justify-between">
-                              <div className="text-sm font-semibold text-foreground flex items-center">
-                                <Vote className="h-4 w-4 mr-1 text-primary" />
+                              <div className="text-xs font-semibold text-foreground flex items-center">
+                                <Vote className="h-3 w-3 mr-1 text-primary" />
                                 My Votes
                               </div>
-                              <div className="text-right">
-                                <span className="text-sm font-bold text-primary">{(myContestVotes.myTotalSamu || 0).toLocaleString()} SAMU</span>
-                                <span className="text-xs text-muted-foreground ml-2">
-                                  Reward Share: {myContestVotes.myRevenueSharePercent || 0}%
+                              <div className="flex items-center gap-2 text-xs">
+                                <span className="font-bold text-primary">{formatCompactNumber(myContestVotes.myTotalSamu || 0)} SAMU</span>
+                                <span className="text-muted-foreground">
+                                  Share {myContestVotes.myRevenueSharePercent || 0}%
                                 </span>
                               </div>
                             </div>
 
                             {myContestVotes.votes?.length > 0 ? (
-                              myContestVotes.votes.map((v: any, vi: number) => (
-                                <div key={vi} className="flex items-center justify-between p-2 bg-accent/50 rounded text-xs">
-                                  <div className="flex items-center space-x-2">
-                                    {v.memeImageUrl && <img src={v.memeImageUrl} alt="" className="w-8 h-8 rounded object-cover" />}
-                                    <span className="text-foreground">{v.memeTitle}</span>
+                              <>
+                                {(showAllVotes ? myContestVotes.votes : myContestVotes.votes.slice(0, 5)).map((v: any, vi: number) => (
+                                  <div key={vi} className="flex items-center justify-between p-1.5 bg-accent/50 rounded text-xs">
+                                    <div className="flex items-center space-x-2 min-w-0 flex-1">
+                                      {v.memeImageUrl && <img src={v.memeImageUrl} alt="" className="w-6 h-6 rounded object-cover shrink-0" />}
+                                      <span className="text-foreground truncate">{v.memeTitle}</span>
+                                    </div>
+                                    <span className="font-bold text-primary shrink-0 ml-2">{formatCompactNumber(v.samuAmount || 0)}</span>
                                   </div>
-                                  <span className="font-bold text-primary">{(v.samuAmount || 0).toLocaleString()} SAMU</span>
-                                </div>
-                              ))
+                                ))}
+                                {myContestVotes.votes.length > 5 && (
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); setShowAllVotes(!showAllVotes); }}
+                                    className="w-full text-center text-xs text-primary hover:text-primary/80 py-1"
+                                  >
+                                    {showAllVotes ? 'Show Less' : `+${myContestVotes.votes.length - 5} more`}
+                                  </button>
+                                )}
+                              </>
                             ) : (
-                              <div className="text-xs text-muted-foreground text-center py-2">
+                              <div className="text-xs text-muted-foreground text-center py-1">
                                 No votes in this contest
                               </div>
                             )}
