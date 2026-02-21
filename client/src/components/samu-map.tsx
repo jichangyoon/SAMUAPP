@@ -4,6 +4,7 @@ import {
   ComposableMap,
   Geographies,
   Geography,
+  Line,
   Marker,
   ZoomableGroup,
 } from "react-simple-maps";
@@ -14,6 +15,8 @@ import { getCoordinates, getCountryName } from "@/data/country-coordinates";
 import samuLogoImg from "@/assets/samu-logo.webp";
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+
+const PRINTFUL_ORIGIN: [number, number] = [-118.24, 34.05];
 
 interface MapOrder {
   id: number;
@@ -31,6 +34,8 @@ interface MapOrder {
   productType: string | null;
   createdAt: string;
   hasRevenue: boolean;
+  revenueRole: string | null;
+  myEstimatedRevenue: number | null;
   distribution: {
     creatorAmount: number;
     voterPoolAmount: number;
@@ -88,6 +93,16 @@ function getSamuMessage(status: string, city: string, country: string): string {
   }
 }
 
+function getRevenueRoleLabel(role: string | null): string {
+  switch (role) {
+    case "creator": return "🎨 Creator Revenue";
+    case "voter": return "🗳️ Voter Revenue";
+    case "creator_voter": return "🎨🗳️ Creator + Voter";
+    case "buyer": return "🛒 My Order";
+    default: return "📦 Standard Order";
+  }
+}
+
 interface SamuMapProps {
   walletAddress?: string;
 }
@@ -116,8 +131,10 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
           }
         }
         if (lat == null || lng == null) return null;
-        const jitter = (Math.random() - 0.5) * 3;
-        return { ...order, lat: lat + jitter, lng: lng + jitter };
+        const seed = order.id * 2654435761;
+        const jitterLat = ((seed % 1000) / 1000 - 0.5) * 3;
+        const jitterLng = (((seed * 7) % 1000) / 1000 - 0.5) * 3;
+        return { ...order, lat: lat + jitterLat, lng: lng + jitterLng };
       })
       .filter(Boolean) as (MapOrder & { lat: number; lng: number })[];
   }, [mapData]);
@@ -165,6 +182,19 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
             </Geographies>
 
             {markers.map((marker) => (
+              <Line
+                key={`route-${marker.id}`}
+                from={PRINTFUL_ORIGIN}
+                to={[marker.lng, marker.lat]}
+                stroke={marker.hasRevenue ? "#22c55e" : "#ef4444"}
+                strokeWidth={0.8}
+                strokeLinecap="round"
+                strokeDasharray="4 3"
+                strokeOpacity={0.35}
+              />
+            ))}
+
+            {markers.map((marker) => (
               <Marker
                 key={marker.id}
                 coordinates={[marker.lng, marker.lat]}
@@ -204,6 +234,13 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                 </circle>
               </Marker>
             ))}
+
+            <Marker coordinates={PRINTFUL_ORIGIN}>
+              <circle r={3} fill="#fbbf24" stroke="#fff" strokeWidth={1} opacity={0.9} />
+              <text textAnchor="middle" y={-8} style={{ fontSize: 6, fill: "#fbbf24", fontWeight: "bold" }}>
+                Origin
+              </text>
+            </Marker>
           </ZoomableGroup>
         </ComposableMap>
 
@@ -218,6 +255,10 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
         )}
 
         <div className="absolute bottom-2 left-2 flex items-center gap-3 text-[10px] text-white/70">
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 rounded-full bg-[#fbbf24]" />
+            <span>Origin</span>
+          </div>
           <div className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full bg-[#22c55e]" />
             <span>My Revenue</span>
@@ -291,8 +332,20 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                   variant={selectedOrder.hasRevenue ? "default" : "secondary"}
                   className={selectedOrder.hasRevenue ? "bg-green-500/20 text-green-400 border-green-500/30" : ""}
                 >
-                  {selectedOrder.hasRevenue ? "💰 Revenue Order" : "📦 Standard Order"}
+                  {getRevenueRoleLabel(selectedOrder.revenueRole)}
                 </Badge>
+
+                {selectedOrder.hasRevenue && selectedOrder.myEstimatedRevenue != null && selectedOrder.myEstimatedRevenue > 0 && (
+                  <div className="p-2 rounded-lg bg-green-500/10 border border-green-500/20 w-full">
+                    <div className="flex items-center justify-center gap-1">
+                      <DollarSign className="h-3 w-3 text-green-400" />
+                      <span className="text-sm font-bold text-green-400">
+                        +{selectedOrder.myEstimatedRevenue.toFixed(4)} SOL
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-green-400/70 mt-0.5">Estimated Revenue</p>
+                  </div>
+                )}
 
                 <button
                   onClick={() => setShowDetail(true)}
@@ -415,11 +468,30 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                   </div>
                 )}
 
-                {selectedOrder.hasRevenue && (
+                {selectedOrder.hasRevenue && selectedOrder.myEstimatedRevenue != null && selectedOrder.myEstimatedRevenue > 0 && (
+                  <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-green-400" />
+                      <span className="text-sm text-green-400 font-medium">
+                        {getRevenueRoleLabel(selectedOrder.revenueRole)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-green-400/70">My Estimated Revenue</span>
+                      <span className="text-lg font-bold text-green-400">
+                        +{selectedOrder.myEstimatedRevenue.toFixed(4)} SOL
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {selectedOrder.hasRevenue && !selectedOrder.myEstimatedRevenue && (
                   <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
                     <div className="flex items-center gap-2">
                       <DollarSign className="h-4 w-4 text-green-400" />
-                      <span className="text-sm text-green-400 font-medium">You earn revenue from this order!</span>
+                      <span className="text-sm text-green-400 font-medium">
+                        {getRevenueRoleLabel(selectedOrder.revenueRole)}
+                      </span>
                     </div>
                   </div>
                 )}

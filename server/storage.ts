@@ -21,6 +21,7 @@ export interface IStorage {
   
   // Vote operations
   createVote(vote: InsertVote): Promise<Vote>;
+  getAllVotes(): Promise<Vote[]>;
   getVotesByMemeId(memeId: number): Promise<Vote[]>;
   getVoteByTxSignature(txSignature: string): Promise<Vote | undefined>;
   hasUserVoted(memeId: number, voterWallet: string): Promise<boolean>;
@@ -231,6 +232,10 @@ export class MemStorage implements IStorage {
 
   async getUserVotesForContest(walletAddress: string, contestId: number): Promise<any[]> {
     return [];
+  }
+
+  async getAllVotes(): Promise<Vote[]> {
+    return Array.from(this.votes.values());
   }
 
   async createVote(insertVote: InsertVote): Promise<Vote> {
@@ -711,6 +716,11 @@ export class DatabaseStorage implements IStorage {
     await this.db
       .delete(memes)
       .where(eq(memes.id, id));
+  }
+
+  async getAllVotes(): Promise<Vote[]> {
+    if (!this.db) throw new Error("Database not available");
+    return await this.db.select().from(votes);
   }
 
   async createVote(insertVote: InsertVote): Promise<Vote> {

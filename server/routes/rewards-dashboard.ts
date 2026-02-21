@@ -133,6 +133,44 @@ router.get("/map", async (req, res) => {
     const goodsMap = new Map<number, any>();
     allGoods.forEach(g => goodsMap.set(g.id, g));
 
+    let userVotedContests = new Set<number>();
+    let userVoteShareByContest = new Map<number, number>();
+    if (walletAddress) {
+      const userVotes = await storage.getUserVotes(walletAddress);
+      if (userVotes.length > 0) {
+        const allMemes = await storage.getAllMemes();
+        const memeContestMap = new Map<number, number | null>();
+        allMemes.forEach(m => memeContestMap.set(m.id, m.contestId));
+
+        const contestVoteTotals = new Map<number, number>();
+        const userContestVoteTotals = new Map<number, number>();
+
+        for (const vote of userVotes) {
+          const contestId = memeContestMap.get(vote.memeId);
+          if (contestId != null) {
+            userVotedContests.add(contestId);
+            userContestVoteTotals.set(contestId, (userContestVoteTotals.get(contestId) || 0) + (vote.samuAmount || 0));
+          }
+        }
+
+        const allVotes = await storage.getAllVotes();
+        for (const vote of allVotes) {
+          const contestId = memeContestMap.get(vote.memeId);
+          if (contestId != null && userVotedContests.has(contestId)) {
+            contestVoteTotals.set(contestId, (contestVoteTotals.get(contestId) || 0) + (vote.samuAmount || 0));
+          }
+        }
+
+        for (const contestId of Array.from(userVotedContests)) {
+          const userTotal = userContestVoteTotals.get(contestId) || 0;
+          const total = contestVoteTotals.get(contestId) || 0;
+          if (total > 0) {
+            userVoteShareByContest.set(contestId, userTotal / total);
+          }
+        }
+      }
+    }
+
     const mapOrders = allOrders
       .filter(o => o.shippingCountry)
       .map(o => {
@@ -140,10 +178,39 @@ router.get("/map", async (req, res) => {
         const good = goodsMap.get(o.goodsId);
 
         let hasRevenue = false;
+        let revenueRole: string | null = null;
+        let myEstimatedRevenue: number | null = null;
+
         if (walletAddress && dist) {
-          if (dist.creatorWallet === walletAddress) {
+          const isCreator = dist.creatorWallet === walletAddress;
+          const contestId = dist.contestId || good?.contestId;
+          const isVoter = contestId != null && userVotedContests.has(contestId);
+
+          if (isCreator || isVoter) {
             hasRevenue = true;
+            let estimated = 0;
+
+            if (isCreator && isVoter) {
+              revenueRole = "creator_voter";
+              estimated += dist.creatorAmount;
+              const voteShare = contestId != null ? (userVoteShareByContest.get(contestId) || 0) : 0;
+              estimated += dist.voterPoolAmount * voteShare;
+            } else if (isCreator) {
+              revenueRole = "creator";
+              estimated = dist.creatorAmount;
+            } else {
+              revenueRole = "voter";
+              const voteShare = contestId != null ? (userVoteShareByContest.get(contestId) || 0) : 0;
+              estimated = dist.voterPoolAmount * voteShare;
+            }
+
+            myEstimatedRevenue = estimated;
           }
+        }
+
+        if (walletAddress && o.buyerWallet === walletAddress) {
+          hasRevenue = true;
+          if (!revenueRole) revenueRole = "buyer";
         }
 
         return {
@@ -162,6 +229,8 @@ router.get("/map", async (req, res) => {
           productType: good?.productType,
           createdAt: o.createdAt,
           hasRevenue,
+          revenueRole,
+          myEstimatedRevenue,
           distribution: dist ? {
             creatorAmount: dist.creatorAmount,
             voterPoolAmount: dist.voterPoolAmount,
