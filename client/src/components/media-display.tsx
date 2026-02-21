@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { Play, ImageOff } from "lucide-react";
 import { getMediaType } from "@/utils/media-utils";
 
@@ -29,24 +29,46 @@ export function MediaDisplay({
 }: MediaDisplayProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const imgRef = useRef<HTMLImageElement | null>(null);
   const [hasError, setHasError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
   const mediaType = getMediaType(src);
+  const imgRef = useRef<HTMLImageElement | null>(null);
+
+  const imgCallbackRef = useCallback((node: HTMLImageElement | null) => {
+    imgRef.current = node;
+    if (node && node.complete && node.naturalWidth > 0) {
+      setImageLoaded(true);
+    }
+  }, []);
 
   useEffect(() => {
-    setImageLoaded(false);
     setVideoReady(false);
     setHasError(false);
-    const currentSrc = src;
-    requestAnimationFrame(() => {
-      const img = imgRef.current;
-      if (img && img.src.includes(currentSrc) && img.complete && img.naturalWidth > 0) {
-        setImageLoaded(true);
-      }
-    });
+    const img = imgRef.current;
+    if (img && img.src && img.complete && img.naturalWidth > 0) {
+      setImageLoaded(true);
+    } else {
+      setImageLoaded(false);
+    }
   }, [src]);
+
+  useEffect(() => {
+    if (imageLoaded || hasError || mediaType === 'video') return;
+    const checkComplete = () => {
+      const img = imgRef.current;
+      if (img && img.complete && img.naturalWidth > 0) {
+        setImageLoaded(true);
+        return true;
+      }
+      return false;
+    };
+    if (checkComplete()) return;
+    const t1 = setTimeout(checkComplete, 50);
+    const t2 = setTimeout(checkComplete, 200);
+    const t3 = setTimeout(checkComplete, 500);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, [src, imageLoaded, hasError, mediaType]);
 
   useEffect(() => {
     if (!autoPlayOnVisible || mediaType !== 'video') return;
@@ -149,7 +171,7 @@ export function MediaDisplay({
         <div className="absolute inset-0 bg-accent animate-pulse" />
       )}
       <img
-        ref={imgRef}
+        ref={imgCallbackRef}
         src={src}
         alt={alt}
         className={`object-cover w-full h-full ${onClick ? 'cursor-pointer' : ''} transition-opacity duration-200 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
@@ -158,7 +180,7 @@ export function MediaDisplay({
           e.stopPropagation();
           onClick();
         } : undefined}
-        decoding="async"
+        loading="eager"
         onLoad={() => setImageLoaded(true)}
         onError={() => setHasError(true)}
       />
