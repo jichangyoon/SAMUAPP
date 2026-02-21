@@ -91,7 +91,7 @@ export function MediaDisplay({
           disablePictureInPicture
           lang="en"
           onClick={handleVideoClick}
-          onLoadedData={() => {
+          onLoadedMetadata={() => {
             setVideoReady(true);
             if (videoRef.current && !showControls) {
               videoRef.current.currentTime = 0.1;
