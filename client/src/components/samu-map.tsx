@@ -16,7 +16,33 @@ import samuLogoImg from "@/assets/samu-logo.webp";
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-const PRINTFUL_ORIGIN: [number, number] = [-118.24, 34.05];
+interface FulfillmentCenter {
+  coords: [number, number];
+  label: string;
+}
+
+const FULFILLMENT_CENTERS: Record<string, FulfillmentCenter> = {
+  japan: { coords: [130.19, 32.30], label: "Amakusa, JP" },
+  us: { coords: [-80.84, 35.23], label: "Charlotte, US" },
+  europe: { coords: [24.11, 56.95], label: "Riga, LV" },
+  australia: { coords: [153.03, -27.47], label: "Brisbane, AU" },
+  brazil: { coords: [-43.17, -22.91], label: "Rio, BR" },
+  mexico: { coords: [-117.03, 32.53], label: "Tijuana, MX" },
+};
+
+const ASIA_COUNTRIES = ["JP", "KR", "CN", "TW", "HK", "SG", "TH", "VN", "MY", "ID", "PH", "IN", "BD", "LK", "NP", "MM", "KH", "LA", "MN", "BN"];
+const EUROPE_COUNTRIES = ["GB", "DE", "FR", "IT", "ES", "NL", "BE", "AT", "CH", "SE", "NO", "DK", "FI", "PL", "CZ", "PT", "IE", "GR", "HU", "RO", "BG", "HR", "SK", "SI", "LT", "LV", "EE", "LU", "MT", "CY", "IS", "UA", "RS", "BA", "ME", "MK", "AL", "XK", "MD"];
+const OCEANIA_COUNTRIES = ["AU", "NZ", "FJ", "PG"];
+const SOUTH_AMERICA_COUNTRIES = ["BR", "AR", "CL", "CO", "PE", "VE", "EC", "BO", "PY", "UY", "GY", "SR"];
+
+function getFulfillmentCenter(country: string): FulfillmentCenter {
+  if (ASIA_COUNTRIES.includes(country)) return FULFILLMENT_CENTERS.japan;
+  if (EUROPE_COUNTRIES.includes(country)) return FULFILLMENT_CENTERS.europe;
+  if (OCEANIA_COUNTRIES.includes(country)) return FULFILLMENT_CENTERS.australia;
+  if (SOUTH_AMERICA_COUNTRIES.includes(country)) return FULFILLMENT_CENTERS.brazil;
+  if (country === "MX") return FULFILLMENT_CENTERS.mexico;
+  return FULFILLMENT_CENTERS.us;
+}
 
 interface MapOrder {
   id: number;
@@ -182,19 +208,6 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
             </Geographies>
 
             {markers.map((marker) => (
-              <Line
-                key={`route-${marker.id}`}
-                from={PRINTFUL_ORIGIN}
-                to={[marker.lng, marker.lat]}
-                stroke={marker.hasRevenue ? "#22c55e" : "#ef4444"}
-                strokeWidth={0.8}
-                strokeLinecap="round"
-                strokeDasharray="4 3"
-                strokeOpacity={0.35}
-              />
-            ))}
-
-            {markers.map((marker) => (
               <Marker
                 key={marker.id}
                 coordinates={[marker.lng, marker.lat]}
@@ -235,12 +248,30 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
               </Marker>
             ))}
 
-            <Marker coordinates={PRINTFUL_ORIGIN}>
-              <circle r={3} fill="#fbbf24" stroke="#fff" strokeWidth={1} opacity={0.9} />
-              <text textAnchor="middle" y={-8} style={{ fontSize: 6, fill: "#fbbf24", fontWeight: "bold" }}>
-                Origin
-              </text>
-            </Marker>
+            {selectedOrder && (() => {
+              const selMarker = markers.find(m => m.id === selectedOrder.id);
+              if (!selMarker) return null;
+              const center = getFulfillmentCenter(selMarker.country);
+              return (
+                <>
+                  <Line
+                    from={center.coords}
+                    to={[selMarker.lng, selMarker.lat]}
+                    stroke={selMarker.hasRevenue ? "#22c55e" : "#ef4444"}
+                    strokeWidth={1.2}
+                    strokeLinecap="round"
+                    strokeDasharray="4 3"
+                    strokeOpacity={0.6}
+                  />
+                  <Marker coordinates={center.coords}>
+                    <circle r={3.5} fill="#fbbf24" stroke="#fff" strokeWidth={1} opacity={0.9} />
+                    <text textAnchor="middle" y={-8} style={{ fontSize: 6, fill: "#fbbf24", fontWeight: "bold" }}>
+                      {center.label}
+                    </text>
+                  </Marker>
+                </>
+              );
+            })()}
           </ZoomableGroup>
         </ComposableMap>
 
@@ -255,10 +286,6 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
         )}
 
         <div className="absolute bottom-2 left-2 flex items-center gap-3 text-[10px] text-white/70">
-          <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-[#fbbf24]" />
-            <span>Origin</span>
-          </div>
           <div className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full bg-[#22c55e]" />
             <span>My Revenue</span>
