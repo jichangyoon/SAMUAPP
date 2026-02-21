@@ -299,6 +299,12 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
         )}
 
         <div className="absolute bottom-2 left-2 flex items-center gap-3 text-[10px] text-white/70">
+          {isActive && (
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full bg-[#fbbf24]" />
+              <span>Origin</span>
+            </div>
+          )}
           <div className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full bg-[#22c55e]" />
             <span>My Revenue</span>
