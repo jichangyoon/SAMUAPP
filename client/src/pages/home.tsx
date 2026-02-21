@@ -231,34 +231,15 @@ export default function Home() {
     enabled: archiveView === 'contest' && !!selectedArchiveContest?.id && !!walletAddress && authenticated,
   });
 
-  // Profile state management
-  const [profileData, setProfileData] = useState({ displayName: 'User', profileImage: '' });
+  // Profile state management - use override state only for instant updates from profile page
+  const [profileOverride, setProfileOverride] = useState<{ displayName: string; profileImage: string } | null>(null);
 
-  // Load profile data from database, not localStorage
-  useEffect(() => {
-    if (userProfile) {
-      setProfileData({
-        displayName: userProfile.displayName || user?.email?.address?.split('@')[0] || 'User',
-        profileImage: userProfile.avatarUrl || ''
-      });
-
-    } else if (authenticated) {
-      setProfileData({
-        displayName: user?.email?.address?.split('@')[0] || 'User',
-        profileImage: ''
-      });
-    } else {
-      setProfileData({ displayName: 'User', profileImage: '' });
-    }
-  }, [userProfile, authenticated, user?.email?.address]);
-
-  // Listen for profile updates from profile page - simplified
+  // Listen for profile updates from profile page
   useEffect(() => {
     const handleProfileUpdate = (event: CustomEvent) => {
-      // Force immediate state update for instant visual feedback
-      setProfileData({
+      setProfileOverride({
         displayName: event.detail.displayName,
-        profileImage: event.detail.profileImage || event.detail.avatarUrl
+        profileImage: event.detail.profileImage || event.detail.avatarUrl || ''
       });
     };
 
@@ -266,8 +247,19 @@ export default function Home() {
     return () => window.removeEventListener('profileUpdated', handleProfileUpdate as EventListener);
   }, []);
 
-  const displayName = authenticated ? profileData.displayName : 'SAMU';
-  const profileImage = profileData.profileImage;
+  // Clear override when userProfile data catches up
+  useEffect(() => {
+    if (userProfile && profileOverride) {
+      setProfileOverride(null);
+    }
+  }, [userProfile]);
+
+  const displayName = !authenticated
+    ? 'SAMU'
+    : profileOverride?.displayName
+      || userProfile?.displayName
+      || (userProfile === undefined ? '' : (user?.email?.address?.split('@')[0] || 'User'));
+  const profileImage = profileOverride?.profileImage || userProfile?.avatarUrl || '';
 
   useEffect(() => {
     if (samuBalance && voteAmount > samuBalance) {
@@ -456,15 +448,21 @@ export default function Home() {
                         alt="Profile" 
                         className="w-full h-full object-cover rounded-full"
                       />
-                    ) : (
+                    ) : displayName ? (
                       <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
                         <span className="text-primary font-bold text-sm">
                           {displayName.slice(0, 2).toUpperCase()}
                         </span>
                       </div>
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-primary/10 animate-pulse" />
                     )}
                   </div>
-                  <span className="text-lg font-bold text-primary truncate">{displayName}</span>
+                  {displayName ? (
+                    <span className="text-lg font-bold text-primary truncate">{displayName}</span>
+                  ) : (
+                    <div className="h-5 w-20 bg-primary/10 rounded animate-pulse" />
+                  )}
                 </>
               ) : (
                 <>

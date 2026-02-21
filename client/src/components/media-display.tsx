@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { Play, ImageOff } from "lucide-react";
 import { getMediaType } from "@/utils/media-utils";
 
@@ -30,7 +30,13 @@ export function MediaDisplay({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [hasError, setHasError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const mediaType = getMediaType(src);
+
+  useEffect(() => {
+    setImageLoaded(false);
+    setHasError(false);
+  }, [src]);
 
   useEffect(() => {
     if (!autoPlayOnVisible || mediaType !== 'video') return;
@@ -124,18 +130,24 @@ export function MediaDisplay({
   }
 
   return (
-    <img
-      src={src}
-      alt={alt}
-      className={`object-cover ${onClick ? 'cursor-pointer' : ''} ${className}`}
-      onClick={onClick ? (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        onClick();
-      } : undefined}
-      loading="lazy"
-      decoding="async"
-      onError={() => setHasError(true)}
-    />
+    <div className={`relative ${className}`}>
+      {!imageLoaded && (
+        <div className="absolute inset-0 bg-accent animate-pulse" />
+      )}
+      <img
+        src={src}
+        alt={alt}
+        className={`object-cover w-full h-full ${onClick ? 'cursor-pointer' : ''} transition-opacity duration-200 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+        onClick={onClick ? (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onClick();
+        } : undefined}
+        loading="lazy"
+        decoding="async"
+        onLoad={() => setImageLoaded(true)}
+        onError={() => setHasError(true)}
+      />
+    </div>
   );
 }
