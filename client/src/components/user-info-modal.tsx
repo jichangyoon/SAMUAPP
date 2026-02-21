@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Trophy, Coins, Copy, X } from "lucide-react";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { MediaDisplay } from "@/components/media-display";
+import { MultiImageBadge } from "@/components/image-carousel";
 import { useToast } from "@/hooks/use-toast";
 import type { Meme } from "@shared/schema";
 
@@ -124,6 +125,7 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
                     key={meme.id} 
                     className="relative hover:opacity-80 transition-opacity"
                   >
+                    <MultiImageBadge count={1 + (meme.additionalImages?.length || 0)} />
                     <MediaDisplay
                       src={meme.imageUrl}
                       alt={meme.title}

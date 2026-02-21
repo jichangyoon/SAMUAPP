@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,15 +11,22 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
-import { Upload } from "lucide-react";
-import { MediaDisplay } from "@/components/media-display";
+import { Upload, X, Images } from "lucide-react";
 import { getMediaType } from "@/utils/media-utils";
+
+const MAX_FILES = 5;
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/mov', 'video/avi', 'video/webm'];
 
 const uploadSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title too long"),
   description: z.string().max(500, "Description too long").optional(),
-  image: z.any().refine((files) => files?.length > 0, "Image is required"),
 });
+
+interface SelectedMedia {
+  file: File;
+  preview: string;
+}
 
 interface UploadFormProps {
   onSuccess: () => void;
@@ -29,18 +36,25 @@ interface UploadFormProps {
 
 export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
   const [isUploading, setIsUploading] = useState(false);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [selectedFiles, setSelectedFiles] = useState<SelectedMedia[]>([]);
+  const selectedFilesRef = useRef(selectedFiles);
+  selectedFilesRef.current = selectedFiles;
+
+  useEffect(() => {
+    return () => {
+      selectedFilesRef.current.forEach(f => URL.revokeObjectURL(f.preview));
+    };
+  }, []);
+
   const { authenticated, user } = usePrivy();
   
-  // Get wallet using same logic as WalletConnect component - prioritize Solana
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
   const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
   const walletAddress = selectedWalletAccount?.address || '';
   const { toast } = useToast();
 
-  // Get current active contest for auto-assignment
   const { data: currentContest } = useQuery({
     queryKey: ['/api/admin/current-contest'],
     queryFn: async () => {
@@ -48,7 +62,7 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       if (!response.ok) return null;
       return response.json();
     },
-    enabled: !partnerId, // Only fetch for main contest, not partner contests
+    enabled: !partnerId,
   });
 
   const form = useForm<z.infer<typeof uploadSchema>>({
@@ -59,47 +73,54 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
     },
   });
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/mov', 'video/avi', 'video/webm'];
-      if (!allowedTypes.includes(file.type)) {
-        toast({
-          title: "Invalid file type",
-          description: "Please upload an image (JPEG, PNG, GIF, WebP) or video (MP4, MOV, AVI, WebM)",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Validate file size (5MB limit)
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "File too large",
-          description: "Please upload a file smaller than 5MB",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onload = () => setPreview(reader.result as string);
-      reader.readAsDataURL(file);
-    } else {
-      setPreview(null);
-      setSelectedFile(null);
+  const handleFilesSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const remaining = MAX_FILES - selectedFiles.length;
+    
+    if (files.length > remaining) {
+      toast({
+        title: "Too many files",
+        description: `You can add ${remaining} more (max ${MAX_FILES} total)`,
+        variant: "destructive"
+      });
     }
+
+    const validFiles = files.slice(0, remaining).filter(file => {
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        toast({ title: "Invalid file type", description: `${file.name} is not supported`, variant: "destructive" });
+        return false;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        toast({ title: "File too large", description: `${file.name} exceeds 5MB`, variant: "destructive" });
+        return false;
+      }
+      return true;
+    });
+
+    const newMedia: SelectedMedia[] = validFiles.map(file => ({
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+
+    setSelectedFiles(prev => [...prev, ...newMedia]);
+    e.target.value = '';
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => {
+      const updated = [...prev];
+      URL.revokeObjectURL(updated[index].preview);
+      updated.splice(index, 1);
+      return updated;
+    });
   };
 
   const uploadFile = async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append('file', file);
 
-    // Add timeout to fetch request
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     try {
       const response = await fetch('/api/uploads/upload', {
@@ -107,77 +128,60 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
         body: formData,
         signal: controller.signal,
       });
-
       clearTimeout(timeoutId);
-
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Upload failed: ${response.status} ${errorText}`);
       }
-
       const result = await response.json();
-  
-      if (!result.fileUrl) {
-        throw new Error('No file URL received from server');
-      }
-
-      return result.fileUrl; // R2 URL is returned directly
+      if (!result.fileUrl) throw new Error('No file URL received');
+      return result.fileUrl;
     } catch (error: any) {
       clearTimeout(timeoutId);
-      
-      if (error.name === 'AbortError') {
-        throw new Error('Upload timeout - file may be too large or connection too slow');
-      }
-      
-      if (error instanceof TypeError && error.message.includes('fetch')) {
-        throw new Error('Network connection failed - please check your internet');
-      }
-      
-      throw new Error(error.message || 'Upload failed - please try again');
+      if (error.name === 'AbortError') throw new Error('Upload timeout');
+      throw new Error(error.message || 'Upload failed');
     }
   };
 
   const onSubmit = async (values: z.infer<typeof uploadSchema>) => {
     if (!walletAddress) {
-      toast({
-        title: "Wallet Required",
-        description: "Please connect your wallet to submit a meme.",
-        variant: "destructive",
-      });
+      toast({ title: "Wallet Required", description: "Please connect your wallet to submit a meme.", variant: "destructive" });
+      return;
+    }
+    if (selectedFiles.length === 0) {
+      toast({ title: "Image Required", description: "Please select at least one image.", variant: "destructive" });
       return;
     }
 
     setIsUploading(true);
+    setUploadProgress(0);
     try {
-      const file = values.image[0];
-      
-      // Upload file to server
-      const imageUrl = await uploadFile(file);
-      
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < selectedFiles.length; i++) {
+        setUploadProgress(Math.round(((i) / selectedFiles.length) * 100));
+        const url = await uploadFile(selectedFiles[i].file);
+        uploadedUrls.push(url);
+      }
+      setUploadProgress(100);
+
       const memeData = {
         title: values.title,
         description: values.description || "",
-        imageUrl,
+        imageUrl: uploadedUrls[0],
+        additionalImages: uploadedUrls.slice(1),
         authorWallet: walletAddress,
         authorUsername: user?.email?.address || walletAddress.slice(0, 8) + '...' + walletAddress.slice(-4),
-        contestId: currentContest?.id || null // Auto-assign to current active contest
+        contestId: currentContest?.id || null,
       };
 
-      const endpoint = partnerId 
-        ? `/api/partners/${partnerId}/memes`
-        : "/api/memes";
-
+      const endpoint = partnerId ? `/api/partners/${partnerId}/memes` : "/api/memes";
       const response = await fetch(endpoint, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(memeData),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to submit meme');
-      }
+      if (!response.ok) throw new Error('Failed to submit meme');
 
       const newMeme = await response.json();
 
@@ -192,30 +196,20 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
 
       queryClient.invalidateQueries({ queryKey: ['/api/memes'], exact: false });
       queryClient.invalidateQueries({ queryKey: ['user-stats'] });
-
-      // Dispatch event to notify home page of new meme upload
       window.dispatchEvent(new CustomEvent('memeUploaded'));
 
-      toast({
-        title: "Meme Submitted!",
-        description: "Your meme has been added to the contest.",
-        duration: 1200,
-      });
-
+      toast({ title: "Meme Submitted!", description: "Your meme has been added to the contest.", duration: 1200 });
       form.reset();
-      setPreview(null);
+      selectedFiles.forEach(f => URL.revokeObjectURL(f.preview));
+      setSelectedFiles([]);
       onSuccess();
       onClose?.();
     } catch (error: any) {
       queryClient.invalidateQueries({ queryKey: ['/api/memes'], exact: false });
-
-      toast({
-        title: "Upload Failed",
-        description: error.message || "Failed to submit meme. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Upload Failed", description: error.message || "Failed to submit meme. Please try again.", variant: "destructive" });
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -224,85 +218,82 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       <CardContent className="p-0">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
-            <FormField
-              control={form.control}
-              name="image"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-foreground">Meme Image</FormLabel>
-                  <FormControl>
-                    <div className="border-2 border-dashed border-border rounded-lg p-4 text-center hover:border-primary transition-colors duration-200">
-                      {preview ? (
-                        <div className="space-y-2">
-                          <div className="max-w-full max-h-28 mx-auto overflow-hidden">
-                            {selectedFile && getMediaType(selectedFile.name) === 'video' ? (
-                              <video
-                                src={preview}
-                                className="max-w-full max-h-28 rounded-lg"
-                                controls
-                                muted
-                                preload="metadata"
-                                style={{ backgroundColor: '#000' }}
-                                onLoadedMetadata={(e) => {
-                                  const video = e.target as HTMLVideoElement;
-                                  video.currentTime = 0.1; // Generate thumbnail
-                                }}
-                              >
-                                Your browser does not support video playback.
-                              </video>
-                            ) : (
-                              <img
-                                src={preview}
-                                alt="Preview"
-                                className="max-w-full max-h-28 rounded-lg object-contain"
-                              />
-                            )}
-                          </div>
-                          <Button
+            <FormItem>
+              <FormLabel className="text-foreground">Meme Image</FormLabel>
+              <div className="border-2 border-dashed border-border rounded-lg p-3 text-center hover:border-primary transition-colors duration-200">
+                {selectedFiles.length > 0 ? (
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-3 gap-2">
+                      {selectedFiles.map((media, idx) => (
+                        <div key={idx} className="relative aspect-square rounded-lg overflow-hidden bg-accent group">
+                          {getMediaType(media.file.name) === 'video' ? (
+                            <video
+                              src={media.preview}
+                              className="w-full h-full object-cover"
+                              muted
+                              preload="metadata"
+                              onLoadedMetadata={(e) => { (e.target as HTMLVideoElement).currentTime = 0.1; }}
+                            />
+                          ) : (
+                            <img src={media.preview} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                          )}
+                          <button
                             type="button"
-                            variant="outline"
-                            onClick={() => {
-                              setPreview(null);
-                              setSelectedFile(null);
-                              field.onChange([]);
-                            }}
+                            onClick={() => removeFile(idx)}
+                            className="absolute top-1 right-1 bg-black/70 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
                           >
-                            Remove {selectedFile && getMediaType(selectedFile.name) === 'video' ? 'Video' : 'Image'}
-                          </Button>
+                            <X className="h-3.5 w-3.5 text-white" />
+                          </button>
+                          {idx === 0 && selectedFiles.length > 1 && (
+                            <div className="absolute bottom-1 left-1 bg-primary text-primary-foreground text-[9px] px-1.5 py-0.5 rounded font-semibold">
+                              COVER
+                            </div>
+                          )}
                         </div>
-                      ) : (
-                        <>
-                          <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
-                          <p className="text-muted-foreground text-sm mb-2">
-                            Upload image or video (max 5MB)<br />
-                            Drag & drop your meme or click to browse
-                          </p>
-                          <label htmlFor="file-upload" className="cursor-pointer">
-                            <Button
-                              type="button"
-                              className="bg-primary hover:bg-primary/90 text-primary-foreground pointer-events-none"
-                            >
-                              Choose File
-                            </Button>
-                          </label>
-                        </>
+                      ))}
+                      {selectedFiles.length < MAX_FILES && (
+                        <label className="aspect-square rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors">
+                          <Upload className="h-5 w-5 text-muted-foreground mb-1" />
+                          <span className="text-[10px] text-muted-foreground">Add</span>
+                          <input
+                            type="file"
+                            accept="image/*,video/*"
+                            multiple
+                            className="hidden"
+                            onChange={handleFilesSelect}
+                          />
+                        </label>
                       )}
-                      <Input
-                        id="file-upload"
-                        type="file"
-                        accept="image/*,video/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          field.onChange(e.target.files);
-                          handleImageChange(e);
-                        }}
-                      />
                     </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
+                      <Images className="h-3 w-3" />
+                      <span>{selectedFiles.length}/{MAX_FILES}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-muted-foreground text-sm mb-2">
+                      Upload images or videos (max {MAX_FILES}, 5MB each)<br />
+                      Drag & drop or click to browse
+                    </p>
+                    <label htmlFor="file-upload" className="cursor-pointer">
+                      <Button type="button" className="bg-primary hover:bg-primary/90 text-primary-foreground pointer-events-none">
+                        Choose Files
+                      </Button>
+                    </label>
+                    <input
+                      id="file-upload"
+                      type="file"
+                      accept="image/*,video/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleFilesSelect}
+                    />
+                  </>
+                )}
+              </div>
+            </FormItem>
 
             <FormField
               control={form.control}
@@ -351,10 +342,10 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
 
             <Button
               type="submit"
-              disabled={isUploading}
+              disabled={isUploading || selectedFiles.length === 0}
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3"
             >
-              {isUploading ? "Submitting..." : "Submit Meme"}
+              {isUploading ? `Uploading... ${uploadProgress}%` : "Submit Meme"}
             </Button>
           </form>
         </Form>

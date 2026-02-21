@@ -6,6 +6,7 @@ import { ArrowUp, Share2, Twitter, Send, Calendar, Trophy, ChevronDown, ChevronU
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MediaDisplay } from "@/components/media-display";
+import { ImageCarousel } from "@/components/image-carousel";
 import { UserInfoModal } from "@/components/user-info-modal";
 import { NativeShare } from "@/utils/native-share";
 import type { Meme } from "@shared/schema";
@@ -105,14 +106,12 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
 
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {/* Meme Media */}
-          <div className="w-full max-w-md mx-auto">
-            <MediaDisplay
-              src={meme.imageUrl}
+          <div className="w-full max-w-md mx-auto aspect-square">
+            <ImageCarousel
+              images={[meme.imageUrl, ...(meme.additionalImages || [])]}
               alt={meme.title}
-              className="w-full rounded-lg"
+              className="w-full h-full rounded-lg"
               showControls={true}
-              autoPlay={false}
-              muted={false}
             />
           </div>
 

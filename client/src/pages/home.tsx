@@ -4,6 +4,7 @@ import { WalletConnect } from "@/components/wallet-connect";
 import { ContestHeader } from "@/components/contest-header";
 import { MemeCard } from "@/components/meme-card";
 import { MediaDisplay } from "@/components/media-display";
+import { MultiImageBadge } from "@/components/image-carousel";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 
 const UploadForm = lazy(() => import("@/components/upload-form").then(m => ({ default: m.UploadForm })));
@@ -655,7 +656,6 @@ export default function Home() {
                                 <button
                                   key={meme.id}
                                   onClick={() => {
-                                    // 현재 투표 수를 포함한 meme 객체 전달
                                     setSelectedMeme(meme);
                                   }}
                                   className="aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-all duration-200 relative group animate-fade-in"
@@ -663,6 +663,7 @@ export default function Home() {
                                     animationDelay: `${Math.min(index * 30, 200)}ms`,
                                   }}
                                 >
+                                  <MultiImageBadge count={1 + (meme.additionalImages?.length || 0)} />
                                   <MediaDisplay
                                     src={meme.imageUrl}
                                     alt={meme.title}
@@ -968,6 +969,7 @@ export default function Home() {
                             onClick={() => setSelectedArchiveMeme(meme)}
                             className="aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-opacity relative group"
                           >
+                            <MultiImageBadge count={1 + (meme.additionalImages?.length || 0)} />
                             <MediaDisplay
                               src={meme.imageUrl}
                               alt={meme.title}
@@ -977,7 +979,6 @@ export default function Home() {
                               muted={true}
                               loop={true}
                             />
-                            {/* Medal icon for top 3 */}
                             {meme.rank <= 3 && (
                               <div className="absolute top-1 left-1 text-lg">
                                 {meme.rank === 1 ? '🥇' : meme.rank === 2 ? '🥈' : '🥉'}

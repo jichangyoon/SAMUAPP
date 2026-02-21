@@ -17,6 +17,7 @@ import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { UserInfoModal } from "@/components/user-info-modal";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { MediaDisplay } from "@/components/media-display";
+import { ImageCarousel, MultiImageBadge } from "@/components/image-carousel";
 import type { Meme } from "@shared/schema";
 
 interface MemeCardProps {
@@ -267,16 +268,14 @@ export const MemeCard = memo(function MemeCard({ meme, onVote, canVote }: MemeCa
   return (
     <>
       <Card className="overflow-hidden border-border bg-card">
-        <div className="w-full aspect-square bg-accent flex items-center justify-center">
-          <MediaDisplay
-            src={meme.imageUrl}
+        <div className="w-full aspect-square bg-accent flex items-center justify-center relative">
+          <MultiImageBadge count={1 + (meme.additionalImages?.length || 0)} />
+          <ImageCarousel
+            images={[meme.imageUrl, ...(meme.additionalImages || [])]}
             alt={meme.title}
             className="w-full h-full"
-            showControls={false}
             onClick={() => setShowDetailDialog(true)}
-            muted={true}
-            loop={true}
-            autoPlayOnVisible={true}
+            autoPlayVideo={true}
           />
         </div>
 
