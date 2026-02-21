@@ -14,6 +14,7 @@ import { actionsRouter } from "./routes/actions";
 import revenueRouter from "./routes/revenue";
 import goodsRouter from "./routes/goods";
 import rewardsDashboardRouter from "./routes/rewards-dashboard";
+import webhookRouter from "./routes/webhook";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const assetsPath = path.resolve(import.meta.dirname, "..", "attached_assets");
@@ -34,6 +35,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api/revenue", revenueRouter);
   app.use("/api/goods", goodsRouter);
   app.use("/api/rewards", rewardsDashboardRouter);
+  app.use("/api/webhook", webhookRouter);
 
   const httpServer = createServer(app);
   return httpServer;

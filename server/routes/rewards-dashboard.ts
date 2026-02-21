@@ -120,4 +120,68 @@ router.get("/my-claims/:walletAddress", async (req, res) => {
   }
 });
 
+router.get("/map", async (req, res) => {
+  try {
+    const walletAddress = req.query.wallet as string | undefined;
+    const allOrders = await storage.getAllOrders();
+    const distributions = await storage.getAllGoodsRevenueDistributions();
+
+    const distributionByOrderId = new Map<number, any>();
+    distributions.forEach(d => distributionByOrderId.set(d.orderId, d));
+
+    const allGoods = await storage.getGoods();
+    const goodsMap = new Map<number, any>();
+    allGoods.forEach(g => goodsMap.set(g.id, g));
+
+    const mapOrders = allOrders
+      .filter(o => o.shippingCountry)
+      .map(o => {
+        const dist = distributionByOrderId.get(o.id);
+        const good = goodsMap.get(o.goodsId);
+
+        let hasRevenue = false;
+        if (walletAddress && dist) {
+          if (dist.creatorWallet === walletAddress) {
+            hasRevenue = true;
+          }
+        }
+
+        return {
+          id: o.id,
+          city: o.shippingCity,
+          country: o.shippingCountry,
+          lat: o.shippingLat,
+          lng: o.shippingLng,
+          status: o.printfulStatus || o.status,
+          trackingNumber: o.trackingNumber,
+          trackingUrl: o.trackingUrl,
+          solAmount: o.solAmount,
+          totalPrice: o.totalPrice,
+          goodsTitle: good?.title || "SAMU Goods",
+          goodsImage: good?.imageUrl,
+          productType: good?.productType,
+          createdAt: o.createdAt,
+          hasRevenue,
+          distribution: dist ? {
+            creatorAmount: dist.creatorAmount,
+            voterPoolAmount: dist.voterPoolAmount,
+            platformAmount: dist.platformAmount,
+          } : null,
+        };
+      });
+
+    res.json({
+      orders: mapOrders,
+      stats: {
+        total: mapOrders.length,
+        shipped: mapOrders.filter(o => o.status === "shipped" || o.status === "in_transit").length,
+        delivered: mapOrders.filter(o => o.status === "delivered").length,
+        countries: Array.from(new Set(mapOrders.map(o => o.country))).length,
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;

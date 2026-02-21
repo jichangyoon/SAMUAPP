@@ -176,6 +176,8 @@ export const orders = pgTable("orders", {
   printfulStatus: text("printful_status"),
   trackingNumber: text("tracking_number"),
   trackingUrl: text("tracking_url"),
+  shippingLat: doublePrecision("shipping_lat"),
+  shippingLng: doublePrecision("shipping_lng"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

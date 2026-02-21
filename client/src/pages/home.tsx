@@ -10,6 +10,7 @@ const UploadForm = lazy(() => import("@/components/upload-form").then(m => ({ de
 const Leaderboard = lazy(() => import("@/components/leaderboard").then(m => ({ default: m.Leaderboard })));
 const GoodsShop = lazy(() => import("@/components/goods-shop").then(m => ({ default: m.GoodsShop })));
 const RewardsDashboard = lazy(() => import("@/components/rewards-dashboard").then(m => ({ default: m.RewardsDashboard })));
+const SamuMap = lazy(() => import("@/components/samu-map").then(m => ({ default: m.SamuMap })));
 
 
 import { usePrivy } from '@privy-io/react-auth';
@@ -1006,9 +1007,24 @@ export default function Home() {
           </TabsContent>
 
           <TabsContent value="rewards" className="mt-4 space-y-4 pb-24">
-            <Suspense fallback={<div className="min-h-[200px]" />}>
-              <RewardsDashboard />
-            </Suspense>
+            <Tabs defaultValue="map" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 h-10">
+                <TabsTrigger value="map" className="text-sm">Map</TabsTrigger>
+                <TabsTrigger value="dashboard" className="text-sm">Dashboard</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="map" className="mt-4">
+                <Suspense fallback={<div className="min-h-[300px] bg-accent animate-pulse rounded-lg" />}>
+                  <SamuMap walletAddress={walletAddress} />
+                </Suspense>
+              </TabsContent>
+
+              <TabsContent value="dashboard" className="mt-4">
+                <Suspense fallback={<div className="min-h-[200px]" />}>
+                  <RewardsDashboard />
+                </Suspense>
+              </TabsContent>
+            </Tabs>
           </TabsContent>
         </Tabs>
       </div>
