@@ -13,50 +13,68 @@ const SHARE_RATIOS = {
 };
 
 const TREASURY_WALLET = process.env.TREASURY_WALLET_ADDRESS || "4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk";
+const ESCROW_WALLET = process.env.ESCROW_WALLET_ADDRESS || "ojzHLw6QxUqprnEjk4gfQM3QXS1RKHWjTLXzZS543cg";
 
-async function distributeGoodsRevenue(order: any, item: any, verifiedCreatorWallet?: string | null, verifiedCreatorAmount?: number) {
-  const totalSol = order.solAmount;
-  if (!totalSol || totalSol <= 0) return;
+async function distributeEscrowProfit(escrowDeposit: any) {
+  const profitSol = escrowDeposit.profitSol;
+  if (!profitSol || profitSol <= 0) return;
 
-  const contestId = item.contestId;
+  const contestId = escrowDeposit.contestId;
   if (!contestId) return;
 
-  const contest = await storage.getContestById(contestId);
-  if (!contest) {
-    console.log("No contest found for distribution, contestId:", contestId);
-    return;
+  const creatorPool = profitSol * SHARE_RATIOS.creator;
+  const voterPoolAmount = profitSol * SHARE_RATIOS.voter;
+  const platformAmount = profitSol * SHARE_RATIOS.platform;
+
+  const memeVoteSummary = await storage.getMemeVoteSummary(contestId);
+  const totalVotesReceived = memeVoteSummary.reduce((sum, m) => sum + m.totalSamuReceived, 0);
+
+  const creatorShares: { wallet: string; amount: number; memeId: number; votePercent: number }[] = [];
+
+  if (totalVotesReceived > 0 && memeVoteSummary.length > 0) {
+    for (const meme of memeVoteSummary) {
+      const votePercent = meme.totalSamuReceived / totalVotesReceived;
+      const creatorAmount = creatorPool * votePercent;
+      if (creatorAmount > 0) {
+        creatorShares.push({
+          wallet: meme.authorWallet,
+          amount: creatorAmount,
+          memeId: meme.memeId,
+          votePercent: votePercent * 100,
+        });
+      }
+    }
+  } else {
+    creatorShares.push({
+      wallet: TREASURY_WALLET,
+      amount: creatorPool,
+      memeId: 0,
+      votePercent: 100,
+    });
   }
 
-  const meme = item.memeId ? await storage.getMemeById(item.memeId) : null;
-  const creatorWallet = verifiedCreatorWallet || meme?.authorWallet || TREASURY_WALLET;
-
-  const creatorAmount = totalSol * SHARE_RATIOS.creator;
-  const voterPoolAmount = totalSol * SHARE_RATIOS.voter;
-  const platformAmount = totalSol * SHARE_RATIOS.platform;
-
-  const expectedCreatorAmount = totalSol * SHARE_RATIOS.creator;
-  const creatorAmountTolerance = expectedCreatorAmount * 0.05;
-  const creatorDirect = !!verifiedCreatorWallet && 
-    verifiedCreatorAmount !== undefined && 
-    verifiedCreatorAmount > 0 && 
-    Math.abs(verifiedCreatorAmount - expectedCreatorAmount) <= creatorAmountTolerance;
-  const status = creatorDirect ? "completed" : "pending_creator_transfer";
+  const primaryCreator = creatorShares[0] || { wallet: TREASURY_WALLET, amount: creatorPool };
 
   await storage.createGoodsRevenueDistribution({
-    orderId: order.id,
+    orderId: escrowDeposit.orderId,
     contestId,
-    totalSolAmount: totalSol,
-    creatorAmount,
-    creatorWallet,
+    totalSolAmount: profitSol,
+    creatorAmount: creatorPool,
+    creatorWallet: primaryCreator.wallet,
     voterPoolAmount,
     platformAmount,
-    status,
+    status: "distributed_from_escrow",
   });
 
   await storage.updateVoterRewardPool(contestId, voterPoolAmount);
 
-  const transferMethod = creatorDirect ? "DIRECT (on-chain split)" : "DB RECORD (pending)";
-  console.log(`Revenue distributed for order ${order.id} [${transferMethod}]: Creator=${creatorAmount.toFixed(6)} SOL → ${creatorWallet}, Voters=${voterPoolAmount.toFixed(6)} SOL (pool), Platform=${platformAmount.toFixed(6)} SOL`);
+  await storage.updateEscrowStatus(escrowDeposit.id, "distributed", new Date());
+
+  console.log(`Escrow profit distributed for order ${escrowDeposit.orderId}: Total profit=${profitSol.toFixed(6)} SOL`);
+  console.log(`  Creators (${creatorShares.length}): ${creatorShares.map(c => `${c.wallet.slice(0,8)}...(${c.votePercent.toFixed(1)}%)=${c.amount.toFixed(6)} SOL`).join(', ')}`);
+  console.log(`  Voters pool: ${voterPoolAmount.toFixed(6)} SOL, Platform: ${platformAmount.toFixed(6)} SOL`);
+
+  return { creatorShares, voterPoolAmount, platformAmount };
 }
 
 const TRUNK_PREFIX_COUNTRIES = new Set([
@@ -129,6 +147,49 @@ async function getSOLPriceUSD(): Promise<number> {
   } catch {
     return 150;
   }
+}
+
+async function getPrintfulProductCost(item: any, shippingAddress?: any): Promise<{ productCost: number; shippingCost: number; totalCost: number }> {
+  if (!PRINTFUL_API_KEY) {
+    const fallbackCost = (item.basePrice || item.retailPrice * 0.6);
+    return { productCost: fallbackCost, shippingCost: 4.99, totalCost: fallbackCost + 4.99 };
+  }
+
+  try {
+    const firstSize = item.sizes?.[0] || '3"×3"';
+    const variantId = STICKER_VARIANT_MAP[firstSize] || 10163;
+
+    const estimatePayload: any = {
+      items: [{
+        variant_id: variantId,
+        quantity: 1,
+        files: [{ url: item.imageUrl }],
+      }],
+    };
+
+    if (shippingAddress) {
+      estimatePayload.recipient = {
+        address1: shippingAddress.address1,
+        city: shippingAddress.city,
+        country_code: shippingAddress.country_code,
+        state_code: shippingAddress.state_code || undefined,
+        zip: shippingAddress.zip,
+      };
+    }
+
+    const data = await printfulRequest("POST", "/orders/estimate-costs", estimatePayload);
+    const costs = data.result?.costs;
+    if (costs) {
+      const productCost = parseFloat(costs.subtotal) || (item.basePrice || item.retailPrice * 0.6);
+      const shippingCost = parseFloat(costs.shipping) || 4.99;
+      return { productCost, shippingCost, totalCost: productCost + shippingCost };
+    }
+  } catch (err: any) {
+    console.error("Printful cost estimate failed, using fallback:", err.message);
+  }
+
+  const fallbackCost = (item.basePrice || item.retailPrice * 0.6);
+  return { productCost: fallbackCost, shippingCost: 4.99, totalCost: fallbackCost + 4.99 };
 }
 
 function getPrintfulHeaders() {
@@ -562,7 +623,7 @@ router.post("/:id/prepare-payment", async (req, res) => {
       return res.status(404).json({ error: "Goods not found" });
     }
 
-    const { buyerWallet, shippingCostUSD } = req.body;
+    const { buyerWallet, shippingCostUSD, shippingAddress } = req.body;
     if (!buyerWallet) {
       return res.status(400).json({ error: "buyerWallet is required" });
     }
@@ -571,43 +632,36 @@ router.post("/:id/prepare-payment", async (req, res) => {
     const solPriceUSD = await getSOLPriceUSD();
     const solAmount = parseFloat((totalUSD / solPriceUSD).toFixed(6));
 
+    const printfulCost = await getPrintfulProductCost(item, shippingAddress);
+    const costUSD = printfulCost.totalCost;
+    const profitUSD = Math.max(0, totalUSD - costUSD);
+
+    const costSol = parseFloat((costUSD / solPriceUSD).toFixed(6));
+    const profitSol = parseFloat((profitUSD / solPriceUSD).toFixed(6));
+
     const connection = getSolConnection();
     const buyerPubkey = new PublicKey(buyerWallet);
     const treasuryPubkey = new PublicKey(TREASURY_WALLET);
+    const escrowPubkey = new PublicKey(ESCROW_WALLET);
 
     const totalLamports = Math.ceil(solAmount * LAMPORTS_PER_SOL);
-
-    let creatorWallet: string | null = null;
-
-    if (item.memeId) {
-      const meme = await storage.getMemeById(item.memeId);
-      if (meme?.authorWallet && meme.authorWallet !== TREASURY_WALLET) {
-        creatorWallet = meme.authorWallet;
-      }
-    }
+    const costLamports = Math.ceil(costSol * LAMPORTS_PER_SOL);
+    const profitLamports = Math.max(0, totalLamports - costLamports);
 
     const transaction = new Transaction();
     const splits: { recipient: string; role: string; lamports: number; solAmount: number }[] = [];
 
-    const creatorLamports = Math.floor(totalLamports * SHARE_RATIOS.creator);
-    const platformLamports = Math.floor(totalLamports * SHARE_RATIOS.platform);
-    const voterPoolLamports = totalLamports - creatorLamports - platformLamports;
-
-    if (creatorWallet) {
-      const creatorPubkey = new PublicKey(creatorWallet);
-      transaction.add(
-        SystemProgram.transfer({ fromPubkey: buyerPubkey, toPubkey: creatorPubkey, lamports: creatorLamports })
-      );
-      splits.push({ recipient: creatorWallet, role: "creator", lamports: creatorLamports, solAmount: creatorLamports / LAMPORTS_PER_SOL });
-    }
-
-    let treasuryLamports = voterPoolLamports + platformLamports;
-    if (!creatorWallet) treasuryLamports += creatorLamports;
-
     transaction.add(
-      SystemProgram.transfer({ fromPubkey: buyerPubkey, toPubkey: treasuryPubkey, lamports: treasuryLamports })
+      SystemProgram.transfer({ fromPubkey: buyerPubkey, toPubkey: treasuryPubkey, lamports: costLamports })
     );
-    splits.push({ recipient: TREASURY_WALLET, role: "treasury", lamports: treasuryLamports, solAmount: treasuryLamports / LAMPORTS_PER_SOL });
+    splits.push({ recipient: TREASURY_WALLET, role: "cost", lamports: costLamports, solAmount: costLamports / LAMPORTS_PER_SOL });
+
+    if (profitLamports > 0) {
+      transaction.add(
+        SystemProgram.transfer({ fromPubkey: buyerPubkey, toPubkey: escrowPubkey, lamports: profitLamports })
+      );
+      splits.push({ recipient: ESCROW_WALLET, role: "escrow_profit", lamports: profitLamports, solAmount: profitLamports / LAMPORTS_PER_SOL });
+    }
 
     const { blockhash } = await connection.getLatestBlockhash();
     transaction.recentBlockhash = blockhash;
@@ -625,10 +679,17 @@ router.post("/:id/prepare-payment", async (req, res) => {
       totalUSD,
       lamports: totalLamports,
       splits,
+      costBreakdown: {
+        costUSD,
+        profitUSD,
+        costSol,
+        profitSol,
+        printfulProductCost: printfulCost.productCost,
+        printfulShippingCost: printfulCost.shippingCost,
+      },
       distribution: {
-        creator: { wallet: creatorWallet || TREASURY_WALLET, amount: creatorLamports / LAMPORTS_PER_SOL, direct: !!creatorWallet },
-        platform: { wallet: TREASURY_WALLET, amount: platformLamports / LAMPORTS_PER_SOL, direct: true },
-        voterPool: { wallet: TREASURY_WALLET, amount: voterPoolLamports / LAMPORTS_PER_SOL, direct: true },
+        treasury: { wallet: TREASURY_WALLET, amount: costLamports / LAMPORTS_PER_SOL, role: "production_cost" },
+        escrow: { wallet: ESCROW_WALLET, amount: profitLamports / LAMPORTS_PER_SOL, role: "profit_escrow" },
       },
     });
   } catch (error: any) {
@@ -694,15 +755,8 @@ router.post("/:id/order", async (req, res) => {
     const expectedLamports = Math.ceil(expectedSOL * LAMPORTS_PER_SOL);
     const minAcceptableLamports = Math.floor(expectedLamports * 0.95);
 
-    let verifiedCreatorWallet: string | null = null;
-    let verifiedCreatorAmount = 0;
-
-    if (item.memeId) {
-      const meme = await storage.getMemeById(item.memeId);
-      if (meme?.authorWallet && meme.authorWallet !== TREASURY_WALLET) {
-        verifiedCreatorWallet = meme.authorWallet;
-      }
-    }
+    let verifiedCostAmount = 0;
+    let verifiedEscrowAmount = 0;
 
     try {
       const txInfo = await connection.getTransaction(txSignature, { maxSupportedTransactionVersion: 0 });
@@ -719,6 +773,7 @@ router.post("/:id/order", async (req, res) => {
       const accountKeys = txInfo.transaction.message.getAccountKeys().staticAccountKeys;
 
       const treasuryPubkey = new PublicKey(TREASURY_WALLET);
+      const escrowPubkey = new PublicKey(ESCROW_WALLET);
       let totalReceived = 0;
 
       for (let i = 0; i < accountKeys.length; i++) {
@@ -727,9 +782,10 @@ router.post("/:id/order", async (req, res) => {
 
         if (accountKeys[i].equals(treasuryPubkey)) {
           totalReceived += received;
-        } else if (verifiedCreatorWallet && accountKeys[i].equals(new PublicKey(verifiedCreatorWallet))) {
+          verifiedCostAmount = received / LAMPORTS_PER_SOL;
+        } else if (accountKeys[i].equals(escrowPubkey)) {
           totalReceived += received;
-          verifiedCreatorAmount = received / LAMPORTS_PER_SOL;
+          verifiedEscrowAmount = received / LAMPORTS_PER_SOL;
         }
       }
 
@@ -741,8 +797,8 @@ router.post("/:id/order", async (req, res) => {
 
       const computedSolAmount = totalReceived / LAMPORTS_PER_SOL;
       req.body.solAmount = computedSolAmount;
-      req.body.verifiedCreatorWallet = verifiedCreatorWallet;
-      req.body.verifiedCreatorAmount = verifiedCreatorAmount;
+      req.body.verifiedCostAmount = verifiedCostAmount;
+      req.body.verifiedEscrowAmount = verifiedEscrowAmount;
     } catch (verifyErr: any) {
       console.error("Transaction verification error:", verifyErr);
       return res.status(400).json({ error: "Could not verify SOL payment transaction" });
@@ -821,9 +877,24 @@ router.post("/:id/order", async (req, res) => {
 
     if (order.solAmount && order.solAmount > 0 && item.contestId) {
       try {
-        await distributeGoodsRevenue(order, item, req.body.verifiedCreatorWallet, req.body.verifiedCreatorAmount);
+        const escrowAmount = req.body.verifiedEscrowAmount || 0;
+        const costAmount = req.body.verifiedCostAmount || 0;
+
+        await storage.createEscrowDeposit({
+          orderId: order.id,
+          contestId: item.contestId,
+          memeId: item.memeId || null,
+          totalSolPaid: order.solAmount,
+          costSol: costAmount,
+          profitSol: escrowAmount,
+          costTxSignature: txSignature,
+          escrowTxSignature: escrowAmount > 0 ? txSignature : null,
+          status: "locked",
+        });
+
+        console.log(`Escrow deposit created for order ${order.id}: cost=${costAmount.toFixed(6)} SOL → Treasury, profit=${escrowAmount.toFixed(6)} SOL → Escrow (locked until delivery)`);
       } catch (distError: any) {
-        console.error("Revenue distribution failed (order still created):", distError.message);
+        console.error("Escrow deposit creation failed (order still created):", distError.message);
       }
     }
 
@@ -831,6 +902,78 @@ router.post("/:id/order", async (req, res) => {
   } catch (error: any) {
     console.error("Error placing order:", error);
     res.status(500).json({ error: error.message || "Failed to place order" });
+  }
+});
+
+router.post("/admin/distribute-escrow/:orderId", requireAdmin, async (req, res) => {
+  try {
+    const orderId = parseInt(req.params.orderId);
+    if (isNaN(orderId)) {
+      return res.status(400).json({ error: "Invalid order ID" });
+    }
+
+    const escrow = await storage.getEscrowDepositByOrderId(orderId);
+    if (!escrow) {
+      return res.status(404).json({ error: "Escrow deposit not found for this order" });
+    }
+
+    if (escrow.status !== "locked") {
+      return res.status(400).json({ error: `Cannot distribute escrow with status '${escrow.status}'. Only 'locked' escrow deposits can be distributed.` });
+    }
+
+    const result = await distributeEscrowProfit(escrow);
+    res.json({ success: true, distribution: result, escrowId: escrow.id });
+  } catch (error: any) {
+    console.error("Error distributing escrow:", error);
+    res.status(500).json({ error: error.message || "Failed to distribute escrow" });
+  }
+});
+
+router.get("/admin/escrow-deposits", requireAdmin, async (req, res) => {
+  try {
+    const contestId = req.query.contestId ? parseInt(req.query.contestId as string) : undefined;
+    const deposits = contestId 
+      ? await storage.getEscrowDepositsByContestId(contestId)
+      : await storage.getLockedEscrowDeposits();
+    res.json(deposits);
+  } catch (error: any) {
+    console.error("Error fetching escrow deposits:", error);
+    res.status(500).json({ error: error.message || "Failed to fetch escrow deposits" });
+  }
+});
+
+router.get("/escrow/contest/:contestId", async (req, res) => {
+  try {
+    const contestId = parseInt(req.params.contestId);
+    if (isNaN(contestId)) {
+      return res.status(400).json({ error: "Invalid contest ID" });
+    }
+
+    const deposits = await storage.getEscrowDepositsByContestId(contestId);
+    const memeVoteSummary = await storage.getMemeVoteSummary(contestId);
+    const totalVotes = memeVoteSummary.reduce((sum, m) => sum + m.totalSamuReceived, 0);
+
+    const creatorBreakdown = memeVoteSummary.map(m => ({
+      memeId: m.memeId,
+      authorWallet: m.authorWallet,
+      votesReceived: m.totalSamuReceived,
+      votePercent: totalVotes > 0 ? (m.totalSamuReceived / totalVotes) * 100 : 0,
+    }));
+
+    const totalLocked = deposits.filter(d => d.status === "locked").reduce((sum, d) => sum + d.profitSol, 0);
+    const totalDistributed = deposits.filter(d => d.status === "distributed").reduce((sum, d) => sum + d.profitSol, 0);
+
+    res.json({
+      contestId,
+      deposits,
+      totalLocked,
+      totalDistributed,
+      creatorBreakdown,
+      shareRatios: SHARE_RATIOS,
+    });
+  } catch (error: any) {
+    console.error("Error fetching escrow info:", error);
+    res.status(500).json({ error: error.message || "Failed to fetch escrow info" });
   }
 });
 

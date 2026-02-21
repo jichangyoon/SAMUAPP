@@ -1,4 +1,4 @@
-import { memes, votes, partnerMemes, partnerVotes, users, contests, archivedContests, loginLogs, blockedIps, revenues, revenueShares, goods, orders, goodsRevenueDistributions, voterRewardPool, voterClaimRecords, type Meme, type InsertMeme, type Vote, type InsertVote, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest, type LoginLog, type InsertLoginLog, type BlockedIp, type InsertBlockedIp, type Revenue, type InsertRevenue, type RevenueShare, type InsertRevenueShare, type Goods, type InsertGoods, type Order, type InsertOrder, type GoodsRevenueDistribution, type InsertGoodsRevenueDistribution, type VoterRewardPool, type InsertVoterRewardPool, type VoterClaimRecord, type InsertVoterClaimRecord } from "@shared/schema";
+import { memes, votes, partnerMemes, partnerVotes, users, contests, archivedContests, loginLogs, blockedIps, revenues, revenueShares, goods, orders, goodsRevenueDistributions, voterRewardPool, voterClaimRecords, escrowDeposits, type Meme, type InsertMeme, type Vote, type InsertVote, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest, type LoginLog, type InsertLoginLog, type BlockedIp, type InsertBlockedIp, type Revenue, type InsertRevenue, type RevenueShare, type InsertRevenueShare, type Goods, type InsertGoods, type Order, type InsertOrder, type GoodsRevenueDistribution, type InsertGoodsRevenueDistribution, type VoterRewardPool, type InsertVoterRewardPool, type VoterClaimRecord, type InsertVoterClaimRecord, type EscrowDeposit, type InsertEscrowDeposit } from "@shared/schema";
 import { getDatabase } from "./db";
 import { eq, and, desc, isNull, or, sql, inArray } from "drizzle-orm";
 
@@ -98,6 +98,14 @@ export interface IStorage {
   getClaimableAmount(contestId: number, voterWallet: string): Promise<{ claimable: number; totalClaimed: number; sharePercent: number }>;
   claimVoterReward(contestId: number, voterWallet: string): Promise<{ claimedAmount: number }>;
   getVoterClaimsByWallet(walletAddress: string): Promise<VoterClaimRecord[]>;
+
+  createEscrowDeposit(data: InsertEscrowDeposit): Promise<EscrowDeposit>;
+  getEscrowDepositsByContestId(contestId: number): Promise<EscrowDeposit[]>;
+  getEscrowDepositByOrderId(orderId: number): Promise<EscrowDeposit | undefined>;
+  updateEscrowStatus(id: number, status: string, distributedAt?: Date): Promise<EscrowDeposit>;
+  getLockedEscrowDeposits(): Promise<EscrowDeposit[]>;
+
+  getMemeVoteSummary(contestId: number): Promise<{memeId: number, authorWallet: string, totalSamuReceived: number}[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -398,6 +406,12 @@ export class MemStorage implements IStorage {
   async getClaimableAmount(_contestId: number, _voterWallet: string): Promise<{ claimable: number; totalClaimed: number; sharePercent: number }> { return { claimable: 0, totalClaimed: 0, sharePercent: 0 }; }
   async claimVoterReward(_contestId: number, _voterWallet: string): Promise<{ claimedAmount: number }> { throw new Error("Not implemented"); }
   async getVoterClaimsByWallet(_walletAddress: string): Promise<VoterClaimRecord[]> { return []; }
+  async createEscrowDeposit(_data: InsertEscrowDeposit): Promise<EscrowDeposit> { throw new Error("Not implemented"); }
+  async getEscrowDepositsByContestId(_contestId: number): Promise<EscrowDeposit[]> { return []; }
+  async getEscrowDepositByOrderId(_orderId: number): Promise<EscrowDeposit | undefined> { return undefined; }
+  async updateEscrowStatus(_id: number, _status: string, _distributedAt?: Date): Promise<EscrowDeposit> { throw new Error("Not implemented"); }
+  async getLockedEscrowDeposits(): Promise<EscrowDeposit[]> { return []; }
+  async getMemeVoteSummary(_contestId: number): Promise<{memeId: number, authorWallet: string, totalSamuReceived: number}[]> { return []; }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1612,6 +1626,69 @@ export class DatabaseStorage implements IStorage {
     if (!this.db) throw new Error("Database not available");
     return this.db.select().from(voterClaimRecords)
       .where(eq(voterClaimRecords.voterWallet, walletAddress));
+  }
+
+  async createEscrowDeposit(data: InsertEscrowDeposit): Promise<EscrowDeposit> {
+    if (!this.db) throw new Error("Database not available");
+    const [deposit] = await this.db.insert(escrowDeposits).values(data).returning();
+    return deposit;
+  }
+
+  async getEscrowDepositsByContestId(contestId: number): Promise<EscrowDeposit[]> {
+    if (!this.db) throw new Error("Database not available");
+    return this.db.select().from(escrowDeposits)
+      .where(eq(escrowDeposits.contestId, contestId))
+      .orderBy(desc(escrowDeposits.createdAt));
+  }
+
+  async getEscrowDepositByOrderId(orderId: number): Promise<EscrowDeposit | undefined> {
+    if (!this.db) throw new Error("Database not available");
+    const [deposit] = await this.db.select().from(escrowDeposits)
+      .where(eq(escrowDeposits.orderId, orderId));
+    return deposit;
+  }
+
+  async updateEscrowStatus(id: number, status: string, distributedAt?: Date): Promise<EscrowDeposit> {
+    if (!this.db) throw new Error("Database not available");
+    const updates: any = { status };
+    if (distributedAt) updates.distributedAt = distributedAt;
+    const [updated] = await this.db.update(escrowDeposits)
+      .set(updates)
+      .where(eq(escrowDeposits.id, id))
+      .returning();
+    return updated;
+  }
+
+  async getLockedEscrowDeposits(): Promise<EscrowDeposit[]> {
+    if (!this.db) throw new Error("Database not available");
+    return this.db.select().from(escrowDeposits)
+      .where(eq(escrowDeposits.status, "locked"));
+  }
+
+  async getMemeVoteSummary(contestId: number): Promise<{memeId: number, authorWallet: string, totalSamuReceived: number}[]> {
+    if (!this.db) throw new Error("Database not available");
+    const contestMemes = await this.db.select({ id: memes.id, authorWallet: memes.authorWallet })
+      .from(memes).where(eq(memes.contestId, contestId));
+    if (contestMemes.length === 0) return [];
+    
+    const memeIds = contestMemes.map(m => m.id);
+    const voteResults = await this.db
+      .select({
+        memeId: votes.memeId,
+        totalSamu: sql<number>`COALESCE(SUM(${votes.samuAmount}), 0)`,
+      })
+      .from(votes)
+      .where(inArray(votes.memeId, memeIds))
+      .groupBy(votes.memeId);
+
+    return contestMemes.map(m => {
+      const voteData = voteResults.find(v => v.memeId === m.id);
+      return {
+        memeId: m.id,
+        authorWallet: m.authorWallet,
+        totalSamuReceived: voteData ? Number(voteData.totalSamu) : 0,
+      };
+    }).filter(m => m.totalSamuReceived > 0);
   }
 }
 

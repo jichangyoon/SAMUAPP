@@ -815,10 +815,6 @@ export function GoodsShop() {
                             <span className="text-foreground">Total (USD)</span>
                             <span className="text-foreground">${paymentInfo.totalUSD.toFixed(2)}</span>
                           </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">SOL Price</span>
-                            <span className="text-foreground">${paymentInfo.solPriceUSD.toFixed(2)}</span>
-                          </div>
                           <div className="flex justify-between text-sm font-bold text-primary">
                             <span>Pay in SOL</span>
                             <span>{paymentInfo.solAmount} SOL</span>
