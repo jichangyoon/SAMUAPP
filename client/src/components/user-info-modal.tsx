@@ -109,7 +109,7 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
                   <Coins className="h-5 w-5 text-[hsl(50,85%,75%)]" />
                 </div>
                 <div className="text-2xl font-bold text-white">{totalSamuSpent.toLocaleString()}</div>
-                <div className="text-sm text-gray-400">SAMU Spent</div>
+                <div className="text-sm text-gray-400">Votes</div>
               </CardContent>
             </Card>
           </div>

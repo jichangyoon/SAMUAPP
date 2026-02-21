@@ -915,7 +915,7 @@ export default function Home() {
                               <div className="text-primary font-bold text-sm">
                                 {(archiveMyVotes?.myTotalSamu || 0).toLocaleString()}
                               </div>
-                              <div className="text-muted-foreground text-xs">SAMU Spent</div>
+                              <div className="text-muted-foreground text-xs">Votes</div>
                             </div>
                             <div className="bg-accent/50 rounded-lg p-2">
                               <div className="text-purple-400 font-bold text-sm">

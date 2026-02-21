@@ -724,7 +724,7 @@ const Profile = memo(() => {
               </div>
               <div className="text-center bg-accent/30 rounded-lg p-2">
                 <div className="text-sm font-bold text-green-400">{stats.totalSamuSpent.toLocaleString()}</div>
-                <div className="text-xs text-muted-foreground">SAMU Spent</div>
+                <div className="text-xs text-muted-foreground">Votes</div>
               </div>
               <div className="text-center bg-accent/30 rounded-lg p-2">
                 <div className="text-sm font-bold text-blue-400">{stats.totalMemesCreated}</div>
@@ -1082,13 +1082,13 @@ const Profile = memo(() => {
                   </div>
                   <div className="text-center bg-accent/30 rounded-lg p-3">
                     <div className="text-lg font-bold text-red-400">{stats.totalSamuSpent.toLocaleString()}</div>
-                    <div className="text-xs text-muted-foreground">SAMU Spent</div>
+                    <div className="text-xs text-muted-foreground">Votes</div>
                   </div>
                 </div>
 
                 <div className="text-xs text-muted-foreground bg-accent/50 p-3 rounded-lg space-y-1">
                   <p>• Vote by spending SAMU tokens directly</p>
-                  <p>• Your SAMU spent determines your reward share</p>
+                  <p>• Your votes determine your reward share</p>
                 </div>
 
                 {walletRevenue && (
