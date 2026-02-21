@@ -193,7 +193,7 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
   const isActive = !!selectedOrder;
 
   return (
-    <div className={`${isActive ? "fixed inset-0 z-50 bg-[#0d0d1a] flex flex-col" : "space-y-4"}`}>
+    <div className={`${isActive ? "fixed inset-0 z-[60] bg-[#0d0d1a] flex flex-col" : "space-y-4"}`}>
       <div className={`relative overflow-hidden bg-[#1a1a2e] ${isActive ? "h-[33vh] flex-shrink-0" : "rounded-lg border border-border/50"}`}>
         <ComposableMap
           projectionConfig={{ scale: 147, center: [0, 20] }}
@@ -401,7 +401,7 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                   className="flex items-center justify-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors w-full py-1"
                 >
                   <span>View Details</span>
-                  <ChevronUp className="h-3 w-3" />
+                  <ChevronDown className="h-3 w-3" />
                 </button>
               </div>
             ) : (
