@@ -158,34 +158,17 @@ router.delete("/:id", async (req, res) => {
       return res.status(403).json({ message: "Only the author can delete this meme" });
     }
 
-    // Delete associated file from R2 or local storage
-    if (meme.imageUrl.includes('r2.dev') || meme.imageUrl.includes('r2.cloudflarestorage.com')) {
-      // R2 cloud file - use direct deletion
-      try {
-        const { deleteFromR2, extractKeyFromUrl } = await import('../r2-storage');
-        const r2Key = extractKeyFromUrl(meme.imageUrl);
-        
-        if (r2Key) {
-          const deleteResult = await deleteFromR2(r2Key);
-          if (!deleteResult.success) {
-            console.warn('Failed to delete R2 file:', deleteResult.error);
-          } else {
-            console.log('Successfully deleted R2 file:', r2Key);
-          }
-        } else {
-          console.warn('Could not extract R2 key from URL:', meme.imageUrl);
-        }
-      } catch (error) {
-        console.error('Failed to delete R2 file:', error);
-      }
-    } else if (meme.imageUrl.startsWith('/uploads/')) {
-      // Local file
-      const filename = meme.imageUrl.split('/').pop();
-      if (filename) {
+    const allImageUrls = [meme.imageUrl, ...(meme.additionalImages || [])];
+    for (const imageUrl of allImageUrls) {
+      if (imageUrl.includes('r2.dev') || imageUrl.includes('r2.cloudflarestorage.com')) {
         try {
-          await fetch(`/api/uploads/delete/${filename}`, { method: 'DELETE' });
+          const { deleteFromR2, extractKeyFromUrl } = await import('../r2-storage');
+          const r2Key = extractKeyFromUrl(imageUrl);
+          if (r2Key) {
+            await deleteFromR2(r2Key);
+          }
         } catch (error) {
-          console.warn('Failed to delete local file:', error);
+          console.warn('Failed to delete R2 file:', imageUrl, error);
         }
       }
     }
