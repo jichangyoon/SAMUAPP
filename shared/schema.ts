@@ -17,10 +17,11 @@ export const contests = pgTable("contests", {
 
 export const memes = pgTable("memes", {
   id: serial("id").primaryKey(),
-  contestId: integer("contest_id"), // null for current contest, specific ID for archived contests
+  contestId: integer("contest_id"),
   title: text("title").notNull(),
   description: text("description"),
   imageUrl: text("image_url").notNull(),
+  additionalImages: text("additional_images").array().default([]),
   authorWallet: text("author_wallet").notNull(),
   authorUsername: text("author_username").notNull(),
   authorAvatarUrl: text("author_avatar_url"),
