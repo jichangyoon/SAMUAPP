@@ -11,7 +11,13 @@ export function SplashScreen({ onComplete, preloadComplete = false }: SplashScre
   const [minTimeElapsed, setMinTimeElapsed] = useState(false);
 
   useEffect(() => {
-    // Ensure minimum 2 seconds display time
+    const htmlSplash = document.getElementById('initial-splash');
+    if (htmlSplash) {
+      htmlSplash.remove();
+    }
+  }, []);
+
+  useEffect(() => {
     const timer = setTimeout(() => {
       setMinTimeElapsed(true);
     }, 2000);
@@ -20,10 +26,8 @@ export function SplashScreen({ onComplete, preloadComplete = false }: SplashScre
   }, []);
 
   useEffect(() => {
-    // Complete splash when both conditions are met
     if (minTimeElapsed && preloadComplete) {
       setIsVisible(false);
-      // Allow fade out animation to complete
       setTimeout(onComplete, 300);
     }
   }, [minTimeElapsed, preloadComplete, onComplete]);
