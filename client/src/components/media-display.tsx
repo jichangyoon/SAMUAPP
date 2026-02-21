@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Play, ImageOff } from "lucide-react";
 import { getMediaType } from "@/utils/media-utils";
 
@@ -39,9 +39,10 @@ export function MediaDisplay({
     setImageLoaded(false);
     setVideoReady(false);
     setHasError(false);
+    const currentSrc = src;
     requestAnimationFrame(() => {
       const img = imgRef.current;
-      if (img && img.complete && img.naturalWidth > 0) {
+      if (img && img.src.includes(currentSrc) && img.complete && img.naturalWidth > 0) {
         setImageLoaded(true);
       }
     });
