@@ -31,10 +31,12 @@ export function MediaDisplay({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [hasError, setHasError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
   const mediaType = getMediaType(src);
 
   useEffect(() => {
     setImageLoaded(false);
+    setVideoReady(false);
     setHasError(false);
   }, [src]);
 
@@ -72,21 +74,25 @@ export function MediaDisplay({
   if (mediaType === 'video') {
     return (
       <div ref={containerRef} className={`relative group ${className}`}>
+        {!videoReady && !hasError && (
+          <div className="absolute inset-0 bg-accent animate-pulse z-10" />
+        )}
         <video
           ref={videoRef}
           src={src}
-          className="w-full h-full object-cover cursor-pointer"
+          className={`w-full h-full object-cover cursor-pointer transition-opacity duration-200 ${videoReady ? 'opacity-100' : 'opacity-0'}`}
           autoPlay={autoPlay}
           muted={muted}
           loop={loop}
           playsInline
-          preload={autoPlayOnVisible ? "metadata" : preload}
+          preload={autoPlayOnVisible ? "auto" : preload}
           controls={showControls}
           controlsList="nodownload"
           disablePictureInPicture
           lang="en"
           onClick={handleVideoClick}
-          onLoadedMetadata={() => {
+          onLoadedData={() => {
+            setVideoReady(true);
             if (videoRef.current && !showControls) {
               videoRef.current.currentTime = 0.1;
             }
