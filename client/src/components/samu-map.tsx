@@ -194,7 +194,7 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
 
   return (
     <div className={`${isActive ? "fixed inset-0 z-50 bg-[#0d0d1a] flex flex-col" : "space-y-4"}`}>
-      <div className={`relative overflow-hidden bg-[#1a1a2e] ${isActive ? "flex-1 min-h-0" : "rounded-lg border border-border/50"}`}>
+      <div className={`relative overflow-hidden bg-[#1a1a2e] ${isActive ? "h-[33vh] flex-shrink-0" : "rounded-lg border border-border/50"}`}>
         <ComposableMap
           projectionConfig={{ scale: 147, center: [0, 20] }}
           width={800}
@@ -351,18 +351,16 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
       {isActive && selectedOrder && (
         <div
           ref={sheetRef}
-          className={`bg-background border-t border-border/50 rounded-t-2xl transition-all duration-300 ease-out overflow-hidden ${
-            sheetExpanded ? "max-h-[60vh]" : "max-h-[200px]"
-          }`}
+          className="flex-1 min-h-0 bg-background border-t border-border/50 rounded-t-2xl flex flex-col overflow-hidden"
         >
           <div
-            className="flex justify-center pt-2 pb-1 cursor-pointer"
+            className="flex justify-center pt-2 pb-1 cursor-pointer flex-shrink-0"
             onClick={() => setSheetExpanded(!sheetExpanded)}
           >
             <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
           </div>
 
-          <div className={`px-4 pb-4 ${sheetExpanded ? "overflow-y-auto max-h-[calc(60vh-24px)]" : "overflow-hidden"}`}>
+          <div className="px-4 pb-4 overflow-y-auto flex-1 min-h-0">
             {!sheetExpanded ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
