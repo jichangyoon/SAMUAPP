@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   ComposableMap,
@@ -10,7 +10,7 @@ import {
 } from "react-simple-maps";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { X, Package, MapPin, ExternalLink, TrendingUp, Clock, DollarSign, Truck } from "lucide-react";
+import { X, Package, MapPin, ExternalLink, TrendingUp, Clock, DollarSign, Truck, ChevronUp, ChevronDown } from "lucide-react";
 import { getCoordinates, getCountryName } from "@/data/country-coordinates";
 import samuLogoImg from "@/assets/samu-logo.webp";
 
@@ -135,7 +135,8 @@ interface SamuMapProps {
 
 export function SamuMap({ walletAddress }: SamuMapProps) {
   const [selectedOrder, setSelectedOrder] = useState<MapOrder | null>(null);
-  const [showDetail, setShowDetail] = useState(false);
+  const [sheetExpanded, setSheetExpanded] = useState(false);
+  const sheetRef = useRef<HTMLDivElement>(null);
 
   const mapUrl = walletAddress ? `/api/rewards/map?wallet=${walletAddress}` : "/api/rewards/map";
   const { data: mapData, isLoading } = useQuery<MapData>({
@@ -165,6 +166,17 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
       .filter(Boolean) as (MapOrder & { lat: number; lng: number })[];
   }, [mapData]);
 
+  useEffect(() => {
+    if (selectedOrder) {
+      setSheetExpanded(false);
+    }
+  }, [selectedOrder]);
+
+  const closeSheet = () => {
+    setSelectedOrder(null);
+    setSheetExpanded(false);
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -178,14 +190,16 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
     );
   }
 
+  const isActive = !!selectedOrder;
+
   return (
-    <div className="space-y-4">
-      <div className="relative rounded-lg overflow-hidden border border-border/50 bg-[#1a1a2e]">
+    <div className={`${isActive ? "fixed inset-0 z-50 bg-[#0d0d1a] flex flex-col" : "space-y-4"}`}>
+      <div className={`relative overflow-hidden bg-[#1a1a2e] ${isActive ? "flex-1 min-h-0" : "rounded-lg border border-border/50"}`}>
         <ComposableMap
           projectionConfig={{ scale: 147, center: [0, 20] }}
           width={800}
           height={400}
-          style={{ width: "100%", height: "auto" }}
+          style={{ width: "100%", height: isActive ? "100%" : "auto" }}
         >
           <ZoomableGroup>
             <Geographies geography={GEO_URL}>
@@ -213,14 +227,13 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                 coordinates={[marker.lng, marker.lat]}
                 onClick={() => {
                   setSelectedOrder(marker);
-                  setShowDetail(false);
                 }}
               >
                 <circle
                   r={4}
                   fill={marker.hasRevenue ? "#22c55e" : "#ef4444"}
-                  stroke="#fff"
-                  strokeWidth={1}
+                  stroke={selectedOrder?.id === marker.id ? "#fbbf24" : "#fff"}
+                  strokeWidth={selectedOrder?.id === marker.id ? 2 : 1}
                   className="cursor-pointer"
                   opacity={0.9}
                 />
@@ -295,9 +308,18 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
             <span>Other</span>
           </div>
         </div>
+
+        {isActive && (
+          <button
+            onClick={closeSheet}
+            className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white hover:bg-black/80 transition-all"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
       </div>
 
-      {mapData?.stats && (
+      {!isActive && mapData?.stats && (
         <div className="grid grid-cols-4 gap-2">
           <Card className="border-border/30">
             <CardContent className="p-3 text-center">
@@ -326,86 +348,81 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
         </div>
       )}
 
-      {selectedOrder && !showDetail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setSelectedOrder(null)}>
-          <Card className="w-full max-w-sm border-primary/30 animate-fade-in" onClick={(e) => e.stopPropagation()}>
-            <CardContent className="p-5">
-              <button
-                onClick={() => setSelectedOrder(null)}
-                className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-              </button>
+      {isActive && selectedOrder && (
+        <div
+          ref={sheetRef}
+          className={`bg-background border-t border-border/50 rounded-t-2xl transition-all duration-300 ease-out overflow-hidden ${
+            sheetExpanded ? "max-h-[60vh]" : "max-h-[200px]"
+          }`}
+        >
+          <div
+            className="flex justify-center pt-2 pb-1 cursor-pointer"
+            onClick={() => setSheetExpanded(!sheetExpanded)}
+          >
+            <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+          </div>
 
-              <div className="flex flex-col items-center text-center space-y-3">
-                <div className="w-16 h-16 rounded-full bg-yellow-400/20 flex items-center justify-center overflow-hidden">
-                  <img src={samuLogoImg} alt="SAMU" className="w-12 h-12 object-contain" />
-                </div>
-
-                <div className="text-2xl">{getStatusEmoji(selectedOrder.status)}</div>
-
-                <p className="text-sm font-medium text-foreground">
-                  {getSamuMessage(selectedOrder.status, selectedOrder.city, selectedOrder.country)}
-                </p>
-
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">
-                    {selectedOrder.city}, {getCountryName(selectedOrder.country)}
-                  </span>
-                </div>
-
-                <Badge
-                  variant={selectedOrder.hasRevenue ? "default" : "secondary"}
-                  className={selectedOrder.hasRevenue ? "bg-green-500/20 text-green-400 border-green-500/30" : ""}
-                >
-                  {getRevenueRoleLabel(selectedOrder.revenueRole)}
-                </Badge>
-
-                {selectedOrder.hasRevenue && selectedOrder.myEstimatedRevenue != null && selectedOrder.myEstimatedRevenue > 0 && (
-                  <div className="p-2 rounded-lg bg-green-500/10 border border-green-500/20 w-full">
-                    <div className="flex items-center justify-center gap-1">
-                      <DollarSign className="h-3 w-3 text-green-400" />
-                      <span className="text-sm font-bold text-green-400">
-                        +{selectedOrder.myEstimatedRevenue.toFixed(4)} SOL
+          <div className={`px-4 pb-4 ${sheetExpanded ? "overflow-y-auto max-h-[calc(60vh-24px)]" : "overflow-hidden"}`}>
+            {!sheetExpanded ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-yellow-400/20 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    <img src={samuLogoImg} alt="SAMU" className="w-7 h-7 object-contain" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {getSamuMessage(selectedOrder.status, selectedOrder.city, selectedOrder.country)}
+                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-lg">{getStatusEmoji(selectedOrder.status)}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {selectedOrder.city}, {getCountryName(selectedOrder.country)}
                       </span>
                     </div>
-                    <p className="text-[10px] text-green-400/70 mt-0.5">Estimated Revenue</p>
                   </div>
-                )}
-
-                <button
-                  onClick={() => setShowDetail(true)}
-                  className="text-xs text-primary hover:text-primary/80 transition-colors mt-2"
-                >
-                  View Details →
-                </button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {selectedOrder && showDetail && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50" onClick={() => { setSelectedOrder(null); setShowDetail(false); }}>
-          <Card className="w-full max-w-md border-primary/30 animate-fade-in max-h-[85vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
-            <CardContent className="p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-yellow-400/20 flex items-center justify-center overflow-hidden">
-                    <img src={samuLogoImg} alt="SAMU" className="w-6 h-6 object-contain" />
-                  </div>
-                  <h3 className="font-semibold text-foreground">Order #{selectedOrder.id}</h3>
                 </div>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge
+                    variant={selectedOrder.hasRevenue ? "default" : "secondary"}
+                    className={`text-[10px] ${selectedOrder.hasRevenue ? "bg-green-500/20 text-green-400 border-green-500/30" : ""}`}
+                  >
+                    {getRevenueRoleLabel(selectedOrder.revenueRole)}
+                  </Badge>
+
+                  {selectedOrder.hasRevenue && selectedOrder.myEstimatedRevenue != null && selectedOrder.myEstimatedRevenue > 0 && (
+                    <Badge className="bg-green-500/10 text-green-400 border-green-500/20 text-[10px]">
+                      <DollarSign className="h-2.5 w-2.5 mr-0.5" />
+                      +{selectedOrder.myEstimatedRevenue.toFixed(4)} SOL
+                    </Badge>
+                  )}
+                </div>
+
                 <button
-                  onClick={() => { setSelectedOrder(null); setShowDetail(false); }}
-                  className="text-muted-foreground hover:text-foreground"
+                  onClick={() => setSheetExpanded(true)}
+                  className="flex items-center justify-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors w-full py-1"
                 >
-                  <X className="h-4 w-4" />
+                  <span>View Details</span>
+                  <ChevronUp className="h-3 w-3" />
                 </button>
               </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-yellow-400/20 flex items-center justify-center overflow-hidden">
+                      <img src={samuLogoImg} alt="SAMU" className="w-6 h-6 object-contain" />
+                    </div>
+                    <h3 className="font-semibold text-foreground">Order #{selectedOrder.id}</h3>
+                  </div>
+                  <button
+                    onClick={() => setSheetExpanded(false)}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                </div>
 
-              <div className="space-y-3">
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-accent/50">
                   <div className="text-2xl">{getStatusEmoji(selectedOrder.status)}</div>
                   <div>
@@ -523,19 +540,12 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                   </div>
                 )}
               </div>
-
-              <button
-                onClick={() => setShowDetail(false)}
-                className="w-full text-center text-xs text-muted-foreground hover:text-foreground py-2"
-              >
-                ← Back to summary
-              </button>
-            </CardContent>
-          </Card>
+            )}
+          </div>
         </div>
       )}
 
-      {markers.length > 0 && (
+      {!isActive && markers.length > 0 && (
         <div className="text-center">
           <p className="text-xs text-muted-foreground">
             🐺 SAMU is traveling across {mapData?.stats.countries || 0} countries worldwide!
