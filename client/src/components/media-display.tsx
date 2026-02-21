@@ -29,6 +29,7 @@ export function MediaDisplay({
 }: MediaDisplayProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const imgRef = useRef<HTMLImageElement | null>(null);
   const [hasError, setHasError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
@@ -38,6 +39,12 @@ export function MediaDisplay({
     setImageLoaded(false);
     setVideoReady(false);
     setHasError(false);
+    requestAnimationFrame(() => {
+      const img = imgRef.current;
+      if (img && img.complete && img.naturalWidth > 0) {
+        setImageLoaded(true);
+      }
+    });
   }, [src]);
 
   useEffect(() => {
@@ -141,6 +148,7 @@ export function MediaDisplay({
         <div className="absolute inset-0 bg-accent animate-pulse" />
       )}
       <img
+        ref={imgRef}
         src={src}
         alt={alt}
         className={`object-cover w-full h-full ${onClick ? 'cursor-pointer' : ''} transition-opacity duration-200 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}

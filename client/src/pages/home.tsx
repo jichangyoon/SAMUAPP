@@ -630,8 +630,6 @@ export default function Home() {
                                   className="animate-fade-in"
                                   style={{ 
                                     animationDelay: `${Math.min(index * 50, 300)}ms`,
-                                    opacity: 0,
-                                    animation: `fadeIn 0.4s ease-out ${Math.min(index * 50, 300)}ms forwards`
                                   }}
                                 >
                                   <MemeCard 
@@ -662,8 +660,6 @@ export default function Home() {
                                   className="aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-all duration-200 relative group animate-fade-in"
                                   style={{ 
                                     animationDelay: `${Math.min(index * 30, 200)}ms`,
-                                    opacity: 0,
-                                    animation: `fadeIn 0.3s ease-out ${Math.min(index * 30, 200)}ms forwards`
                                   }}
                                 >
                                   <MediaDisplay
