@@ -1033,21 +1033,78 @@ export class DatabaseStorage implements IStorage {
     if (contestMemes.length > 0) {
       const { moveToArchive, extractKeyFromUrl } = await import('./r2-storage');
       
-      // Archive contest files to R2 storage
+      let archiveSuccess = 0;
+      let archiveFail = 0;
+      const failedFiles: string[] = [];
+
       for (const meme of contestMemes) {
+        const updateFields: { imageUrl?: string; additionalImages?: string[] } = {};
+
+        // Archive main image
         if (meme.imageUrl) {
           const key = extractKeyFromUrl(meme.imageUrl);
-          if (key) {
-            const result = await moveToArchive(key, contestId);
-            if (result.success && result.url) {
-              // Update meme with new archived URL
-              await this.db
-                .update(memes)
-                .set({ imageUrl: result.url })
-                .where(eq(memes.id, meme.id));
+          if (key && !key.startsWith(`archives/contest-${contestId}/`)) {
+            try {
+              const result = await moveToArchive(key, contestId);
+              if (result.success && result.url) {
+                updateFields.imageUrl = result.url;
+                archiveSuccess++;
+              } else {
+                archiveFail++;
+                failedFiles.push(`meme-${meme.id}-main: ${meme.imageUrl}`);
+                console.error(`[Archive] Failed main image for meme ${meme.id}: ${result.error}`);
+              }
+            } catch (err: any) {
+              archiveFail++;
+              failedFiles.push(`meme-${meme.id}-main: ${meme.imageUrl}`);
+              console.error(`[Archive] Exception archiving main image for meme ${meme.id}:`, err.message);
             }
           }
         }
+
+        // Archive additional images
+        if (meme.additionalImages && Array.isArray(meme.additionalImages) && meme.additionalImages.length > 0) {
+          const archivedAdditional: string[] = [];
+          for (let i = 0; i < meme.additionalImages.length; i++) {
+            const imgUrl = meme.additionalImages[i];
+            const key = extractKeyFromUrl(imgUrl);
+            if (key && !key.startsWith(`archives/contest-${contestId}/`)) {
+              try {
+                const result = await moveToArchive(key, contestId);
+                if (result.success && result.url) {
+                  archivedAdditional.push(result.url);
+                  archiveSuccess++;
+                } else {
+                  archivedAdditional.push(imgUrl);
+                  archiveFail++;
+                  failedFiles.push(`meme-${meme.id}-additional-${i}: ${imgUrl}`);
+                  console.error(`[Archive] Failed additional image ${i} for meme ${meme.id}: ${result.error}`);
+                }
+              } catch (err: any) {
+                archivedAdditional.push(imgUrl);
+                archiveFail++;
+                failedFiles.push(`meme-${meme.id}-additional-${i}: ${imgUrl}`);
+                console.error(`[Archive] Exception archiving additional image ${i} for meme ${meme.id}:`, err.message);
+              }
+            } else {
+              archivedAdditional.push(imgUrl);
+            }
+          }
+          updateFields.additionalImages = archivedAdditional;
+        }
+
+        // Update DB only if we have changes
+        if (Object.keys(updateFields).length > 0) {
+          await this.db
+            .update(memes)
+            .set(updateFields)
+            .where(eq(memes.id, meme.id));
+        }
+      }
+
+      console.log(`[Archive] Contest ${contestId} file migration complete: ${archiveSuccess} succeeded, ${archiveFail} failed out of ${archiveSuccess + archiveFail} total files`);
+      if (failedFiles.length > 0) {
+        console.error(`[Archive] Failed files for contest ${contestId}:`, failedFiles);
       }
     }
 

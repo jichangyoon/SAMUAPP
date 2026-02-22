@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand, CopyObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand, CopyObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
 import crypto from 'crypto';
 import path from 'path';
 
@@ -158,7 +158,9 @@ export function extractKeyFromUrl(url: string): string | null {
 }
 
 /**
- * 파일을 아카이브 폴더로 이동
+ * 파일을 아카이브 폴더로 안전하게 이동
+ * 1) 복사 → 2) 복사 확인 (HeadObject) → 3) 원본 삭제
+ * 복사 확인 실패 시 원본을 보존하고 에러 반환
  */
 export async function moveToArchive(
   sourceKey: string,
@@ -180,13 +182,16 @@ export async function moveToArchive(
 
     const bucketName = process.env.R2_BUCKET_NAME || 'samu-storage';
     
-    // 새로운 아카이브 키 생성
     const fileName = sourceKey.split('/').pop() || sourceKey;
     const archiveKey = `archives/contest-${contestId}/${fileName}`;
 
-    console.log(`Moving file from ${sourceKey} to ${archiveKey}`);
+    if (sourceKey === archiveKey || sourceKey.startsWith(`archives/contest-${contestId}/`)) {
+      const publicUrl = process.env.R2_PUBLIC_URL || `https://${bucketName}.r2.dev`;
+      return { success: true, url: `${publicUrl}/${sourceKey}`, key: sourceKey };
+    }
 
-    // 파일 복사
+    console.log(`[Archive] Copying: ${sourceKey} → ${archiveKey}`);
+
     await s3Client.send(new CopyObjectCommand({
       Bucket: bucketName,
       CopySource: `${bucketName}/${sourceKey}`,
@@ -194,16 +199,32 @@ export async function moveToArchive(
       MetadataDirective: 'COPY'
     }));
 
-    // 원본 파일 삭제
-    await s3Client.send(new DeleteObjectCommand({
-      Bucket: bucketName,
-      Key: sourceKey
-    }));
+    try {
+      await s3Client.send(new HeadObjectCommand({
+        Bucket: bucketName,
+        Key: archiveKey,
+      }));
+    } catch (verifyError) {
+      console.error(`[Archive] COPY VERIFICATION FAILED for ${archiveKey} - keeping original at ${sourceKey}`);
+      return {
+        success: false,
+        error: `Copy verification failed for ${sourceKey} → ${archiveKey}. Original preserved.`
+      };
+    }
+
+    try {
+      await s3Client.send(new DeleteObjectCommand({
+        Bucket: bucketName,
+        Key: sourceKey
+      }));
+    } catch (deleteError) {
+      console.warn(`[Archive] Original delete failed for ${sourceKey} (copy exists at ${archiveKey})`);
+    }
 
     const publicUrl = process.env.R2_PUBLIC_URL || `https://${bucketName}.r2.dev`;
     const newUrl = `${publicUrl}/${archiveKey}`;
 
-    console.log(`File successfully moved to archive: ${newUrl}`);
+    console.log(`[Archive] Success: ${newUrl}`);
 
     return {
       success: true,
@@ -211,7 +232,7 @@ export async function moveToArchive(
       key: archiveKey
     };
   } catch (error) {
-    console.error('Error moving file to archive:', error);
+    console.error(`[Archive] Error moving ${sourceKey}:`, error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred'
