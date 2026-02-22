@@ -179,12 +179,31 @@ export async function moveToArchive(
 
     console.log(`[Archive] Copying: ${sourceKey} → ${archiveKey}`);
 
-    await r2Client.send(new CopyObjectCommand({
-      Bucket: bucketName,
-      CopySource: `${bucketName}/${sourceKey}`,
-      Key: archiveKey,
-      MetadataDirective: 'COPY'
-    }));
+    try {
+      await r2Client.send(new CopyObjectCommand({
+        Bucket: bucketName,
+        CopySource: `${bucketName}/${sourceKey}`,
+        Key: archiveKey,
+        MetadataDirective: 'COPY'
+      }));
+    } catch (copyError: any) {
+      if (copyError?.Code === 'NoSuchKey' || copyError?.name === 'NoSuchKey') {
+        try {
+          await r2Client.send(new HeadObjectCommand({
+            Bucket: bucketName,
+            Key: archiveKey,
+          }));
+          const publicUrl = process.env.R2_PUBLIC_URL || `https://${bucketName}.r2.dev`;
+          const newUrl = `${publicUrl}/${archiveKey}`;
+          console.log(`[Archive] Source missing but already archived: ${newUrl}`);
+          return { success: true, url: newUrl, key: archiveKey };
+        } catch {
+          console.error(`[Archive] Source missing and not in archive: ${sourceKey}`);
+          return { success: false, error: `Source file not found: ${sourceKey}` };
+        }
+      }
+      throw copyError;
+    }
 
     try {
       await r2Client.send(new HeadObjectCommand({
