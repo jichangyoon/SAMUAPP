@@ -268,7 +268,7 @@ export const MemeCard = memo(function MemeCard({ meme, onVote, canVote }: MemeCa
   return (
     <>
       <Card className="overflow-hidden border-border bg-card">
-        <div className="w-full bg-accent flex items-center justify-center relative" style={{ minHeight: '200px', maxHeight: '600px' }}>
+        <div className="w-full aspect-square bg-accent flex items-center justify-center relative">
           <MultiImageBadge count={1 + (meme.additionalImages?.length || 0)} />
           <ImageCarousel
             images={[meme.imageUrl, ...(meme.additionalImages || [])]}
@@ -276,7 +276,6 @@ export const MemeCard = memo(function MemeCard({ meme, onVote, canVote }: MemeCa
             className="w-full h-full"
             onClick={() => setShowDetailDialog(true)}
             autoPlayVideo={true}
-            containMode={true}
           />
         </div>
 

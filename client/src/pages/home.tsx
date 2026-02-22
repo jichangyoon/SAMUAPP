@@ -134,6 +134,7 @@ export default function Home() {
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [archiveView, setArchiveView] = useState<'list' | 'contest'>('list');
   const [selectedArchiveContest, setSelectedArchiveContest] = useState<any>(null);
+  const [showArchiveVoteDetail, setShowArchiveVoteDetail] = useState(false);
   const [selectedArchiveMeme, setSelectedArchiveMeme] = useState<any>(null);
   const [isLoadingContestDetails, setIsLoadingContestDetails] = useState(false);
 
@@ -213,6 +214,15 @@ export default function Home() {
 
 
 
+  const { data: archiveMyVotes } = useQuery({
+    queryKey: ['archive-my-votes', selectedArchiveContest?.id, walletAddress],
+    queryFn: async () => {
+      const res = await fetch(`/api/memes/contest/${selectedArchiveContest.id}/my-votes/${walletAddress}`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: archiveView === 'contest' && !!selectedArchiveContest?.id && !!walletAddress && authenticated,
+  });
 
   // Profile state management - use override state only for instant updates from profile page
   const [profileOverride, setProfileOverride] = useState<{ displayName: string; profileImage: string } | null>(null);
@@ -748,6 +758,7 @@ export default function Home() {
                                 author: meme.authorUsername
                               }))
                             });
+                            setShowArchiveVoteDetail(false);
                             setArchiveView('contest');
                           } catch (error) {
 
@@ -853,6 +864,60 @@ export default function Home() {
                       <RewardInfoChart contestId={selectedArchiveContest.id} walletAddress={walletAddress || undefined} />
                     )}
 
+                    {authenticated && walletAddress && selectedArchiveContest && (
+                      <Card className="border-primary/30 bg-primary/5">
+                        <CardContent className="p-4">
+                          <h3 className="font-semibold text-foreground text-sm mb-3 flex items-center gap-2">
+                            My Voting Summary
+                          </h3>
+                          <div className="grid grid-cols-3 gap-3 text-center">
+                            <div className="bg-accent/50 rounded-lg p-2">
+                              <div className="text-primary font-bold text-sm">
+                                {(archiveMyVotes?.myTotalSamu || 0).toLocaleString()}
+                              </div>
+                              <div className="text-muted-foreground text-xs">Votes</div>
+                            </div>
+                            <div className="bg-accent/50 rounded-lg p-2">
+                              <div className="text-purple-400 font-bold text-sm">
+                                {archiveMyVotes && archiveMyVotes.totalContestSamu > 0
+                                  ? ((archiveMyVotes.myTotalSamu / archiveMyVotes.totalContestSamu) * 100).toFixed(1)
+                                  : '0'}%
+                              </div>
+                              <div className="text-muted-foreground text-xs">Vote Share</div>
+                            </div>
+                            <div className="bg-accent/50 rounded-lg p-2">
+                              <div className="text-green-400 font-bold text-sm">
+                                {archiveMyVotes?.myRevenueSharePercent || 0}%
+                              </div>
+                              <div className="text-muted-foreground text-xs">Reward Share</div>
+                            </div>
+                          </div>
+                          {archiveMyVotes?.votes?.length > 0 && (
+                            <div className="mt-3">
+                              <button
+                                onClick={() => setShowArchiveVoteDetail(prev => !prev)}
+                                className="text-xs text-primary hover:text-primary/80"
+                              >
+                                {showArchiveVoteDetail ? 'Hide details' : `Show details (${archiveMyVotes.votes.length} memes)`}
+                              </button>
+                              {showArchiveVoteDetail && (
+                                <div className="mt-2 space-y-1.5">
+                                  {archiveMyVotes.votes.map((v: any, i: number) => (
+                                    <div key={i} className="flex items-center justify-between text-xs bg-accent/30 rounded px-2 py-1.5">
+                                      <div className="flex items-center gap-2 min-w-0">
+                                        {v.memeImageUrl && <img src={v.memeImageUrl} alt="" className="w-6 h-6 rounded object-cover flex-shrink-0" />}
+                                        <span className="text-foreground truncate">{v.memeTitle}</span>
+                                      </div>
+                                      <span className="font-semibold text-primary ml-2 flex-shrink-0">{(v.samuAmount || 0).toLocaleString()} SAMU</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    )}
 
                     {/* All Memes Grid */}
                     <div className="space-y-4">

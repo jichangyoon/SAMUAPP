@@ -9,10 +9,9 @@ interface ImageCarouselProps {
   showControls?: boolean;
   onClick?: () => void;
   autoPlayVideo?: boolean;
-  containMode?: boolean;
 }
 
-export function ImageCarousel({ images, alt, className = "", showControls = false, onClick, autoPlayVideo = false, containMode = false }: ImageCarouselProps) {
+export function ImageCarousel({ images, alt, className = "", showControls = false, onClick, autoPlayVideo = false }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
@@ -33,7 +32,6 @@ export function ImageCarousel({ images, alt, className = "", showControls = fals
         muted={!showControls}
         loop={!showControls}
         autoPlayOnVisible={autoPlayVideo}
-        containMode={containMode}
       />
     );
   }
@@ -82,7 +80,6 @@ export function ImageCarousel({ images, alt, className = "", showControls = fals
               muted={true}
               loop={true}
               autoPlayOnVisible={autoPlayVideo && idx === currentIndex}
-              containMode={containMode}
             />
           </div>
         ))}

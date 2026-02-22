@@ -13,7 +13,6 @@ interface MediaDisplayProps {
   onClick?: () => void;
   preload?: "auto" | "metadata" | "none";
   autoPlayOnVisible?: boolean;
-  containMode?: boolean;
 }
 
 export function MediaDisplay({ 
@@ -26,8 +25,7 @@ export function MediaDisplay({
   loop = false,
   onClick,
   preload = "metadata",
-  autoPlayOnVisible = false,
-  containMode = false
+  autoPlayOnVisible = false
 }: MediaDisplayProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -176,7 +174,7 @@ export function MediaDisplay({
         ref={imgCallbackRef}
         src={src}
         alt={alt}
-        className={`${containMode ? 'object-contain' : 'object-cover'} w-full ${containMode ? '' : 'h-full'} ${onClick ? 'cursor-pointer' : ''} transition-opacity duration-200 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+        className={`object-cover w-full h-full ${onClick ? 'cursor-pointer' : ''} transition-opacity duration-200 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
         onClick={onClick ? (e) => {
           e.preventDefault();
           e.stopPropagation();
