@@ -519,7 +519,17 @@ export function GoodsShop() {
                     return (
                       <div className="relative">
                         <div className="aspect-square rounded-lg overflow-hidden bg-accent">
-                          <img src={allImages[mockupIndex] || selectedItem.imageUrl} alt={selectedItem.title} className="w-full h-full object-contain bg-gray-900" />
+                          <img
+                            src={allImages[mockupIndex] || selectedItem.imageUrl}
+                            alt={selectedItem.title}
+                            className="w-full h-full object-contain bg-gray-900"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              if (target.src !== selectedItem.imageUrl) {
+                                target.src = selectedItem.imageUrl;
+                              }
+                            }}
+                          />
                         </div>
                         {hasMultiple && (
                           <>

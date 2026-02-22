@@ -106,12 +106,13 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
 
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {/* Meme Media */}
-          <div className="w-full max-w-md mx-auto aspect-square">
+          <div className="w-full max-w-md mx-auto" style={{ minHeight: '200px', maxHeight: '70vh' }}>
             <ImageCarousel
               images={[meme.imageUrl, ...(meme.additionalImages || [])]}
               alt={meme.title}
               className="w-full h-full rounded-lg"
               showControls={true}
+              containMode={true}
             />
           </div>
 
