@@ -28,7 +28,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Users, Plus, Lock, RefreshCw, DollarSign, TrendingUp, ChevronDown, ChevronUp, Coins } from "lucide-react";
+import { User, Grid3X3, List, ArrowUp, Share2, Twitter, Send, Trophy, ShoppingBag, Archive, Users, Plus, Lock, RefreshCw, ChevronDown, ChevronUp, Coins } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -140,7 +140,6 @@ export default function Home() {
 
   const [showVoteDialog, setShowVoteDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
-  const [showRevenueInfo, setShowRevenueInfo] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
   const [voteAmount, setVoteAmount] = useState(1);
   const [, setLocation] = useLocation();
@@ -213,15 +212,6 @@ export default function Home() {
 
   const samuBalance = samuBalanceData?.balance || 0;
 
-  const { data: myRevenueShare } = useQuery({
-    queryKey: ['revenue-my-share', currentContest?.id, walletAddress],
-    queryFn: async () => {
-      const res = await fetch(`/api/revenue/contest/${currentContest.id}/my-share/${walletAddress}`);
-      if (!res.ok) return null;
-      return res.json();
-    },
-    enabled: isConnected && !!walletAddress && !!currentContest?.id,
-  });
 
 
   const { data: archiveMyVotes } = useQuery({
@@ -515,7 +505,7 @@ export default function Home() {
 
                   {/* Reward Distribution Info */}
                   {currentContest?.id && (
-                    <RewardInfoChart contestId={currentContest.id} compact />
+                    <RewardInfoChart contestId={currentContest.id} compact walletAddress={walletAddress || undefined} />
                   )}
 
                   {/* Submit Button - Only show when logged in AND there's an active contest */}
@@ -543,45 +533,6 @@ export default function Home() {
                     </div>
                   ) : null}
 
-                  {currentContest?.id && (
-                    <Card className="bg-black border-0">
-                      <button
-                        onClick={() => setShowRevenueInfo(!showRevenueInfo)}
-                        className="w-full px-4 py-3 flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="h-4 w-4 text-primary" />
-                          <span className="text-sm font-medium text-primary">Ecosystem Rewards Info</span>
-                        </div>
-                        {showRevenueInfo ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
-                      </button>
-                      {showRevenueInfo && (
-                        <CardContent className="px-4 pb-4 pt-0">
-                          <div className="grid grid-cols-3 gap-3 text-sm">
-                            <div className="flex items-center justify-center gap-1.5 bg-accent/30 rounded px-2 py-2">
-                              <span className="text-muted-foreground text-xs">Creator</span>
-                              <span className="text-primary font-medium">45%</span>
-                            </div>
-                            <div className="flex items-center justify-center gap-1.5 bg-accent/30 rounded px-2 py-2">
-                              <span className="text-muted-foreground text-xs">Voters</span>
-                              <span className="text-primary font-medium">40%</span>
-                            </div>
-                            <div className="flex items-center justify-center gap-1.5 bg-accent/30 rounded px-2 py-2">
-                              <span className="text-muted-foreground text-xs">Platform</span>
-                              <span className="text-primary font-medium">15%</span>
-                            </div>
-                          </div>
-                          {isConnected && (
-                            <div className="mt-3 bg-primary/10 rounded px-3 py-2 flex items-center justify-center gap-3">
-                              <TrendingUp className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-                              <span className="text-sm text-muted-foreground">Your reward share</span>
-                              <span className="text-sm text-primary font-semibold">{((myRevenueShare?.voting?.votePercent || 0) * 0.3).toFixed(1)}%</span>
-                            </div>
-                          )}
-                        </CardContent>
-                      )}
-                    </Card>
-                  )}
 
                   {/* Meme Gallery */}
                   <div>
@@ -910,7 +861,7 @@ export default function Home() {
 
                     {/* Reward Distribution Chart */}
                     {selectedArchiveContest?.id && (
-                      <RewardInfoChart contestId={selectedArchiveContest.id} />
+                      <RewardInfoChart contestId={selectedArchiveContest.id} walletAddress={walletAddress || undefined} />
                     )}
 
                     {authenticated && walletAddress && selectedArchiveContest && (

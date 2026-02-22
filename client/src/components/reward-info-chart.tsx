@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { PieChart, Users, Palette, Settings, ChevronDown, ChevronUp } from "lucide-react";
+import { PieChart, Users, Palette, TrendingUp, ChevronDown, ChevronUp } from "lucide-react";
 
 interface RewardBreakdownData {
   shareRatios: { creator: number; voter: number; platform: number };
@@ -29,6 +29,7 @@ interface RewardBreakdownData {
 interface RewardInfoChartProps {
   contestId: number;
   compact?: boolean;
+  walletAddress?: string;
 }
 
 const COLORS = {
@@ -134,7 +135,7 @@ function PersonRow({ username, profileImage, value, unit, percent, color }: {
   );
 }
 
-export function RewardInfoChart({ contestId, compact = false }: RewardInfoChartProps) {
+export function RewardInfoChart({ contestId, compact = false, walletAddress }: RewardInfoChartProps) {
   const [expanded, setExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState<"creator" | "voter">("creator");
 
@@ -159,9 +160,9 @@ export function RewardInfoChart({ contestId, compact = false }: RewardInfoChartP
 
   if (!data) return null;
 
-  const creatorPct = (data.shareRatios.creator * 100);
-  const voterPct = (data.shareRatios.voter * 100);
-  const platformPct = (data.shareRatios.platform * 100);
+  const creatorPct = Math.round(data.shareRatios.creator * 100);
+  const voterPct = Math.round(data.shareRatios.voter * 100);
+  const platformPct = Math.round(data.shareRatios.platform * 100);
 
   const mainSegments = [
     { percent: creatorPct, color: COLORS.creator, label: `Creators ${creatorPct}%` },
@@ -170,6 +171,12 @@ export function RewardInfoChart({ contestId, compact = false }: RewardInfoChartP
   ];
 
   const hasData = data.totalVotes > 0;
+
+  const myCreatorEntry = walletAddress ? data.creators.find(c => c.wallet === walletAddress) : null;
+  const myVoterEntry = walletAddress ? data.voters.find(v => v.wallet === walletAddress) : null;
+  const myCreatorShare = myCreatorEntry ? (myCreatorEntry.percent / 100) * creatorPct : 0;
+  const myVoterShare = myVoterEntry ? (myVoterEntry.percent / 100) * voterPct : 0;
+  const myTotalShare = myCreatorShare + myVoterShare;
 
   return (
     <Card className="border-border/50 bg-card/80 overflow-hidden">
@@ -200,6 +207,13 @@ export function RewardInfoChart({ contestId, compact = false }: RewardInfoChartP
                 Platform {platformPct}%
               </span>
             </div>
+            {walletAddress && hasData && myTotalShare > 0 && (
+              <div className="flex items-center gap-1.5 mt-1">
+                <TrendingUp className="h-3 w-3 text-primary" />
+                <span className="text-[10px] text-muted-foreground">Your share</span>
+                <span className="text-[10px] text-primary font-semibold">{myTotalShare.toFixed(1)}%</span>
+              </div>
+            )}
           </div>
           <div className="flex-shrink-0 text-muted-foreground">
             {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -208,6 +222,31 @@ export function RewardInfoChart({ contestId, compact = false }: RewardInfoChartP
 
         {expanded && (
           <div className="border-t border-border/30 px-3 pb-3">
+            {walletAddress && hasData && myTotalShare > 0 && (
+              <div className="mt-2 mb-2 bg-primary/10 rounded-lg px-3 py-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-xs text-muted-foreground">Your Reward Share</span>
+                  </div>
+                  <span className="text-sm text-primary font-bold">{myTotalShare.toFixed(1)}%</span>
+                </div>
+                {(myCreatorShare > 0 || myVoterShare > 0) && (
+                  <div className="flex gap-3 mt-1 text-[10px]">
+                    {myCreatorShare > 0 && (
+                      <span className="text-muted-foreground">
+                        Creator: <span className="text-[hsl(45,90%,55%)] font-medium">{myCreatorShare.toFixed(1)}%</span>
+                      </span>
+                    )}
+                    {myVoterShare > 0 && (
+                      <span className="text-muted-foreground">
+                        Voter: <span className="text-[hsl(200,80%,55%)] font-medium">{myVoterShare.toFixed(1)}%</span>
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
             {!hasData ? (
               <div className="text-center py-4">
                 <p className="text-xs text-muted-foreground">No votes yet in this contest</p>
@@ -264,7 +303,7 @@ export function RewardInfoChart({ contestId, compact = false }: RewardInfoChartP
                     </div>
                     <div className="mt-2 p-2 bg-accent/20 rounded-md">
                       <p className="text-[10px] text-muted-foreground leading-relaxed">
-                        Creators receive 45% of goods profits, split by votes received.
+                        Creators receive {creatorPct}% of goods profits, split by votes received.
                         More votes on your meme = bigger reward share.
                       </p>
                     </div>
@@ -296,7 +335,7 @@ export function RewardInfoChart({ contestId, compact = false }: RewardInfoChartP
                     </div>
                     <div className="mt-2 p-2 bg-accent/20 rounded-md">
                       <p className="text-[10px] text-muted-foreground leading-relaxed">
-                        Voters receive 40% of goods profits, proportional to SAMU spent voting.
+                        Voters receive {voterPct}% of goods profits, proportional to SAMU spent voting.
                         More SAMU you vote = bigger reward share.
                       </p>
                     </div>
