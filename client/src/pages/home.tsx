@@ -874,9 +874,9 @@ export default function Home() {
                               alt={meme.title}
                               className="w-full h-full"
                               showControls={false}
-                              autoPlay={false}
                               muted={true}
                               loop={true}
+                              autoPlayOnVisible={true}
                             />
                             {meme.rank <= 3 && (
                               <div className="absolute top-1 left-1 text-lg">
