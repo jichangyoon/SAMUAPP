@@ -9,9 +9,10 @@ interface ImageCarouselProps {
   showControls?: boolean;
   onClick?: () => void;
   autoPlayVideo?: boolean;
+  containMode?: boolean;
 }
 
-export function ImageCarousel({ images, alt, className = "", showControls = false, onClick, autoPlayVideo = false }: ImageCarouselProps) {
+export function ImageCarousel({ images, alt, className = "", showControls = false, onClick, autoPlayVideo = false, containMode = false }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
@@ -32,6 +33,7 @@ export function ImageCarousel({ images, alt, className = "", showControls = fals
         muted={!showControls}
         loop={!showControls}
         autoPlayOnVisible={autoPlayVideo}
+        containMode={containMode}
       />
     );
   }
@@ -70,16 +72,17 @@ export function ImageCarousel({ images, alt, className = "", showControls = fals
         onTouchEnd={handleTouchEnd}
       >
         {images.map((src, idx) => (
-          <div key={idx} className="min-w-full h-full flex-shrink-0">
+          <div key={idx} className={`min-w-full flex-shrink-0 ${containMode ? '' : 'h-full'}`}>
             <MediaDisplay
               src={src}
               alt={`${alt} ${idx + 1}`}
-              className="w-full h-full"
+              className={containMode ? "w-full" : "w-full h-full"}
               showControls={showControls && idx === currentIndex}
               onClick={onClick}
               muted={true}
               loop={true}
               autoPlayOnVisible={autoPlayVideo && idx === currentIndex}
+              containMode={containMode}
             />
           </div>
         ))}
