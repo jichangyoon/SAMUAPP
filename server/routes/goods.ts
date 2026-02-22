@@ -3,6 +3,7 @@ import { storage } from "../storage";
 import { insertGoodsSchema, insertOrderSchema } from "@shared/schema";
 import { config } from "../config";
 import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { uploadToR2 } from "../r2-storage";
 
 const router = Router();
 
@@ -544,14 +545,124 @@ router.post("/admin/generate-mockup/:id", requireAdmin, async (req, res) => {
       return res.status(500).json({ error: "Mockup generation timed out or produced no results" });
     }
 
+    const permanentUrls: string[] = [];
+    for (let i = 0; i < mockupUrls.length; i++) {
+      try {
+        const response = await fetch(mockupUrls[i]);
+        if (!response.ok) throw new Error(`Failed to download mockup: ${response.status}`);
+        const buffer = Buffer.from(await response.arrayBuffer());
+        const result = await uploadToR2(buffer, `mockup-${id}-${i}.jpg`, `goods/mockups`);
+        if (result.success && result.url) {
+          permanentUrls.push(result.url);
+        } else {
+          console.error(`Failed to upload mockup ${i} to R2:`, result.error);
+          permanentUrls.push(mockupUrls[i]);
+        }
+      } catch (dlError: any) {
+        console.error(`Failed to download/upload mockup ${i}:`, dlError.message);
+        permanentUrls.push(mockupUrls[i]);
+      }
+    }
+
     const updatedItem = await storage.updateGoods(id, {
-      mockupUrls: mockupUrls,
+      mockupUrls: permanentUrls,
     });
 
-    res.json({ mockupUrls, goods: updatedItem });
+    res.json({ mockupUrls: permanentUrls, goods: updatedItem });
   } catch (error: any) {
     console.error("Error generating mockup:", error);
     res.status(500).json({ error: error.message || "Failed to generate mockup" });
+  }
+});
+
+router.post("/admin/refresh-all-mockups", requireAdmin, async (req, res) => {
+  try {
+    if (!PRINTFUL_API_KEY) {
+      return res.status(500).json({ error: "Printful API key not configured" });
+    }
+
+    const allGoods = await storage.getGoods();
+    const results: { id: number; title: string; status: string }[] = [];
+
+    for (const item of allGoods) {
+      const hasExpiredMockups = (item.mockupUrls || []).some(
+        (url: string) => url.includes('printful-upload.s3') || url.includes('/tmp/')
+      );
+      if (!hasExpiredMockups && (item.mockupUrls || []).length > 0) {
+        results.push({ id: item.id, title: item.title, status: "ok" });
+        continue;
+      }
+
+      try {
+        const imageUrl = item.imageUrl;
+        const firstSize = item.sizes?.[0] || '3"×3"';
+        const variantId = STICKER_VARIANT_MAP[firstSize] || 10163;
+        const variantIds = [variantId];
+        const secondSize = item.sizes?.find((s: string) => s !== firstSize);
+        if (secondSize) {
+          const secondVariantId = STICKER_VARIANT_MAP[secondSize];
+          if (secondVariantId) variantIds.push(secondVariantId);
+        }
+        const printfileSize = STICKER_PRINTFILE_SIZE[variantId] || { width: 900, height: 900 };
+
+        const mockupTask = await printfulRequest("POST", `/mockup-generator/create-task/${STICKER_PRODUCT_ID}`, {
+          variant_ids: variantIds,
+          format: "jpg",
+          files: [{ placement: "default", image_url: imageUrl, position: { area_width: printfileSize.width, area_height: printfileSize.height, width: printfileSize.width, height: printfileSize.height, top: 0, left: 0 } }],
+        });
+
+        if (!mockupTask.result?.task_key) {
+          results.push({ id: item.id, title: item.title, status: "failed_task_creation" });
+          continue;
+        }
+
+        let mockupUrls: string[] = [];
+        let taskComplete = false;
+        let attempts = 0;
+        while (!taskComplete && attempts < 20) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          const taskResult = await printfulRequest("GET", `/mockup-generator/task?task_key=${mockupTask.result.task_key}`);
+          if (taskResult.result?.status === "completed") {
+            taskComplete = true;
+            mockupUrls = (taskResult.result?.mockups || []).map((m: any) => m.mockup_url).filter(Boolean);
+          } else if (taskResult.result?.status === "failed") {
+            break;
+          }
+          attempts++;
+        }
+
+        if (mockupUrls.length === 0) {
+          results.push({ id: item.id, title: item.title, status: "no_mockups_generated" });
+          continue;
+        }
+
+        const permanentUrls: string[] = [];
+        for (let i = 0; i < mockupUrls.length; i++) {
+          try {
+            const response = await fetch(mockupUrls[i]);
+            if (!response.ok) throw new Error(`Download failed: ${response.status}`);
+            const buffer = Buffer.from(await response.arrayBuffer());
+            const result = await uploadToR2(buffer, `mockup-${item.id}-${i}.jpg`, `goods/mockups`);
+            if (result.success && result.url) {
+              permanentUrls.push(result.url);
+            } else {
+              permanentUrls.push(mockupUrls[i]);
+            }
+          } catch {
+            permanentUrls.push(mockupUrls[i]);
+          }
+        }
+
+        await storage.updateGoods(item.id, { mockupUrls: permanentUrls });
+        results.push({ id: item.id, title: item.title, status: "refreshed" });
+      } catch (err: any) {
+        results.push({ id: item.id, title: item.title, status: `error: ${err.message}` });
+      }
+    }
+
+    res.json({ results });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 });
 
