@@ -1043,7 +1043,7 @@ export class DatabaseStorage implements IStorage {
         // Archive main image
         if (meme.imageUrl) {
           const key = extractKeyFromUrl(meme.imageUrl);
-          if (key && !key.startsWith(`archives/contest-${contestId}/`)) {
+          if (key) {
             try {
               const result = await moveToArchive(key, contestId);
               if (result.success && result.url) {
@@ -1068,7 +1068,7 @@ export class DatabaseStorage implements IStorage {
           for (let i = 0; i < meme.additionalImages.length; i++) {
             const imgUrl = meme.additionalImages[i];
             const key = extractKeyFromUrl(imgUrl);
-            if (key && !key.startsWith(`archives/contest-${contestId}/`)) {
+            if (key) {
               try {
                 const result = await moveToArchive(key, contestId);
                 if (result.success && result.url) {
@@ -1118,23 +1118,6 @@ export class DatabaseStorage implements IStorage {
     const winnerMemeId = sortedMemes[0]?.id || null;
     const secondMemeId = sortedMemes[1]?.id || null;
     const thirdMemeId = sortedMemes[2]?.id || null;
-
-    // Check if contest is already archived (prevent duplicates)
-    const existingArchive = await this.db
-      .select()
-      .from(archivedContests)
-      .where(eq(archivedContests.originalContestId, contestId))
-      .limit(1);
-
-    if (existingArchive.length > 0) {
-      console.log(`Contest ${contestId} is already archived, ensuring status is updated`);
-      // Still update contest status to archived in case it wasn't updated before
-      await this.db
-        .update(contests)
-        .set({ status: "archived", updatedAt: new Date() })
-        .where(eq(contests.id, contestId));
-      return existingArchive[0];
-    }
 
     let archivedContest: ArchivedContest;
     try {

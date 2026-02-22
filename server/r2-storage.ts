@@ -167,19 +167,6 @@ export async function moveToArchive(
   contestId: number
 ): Promise<UploadResult> {
   try {
-    if (!process.env.R2_ACCOUNT_ID || !process.env.R2_ACCESS_KEY_ID || !process.env.R2_SECRET_ACCESS_KEY) {
-      throw new Error('R2 credentials not configured');
-    }
-
-    const s3Client = new S3Client({
-      region: 'auto',
-      endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-      credentials: {
-        accessKeyId: process.env.R2_ACCESS_KEY_ID,
-        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
-      },
-    });
-
     const bucketName = process.env.R2_BUCKET_NAME || 'samu-storage';
     
     const fileName = sourceKey.split('/').pop() || sourceKey;
@@ -192,7 +179,7 @@ export async function moveToArchive(
 
     console.log(`[Archive] Copying: ${sourceKey} → ${archiveKey}`);
 
-    await s3Client.send(new CopyObjectCommand({
+    await r2Client.send(new CopyObjectCommand({
       Bucket: bucketName,
       CopySource: `${bucketName}/${sourceKey}`,
       Key: archiveKey,
@@ -200,7 +187,7 @@ export async function moveToArchive(
     }));
 
     try {
-      await s3Client.send(new HeadObjectCommand({
+      await r2Client.send(new HeadObjectCommand({
         Bucket: bucketName,
         Key: archiveKey,
       }));
@@ -213,7 +200,7 @@ export async function moveToArchive(
     }
 
     try {
-      await s3Client.send(new DeleteObjectCommand({
+      await r2Client.send(new DeleteObjectCommand({
         Bucket: bucketName,
         Key: sourceKey
       }));
