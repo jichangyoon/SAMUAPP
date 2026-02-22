@@ -307,4 +307,97 @@ router.get("/:id/voted/:wallet", async (req, res) => {
   }
 });
 
+router.get("/contest/:contestId/reward-breakdown", async (req, res) => {
+  try {
+    const contestId = parseInt(req.params.contestId);
+    if (isNaN(contestId)) {
+      return res.status(400).json({ message: "Invalid contest ID" });
+    }
+
+    const contestMemes = await storage.getMemesByContestId(contestId);
+    if (!contestMemes || contestMemes.length === 0) {
+      return res.json({
+        shareRatios: { creator: 0.45, voter: 0.40, platform: 0.15 },
+        creators: [],
+        voters: [],
+        totalVotes: 0,
+      });
+    }
+
+    const totalVotes = contestMemes.reduce((sum: number, m) => sum + m.votes, 0);
+
+    const creatorMap = new Map<string, { wallet: string; username: string; profileImage: string | null; totalVotesReceived: number; memeCount: number }>();
+    for (const meme of contestMemes) {
+      const key = meme.authorWallet;
+      const existing = creatorMap.get(key);
+      if (existing) {
+        existing.totalVotesReceived += meme.votes;
+        existing.memeCount += 1;
+      } else {
+        creatorMap.set(key, {
+          wallet: meme.authorWallet,
+          username: meme.authorUsername,
+          profileImage: meme.authorAvatarUrl || null,
+          totalVotesReceived: meme.votes,
+          memeCount: 1,
+        });
+      }
+    }
+
+    const creators = Array.from(creatorMap.values())
+      .map((c) => ({
+        ...c,
+        percent: totalVotes > 0 ? (c.totalVotesReceived / totalVotes) * 100 : 0,
+      }))
+      .sort((a, b) => b.totalVotesReceived - a.totalVotesReceived);
+
+    const memeIds = contestMemes.map((m) => m.id);
+    const allVotes = await Promise.all(memeIds.map((id) => storage.getVotesByMemeId(id)));
+    const flatVotes = allVotes.flat();
+
+    const voterMap = new Map<string, { wallet: string; totalSamuSpent: number }>();
+    for (const vote of flatVotes) {
+      const existing = voterMap.get(vote.voterWallet);
+      if (existing) {
+        existing.totalSamuSpent += vote.samuAmount;
+      } else {
+        voterMap.set(vote.voterWallet, {
+          wallet: vote.voterWallet,
+          totalSamuSpent: vote.samuAmount,
+        });
+      }
+    }
+
+    const totalSamuSpent = flatVotes.reduce((sum: number, v) => sum + v.samuAmount, 0);
+    
+    const voterWallets = Array.from(voterMap.keys());
+    const voterProfiles = await Promise.all(
+      voterWallets.map(w => storage.getUserByWallet(w))
+    );
+
+    const voters = voterWallets.map((wallet, i) => {
+      const data = voterMap.get(wallet)!;
+      const user = voterProfiles[i];
+      return {
+        wallet,
+        username: user?.displayName || `${wallet.slice(0, 4)}...${wallet.slice(-4)}`,
+        profileImage: user?.avatarUrl || null,
+        totalSamuSpent: data.totalSamuSpent,
+        percent: totalSamuSpent > 0 ? (data.totalSamuSpent / totalSamuSpent) * 100 : 0,
+      };
+    }).sort((a, b) => b.totalSamuSpent - a.totalSamuSpent);
+
+    res.json({
+      shareRatios: { creator: 0.45, voter: 0.40, platform: 0.15 },
+      creators,
+      voters,
+      totalVotes,
+      totalSamuSpent,
+    });
+  } catch (error) {
+    console.error("Error fetching reward breakdown:", error);
+    res.status(500).json({ message: "Failed to fetch reward breakdown" });
+  }
+});
+
 export { router as votesRouter };

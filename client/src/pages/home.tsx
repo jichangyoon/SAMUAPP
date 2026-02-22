@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback, Suspense, lazy } from
 import { useQuery } from "@tanstack/react-query";
 import { WalletConnect } from "@/components/wallet-connect";
 import { ContestHeader } from "@/components/contest-header";
+import { RewardInfoChart } from "@/components/reward-info-chart";
 import { MemeCard } from "@/components/meme-card";
 import { MediaDisplay } from "@/components/media-display";
 import { MultiImageBadge } from "@/components/image-carousel";
@@ -512,6 +513,11 @@ export default function Home() {
                   {/* Contest Header */}
                   <ContestHeader entriesCount={sortedMemes.length} />
 
+                  {/* Reward Distribution Info */}
+                  {currentContest?.id && (
+                    <RewardInfoChart contestId={currentContest.id} compact />
+                  )}
+
                   {/* Submit Button - Only show when logged in AND there's an active contest */}
                   {isConnected && currentContest?.status === "active" ? (
                     <div className="flex justify-center">
@@ -901,6 +907,11 @@ export default function Home() {
                         </div>
                       </CardContent>
                     </Card>
+
+                    {/* Reward Distribution Chart */}
+                    {selectedArchiveContest?.id && (
+                      <RewardInfoChart contestId={selectedArchiveContest.id} />
+                    )}
 
                     {authenticated && walletAddress && selectedArchiveContest && (
                       <Card className="border-primary/30 bg-primary/5">
