@@ -4,7 +4,10 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { PrivyProvider } from '@privy-io/react-auth';
+import { toSolanaWalletConnectors } from '@privy-io/react-auth/solana';
 import { useEffect, useState, memo } from 'react';
+
+const solanaConnectors = toSolanaWalletConnectors();
 import Home from "@/pages/home";
 import Profile from "@/pages/profile";
 import { Partners } from "@/pages/partners";
@@ -119,12 +122,18 @@ function App() {
         appearance: {
           theme: 'dark',
           accentColor: '#fbbf24',
+          walletChainType: 'solana-only',
         },
         loginMethods: ['email'],
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
           solana: {
             createOnLogin: 'users-without-wallets',
+          },
+        },
+        externalWallets: {
+          solana: {
+            connectors: solanaConnectors,
           },
         },
         solanaClusters: [{

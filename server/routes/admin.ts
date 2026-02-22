@@ -122,7 +122,7 @@ router.post("/contests/:id/end", async (req, res) => {
     res.json(archivedContest);
   } catch (error) {
     console.error("Error ending contest:", error);
-    res.status(500).json({ error: "Failed to end contest: " + error.message });
+    res.status(500).json({ error: "Failed to end contest: " + (error instanceof Error ? error.message : String(error)) });
   }
 });
 
@@ -264,69 +264,6 @@ router.get("/ip-status/:ipAddress", async (req, res) => {
   } catch (error) {
     console.error("Error fetching IP status:", error);
     res.status(500).json({ error: "Failed to fetch IP status" });
-  }
-});
-
-// IP Tracking endpoints
-router.get("/suspicious-ips", async (req, res) => {
-  try {
-    const suspiciousIps = await storage.getSuspiciousIPs();
-    res.json(suspiciousIps);
-  } catch (error) {
-    console.error("Error fetching suspicious IPs:", error);
-    res.status(500).json({ error: "Failed to fetch suspicious IPs" });
-  }
-});
-
-router.get("/recent-logins", async (req, res) => {
-  try {
-    const recentLogins = await storage.getRecentLogins();
-    res.json(recentLogins);
-  } catch (error) {
-    console.error("Error fetching recent logins:", error);
-    res.status(500).json({ error: "Failed to fetch recent logins" });
-  }
-});
-
-router.get("/blocked-ips", async (req, res) => {
-  try {
-    const blockedIps = await storage.getBlockedIPs();
-    res.json(blockedIps);
-  } catch (error) {
-    console.error("Error fetching blocked IPs:", error);
-    res.status(500).json({ error: "Failed to fetch blocked IPs" });
-  }
-});
-
-router.post("/block-ip", async (req, res) => {
-  try {
-    const { ipAddress, reason } = req.body;
-    
-    if (!ipAddress) {
-      return res.status(400).json({ error: "IP address is required" });
-    }
-    
-    await storage.blockIP(ipAddress, reason || "Manually blocked by admin");
-    res.json({ success: true });
-  } catch (error) {
-    console.error("Error blocking IP:", error);
-    res.status(500).json({ error: "Failed to block IP" });
-  }
-});
-
-router.post("/unblock-ip", async (req, res) => {
-  try {
-    const { ipAddress } = req.body;
-    
-    if (!ipAddress) {
-      return res.status(400).json({ error: "IP address is required" });
-    }
-    
-    await storage.unblockIP(ipAddress);
-    res.json({ success: true });
-  } catch (error) {
-    console.error("Error unblocking IP:", error);
-    res.status(500).json({ error: "Failed to unblock IP" });
   }
 });
 

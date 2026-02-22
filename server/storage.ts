@@ -142,6 +142,7 @@ export class MemStorage implements IStorage {
       authorUsername: insertMeme.authorUsername,
       authorAvatarUrl: insertMeme.authorAvatarUrl ?? null,
       votes: 0,
+      additionalImages: null,
       createdAt: new Date()
     };
     this.memes.set(id, meme);
@@ -199,7 +200,7 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByDisplayName(displayName: string): Promise<User | undefined> {
-    for (const user of this.users.values()) {
+    for (const user of Array.from(this.users.values())) {
       if (user.displayName === displayName) {
         return user;
       }
@@ -307,6 +308,7 @@ export class MemStorage implements IStorage {
       authorUsername: insertMeme.authorUsername,
       authorAvatarUrl: insertMeme.authorAvatarUrl ?? null,
       votes: 0,
+      additionalImages: null,
       createdAt: new Date()
     };
     
@@ -385,6 +387,21 @@ export class MemStorage implements IStorage {
   async updateContestStatus(_id: number, _status: string): Promise<Contest> { throw new Error("Not implemented"); }
   async updateContestTimes(_id: number, _startTime: Date, _endTime: Date): Promise<Contest> { throw new Error("Not implemented"); }
   async getCurrentActiveContest(): Promise<Contest | undefined> { return undefined; }
+  async endContestAndArchive(_contestId: number): Promise<ArchivedContest> { throw new Error("Not implemented"); }
+  async getArchivedContests(): Promise<ArchivedContest[]> { return []; }
+
+  async logLogin(_loginLog: InsertLoginLog): Promise<LoginLog> { throw new Error("Not implemented"); }
+  async getTodayLoginsByIp(_ipAddress: string): Promise<string[]> { return []; }
+  async getTodayLoginsByDeviceId(_deviceId: string): Promise<string[]> { return []; }
+  async blockIp(_blockData: InsertBlockedIp): Promise<BlockedIp> { throw new Error("Not implemented"); }
+  async unblockIp(_ipAddress: string): Promise<void> {}
+  async isIpBlocked(_ipAddress: string): Promise<boolean> { return false; }
+  async getBlockedIps(): Promise<BlockedIp[]> { return []; }
+  async getRecentLogins(_limit?: number): Promise<LoginLog[]> { return []; }
+  async getSuspiciousIps(): Promise<{ipAddress: string, walletCount: number, wallets: string[]}[]> { return []; }
+  async getSuspiciousDevices(): Promise<{deviceId: string, walletCount: number, wallets: string[]}[]> { return []; }
+
+  async updateUserMemeAuthorInfo(_walletAddress: string, _newDisplayName: string, _newAvatarUrl?: string): Promise<void> {}
 
   async getGoods(): Promise<Goods[]> { return []; }
   async getGoodsById(_id: number): Promise<Goods | undefined> { return undefined; }
@@ -422,7 +439,7 @@ export class DatabaseStorage implements IStorage {
     const validMemes = memeList.filter((m): m is Meme & T => m !== null);
     if (validMemes.length === 0) return memeList;
 
-    const wallets = [...new Set(validMemes.map(m => m.authorWallet))];
+    const wallets = Array.from(new Set(validMemes.map(m => m.authorWallet)));
     const userRows = await this.db
       .select()
       .from(users)
@@ -548,7 +565,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(votes.voterWallet, walletAddress))
       .orderBy(desc(votes.createdAt));
 
-    const contestIds = [...new Set(userVotes.map(v => v.contestId).filter(Boolean))] as number[];
+    const contestIds = Array.from(new Set(userVotes.map(v => v.contestId).filter(Boolean))) as number[];
     
     const contestMap: Record<number, any> = {};
     const contestIsArchived: Record<number, boolean> = {};
@@ -813,6 +830,7 @@ export class DatabaseStorage implements IStorage {
       authorWallet: meme.authorWallet,
       authorUsername: meme.authorUsername,
       authorAvatarUrl: null,
+      additionalImages: null,
       votes: meme.votes,
       createdAt: meme.createdAt
     };
@@ -837,6 +855,7 @@ export class DatabaseStorage implements IStorage {
       authorWallet: meme.authorWallet,
       authorUsername: meme.authorUsername,
       authorAvatarUrl: null,
+      additionalImages: null,
       votes: meme.votes,
       createdAt: meme.createdAt
     }));
@@ -862,6 +881,7 @@ export class DatabaseStorage implements IStorage {
       authorWallet: meme.authorWallet,
       authorUsername: meme.authorUsername,
       authorAvatarUrl: null,
+      additionalImages: null,
       votes: meme.votes,
       createdAt: meme.createdAt
     };
