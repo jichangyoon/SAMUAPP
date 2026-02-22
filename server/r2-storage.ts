@@ -157,91 +157,107 @@ export function extractKeyFromUrl(url: string): string | null {
   }
 }
 
+async function moveToArchiveOnce(
+  sourceKey: string,
+  contestId: number
+): Promise<UploadResult> {
+  const bucketName = process.env.R2_BUCKET_NAME || 'samu-storage';
+  
+  const fileName = sourceKey.split('/').pop() || sourceKey;
+  const archiveKey = `archives/contest-${contestId}/${fileName}`;
+
+  if (sourceKey === archiveKey || sourceKey.startsWith(`archives/contest-${contestId}/`)) {
+    const publicUrl = process.env.R2_PUBLIC_URL || `https://${bucketName}.r2.dev`;
+    return { success: true, url: `${publicUrl}/${sourceKey}`, key: sourceKey };
+  }
+
+  try {
+    await r2Client.send(new CopyObjectCommand({
+      Bucket: bucketName,
+      CopySource: `${bucketName}/${sourceKey}`,
+      Key: archiveKey,
+      MetadataDirective: 'COPY'
+    }));
+  } catch (copyError: any) {
+    if (copyError?.Code === 'NoSuchKey' || copyError?.name === 'NoSuchKey') {
+      try {
+        await r2Client.send(new HeadObjectCommand({
+          Bucket: bucketName,
+          Key: archiveKey,
+        }));
+        const publicUrl = process.env.R2_PUBLIC_URL || `https://${bucketName}.r2.dev`;
+        const newUrl = `${publicUrl}/${archiveKey}`;
+        console.log(`[Archive] Source missing but already archived: ${newUrl}`);
+        return { success: true, url: newUrl, key: archiveKey };
+      } catch {
+        return { success: false, error: `Source file not found: ${sourceKey}` };
+      }
+    }
+    throw copyError;
+  }
+
+  try {
+    await r2Client.send(new HeadObjectCommand({
+      Bucket: bucketName,
+      Key: archiveKey,
+    }));
+  } catch (verifyError) {
+    return {
+      success: false,
+      error: `Copy verification failed for ${sourceKey} → ${archiveKey}. Original preserved.`
+    };
+  }
+
+  try {
+    await r2Client.send(new DeleteObjectCommand({
+      Bucket: bucketName,
+      Key: sourceKey
+    }));
+  } catch (deleteError) {
+    console.warn(`[Archive] Original delete failed for ${sourceKey} (copy exists at ${archiveKey})`);
+  }
+
+  const publicUrl = process.env.R2_PUBLIC_URL || `https://${bucketName}.r2.dev`;
+  const newUrl = `${publicUrl}/${archiveKey}`;
+  return { success: true, url: newUrl, key: archiveKey };
+}
+
 /**
- * 파일을 아카이브 폴더로 안전하게 이동
+ * 파일을 아카이브 폴더로 안전하게 이동 (최대 2회 재시도)
  * 1) 복사 → 2) 복사 확인 (HeadObject) → 3) 원본 삭제
- * 복사 확인 실패 시 원본을 보존하고 에러 반환
+ * 일시적 R2 에러 시 지수 백오프로 재시도
  */
 export async function moveToArchive(
   sourceKey: string,
   contestId: number
 ): Promise<UploadResult> {
-  try {
-    const bucketName = process.env.R2_BUCKET_NAME || 'samu-storage';
-    
-    const fileName = sourceKey.split('/').pop() || sourceKey;
-    const archiveKey = `archives/contest-${contestId}/${fileName}`;
+  const MAX_RETRIES = 2;
+  let lastError: string = '';
 
-    if (sourceKey === archiveKey || sourceKey.startsWith(`archives/contest-${contestId}/`)) {
-      const publicUrl = process.env.R2_PUBLIC_URL || `https://${bucketName}.r2.dev`;
-      return { success: true, url: `${publicUrl}/${sourceKey}`, key: sourceKey };
-    }
-
-    console.log(`[Archive] Copying: ${sourceKey} → ${archiveKey}`);
-
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
-      await r2Client.send(new CopyObjectCommand({
-        Bucket: bucketName,
-        CopySource: `${bucketName}/${sourceKey}`,
-        Key: archiveKey,
-        MetadataDirective: 'COPY'
-      }));
-    } catch (copyError: any) {
-      if (copyError?.Code === 'NoSuchKey' || copyError?.name === 'NoSuchKey') {
-        try {
-          await r2Client.send(new HeadObjectCommand({
-            Bucket: bucketName,
-            Key: archiveKey,
-          }));
-          const publicUrl = process.env.R2_PUBLIC_URL || `https://${bucketName}.r2.dev`;
-          const newUrl = `${publicUrl}/${archiveKey}`;
-          console.log(`[Archive] Source missing but already archived: ${newUrl}`);
-          return { success: true, url: newUrl, key: archiveKey };
-        } catch {
-          console.error(`[Archive] Source missing and not in archive: ${sourceKey}`);
-          return { success: false, error: `Source file not found: ${sourceKey}` };
+      const result = await moveToArchiveOnce(sourceKey, contestId);
+      if (result.success) {
+        if (attempt > 0) {
+          console.log(`[Archive] Success on retry ${attempt}: ${result.url}`);
         }
+        return result;
       }
-      throw copyError;
+      lastError = result.error || 'Unknown error';
+      if (result.error?.includes('not found') || result.error?.includes('verification failed')) {
+        return result;
+      }
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : 'Unknown error';
     }
 
-    try {
-      await r2Client.send(new HeadObjectCommand({
-        Bucket: bucketName,
-        Key: archiveKey,
-      }));
-    } catch (verifyError) {
-      console.error(`[Archive] COPY VERIFICATION FAILED for ${archiveKey} - keeping original at ${sourceKey}`);
-      return {
-        success: false,
-        error: `Copy verification failed for ${sourceKey} → ${archiveKey}. Original preserved.`
-      };
+    if (attempt < MAX_RETRIES) {
+      const delay = Math.pow(2, attempt) * 500;
+      console.log(`[Archive] Retry ${attempt + 1}/${MAX_RETRIES} for ${sourceKey} in ${delay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
     }
-
-    try {
-      await r2Client.send(new DeleteObjectCommand({
-        Bucket: bucketName,
-        Key: sourceKey
-      }));
-    } catch (deleteError) {
-      console.warn(`[Archive] Original delete failed for ${sourceKey} (copy exists at ${archiveKey})`);
-    }
-
-    const publicUrl = process.env.R2_PUBLIC_URL || `https://${bucketName}.r2.dev`;
-    const newUrl = `${publicUrl}/${archiveKey}`;
-
-    console.log(`[Archive] Success: ${newUrl}`);
-
-    return {
-      success: true,
-      url: newUrl,
-      key: archiveKey
-    };
-  } catch (error) {
-    console.error(`[Archive] Error moving ${sourceKey}:`, error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
-    };
   }
+
+  console.error(`[Archive] Failed after ${MAX_RETRIES + 1} attempts for ${sourceKey}: ${lastError}`);
+  return { success: false, error: lastError };
 }

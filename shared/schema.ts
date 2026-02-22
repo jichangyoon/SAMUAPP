@@ -6,7 +6,7 @@ export const contests = pgTable("contests", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description"),
-  status: text("status").notNull().default("draft"), // draft, active, ended, archived
+  status: text("status").notNull().default("draft"), // draft, active, ended, archiving, archived
   startTime: timestamp("start_time"),
   endTime: timestamp("end_time"),
   prizePool: text("prize_pool"),

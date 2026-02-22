@@ -1008,14 +1008,24 @@ export class DatabaseStorage implements IStorage {
         .limit(1);
       if (existing.length > 0) return existing[0];
       console.log(`Contest ${contestId} marked archived but no archive record, proceeding with archival`);
+    } else if (contest.status === "archiving") {
+      console.log(`Contest ${contestId} is already being archived by another process, skipping`);
+      const existing = await this.db
+        .select()
+        .from(archivedContests)
+        .where(eq(archivedContests.originalContestId, contestId))
+        .limit(1);
+      if (existing.length > 0) return existing[0];
+      console.log(`Contest ${contestId} marked archiving but no archive record, proceeding with archival`);
     } else {
       await this.db
         .update(contests)
-        .set({ status: "archived" })
+        .set({ status: "archiving" })
         .where(eq(contests.id, contestId));
-      console.log(`Contest ${contestId} status set to archived (lock acquired)`);
+      console.log(`Contest ${contestId} status set to archiving`);
     }
 
+    try {
     // Get all memes for this contest - current active contest memes have contestId = null
     // OR memes that already belong to this specific contest
     const contestMemes = await this.db
@@ -1029,18 +1039,18 @@ export class DatabaseStorage implements IStorage {
 
     // Allow ending contest even with no memes
 
-    // Move all contest files to archive in R2 storage
+    // Move all contest files to archive in R2 storage (parallel batches of 10)
     if (contestMemes.length > 0) {
       const { moveToArchive, extractKeyFromUrl } = await import('./r2-storage');
       
       let archiveSuccess = 0;
       let archiveFail = 0;
       const failedFiles: string[] = [];
+      const BATCH_SIZE = 10;
 
-      for (const meme of contestMemes) {
+      const processMeme = async (meme: typeof contestMemes[0]) => {
         const updateFields: { imageUrl?: string; additionalImages?: string[] } = {};
 
-        // Archive main image
         if (meme.imageUrl) {
           const key = extractKeyFromUrl(meme.imageUrl);
           if (key) {
@@ -1052,17 +1062,14 @@ export class DatabaseStorage implements IStorage {
               } else {
                 archiveFail++;
                 failedFiles.push(`meme-${meme.id}-main: ${meme.imageUrl}`);
-                console.error(`[Archive] Failed main image for meme ${meme.id}: ${result.error}`);
               }
             } catch (err: any) {
               archiveFail++;
               failedFiles.push(`meme-${meme.id}-main: ${meme.imageUrl}`);
-              console.error(`[Archive] Exception archiving main image for meme ${meme.id}:`, err.message);
             }
           }
         }
 
-        // Archive additional images
         if (meme.additionalImages && Array.isArray(meme.additionalImages) && meme.additionalImages.length > 0) {
           const archivedAdditional: string[] = [];
           for (let i = 0; i < meme.additionalImages.length; i++) {
@@ -1078,13 +1085,11 @@ export class DatabaseStorage implements IStorage {
                   archivedAdditional.push(imgUrl);
                   archiveFail++;
                   failedFiles.push(`meme-${meme.id}-additional-${i}: ${imgUrl}`);
-                  console.error(`[Archive] Failed additional image ${i} for meme ${meme.id}: ${result.error}`);
                 }
               } catch (err: any) {
                 archivedAdditional.push(imgUrl);
                 archiveFail++;
                 failedFiles.push(`meme-${meme.id}-additional-${i}: ${imgUrl}`);
-                console.error(`[Archive] Exception archiving additional image ${i} for meme ${meme.id}:`, err.message);
               }
             } else {
               archivedAdditional.push(imgUrl);
@@ -1093,13 +1098,22 @@ export class DatabaseStorage implements IStorage {
           updateFields.additionalImages = archivedAdditional;
         }
 
-        // Update DB only if we have changes
         if (Object.keys(updateFields).length > 0) {
-          await this.db
+          await this.db!
             .update(memes)
             .set(updateFields)
             .where(eq(memes.id, meme.id));
         }
+      };
+
+      for (let i = 0; i < contestMemes.length; i += BATCH_SIZE) {
+        const batch = contestMemes.slice(i, i + BATCH_SIZE);
+        await Promise.all(batch.map(meme => processMeme(meme).catch(err => {
+          archiveFail++;
+          failedFiles.push(`meme-${meme.id}-unexpected: ${err?.message || err}`);
+          console.error(`[Archive] Unexpected error for meme ${meme.id}:`, err);
+        })));
+        console.log(`[Archive] Progress: ${Math.min(i + BATCH_SIZE, contestMemes.length)}/${contestMemes.length} memes processed`);
       }
 
       console.log(`[Archive] Contest ${contestId} file migration complete: ${archiveSuccess} succeeded, ${archiveFail} failed out of ${archiveSuccess + archiveFail} total files`);
@@ -1178,6 +1192,15 @@ export class DatabaseStorage implements IStorage {
     console.log(`Contest ${contestId} archived with ${totalMemes} files moved to archives/contest-${contestId}/`);
 
     return archivedContest;
+    } catch (archiveError) {
+      console.error(`[Archive] Critical failure for contest ${contestId}, reverting to ended:`, archiveError);
+      try {
+        await this.updateContestStatus(contestId, "ended");
+      } catch (revertError) {
+        console.error(`[Archive] Failed to revert contest ${contestId} status:`, revertError);
+      }
+      throw archiveError;
+    }
   }
 
   async getArchivedContests(): Promise<ArchivedContest[]> {

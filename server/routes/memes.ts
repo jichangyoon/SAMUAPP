@@ -101,6 +101,11 @@ router.get("/all", async (req, res) => {
 // Create a new meme
 router.post("/", async (req, res) => {
   try {
+    const currentContest = await storage.getCurrentActiveContest();
+    if (!currentContest) {
+      return res.status(400).json({ message: "No active contest. Submissions are not accepted right now." });
+    }
+
     const memeData = insertMemeSchema.parse(req.body);
 
     // Get user profile information to populate author details

@@ -514,7 +514,9 @@ export default function Home() {
                       <Card className="bg-amber-500/10 border-amber-500/20">
                         <CardContent className="p-4 text-center">
                           <p className="text-amber-600 dark:text-amber-400 text-sm">
-                            {currentContest?.status === "ended" || currentContest?.status === "archived" 
+                            {currentContest?.status === "archiving"
+                              ? "Contest is being archived... Please wait a moment."
+                              : currentContest?.status === "ended" || currentContest?.status === "archived" 
                               ? "Contest has ended. Check back for the next contest!" 
                               : "No active contest at the moment. Check back later!"}
                           </p>

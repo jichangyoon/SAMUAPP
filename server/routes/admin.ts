@@ -126,16 +126,25 @@ router.post("/contests/:id/end", async (req, res) => {
   }
 });
 
-// Get current contest info (active only) - no cache for real-time updates
+// Get current contest info - no cache for real-time updates
 router.get("/current-contest", async (req, res) => {
   try {
-    // No cache for real-time contest status updates
     res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     
-    // Only get active contest, return null if no active contest
     const contest = await storage.getCurrentActiveContest();
-    
-    res.json(contest);
+    if (contest) {
+      return res.json(contest);
+    }
+
+    const allContests = await storage.getContests();
+    const nonArchived = allContests
+      .filter(c => c.status === "archiving" || c.status === "ended")
+      .sort((a, b) => {
+        const aTime = a.endTime || a.createdAt || new Date(0);
+        const bTime = b.endTime || b.createdAt || new Date(0);
+        return new Date(bTime).getTime() - new Date(aTime).getTime();
+      });
+    res.json(nonArchived[0] || null);
   } catch (error) {
     console.error("Error fetching current contest:", error);
     res.status(500).json({ error: "Failed to fetch current contest" });
