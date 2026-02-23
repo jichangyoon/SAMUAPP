@@ -279,6 +279,82 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+router.get("/:id/story", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid goods ID" });
+    }
+    const item = await storage.getGoodsById(id);
+    if (!item) {
+      return res.status(404).json({ error: "Goods not found" });
+    }
+
+    let meme = null;
+    let contest = null;
+    let totalMemes = 0;
+    let totalVotes = 0;
+    let memeVotes = 0;
+    let memeRank = 0;
+    let creatorUser = null;
+
+    if (item.memeId) {
+      meme = await storage.getMemeById(item.memeId);
+      if (meme?.authorWallet) {
+        creatorUser = await storage.getUserByWallet(meme.authorWallet);
+      }
+    }
+
+    const contestId = item.contestId || meme?.contestId;
+    if (contestId) {
+      contest = await storage.getContestById(contestId);
+      const contestMemes = await storage.getMemesByContestId(contestId);
+      totalMemes = contestMemes.length;
+
+      const voteSummary = await storage.getMemeVoteSummary(contestId);
+      totalVotes = voteSummary.reduce((sum, m) => sum + m.totalSamuReceived, 0);
+
+      if (item.memeId) {
+        const memeEntry = voteSummary.find(m => m.memeId === item.memeId);
+        memeVotes = memeEntry?.totalSamuReceived || 0;
+
+        const sorted = [...voteSummary].sort((a, b) => b.totalSamuReceived - a.totalSamuReceived);
+        memeRank = sorted.findIndex(m => m.memeId === item.memeId) + 1;
+      }
+    }
+
+    res.json({
+      goods: item,
+      meme: meme ? {
+        id: meme.id,
+        title: meme.title,
+        imageUrl: meme.imageUrl,
+        authorWallet: meme.authorWallet,
+        creatorName: creatorUser?.displayName || null,
+        creatorAvatar: creatorUser?.avatarUrl || null,
+      } : null,
+      contest: contest ? {
+        id: contest.id,
+        title: contest.title,
+        status: contest.status,
+        startTime: contest.startTime,
+        endTime: contest.endTime,
+      } : null,
+      stats: {
+        totalMemes,
+        totalVotes,
+        memeVotes,
+        memeRank,
+        votePercent: totalVotes > 0 ? (memeVotes / totalVotes) * 100 : 0,
+      },
+      shareRatios: SHARE_RATIOS,
+    });
+  } catch (error: any) {
+    console.error("Error fetching goods story:", error);
+    res.status(500).json({ error: error.message || "Failed to fetch goods story" });
+  }
+});
+
 router.post("/admin/create-simple", requireAdmin, async (req, res) => {
   try {
     const { title, description, imageUrl, contestId, memeId, retailPrice, sizes, category, productType } = req.body;

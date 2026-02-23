@@ -157,7 +157,7 @@ The application uses a modern full-stack architecture comprising a React fronten
 
 **Feature Specifications:**
 - **Meme Contest**: Submission, viewing, and SAMU-based voting for memes.
-- **Goods Shop**: Merchandise (Kiss-Cut Stickers) generated from winning memes via Printful, with SOL payment processing. Payment splits cost→Treasury, profit→Escrow.
+- **Goods Shop**: Merchandise (Kiss-Cut Stickers) generated from winning memes via Printful, with SOL payment processing. Payment splits cost→Treasury, profit→Escrow. Goods detail view shows "Origin Story" (original meme, contest info, vote stats, creator, revenue split).
 - **Archive**: Stores past contest data, winners, and memes with parallel processing for efficient large-scale archiving.
 - **Partners**: Enables isolated contests for other meme coin communities.
 - **Hall of Fame**: Showcases winners from archived contests.

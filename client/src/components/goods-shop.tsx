@@ -13,6 +13,7 @@ import { getSharedConnection } from "@/lib/solana";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { ShoppingCart, ShoppingBag, Sticker, Package, Truck, ChevronRight, Loader2, X, ArrowLeft, ChevronLeft, Wallet } from "lucide-react";
+import GoodsStorySection from "./goods-story-section";
 
 type OrderStep = 'browse' | 'detail' | 'options' | 'shipping' | 'payment' | 'confirm';
 
@@ -556,6 +557,7 @@ export function GoodsShop() {
                     </div>
                     <p className="text-muted-foreground text-sm">{selectedItem.description}</p>
                   </div>
+                  <GoodsStorySection goodsId={selectedItem.id} />
                   {selectedItem.sizes?.length > 0 && (
                     <div>
                       <span className="text-xs text-muted-foreground">Available sizes: </span>
