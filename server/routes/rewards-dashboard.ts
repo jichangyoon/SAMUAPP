@@ -27,7 +27,6 @@ router.get("/dashboard", async (_req, res) => {
 
     const platformTotal = distributions.reduce((sum, d) => sum + d.platformAmount, 0);
 
-    const creatorWallets = Array.from(new Set(distributions.map(d => d.creatorWallet)));
     res.json({
       summary: {
         totalSalesSol,
@@ -35,7 +34,7 @@ router.get("/dashboard", async (_req, res) => {
         totalDistributed,
       },
       shareBreakdown: {
-        creator: { percent: SHARE_RATIOS.creator * 100, totalSol: creatorTotal, wallets: creatorWallets },
+        creator: { percent: SHARE_RATIOS.creator * 100, totalSol: creatorTotal },
         voter: { percent: SHARE_RATIOS.voter * 100, totalSol: voterTotal },
         platform: { percent: SHARE_RATIOS.platform * 100, totalSol: platformTotal, wallet: TREASURY_WALLET },
       },
@@ -133,6 +132,14 @@ router.get("/map", async (req, res) => {
     const goodsMap = new Map<number, any>();
     allGoods.forEach(g => goodsMap.set(g.id, g));
 
+    let creatorDistByOrder = new Map<number, number>();
+    if (walletAddress) {
+      const creatorDists = await storage.getCreatorRewardDistributionsByWallet(walletAddress);
+      for (const cd of creatorDists) {
+        creatorDistByOrder.set(cd.orderId, (creatorDistByOrder.get(cd.orderId) || 0) + cd.solAmount);
+      }
+    }
+
     let userVotedContests = new Set<number>();
     let userVoteShareByContest = new Map<number, number>();
     if (walletAddress) {
@@ -182,7 +189,8 @@ router.get("/map", async (req, res) => {
         let myEstimatedRevenue: number | null = null;
 
         if (walletAddress && dist) {
-          const isCreator = dist.creatorWallet === walletAddress;
+          const myCreatorEarning = creatorDistByOrder.get(o.id) || 0;
+          const isCreator = myCreatorEarning > 0;
           const contestId = dist.contestId || good?.contestId;
           const isVoter = contestId != null && userVotedContests.has(contestId);
 
@@ -192,12 +200,12 @@ router.get("/map", async (req, res) => {
 
             if (isCreator && isVoter) {
               revenueRole = "creator_voter";
-              estimated += dist.creatorAmount;
+              estimated += myCreatorEarning;
               const voteShare = contestId != null ? (userVoteShareByContest.get(contestId) || 0) : 0;
               estimated += dist.voterPoolAmount * voteShare;
             } else if (isCreator) {
               revenueRole = "creator";
-              estimated = dist.creatorAmount;
+              estimated = myCreatorEarning;
             } else {
               revenueRole = "voter";
               const voteShare = contestId != null ? (userVoteShareByContest.get(contestId) || 0) : 0;

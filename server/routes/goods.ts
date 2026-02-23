@@ -54,14 +54,11 @@ async function distributeEscrowProfit(escrowDeposit: any) {
     });
   }
 
-  const primaryCreator = creatorShares[0] || { wallet: TREASURY_WALLET, amount: creatorPool };
-
   const dist = await storage.createGoodsRevenueDistribution({
     orderId: escrowDeposit.orderId,
     contestId,
     totalSolAmount: profitSol,
     creatorAmount: creatorPool,
-    creatorWallet: primaryCreator.wallet,
     voterPoolAmount,
     platformAmount,
     status: "distributed_from_escrow",

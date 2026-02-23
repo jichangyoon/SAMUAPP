@@ -8,7 +8,6 @@ interface Distribution {
   orderId: number;
   contestId: number;
   totalSolAmount: number;
-  creatorWallet: string;
   creatorAmount: number;
   platformAmount: number;
   voterPoolAmount: number;
@@ -23,7 +22,7 @@ interface DashboardData {
     totalDistributed: number;
   };
   shareBreakdown: {
-    creator: { percent: number; totalSol: number; wallets: string[] };
+    creator: { percent: number; totalSol: number };
     voter: { percent: number; totalSol: number };
     platform: { percent: number; totalSol: number; wallet: string };
   };
@@ -164,11 +163,7 @@ export function RewardsDashboard() {
               <span className="text-muted-foreground">Creator (45%)</span>
               <div className="text-right">
                 <span className="font-medium">{shareBreakdown.creator.totalSol.toFixed(6)} SOL</span>
-                {shareBreakdown.creator.wallets.length > 0 && (
-                  <div className="text-xs text-muted-foreground">
-                    {shareBreakdown.creator.wallets.map(w => shortenWallet(w)).join(', ')}
-                  </div>
-                )}
+                <div className="text-xs text-muted-foreground">All Creators</div>
               </div>
             </div>
             <div className="flex justify-between items-center text-sm p-2 rounded bg-accent/50">
@@ -229,8 +224,6 @@ export function RewardsDashboard() {
                     </div>
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    Creator: {shortenWallet(dist.creatorWallet)}
-                    {' · '}
                     {new Date(dist.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
