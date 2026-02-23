@@ -176,8 +176,7 @@ The standout feature: a world map that turns boring shipping logistics into a co
 ## Solana Integration
 
 - **SAMU Token**: `EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF`
-- **Treasury Wallet**: `4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk`
-- **Escrow Wallet**: `ojzHLw6QxUqprnEjk4gfQM3QXS1RKHWjTLXzZS543cg`
+- **Treasury & Escrow Wallets**: Configured via environment variables (not exposed in repo)
 - **Blinks Endpoint**: `GET/POST /api/actions/vote/:memeId`
 
 ## Smart Contract (Phase 2)
