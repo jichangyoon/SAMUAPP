@@ -137,12 +137,10 @@ router.get("/map", async (req, res) => {
     allEscrow.forEach(e => escrowByOrderId.set(e.orderId, e));
 
     let creatorDistByOrder = new Map<number, number>();
-    let creatorShareByOrder = new Map<number, number>();
     if (walletAddress) {
       const creatorDists = await storage.getCreatorRewardDistributionsByWallet(walletAddress);
       for (const cd of creatorDists) {
         creatorDistByOrder.set(cd.orderId, (creatorDistByOrder.get(cd.orderId) || 0) + cd.solAmount);
-        creatorShareByOrder.set(cd.orderId, (creatorShareByOrder.get(cd.orderId) || 0) + cd.voteSharePercent);
       }
     }
 
@@ -194,11 +192,8 @@ router.get("/map", async (req, res) => {
         let revenueRole: string | null = null;
         let myEstimatedRevenue: number | null = null;
 
-        let myRevenueBreakdown: any = null;
-
         if (walletAddress && dist) {
           const myCreatorEarning = creatorDistByOrder.get(o.id) || 0;
-          const myCreatorShare = creatorShareByOrder.get(o.id) || 0;
           const isCreator = myCreatorEarning > 0;
           const contestId = dist.contestId || good?.contestId;
           const isVoter = contestId != null && userVotedContests.has(contestId);
@@ -206,30 +201,14 @@ router.get("/map", async (req, res) => {
           if (isCreator || isVoter) {
             hasRevenue = true;
             let estimated = 0;
-            myRevenueBreakdown = {};
 
             if (isCreator) {
-              myRevenueBreakdown.creator = {
-                poolAmount: dist.creatorAmount,
-                mySharePercent: myCreatorShare,
-                myAmount: myCreatorEarning,
-              };
               estimated += myCreatorEarning;
             }
 
             if (isVoter && contestId != null) {
               const voteShare = userVoteShareByContest.get(contestId) || 0;
-              const mySamu = userSamuByContest.get(contestId) || 0;
-              const totalSamu = totalSamuByContest.get(contestId) || 0;
-              const voterEarning = dist.voterPoolAmount * voteShare;
-              myRevenueBreakdown.voter = {
-                poolAmount: dist.voterPoolAmount,
-                mySamu,
-                totalSamu,
-                mySharePercent: voteShare * 100,
-                myAmount: voterEarning,
-              };
-              estimated += voterEarning;
+              estimated += dist.voterPoolAmount * voteShare;
             }
 
             if (isCreator && isVoter) {
@@ -249,6 +228,8 @@ router.get("/map", async (req, res) => {
           if (!revenueRole) revenueRole = "buyer";
         }
 
+        const orderContestId = dist?.contestId || good?.contestId || null;
+
         return {
           id: o.id,
           city: o.shippingCity,
@@ -264,10 +245,10 @@ router.get("/map", async (req, res) => {
           goodsImage: good?.imageUrl,
           productType: good?.productType,
           createdAt: o.createdAt,
+          contestId: orderContestId,
           hasRevenue,
           revenueRole,
           myEstimatedRevenue,
-          myRevenueBreakdown,
           distribution: dist ? {
             creatorAmount: dist.creatorAmount,
             voterPoolAmount: dist.voterPoolAmount,

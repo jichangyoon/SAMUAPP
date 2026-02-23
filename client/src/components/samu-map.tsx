@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { X, Package, MapPin, ExternalLink, TrendingUp, Clock, DollarSign, Truck, ChevronUp, ChevronDown } from "lucide-react";
 import { getCoordinates, getCountryName } from "@/data/country-coordinates";
+import { RewardInfoChart } from "@/components/reward-info-chart";
 import samuLogoImg from "@/assets/samu-logo.webp";
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
@@ -59,6 +60,7 @@ interface MapOrder {
   goodsImage: string | null;
   productType: string | null;
   createdAt: string;
+  contestId: number | null;
   hasRevenue: boolean;
   revenueRole: string | null;
   myEstimatedRevenue: number | null;
@@ -71,20 +73,6 @@ interface MapOrder {
     totalSolPaid: number;
     costSol: number;
     profitSol: number;
-  } | null;
-  myRevenueBreakdown: {
-    creator?: {
-      poolAmount: number;
-      mySharePercent: number;
-      myAmount: number;
-    };
-    voter?: {
-      poolAmount: number;
-      mySamu: number;
-      totalSamu: number;
-      mySharePercent: number;
-      myAmount: number;
-    };
   } | null;
 }
 
@@ -643,7 +631,7 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                 </div>
 
                 {selectedOrder.hasRevenue && selectedOrder.myEstimatedRevenue != null && selectedOrder.myEstimatedRevenue > 0 && (
-                  <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 space-y-3">
+                  <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <DollarSign className="h-4 w-4 text-green-400" />
@@ -655,51 +643,18 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                         +{selectedOrder.myEstimatedRevenue.toFixed(4)} SOL
                       </span>
                     </div>
-
-                    {selectedOrder.myRevenueBreakdown && (
-                      <div className="space-y-2">
-                        {selectedOrder.myRevenueBreakdown.creator && (
-                          <div className="bg-black/20 rounded-md p-2.5 space-y-1">
-                            <div className="text-[10px] text-yellow-400 font-semibold uppercase tracking-wider">Creator Revenue</div>
-                            <div className="text-[11px] text-green-400/70 leading-relaxed">
-                              Creator Pool {selectedOrder.myRevenueBreakdown.creator.poolAmount.toFixed(4)} SOL
-                              {" × "}My share {selectedOrder.myRevenueBreakdown.creator.mySharePercent.toFixed(1)}%
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <span className="text-green-400/70">=</span>
-                              <span className="font-semibold text-yellow-400">
-                                +{selectedOrder.myRevenueBreakdown.creator.myAmount.toFixed(4)} SOL
-                              </span>
-                            </div>
-                          </div>
-                        )}
-
-                        {selectedOrder.myRevenueBreakdown.voter && (
-                          <div className="bg-black/20 rounded-md p-2.5 space-y-1">
-                            <div className="text-[10px] text-orange-400 font-semibold uppercase tracking-wider">Voter Revenue</div>
-                            <div className="text-[11px] text-green-400/70 leading-relaxed">
-                              I voted {selectedOrder.myRevenueBreakdown.voter.mySamu.toLocaleString()} SAMU
-                              {" / "}Total {selectedOrder.myRevenueBreakdown.voter.totalSamu.toLocaleString()} SAMU
-                              {" = "}{selectedOrder.myRevenueBreakdown.voter.mySharePercent.toFixed(1)}%
-                            </div>
-                            <div className="text-[11px] text-green-400/70 leading-relaxed">
-                              Voter Pool {selectedOrder.myRevenueBreakdown.voter.poolAmount.toFixed(4)} SOL
-                              {" × "}{selectedOrder.myRevenueBreakdown.voter.mySharePercent.toFixed(1)}%
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <span className="text-green-400/70">=</span>
-                              <span className="font-semibold text-orange-400">
-                                +{selectedOrder.myRevenueBreakdown.voter.myAmount.toFixed(4)} SOL
-                              </span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </div>
                 )}
 
-                {selectedOrder.hasRevenue && !selectedOrder.myEstimatedRevenue && (
+                {selectedOrder.contestId && (
+                  <RewardInfoChart
+                    contestId={selectedOrder.contestId}
+                    compact={true}
+                    walletAddress={walletAddress}
+                  />
+                )}
+
+                {selectedOrder.hasRevenue && !selectedOrder.myEstimatedRevenue && !selectedOrder.contestId && (
                   <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
                     <div className="flex items-center gap-2">
                       <DollarSign className="h-4 w-4 text-green-400" />
