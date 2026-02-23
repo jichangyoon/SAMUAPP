@@ -56,7 +56,7 @@ async function distributeEscrowProfit(escrowDeposit: any) {
 
   const primaryCreator = creatorShares[0] || { wallet: TREASURY_WALLET, amount: creatorPool };
 
-  await storage.createGoodsRevenueDistribution({
+  const dist = await storage.createGoodsRevenueDistribution({
     orderId: escrowDeposit.orderId,
     contestId,
     totalSolAmount: profitSol,
@@ -66,6 +66,18 @@ async function distributeEscrowProfit(escrowDeposit: any) {
     platformAmount,
     status: "distributed_from_escrow",
   });
+
+  await storage.createCreatorRewardDistributions(
+    creatorShares.map(cs => ({
+      distributionId: dist.id,
+      contestId,
+      orderId: escrowDeposit.orderId,
+      creatorWallet: cs.wallet,
+      memeId: cs.memeId,
+      solAmount: cs.amount,
+      voteSharePercent: cs.votePercent,
+    }))
+  );
 
   await storage.updateVoterRewardPool(contestId, voterPoolAmount);
 
@@ -1074,12 +1086,15 @@ router.get("/escrow/contest/:contestId", async (req, res) => {
     const totalLocked = deposits.filter(d => d.status === "locked").reduce((sum, d) => sum + d.profitSol, 0);
     const totalDistributed = deposits.filter(d => d.status === "distributed").reduce((sum, d) => sum + d.profitSol, 0);
 
+    const creatorDistributions = await storage.getCreatorRewardDistributionsByContestId(contestId);
+
     res.json({
       contestId,
       deposits,
       totalLocked,
       totalDistributed,
       creatorBreakdown,
+      creatorDistributions,
       shareRatios: SHARE_RATIOS,
     });
   } catch (error: any) {

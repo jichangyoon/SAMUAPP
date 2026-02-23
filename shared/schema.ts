@@ -216,6 +216,18 @@ export const voterClaimRecords = pgTable("voter_claim_records", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const creatorRewardDistributions = pgTable("creator_reward_distributions", {
+  id: serial("id").primaryKey(),
+  distributionId: integer("distribution_id").notNull(),
+  contestId: integer("contest_id").notNull(),
+  orderId: integer("order_id").notNull(),
+  creatorWallet: text("creator_wallet").notNull(),
+  memeId: integer("meme_id").notNull(),
+  solAmount: doublePrecision("sol_amount").notNull(),
+  voteSharePercent: doublePrecision("vote_share_percent").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const escrowDeposits = pgTable("escrow_deposits", {
   id: serial("id").primaryKey(),
   orderId: integer("order_id").notNull(),
@@ -257,6 +269,11 @@ export const insertVoterClaimRecordSchema = createInsertSchema(voterClaimRecords
   updatedAt: true,
 });
 
+export const insertCreatorRewardDistributionSchema = createInsertSchema(creatorRewardDistributions).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertEscrowDepositSchema = createInsertSchema(escrowDeposits).omit({
   id: true,
   createdAt: true,
@@ -273,6 +290,8 @@ export type VoterRewardPool = typeof voterRewardPool.$inferSelect;
 export type InsertVoterRewardPool = z.infer<typeof insertVoterRewardPoolSchema>;
 export type VoterClaimRecord = typeof voterClaimRecords.$inferSelect;
 export type InsertVoterClaimRecord = z.infer<typeof insertVoterClaimRecordSchema>;
+export type CreatorRewardDistribution = typeof creatorRewardDistributions.$inferSelect;
+export type InsertCreatorRewardDistribution = z.infer<typeof insertCreatorRewardDistributionSchema>;
 export type EscrowDeposit = typeof escrowDeposits.$inferSelect;
 export type InsertEscrowDeposit = z.infer<typeof insertEscrowDepositSchema>;
 

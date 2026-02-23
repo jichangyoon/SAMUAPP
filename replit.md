@@ -39,7 +39,9 @@ This is a web app — not a mobile app. No mobile app packaging or mobile-first 
   - **Profit** (sale price - production cost) → Escrow wallet (locked until distribution)
 - Escrow wallet: ojzHLw6QxUqprnEjk4gfQM3QXS1RKHWjTLXzZS543cg
 - Each escrow deposit is tracked per-order in DB with `contestId`, so distribution uses the correct contest's voting ratios
-- `distributeEscrowProfit` splits profit: Creator 45% (computed vote-proportionally for all creators, but DB records primary creator wallet only), Voters 40% (to per-contest voter reward pool), Platform 15%
+- `distributeEscrowProfit` splits profit: Creator 45% (computed vote-proportionally for all creators), Voters 40% (to per-contest voter reward pool), Platform 15%
+- `creatorRewardDistributions` table stores per-creator breakdown: each creator's wallet, memeId, SOL amount, and vote share percentage
+- `goodsRevenueDistributions` still stores primary creator wallet for backward compatibility
 - Escrow status flow: `locked` → `distributed` (or `refunded` for failures)
 - Admin API: `/api/goods/admin/distribute-escrow/:orderId` triggers manual distribution
 - Admin API: `/api/goods/admin/escrow-deposits` lists all escrow deposits

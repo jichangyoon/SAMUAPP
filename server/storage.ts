@@ -1,4 +1,4 @@
-import { memes, votes, partnerMemes, partnerVotes, users, contests, archivedContests, loginLogs, blockedIps, revenues, revenueShares, goods, orders, goodsRevenueDistributions, voterRewardPool, voterClaimRecords, escrowDeposits, type Meme, type InsertMeme, type Vote, type InsertVote, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest, type LoginLog, type InsertLoginLog, type BlockedIp, type InsertBlockedIp, type Revenue, type InsertRevenue, type RevenueShare, type InsertRevenueShare, type Goods, type InsertGoods, type Order, type InsertOrder, type GoodsRevenueDistribution, type InsertGoodsRevenueDistribution, type VoterRewardPool, type InsertVoterRewardPool, type VoterClaimRecord, type InsertVoterClaimRecord, type EscrowDeposit, type InsertEscrowDeposit } from "@shared/schema";
+import { memes, votes, partnerMemes, partnerVotes, users, contests, archivedContests, loginLogs, blockedIps, revenues, revenueShares, goods, orders, goodsRevenueDistributions, voterRewardPool, voterClaimRecords, escrowDeposits, creatorRewardDistributions, type Meme, type InsertMeme, type Vote, type InsertVote, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest, type LoginLog, type InsertLoginLog, type BlockedIp, type InsertBlockedIp, type Revenue, type InsertRevenue, type RevenueShare, type InsertRevenueShare, type Goods, type InsertGoods, type Order, type InsertOrder, type GoodsRevenueDistribution, type InsertGoodsRevenueDistribution, type VoterRewardPool, type InsertVoterRewardPool, type VoterClaimRecord, type InsertVoterClaimRecord, type EscrowDeposit, type InsertEscrowDeposit, type CreatorRewardDistribution, type InsertCreatorRewardDistribution } from "@shared/schema";
 import { getDatabase } from "./db";
 import { eq, and, desc, isNull, or, sql, inArray } from "drizzle-orm";
 
@@ -99,6 +99,10 @@ export interface IStorage {
   claimVoterReward(contestId: number, voterWallet: string): Promise<{ claimedAmount: number }>;
   getVoterClaimsByWallet(walletAddress: string): Promise<VoterClaimRecord[]>;
 
+  createCreatorRewardDistributions(data: InsertCreatorRewardDistribution[]): Promise<CreatorRewardDistribution[]>;
+  getCreatorRewardDistributionsByDistributionId(distributionId: number): Promise<CreatorRewardDistribution[]>;
+  getCreatorRewardDistributionsByContestId(contestId: number): Promise<CreatorRewardDistribution[]>;
+  getCreatorRewardDistributionsByWallet(walletAddress: string): Promise<CreatorRewardDistribution[]>;
   createEscrowDeposit(data: InsertEscrowDeposit): Promise<EscrowDeposit>;
   getEscrowDepositsByContestId(contestId: number): Promise<EscrowDeposit[]>;
   getEscrowDepositByOrderId(orderId: number): Promise<EscrowDeposit | undefined>;
@@ -423,6 +427,10 @@ export class MemStorage implements IStorage {
   async getClaimableAmount(_contestId: number, _voterWallet: string): Promise<{ claimable: number; totalClaimed: number; sharePercent: number }> { return { claimable: 0, totalClaimed: 0, sharePercent: 0 }; }
   async claimVoterReward(_contestId: number, _voterWallet: string): Promise<{ claimedAmount: number }> { throw new Error("Not implemented"); }
   async getVoterClaimsByWallet(_walletAddress: string): Promise<VoterClaimRecord[]> { return []; }
+  async createCreatorRewardDistributions(_data: InsertCreatorRewardDistribution[]): Promise<CreatorRewardDistribution[]> { return []; }
+  async getCreatorRewardDistributionsByDistributionId(_distributionId: number): Promise<CreatorRewardDistribution[]> { return []; }
+  async getCreatorRewardDistributionsByContestId(_contestId: number): Promise<CreatorRewardDistribution[]> { return []; }
+  async getCreatorRewardDistributionsByWallet(_walletAddress: string): Promise<CreatorRewardDistribution[]> { return []; }
   async createEscrowDeposit(_data: InsertEscrowDeposit): Promise<EscrowDeposit> { throw new Error("Not implemented"); }
   async getEscrowDepositsByContestId(_contestId: number): Promise<EscrowDeposit[]> { return []; }
   async getEscrowDepositByOrderId(_orderId: number): Promise<EscrowDeposit | undefined> { return undefined; }
@@ -1709,6 +1717,32 @@ export class DatabaseStorage implements IStorage {
     if (!this.db) throw new Error("Database not available");
     return this.db.select().from(voterClaimRecords)
       .where(eq(voterClaimRecords.voterWallet, walletAddress));
+  }
+
+  async createCreatorRewardDistributions(data: InsertCreatorRewardDistribution[]): Promise<CreatorRewardDistribution[]> {
+    if (!this.db) throw new Error("Database not available");
+    if (data.length === 0) return [];
+    const results = await this.db.insert(creatorRewardDistributions).values(data).returning();
+    return results;
+  }
+
+  async getCreatorRewardDistributionsByDistributionId(distributionId: number): Promise<CreatorRewardDistribution[]> {
+    if (!this.db) throw new Error("Database not available");
+    return this.db.select().from(creatorRewardDistributions)
+      .where(eq(creatorRewardDistributions.distributionId, distributionId));
+  }
+
+  async getCreatorRewardDistributionsByContestId(contestId: number): Promise<CreatorRewardDistribution[]> {
+    if (!this.db) throw new Error("Database not available");
+    return this.db.select().from(creatorRewardDistributions)
+      .where(eq(creatorRewardDistributions.contestId, contestId));
+  }
+
+  async getCreatorRewardDistributionsByWallet(walletAddress: string): Promise<CreatorRewardDistribution[]> {
+    if (!this.db) throw new Error("Database not available");
+    return this.db.select().from(creatorRewardDistributions)
+      .where(eq(creatorRewardDistributions.creatorWallet, walletAddress))
+      .orderBy(desc(creatorRewardDistributions.createdAt));
   }
 
   async createEscrowDeposit(data: InsertEscrowDeposit): Promise<EscrowDeposit> {
