@@ -132,6 +132,10 @@ router.get("/map", async (req, res) => {
     const goodsMap = new Map<number, any>();
     allGoods.forEach(g => goodsMap.set(g.id, g));
 
+    const allEscrow = await storage.getAllEscrowDeposits();
+    const escrowByOrderId = new Map<number, any>();
+    allEscrow.forEach(e => escrowByOrderId.set(e.orderId, e));
+
     let creatorDistByOrder = new Map<number, number>();
     if (walletAddress) {
       const creatorDists = await storage.getCreatorRewardDistributionsByWallet(walletAddress);
@@ -183,6 +187,7 @@ router.get("/map", async (req, res) => {
       .map(o => {
         const dist = distributionByOrderId.get(o.id);
         const good = goodsMap.get(o.goodsId);
+        const escrow = escrowByOrderId.get(o.id);
 
         let hasRevenue = false;
         let revenueRole: string | null = null;
@@ -243,6 +248,11 @@ router.get("/map", async (req, res) => {
             creatorAmount: dist.creatorAmount,
             voterPoolAmount: dist.voterPoolAmount,
             platformAmount: dist.platformAmount,
+          } : null,
+          escrow: escrow ? {
+            totalSolPaid: escrow.totalSolPaid,
+            costSol: escrow.costSol,
+            profitSol: escrow.profitSol,
           } : null,
         };
       });

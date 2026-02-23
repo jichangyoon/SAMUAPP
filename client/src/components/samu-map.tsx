@@ -67,6 +67,11 @@ interface MapOrder {
     voterPoolAmount: number;
     platformAmount: number;
   } | null;
+  escrow: {
+    totalSolPaid: number;
+    costSol: number;
+    profitSol: number;
+  } | null;
 }
 
 interface MapData {
@@ -370,19 +375,25 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
             {!sheetExpanded ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-yellow-400/20 flex items-center justify-center overflow-hidden flex-shrink-0">
-                    <img src={samuLogoImg} alt="SAMU" className="w-7 h-7 object-contain" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {getSamuMessage(selectedOrder.status, selectedOrder.city, selectedOrder.country)}
-                    </p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-lg">{getStatusEmoji(selectedOrder.status)}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {selectedOrder.city}, {getCountryName(selectedOrder.country)}
-                      </span>
+                  {selectedOrder.goodsImage ? (
+                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-accent flex-shrink-0">
+                      <img src={selectedOrder.goodsImage} alt={selectedOrder.goodsTitle} className="w-full h-full object-cover" />
                     </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-yellow-400/20 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      <img src={samuLogoImg} alt="SAMU" className="w-8 h-8 object-contain" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground truncate">
+                      {selectedOrder.goodsTitle}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">
+                      {getStatusEmoji(selectedOrder.status)} {getSamuMessage(selectedOrder.status, selectedOrder.city, selectedOrder.country)}
+                    </p>
+                    {selectedOrder.productType && (
+                      <Badge variant="outline" className="text-[9px] mt-1 px-1.5 py-0">{selectedOrder.productType}</Badge>
+                    )}
                   </div>
                 </div>
 
@@ -395,7 +406,10 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                   </Badge>
 
                   {selectedOrder.hasRevenue && selectedOrder.myEstimatedRevenue != null && selectedOrder.myEstimatedRevenue > 0 && (
-                    <Badge className="bg-green-500/10 text-green-400 border-green-500/20 text-[10px]">
+                    <Badge
+                      className="bg-green-500/10 text-green-400 border-green-500/20 text-[10px] cursor-pointer hover:bg-green-500/20 transition-colors"
+                      onClick={() => setSheetExpanded(true)}
+                    >
                       <DollarSign className="h-2.5 w-2.5 mr-0.5" />
                       +{selectedOrder.myEstimatedRevenue.toFixed(4)} SOL
                     </Badge>
@@ -423,15 +437,25 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                     onClick={() => setSheetExpanded(false)}
                     className="text-muted-foreground hover:text-foreground"
                   >
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronUp className="h-4 w-4" />
                   </button>
                 </div>
 
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-accent/50">
-                  <div className="text-2xl">{getStatusEmoji(selectedOrder.status)}</div>
-                  <div>
-                    <div className="text-sm font-medium">{getStatusLabel(selectedOrder.status)}</div>
-                    <div className="text-xs text-muted-foreground">
+                  {selectedOrder.goodsImage ? (
+                    <div className="w-14 h-14 rounded-lg overflow-hidden bg-accent flex-shrink-0">
+                      <img src={selectedOrder.goodsImage} alt={selectedOrder.goodsTitle} className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="text-2xl flex-shrink-0">{getStatusEmoji(selectedOrder.status)}</div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold truncate">{selectedOrder.goodsTitle}</div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-lg">{getStatusEmoji(selectedOrder.status)}</span>
+                      <span className="text-xs text-muted-foreground">{getStatusLabel(selectedOrder.status)}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
                       {getSamuMessage(selectedOrder.status, selectedOrder.city, selectedOrder.country)}
                     </div>
                   </div>
@@ -445,15 +469,11 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                       <span className="truncate">{selectedOrder.city}, {getCountryName(selectedOrder.country)}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Package className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                      <span className="truncate">{selectedOrder.goodsTitle}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
                       <Clock className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                       <span>{new Date(selectedOrder.createdAt).toLocaleDateString()}</span>
                     </div>
                     {selectedOrder.trackingNumber && (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 col-span-2">
                         <Truck className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                         {selectedOrder.trackingUrl ? (
                           <a
@@ -462,7 +482,7 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                             rel="noopener noreferrer"
                             className="text-primary hover:text-primary/80 flex items-center gap-1"
                           >
-                            Track <ExternalLink className="h-3 w-3" />
+                            Track Package <ExternalLink className="h-3 w-3" />
                           </a>
                         ) : (
                           <span className="truncate">{selectedOrder.trackingNumber}</span>
@@ -473,48 +493,110 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Payment</h4>
-                  <div className="p-3 rounded-lg bg-accent/50 space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Item Price</span>
-                      <span className="font-medium">${selectedOrder.totalPrice.toFixed(2)}</span>
-                    </div>
-                    {selectedOrder.solAmount && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">SOL Paid</span>
-                        <span className="font-medium text-primary">{selectedOrder.solAmount.toFixed(4)} SOL</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                    <TrendingUp className="h-3 w-3" /> How Revenue is Calculated
+                  </h4>
 
-                {selectedOrder.distribution && (
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                      <TrendingUp className="h-3 w-3" /> Revenue Distribution
-                    </h4>
-                    <div className="p-3 rounded-lg bg-accent/50 space-y-1">
+                  {selectedOrder.escrow ? (
+                    <div className="p-3 rounded-lg bg-accent/50 space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Creator (45%)</span>
+                        <span className="text-muted-foreground">Total Paid</span>
+                        <span className="font-medium text-primary">{selectedOrder.escrow.totalSolPaid.toFixed(4)} SOL</span>
+                      </div>
+                      <div className="w-full h-px bg-border/50" />
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Production Cost</span>
+                        <span className="font-medium text-red-400">-{selectedOrder.escrow.costSol.toFixed(4)} SOL</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground font-semibold">Profit (to Escrow)</span>
+                        <span className="font-bold text-green-400">{selectedOrder.escrow.profitSol.toFixed(4)} SOL</span>
+                      </div>
+
+                      {selectedOrder.distribution && (
+                        <>
+                          <div className="w-full h-px bg-border/50 my-1" />
+                          <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Profit Distribution</div>
+                          <div className="flex gap-1 h-2 rounded-full overflow-hidden mb-1.5">
+                            <div className="bg-yellow-400" style={{ width: "45%" }} />
+                            <div className="bg-orange-400" style={{ width: "40%" }} />
+                            <div className="bg-gray-500" style={{ width: "15%" }} />
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground flex items-center gap-1">
+                              <span className="inline-block w-2 h-2 rounded-full bg-yellow-400" />Creators 45%
+                            </span>
+                            <span className="font-medium text-yellow-400">
+                              {selectedOrder.distribution.creatorAmount.toFixed(4)} SOL
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground flex items-center gap-1">
+                              <span className="inline-block w-2 h-2 rounded-full bg-orange-400" />Voters 40%
+                            </span>
+                            <span className="font-medium text-orange-400">
+                              {selectedOrder.distribution.voterPoolAmount.toFixed(4)} SOL
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground flex items-center gap-1">
+                              <span className="inline-block w-2 h-2 rounded-full bg-gray-500" />Platform 15%
+                            </span>
+                            <span className="font-medium text-gray-400">
+                              {selectedOrder.distribution.platformAmount.toFixed(4)} SOL
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ) : selectedOrder.distribution ? (
+                    <div className="p-3 rounded-lg bg-accent/50 space-y-1">
+                      <div className="flex gap-1 h-2 rounded-full overflow-hidden mb-2">
+                        <div className="bg-yellow-400" style={{ width: "45%" }} />
+                        <div className="bg-orange-400" style={{ width: "40%" }} />
+                        <div className="bg-gray-500" style={{ width: "15%" }} />
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground flex items-center gap-1">
+                          <span className="inline-block w-2 h-2 rounded-full bg-yellow-400" />Creators 45%
+                        </span>
                         <span className="font-medium text-yellow-400">
                           {selectedOrder.distribution.creatorAmount.toFixed(4)} SOL
                         </span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Voters (40%)</span>
+                        <span className="text-muted-foreground flex items-center gap-1">
+                          <span className="inline-block w-2 h-2 rounded-full bg-orange-400" />Voters 40%
+                        </span>
                         <span className="font-medium text-orange-400">
                           {selectedOrder.distribution.voterPoolAmount.toFixed(4)} SOL
                         </span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Platform (15%)</span>
+                        <span className="text-muted-foreground flex items-center gap-1">
+                          <span className="inline-block w-2 h-2 rounded-full bg-gray-500" />Platform 15%
+                        </span>
                         <span className="font-medium text-gray-400">
                           {selectedOrder.distribution.platformAmount.toFixed(4)} SOL
                         </span>
                       </div>
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="p-3 rounded-lg bg-accent/50">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Item Price</span>
+                        <span className="font-medium">${selectedOrder.totalPrice.toFixed(2)}</span>
+                      </div>
+                      {selectedOrder.solAmount && (
+                        <div className="flex justify-between text-sm mt-1">
+                          <span className="text-muted-foreground">SOL Paid</span>
+                          <span className="font-medium text-primary">{selectedOrder.solAmount.toFixed(4)} SOL</span>
+                        </div>
+                      )}
+                      <p className="text-[10px] text-muted-foreground mt-2">Revenue details will appear after escrow processing.</p>
+                    </div>
+                  )}
+                </div>
 
                 {selectedOrder.hasRevenue && selectedOrder.myEstimatedRevenue != null && selectedOrder.myEstimatedRevenue > 0 && (
                   <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 space-y-2">
@@ -530,6 +612,12 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                         +{selectedOrder.myEstimatedRevenue.toFixed(4)} SOL
                       </span>
                     </div>
+                    <p className="text-[10px] text-green-400/50 leading-relaxed">
+                      {selectedOrder.revenueRole === "creator" && "Your meme became merchandise! You earn 45% of profits, split by vote share."}
+                      {selectedOrder.revenueRole === "voter" && "You voted with SAMU in this contest! Voters share 40% of profits proportionally."}
+                      {selectedOrder.revenueRole === "creator_voter" && "You created a winning meme AND voted! You earn from both creator (45%) and voter (40%) pools."}
+                      {selectedOrder.revenueRole === "buyer" && "Your purchase generates revenue for creators and voters in the ecosystem."}
+                    </p>
                   </div>
                 )}
 

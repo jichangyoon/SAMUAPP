@@ -104,6 +104,7 @@ export interface IStorage {
   getCreatorRewardDistributionsByContestId(contestId: number): Promise<CreatorRewardDistribution[]>;
   getCreatorRewardDistributionsByWallet(walletAddress: string): Promise<CreatorRewardDistribution[]>;
   createEscrowDeposit(data: InsertEscrowDeposit): Promise<EscrowDeposit>;
+  getAllEscrowDeposits(): Promise<EscrowDeposit[]>;
   getEscrowDepositsByContestId(contestId: number): Promise<EscrowDeposit[]>;
   getEscrowDepositByOrderId(orderId: number): Promise<EscrowDeposit | undefined>;
   updateEscrowStatus(id: number, status: string, distributedAt?: Date): Promise<EscrowDeposit>;
@@ -432,6 +433,7 @@ export class MemStorage implements IStorage {
   async getCreatorRewardDistributionsByContestId(_contestId: number): Promise<CreatorRewardDistribution[]> { return []; }
   async getCreatorRewardDistributionsByWallet(_walletAddress: string): Promise<CreatorRewardDistribution[]> { return []; }
   async createEscrowDeposit(_data: InsertEscrowDeposit): Promise<EscrowDeposit> { throw new Error("Not implemented"); }
+  async getAllEscrowDeposits(): Promise<EscrowDeposit[]> { return []; }
   async getEscrowDepositsByContestId(_contestId: number): Promise<EscrowDeposit[]> { return []; }
   async getEscrowDepositByOrderId(_orderId: number): Promise<EscrowDeposit | undefined> { return undefined; }
   async updateEscrowStatus(_id: number, _status: string, _distributedAt?: Date): Promise<EscrowDeposit> { throw new Error("Not implemented"); }
@@ -1749,6 +1751,11 @@ export class DatabaseStorage implements IStorage {
     if (!this.db) throw new Error("Database not available");
     const [deposit] = await this.db.insert(escrowDeposits).values(data).returning();
     return deposit;
+  }
+
+  async getAllEscrowDeposits(): Promise<EscrowDeposit[]> {
+    if (!this.db) throw new Error("Database not available");
+    return this.db.select().from(escrowDeposits);
   }
 
   async getEscrowDepositsByContestId(contestId: number): Promise<EscrowDeposit[]> {
