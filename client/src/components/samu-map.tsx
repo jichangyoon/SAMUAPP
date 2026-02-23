@@ -550,37 +550,67 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                       )}
                     </div>
                   ) : selectedOrder.distribution ? (
-                    <div className="p-3 rounded-lg bg-accent/50 space-y-1">
-                      <div className="flex gap-1 h-2 rounded-full overflow-hidden mb-2">
-                        <div className="bg-yellow-400" style={{ width: "45%" }} />
-                        <div className="bg-orange-400" style={{ width: "40%" }} />
-                        <div className="bg-gray-500" style={{ width: "15%" }} />
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground flex items-center gap-1">
-                          <span className="inline-block w-2 h-2 rounded-full bg-yellow-400" />Creators 45%
-                        </span>
-                        <span className="font-medium text-yellow-400">
-                          {selectedOrder.distribution.creatorAmount.toFixed(4)} SOL
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground flex items-center gap-1">
-                          <span className="inline-block w-2 h-2 rounded-full bg-orange-400" />Voters 40%
-                        </span>
-                        <span className="font-medium text-orange-400">
-                          {selectedOrder.distribution.voterPoolAmount.toFixed(4)} SOL
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground flex items-center gap-1">
-                          <span className="inline-block w-2 h-2 rounded-full bg-gray-500" />Platform 15%
-                        </span>
-                        <span className="font-medium text-gray-400">
-                          {selectedOrder.distribution.platformAmount.toFixed(4)} SOL
-                        </span>
-                      </div>
-                    </div>
+                    (() => {
+                      const dist = selectedOrder.distribution;
+                      const totalProfit = dist.creatorAmount + dist.voterPoolAmount + dist.platformAmount;
+                      const totalPaid = selectedOrder.solAmount || 0;
+                      const productionCost = totalPaid > totalProfit ? totalPaid - totalProfit : 0;
+                      return (
+                        <div className="p-3 rounded-lg bg-accent/50 space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Total Paid</span>
+                            <span className="font-medium text-primary">
+                              {totalPaid > 0 ? `${totalPaid.toFixed(4)} SOL` : "—"}
+                            </span>
+                          </div>
+                          {selectedOrder.totalPrice > 0 && (
+                            <div className="text-[10px] text-muted-foreground">(${selectedOrder.totalPrice.toFixed(2)} USD at time of purchase)</div>
+                          )}
+                          <div className="w-full h-px bg-border/50" />
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Production Cost</span>
+                            <span className="font-medium text-red-400">
+                              {productionCost > 0 ? `-${productionCost.toFixed(4)} SOL` : "—"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground font-semibold">Profit</span>
+                            <span className="font-bold text-green-400">{totalProfit.toFixed(4)} SOL</span>
+                          </div>
+                          <div className="w-full h-px bg-border/50 my-1" />
+                          <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Profit Distribution</div>
+                          <div className="flex gap-1 h-2 rounded-full overflow-hidden mb-1.5">
+                            <div className="bg-yellow-400" style={{ width: "45%" }} />
+                            <div className="bg-orange-400" style={{ width: "40%" }} />
+                            <div className="bg-gray-500" style={{ width: "15%" }} />
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground flex items-center gap-1">
+                              <span className="inline-block w-2 h-2 rounded-full bg-yellow-400" />Creators 45%
+                            </span>
+                            <span className="font-medium text-yellow-400">
+                              {dist.creatorAmount.toFixed(4)} SOL
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground flex items-center gap-1">
+                              <span className="inline-block w-2 h-2 rounded-full bg-orange-400" />Voters 40%
+                            </span>
+                            <span className="font-medium text-orange-400">
+                              {dist.voterPoolAmount.toFixed(4)} SOL
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground flex items-center gap-1">
+                              <span className="inline-block w-2 h-2 rounded-full bg-gray-500" />Platform 15%
+                            </span>
+                            <span className="font-medium text-gray-400">
+                              {dist.platformAmount.toFixed(4)} SOL
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })()
                   ) : (
                     <div className="p-3 rounded-lg bg-accent/50">
                       <div className="flex justify-between text-sm">
