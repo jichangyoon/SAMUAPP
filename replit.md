@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a full-stack web application for a SAMU (Solana meme token) contest platform. Users can submit memes, vote using their token holdings, and compete for prizes. The application features a goods shop for merchandise and a system for partner communities to host their own contests.
+This is a full-stack web application designed as a Meme Incubator on Solana, where users submit memes, vote using SAMU tokens, and winning memes are converted into merchandise. The project's vision is to evolve memecoins into Intellectual Property on Solana, generating revenue through merchandise sales that are then distributed as SOL rewards. It features a dual-token model (SAMU for voting, SOL for rewards), an on-chain voting system, an escrow-based reward distribution mechanism, and a gamified global logistics map.
 
 ## User Preferences
 
@@ -10,21 +10,19 @@ Preferred communication style: Simple, everyday language. Korean language prefer
 User is a non-technical founder managing the app with AI assistance.
 This is a web app — not a mobile app. No mobile app packaging or mobile-first framing. Responsive web design is fine, but the product identity is a web application.
 
-## Project Roadmap & Vision (Confirmed Feb 2026)
+## Project Roadmap & Vision
 
 **Core Concept: Meme Incubator**
 - The app's mission is to help memecoins evolve into IP (Intellectual Property) on Solana.
-- Pipeline: Meme Contest → Goods (via Printful) → Ecosystem Rewards (SAMU)
+- Pipeline: Meme Contest → Goods (via Printful) → Ecosystem Rewards (SOL)
 
 **Dual Token Model:**
-- **SAMU Token** = Governance/Voting/Rewards (community votes on memes using SAMU tokens, ecosystem rewards distributed in SAMU)
-- **SOL** = Merchandise Payment (goods shop payment only)
-- SAMU provides community membership + voting rights + ecosystem rewards, SOL is for goods purchases.
+- **SAMU Token** = Governance/Voting (community votes on memes by transferring SAMU tokens to treasury, community membership + voting rights)
+- **SOL** = Merchandise Payment + Rewards (goods shop payment, rewards distributed in SOL from goods profits)
 
-**Voting System (Implemented - Phase 2: On-chain):**
+**Voting System (Implemented):**
 - SAMU token direct voting (users spend SAMU to vote, not just hold)
-- Minimum vote: 1 SAMU
-- No upper limit on voting amount (capped by user's SAMU balance)
+- Minimum vote: 1 SAMU, no upper limit (capped by user's SAMU balance)
 - Voting amount determines reward share proportion for that contest round
 - Real on-chain SAMU transfers to treasury wallet via SPL token transfer (both in-app and Blinks)
 - Backend `/api/memes/prepare-transaction` builds serialized SPL transfer tx, frontend signs via Privy `useSignTransaction`
@@ -32,124 +30,170 @@ This is a web app — not a mobile app. No mobile app packaging or mobile-first 
 - Anti-abuse: on-chain transaction costs (SOL gas fees) naturally prevent multi-account abuse
 - Blinks (external voting via Solana Actions) also uses real SPL token transfer with on-chain verification
 - Shared `verifyTransaction` function validates both in-app and Blinks votes (preTokenBalances/postTokenBalances check)
-- DB schema: votes table uses `samuAmount` + `txSignature` (replaced old votingPower/powerUsed columns)
+- DB schema: votes table uses `samuAmount` + `txSignature`
 - Duplicate vote prevention via `getVoteByTxSignature` check
 
-**Ecosystem Rewards Model (Implemented - Instant Distribution + Voter Claims):**
-- Meme Creator: 45% (permanent reward for creating the IP)
-- Voters: 40% (proportional to voting amount in that contest round - all voters, not just winners)
+**Escrow System (Implemented - Admin Manual Distribution):**
+- Goods payment creates multi-instruction Solana TX splitting SOL into two destinations:
+  - **Production cost** (Printful product + shipping) → Treasury wallet (immediate)
+  - **Profit** (sale price - production cost) → Escrow wallet (locked until distribution)
+- Escrow wallet: ojzHLw6QxUqprnEjk4gfQM3QXS1RKHWjTLXzZS543cg
+- Each escrow deposit is tracked per-order in DB with `contestId`, so distribution uses the correct contest's voting ratios
+- `distributeEscrowProfit` splits profit: Creator 45% (computed vote-proportionally for all creators, but DB records primary creator wallet only), Voters 40% (to per-contest voter reward pool), Platform 15%
+- Escrow status flow: `locked` → `distributed` (or `refunded` for failures)
+- Admin API: `/api/goods/admin/distribute-escrow/:orderId` triggers manual distribution
+- Admin API: `/api/goods/admin/escrow-deposits` lists all escrow deposits
+- Public API: `/api/goods/escrow/contest/:contestId` shows escrow info + creator breakdown
+- DB table: `escrowDeposits` (orderId, contestId, totalSol, costSol, profitSol, escrowTxSignature, status, distributedAt)
+- **Currently admin-manual**: Admin clicks distribute after verifying delivery. Automated webhook-based distribution is planned.
+
+**Ecosystem Rewards Model (Implemented - Escrow + Voter Claims):**
+- Meme Creator: 45% (vote-proportional — ALL creators receive shares based on votes their memes received)
+- Voters: 40% (proportional to SAMU spent voting in that contest round)
 - Platform: 15% (operational costs)
 - Revenue sources: Goods sales (Printful)
-- Reward currency: SOL (from goods sales)
-- **Instant Distribution**: Goods payment creates multi-instruction Solana TX splitting SOL directly to Creator wallet (45%) + Treasury (55%) at payment time
+- Reward currency: SOL (from goods profits via escrow)
 - **Voter Claim System**: Voter 40% deposited to per-contest reward pool using "Reward Per Share" mechanism (DeFi pattern). Voters claim anytime via profile page.
-- DB tables: `goodsRevenueDistributions` (per-sale distribution records), `voterRewardPool` (per-contest cumulative rewards), `voterClaimRecords` (individual voter claim history), `revenues`, `revenue_shares`
-- API: `/api/rewards/dashboard` (sales summary, share breakdown, distributions), `/api/rewards/voter-pool/:contestId`, `/api/rewards/claimable/:contestId/:walletAddress`, `/api/rewards/claim/:contestId`, `/api/rewards/my-claims/:walletAddress`
-- Rewards Dashboard UI in "Rewards" tab (bottom nav) with pie chart, summary cards, distribution history
+- DB tables: `goodsRevenueDistributions`, `voterRewardPool`, `voterClaimRecords`, `revenues`, `revenue_shares`
+- API: `/api/rewards/dashboard`, `/api/rewards/voter-pool/:contestId`, `/api/rewards/claimable/:contestId/:walletAddress`, `/api/rewards/claim/:contestId`, `/api/rewards/my-claims/:walletAddress`
+- Rewards Dashboard UI in "Rewards" tab with pie chart, summary cards, distribution history
 - Profile "Claims" tab shows claimable amounts + claim button + claim history
-- Distribution status tracking: "completed" (direct on-chain split) or "pending_creator_transfer" (fallback)
-- Creator amount validation with 5% tolerance against expected 45% share
+- RewardInfoChart shows "Your share: 0.0%" for users with no earnings (not hidden)
+
+**Global SAMU Map (Implemented):**
+- Interactive world map using `react-simple-maps` showing all orders as pulsing animated dots
+- Fulfillment center → destination route visualization with animated dotted lines
+- 6 Printful fulfillment centers: Japan, US (Charlotte), Europe (Riga), Australia (Brisbane), Brazil (Rio), Mexico (Tijuana)
+- Region-based fulfillment routing (Asia→Japan, Europe→Riga, Oceania→Australia, etc.)
+- SAMU character storytelling: "SAMU is traveling to Seoul!", "SAMU arrived in NYC!"
+- Color-coded markers: green (my revenue) vs red (other orders)
+- Click dot → full-screen detail with order info, tracking links, revenue distribution breakdown
+- Per-order revenue split display (Creator 45% / Voters 40% / Platform 15%)
+- Personal revenue estimation per order
+- Stats dashboard: total orders, in-transit, delivered, countries reached
+- 30-second auto-refresh via TanStack Query refetchInterval
+- API: `/api/rewards/map?wallet=<address>`
+
+**Archive System (Hardened):**
+- Parallel file processing: 10 concurrent R2 operations per batch
+- Retry logic: 2 retries with exponential backoff for transient R2 errors
+- Contest status flow: draft → active → ended → archiving → archived
+- "Archiving" status with frontend loading UI during archive process
+- Error recovery: reverts to "ended" status for admin retry
+- Instagram-style silent video autoplay in both contest and archive grid views
+- Handles 1000-2000 memes reliably
 
 **IP Pipeline:**
 1. Meme contest with SAMU voting
-2. Contest ends → Top memes selected
-3. Winning meme designs turned into goods via Printful
-4. SAMU token rewards distributed per ecosystem rewards model above
+2. Contest ends → Admin selects winning memes
+3. Winning meme designs turned into goods via Printful (Kiss-Cut Stickers)
+4. SOL rewards distributed via escrow per contest voting ratios
 
-**Authentication (To Be Updated):**
-- Current: Privy (email login + embedded Solana wallet)
-- Planned: Add Phantom wallet direct login alongside Privy
-- Goal: Existing Solana users can connect Phantom directly, new users use email
+**Authentication:**
+- Privy (email login + embedded Solana wallet), configured with `walletChainType: 'solana-only'`
+- External Solana wallet connectors enabled (Phantom etc.) via `externalWallets.solana.connectors`
+- Planned: Add Phantom wallet direct login alongside Privy email
 
 **Technical Approach:**
-- Phase 1: Server-based (TypeScript) - all voting, reward tracking, distribution via app server + DB (CURRENT)
-- Phase 2: Smart contract (Rust/Anchor on Solana) - automate reward distribution on-chain (IN PROGRESS)
-- Server-first approach allows easy iteration on revenue ratios and logic before locking into contracts
+- Phase 1: Server-based (TypeScript) - all voting, reward tracking, escrow distribution via app server + DB (CURRENT)
+- Phase 2: Smart contract (Rust/Anchor on Solana) - automate reward distribution on-chain (PLANNED)
 
 **Smart Contract (contracts/ folder):**
 - Location: `contracts/programs/samu-rewards/src/lib.rs`
-- Framework: Anchor 0.30.1 + anchor-spl for SPL token transfers
+- Framework: Anchor 0.30.1 + anchor-spl
 - Build/Deploy: Use Solana Playground (beta.solpg.io) — not built within Replit
 - Guide: `contracts/DEPLOYMENT_GUIDE.md`
-- Features: initialize config, update share ratios, lock config, distribute rewards (batch up to 50), transfer admin
-- Share ratios in basis points (3000 = 30%), must total 10000
-- On-chain distribution records per contest (PDA: seeds = ["distribution", contest_id])
-- Config PDA (seeds = ["config"]) stores admin, treasury, mint, ratios, totals, lock status
 - Hybrid model: server calculates revenue/recipients, smart contract executes on-chain distribution
 
 **Hackathon Goals:**
 - Target: Solana hackathons (e.g. Colosseum)
 - Category: Consumer Applications
 - Differentiator: Community-curated meme IP incubator with full pipeline (vote → goods → revenue share)
-- Reference projects: Pudgy Penguins (IP→goods), Steemit (voter revenue share), Threadless (community voting→merchandise)
 
-**Escrow + Gamified Logistics System (Planned - Next Phase):**
-- **Escrow Vault**: SOL payment goes to escrow instead of direct wallet transfers. Funds are locked until delivery is confirmed.
-- **Delivery-based Unlock**: When Printful reports `status: delivered`, escrow funds are released and officially added to reward pools.
-- **Refund Safety**: Escrow enables handling of shipping incidents, payment errors, and refund requests before funds are distributed.
-- **Global SAMU Map (Community Dashboard)**: World map showing all in-transit orders as moving dots. Social proof — "SAMU is currently traveling to NYC, Seoul, London..."
-- **Individual Tracking**: Each buyer sees their SAMU character carrying their sticker across the map, with real-time position updates from Printful tracking data.
-- **Gamification**: Delivery progress = reward unlock progress. Users watch their escrow funds get closer to release as package moves through checkpoints (warehouse → airport → customs → delivered).
-- **Shipping Incident Visibility**: If delivery stalls, SAMU character shows sleeping/crying state with message like "SAMU is stuck at customs! Reward unlock is delayed."
-- **Technical Plan**: Printful Webhook integration (not polling) — Printful sends real-time HTTP POST to our server whenever order/shipping status changes → DB updated instantly → react-simple-maps for world map visualization → escrow state machine (locked → in_transit → delivered → unlocked / refunded). Webhook approach eliminates API rate limit concerns and provides instant status updates without periodic polling overhead.
-- **Webhook Events**: `package_shipped` (tracking number assigned), `package_in_transit` (carrier scan updates), `package_delivered` (delivery confirmed → triggers escrow unlock), `order_failed` / `order_canceled` (triggers escrow refund)
-- **Implementation Order**: 1) Escrow logic (change instant transfer → escrow vault) 2) Printful Webhook endpoint + event handling 3) Global SAMU Map UI 4) Individual tracking + unlock progress 5) Shipping incident handling
+**Planned Features (Not Yet Implemented):**
+- **Printful Webhook Integration**: Real-time shipping status updates triggering automatic escrow distribution on delivery confirmation. Currently admin-manual.
+- **SAMU Map Gamification**: Delivery progress = reward unlock progress, SAMU character animations (sleeping at customs, celebrating on delivery)
+- **Escrow Refund Handling**: Automated refund flow for failed/canceled orders
+- **Phantom Direct Login**: Connect Phantom wallet directly alongside Privy email login
 
 **Known Issues Fixed:**
-- Duplicate contest archiving prevented via DB unique constraint on archivedContests.originalContestId
-- Race condition between interval checker and setTimeout scheduler resolved with 3-layer protection (status check, pre-insert check, DB unique constraint)
-- Goods shop SOL payment: fixed wallet address bug (was using Ethereum 0x address instead of Solana base58)
+- Duplicate contest archiving prevented via DB unique constraint
+- Race condition resolved with 3-layer protection
+- Goods shop SOL payment wallet address bug fixed
+- Duplicate admin routes removed (5 routes with casing mismatches)
+- MemStorage interface fully implemented with all required method stubs
+- All LSP/TypeScript errors resolved (0 diagnostics)
+- Privy SDK console warnings: internal SDK behaviors, cannot be eliminated
 
 ## System Architecture
 
-The application uses a modern full-stack architecture with a React frontend, an Express.js backend, and a PostgreSQL database.
+The application uses a modern full-stack architecture comprising a React frontend, an Express.js backend, and a PostgreSQL database.
 
 **UI/UX Decisions:**
-- **Responsive Web Design**: Works well on both desktop and mobile browsers.
-- **Styling**: Tailwind CSS with shadcn/ui components, custom SAMU brand colors (yellows, grays, browns, oranges), and a default black dark theme.
-- **Navigation**: 5-tab bottom navigation (Contest, Archive, Goods, Rewards, Partners) with icon and text labels.
+- **Responsive Web Design**: Optimized for both desktop and mobile web browsers.
+- **Styling**: Tailwind CSS with shadcn/ui components, custom SAMU brand colors, and a dark theme.
+- **Navigation**: 5-tab bottom navigation (Contest, Archive, Goods, Rewards, Partners).
 - **Modals**: Drawer-style modals using Vaul components.
-- **Typography**: Poppins font family used throughout the application.
-- **Image Optimization**: WebP format used for all images (logos, merchandise) for performance.
+- **Typography**: Poppins font family.
+- **Image Optimization**: WebP format for performance.
 
 **Technical Implementations:**
-- **Frontend**: React 18 with TypeScript, Vite for tooling, TanStack Query for server state management, Wouter for routing, React Hook Form with Zod for forms.
+- **Frontend**: React 18, TypeScript, Vite, TanStack Query for server state, Wouter for routing, React Hook Form with Zod for forms.
 - **Backend**: Express.js with TypeScript, RESTful API endpoints.
-- **Database**: PostgreSQL with Drizzle ORM for type-safe database operations.
-- **Authentication**: Privy for universal Web3 authentication, supporting email-only login with automatic Solana embedded wallet creation.
-- **Token Handling**: Integration with Solana RPC endpoints for real-time SAMU and SOL token balance display and transfer capabilities.
-- **File Uploads**: Cloudflare R2 for secure cloud storage of images and videos (up to 10MB), with automatic archiving for contest entries.
-- **Contest Management**: Admin panel for creating, starting, and ending contests, with automatic archiving and voting power recalculation.
-- **Voting System**: On-chain SAMU SPL token transfer to treasury. Both in-app and Blinks use the same verification logic.
-- **User Profiles**: Comprehensive user profiles with editable display names, profile pictures (stored on R2), personal statistics, and meme/vote history.
-- **Media Handling**: Support for both image (JPEG, PNG, GIF, WebP) and video (MP4, MOV, AVI, WebM) uploads and display.
+- **Database**: PostgreSQL with Drizzle ORM.
+- **Authentication**: Privy for Web3 authentication (Solana-only), supporting email login with embedded Solana wallet and external wallet connectors.
+- **Token Handling**: Solana RPC integration for real-time token balances and transfers.
+- **File Uploads**: Cloudflare R2 for secure cloud storage of media, with automatic archiving.
+- **Contest Management**: Admin panel for lifecycle management of contests (create, start, end).
+- **Voting System**: On-chain SAMU SPL token transfers to a treasury wallet, verified both in-app and via Solana Blinks.
+- **Escrow**: Multi-instruction Solana transactions split goods payments into production costs (to treasury) and profit (to escrow wallet) for later distribution.
+- **SAMU Map**: Interactive `react-simple-maps` visualization of orders globally, showing fulfillment routes, order details, and revenue breakdown.
+- **User Profiles**: Comprehensive profiles with editable details, statistics, and history.
+- **Media Handling**: Supports image and video uploads, with Instagram-style autoplay for videos in grid views.
+- **Security**: Backend-level IP tracking, login logging, and IP blocking.
+- **Reward Distribution**: Server-based system for calculating and tracking creator, voter, and platform shares from merchandise profits, with a voter claim system. Planned future migration to Solana smart contracts using Anchor for automated on-chain distribution.
 
 **Feature Specifications:**
-- **Meme Contest**: Users can submit memes, view entries in card or grid view, and vote.
-- **Goods Shop**: Kiss-Cut Sticker merchandise from contest-winning memes via Printful. SOL payment flow: estimate shipping → pay SOL to Treasury → on-chain verification → Printful order creation. Product ID 358, 4 size variants.
-- **Archive**: Stores past contest results, winners, and memes.
-- **Partners**: Allows other meme coin communities to host their own isolated contests.
-- **Hall of Fame**: Displays winners from archived contests.
-- **Solana Blinks (External Voting)**: Enables voting on memes from outside the app via Solana Actions. Users can share Blink URLs on X (Twitter), Discord, etc., and holders can vote directly using their Phantom or other Solana wallets without logging into the app.
+- **Meme Contest**: Submission, viewing, and SAMU-based voting for memes.
+- **Goods Shop**: Merchandise (Kiss-Cut Stickers) generated from winning memes via Printful, with SOL payment processing. Payment splits cost→Treasury, profit→Escrow.
+- **Archive**: Stores past contest data, winners, and memes with parallel processing for efficient large-scale archiving.
+- **Partners**: Enables isolated contests for other meme coin communities.
+- **Hall of Fame**: Showcases winners from archived contests.
+- **Rewards Dashboard**: Visualizes sales summaries, share breakdowns, and distribution history.
+- **SAMU Map**: Gamified logistics map showing orders traveling across the globe with revenue info.
+- **Voter Claims**: Per-contest claim system via profile page.
+- **Solana Blinks (External Voting)**: Allows voting on memes directly from Solana-enabled wallets outside the app.
+
+**Key Server Routes:**
+- Contest/Memes: `server/routes/memes.ts`
+- Admin: `server/routes/admin.ts`
+- Goods/Escrow: `server/routes/goods.ts`
+- Rewards: `server/routes/revenue.ts` + `server/routes/rewards-dashboard.ts`
+- Blinks: `server/routes/actions.ts`
+- Users: `server/routes/users.ts`
+- Uploads: `server/routes/uploads.ts`
+- Partners: `server/routes/partners.ts`
+- Webhooks: `server/routes/webhook.ts` (skeleton for Printful)
 
 **Solana Blinks API:**
-- **Endpoint**: `/api/actions/vote/:memeId` - GET returns action metadata, POST builds SPL transfer tx, POST `/confirm` verifies on-chain
-- **actions.json**: Located at domain root for Blink client discovery
-- **Vote Options**: 1, 5, 10, or custom SAMU amount (1-100)
-- **Flow**: Blink URL shared → Wallet detects → User clicks vote → Wallet signs SPL transfer → On-chain verification → Vote recorded in DB
+- Endpoint: `/api/actions/vote/:memeId` - GET returns action metadata, POST builds SPL transfer tx, POST `/confirm` verifies on-chain
+- actions.json at domain root for Blink client discovery
+- Vote Options: 1, 5, 10, or custom SAMU amount (1-100)
 
 ## External Dependencies
 
 - **Cloud Storage**: Cloudflare R2
-- **Database**: PostgreSQL (with Drizzle ORM)
+- **Database**: PostgreSQL
 - **Authentication**: Privy
-- **Solana Interaction**: Solana RPC endpoints, @solana/actions (Blinks SDK), @solana/spl-token
-- **UI Components**: shadcn/ui (built on Radix UI primitives)
+- **Solana Interaction**: Solana RPC endpoints, @solana/actions, @solana/spl-token
+- **UI Components**: shadcn/ui, Radix UI
 - **Styling**: Tailwind CSS
 - **Frontend Tooling**: Vite, TypeScript
 - **Backend Framework**: Express.js
-- **Form Management**: React Hook Form, Zod (for validation)
+- **Form Management**: React Hook Form, Zod
 - **Data Fetching/State Management**: TanStack Query
 - **Routing**: Wouter
-- **File Upload Middleware**: Multer (for server-side file handling before R2 upload)
-- **Date/Time**: `date-fns` (implied by KST timezone support)
+- **Map Visualization**: react-simple-maps, world-atlas
+- **File Upload Middleware**: Multer
+- **Merchandise Integration**: Printful API
+- **Pricing Data**: CoinGecko API
