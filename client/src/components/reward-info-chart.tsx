@@ -207,7 +207,7 @@ export function RewardInfoChart({ contestId, compact = false, walletAddress }: R
                 Platform {platformPct}%
               </span>
             </div>
-            {walletAddress && hasData && myTotalShare > 0 && (
+            {walletAddress && hasData && (
               <div className="flex items-center gap-1.5 mt-1">
                 <TrendingUp className="h-3 w-3 text-primary" />
                 <span className="text-[10px] text-muted-foreground">Your share</span>
@@ -222,7 +222,7 @@ export function RewardInfoChart({ contestId, compact = false, walletAddress }: R
 
         {expanded && (
           <div className="border-t border-border/30 px-3 pb-3">
-            {walletAddress && hasData && myTotalShare > 0 && (
+            {walletAddress && hasData && (
               <div className="mt-2 mb-2 bg-primary/10 rounded-lg px-3 py-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
@@ -231,20 +231,14 @@ export function RewardInfoChart({ contestId, compact = false, walletAddress }: R
                   </div>
                   <span className="text-sm text-primary font-bold">{myTotalShare.toFixed(1)}%</span>
                 </div>
-                {(myCreatorShare > 0 || myVoterShare > 0) && (
-                  <div className="flex gap-3 mt-1 text-[10px]">
-                    {myCreatorShare > 0 && (
-                      <span className="text-muted-foreground">
-                        Creator: <span className="text-[hsl(45,90%,55%)] font-medium">{myCreatorShare.toFixed(1)}%</span>
-                      </span>
-                    )}
-                    {myVoterShare > 0 && (
-                      <span className="text-muted-foreground">
-                        Voter: <span className="text-[hsl(200,80%,55%)] font-medium">{myVoterShare.toFixed(1)}%</span>
-                      </span>
-                    )}
-                  </div>
-                )}
+                <div className="flex gap-3 mt-1 text-[10px]">
+                  <span className="text-muted-foreground">
+                    Creator: <span className="text-[hsl(45,90%,55%)] font-medium">{myCreatorShare.toFixed(1)}%</span>
+                  </span>
+                  <span className="text-muted-foreground">
+                    Voter: <span className="text-[hsl(200,80%,55%)] font-medium">{myVoterShare.toFixed(1)}%</span>
+                  </span>
+                </div>
               </div>
             )}
             {!hasData ? (
