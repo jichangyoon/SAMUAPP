@@ -72,6 +72,20 @@ interface MapOrder {
     costSol: number;
     profitSol: number;
   } | null;
+  myRevenueBreakdown: {
+    creator?: {
+      poolAmount: number;
+      mySharePercent: number;
+      myAmount: number;
+    };
+    voter?: {
+      poolAmount: number;
+      mySamu: number;
+      totalSamu: number;
+      mySharePercent: number;
+      myAmount: number;
+    };
+  } | null;
 }
 
 interface MapData {
@@ -629,25 +643,59 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                 </div>
 
                 {selectedOrder.hasRevenue && selectedOrder.myEstimatedRevenue != null && selectedOrder.myEstimatedRevenue > 0 && (
-                  <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-green-400" />
-                      <span className="text-sm text-green-400 font-medium">
-                        {getRevenueRoleLabel(selectedOrder.revenueRole)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-green-400/70">My Estimated Revenue</span>
+                  <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="h-4 w-4 text-green-400" />
+                        <span className="text-sm text-green-400 font-medium">
+                          {getRevenueRoleLabel(selectedOrder.revenueRole)}
+                        </span>
+                      </div>
                       <span className="text-lg font-bold text-green-400">
                         +{selectedOrder.myEstimatedRevenue.toFixed(4)} SOL
                       </span>
                     </div>
-                    <p className="text-[10px] text-green-400/50 leading-relaxed">
-                      {selectedOrder.revenueRole === "creator" && "Your meme became merchandise! You earn 45% of profits, split by vote share."}
-                      {selectedOrder.revenueRole === "voter" && "You voted with SAMU in this contest! Voters share 40% of profits proportionally."}
-                      {selectedOrder.revenueRole === "creator_voter" && "You created a winning meme AND voted! You earn from both creator (45%) and voter (40%) pools."}
-                      {selectedOrder.revenueRole === "buyer" && "Your purchase generates revenue for creators and voters in the ecosystem."}
-                    </p>
+
+                    {selectedOrder.myRevenueBreakdown && (
+                      <div className="space-y-2">
+                        {selectedOrder.myRevenueBreakdown.creator && (
+                          <div className="bg-black/20 rounded-md p-2.5 space-y-1">
+                            <div className="text-[10px] text-yellow-400 font-semibold uppercase tracking-wider">Creator Revenue</div>
+                            <div className="text-[11px] text-green-400/70 leading-relaxed">
+                              Creator Pool {selectedOrder.myRevenueBreakdown.creator.poolAmount.toFixed(4)} SOL
+                              {" × "}My share {selectedOrder.myRevenueBreakdown.creator.mySharePercent.toFixed(1)}%
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-green-400/70">=</span>
+                              <span className="font-semibold text-yellow-400">
+                                +{selectedOrder.myRevenueBreakdown.creator.myAmount.toFixed(4)} SOL
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        {selectedOrder.myRevenueBreakdown.voter && (
+                          <div className="bg-black/20 rounded-md p-2.5 space-y-1">
+                            <div className="text-[10px] text-orange-400 font-semibold uppercase tracking-wider">Voter Revenue</div>
+                            <div className="text-[11px] text-green-400/70 leading-relaxed">
+                              I voted {selectedOrder.myRevenueBreakdown.voter.mySamu.toLocaleString()} SAMU
+                              {" / "}Total {selectedOrder.myRevenueBreakdown.voter.totalSamu.toLocaleString()} SAMU
+                              {" = "}{selectedOrder.myRevenueBreakdown.voter.mySharePercent.toFixed(1)}%
+                            </div>
+                            <div className="text-[11px] text-green-400/70 leading-relaxed">
+                              Voter Pool {selectedOrder.myRevenueBreakdown.voter.poolAmount.toFixed(4)} SOL
+                              {" × "}{selectedOrder.myRevenueBreakdown.voter.mySharePercent.toFixed(1)}%
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-green-400/70">=</span>
+                              <span className="font-semibold text-orange-400">
+                                +{selectedOrder.myRevenueBreakdown.voter.myAmount.toFixed(4)} SOL
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 
