@@ -39,6 +39,19 @@ SAMU is a web-based meme incubator platform on Solana where community-voted meme
 
 ## Key Features
 
+### Global SAMU Map — Gamified Logistics
+The standout feature: a world map that turns boring shipping logistics into a community experience.
+- Interactive world map showing all orders as pulsing dots traveling across the globe
+- Fulfillment center → destination route visualization with animated dotted lines
+- SAMU character storytelling: "SAMU is traveling to Seoul!", "SAMU arrived in NYC!"
+- Color-coded markers: green (my revenue) vs red (other orders)
+- Click any dot to see order details, shipping status, tracking links, and revenue distribution breakdown
+- Per-order revenue split display (Creator 45% / Voters 40% / Platform 15%)
+- Personal revenue estimation per order ("My Estimated Revenue: +0.0042 SOL")
+- Stats dashboard: total orders, in-transit, delivered, countries reached
+- 30-second auto-refresh for near real-time updates
+- Printful fulfillment center mapping (Japan, US, Europe, Australia, Brazil, Mexico)
+
 ### On-Chain Voting (SAMU SPL Transfer)
 - Real SAMU SPL token transfers to treasury wallet
 - Minimum vote: 1 SAMU, no upper limit (capped by user balance)
@@ -178,8 +191,8 @@ Located in `contracts/programs/samu-rewards/src/lib.rs`:
 ## Planned Features
 
 - **Escrow System**: SOL payment → escrow vault → delivery confirmed → funds released to reward pools
-- **Global SAMU Map**: World map showing in-transit orders as moving dots with real-time Printful tracking
-- **Printful Webhooks**: Real-time shipping status updates (shipped → in transit → delivered → escrow unlocked)
+- **Printful Webhooks**: Real-time shipping status updates → SAMU Map live tracking + escrow unlock on delivery
+- **SAMU Map Gamification**: Delivery progress = reward unlock progress, SAMU character animations (sleeping at customs, celebrating on delivery)
 - **Phantom Direct Login**: Connect Phantom wallet directly alongside Privy email login
 
 ## Inspiration
