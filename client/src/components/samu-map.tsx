@@ -10,9 +10,8 @@ import {
 } from "react-simple-maps";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { X, Package, MapPin, ExternalLink, TrendingUp, Clock, DollarSign, Truck, ChevronUp, ChevronDown } from "lucide-react";
+import { X, Package, MapPin, ExternalLink, TrendingUp, Clock, DollarSign, Truck, PieChart, ChevronUp, ChevronDown } from "lucide-react";
 import { getCoordinates, getCountryName } from "@/data/country-coordinates";
-import { RewardInfoChart } from "@/components/reward-info-chart";
 import samuLogoImg from "@/assets/samu-logo.webp";
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
@@ -134,6 +133,182 @@ function getRevenueRoleLabel(role: string | null): string {
     case "buyer": return "🛒 My Order";
     default: return "📦 Standard Order";
   }
+}
+
+const REWARD_COLORS = {
+  creator: "hsl(45, 90%, 55%)",
+  voter: "hsl(200, 80%, 55%)",
+  platform: "hsl(280, 60%, 55%)",
+};
+
+function MiniDonut({ size = 44, strokeWidth = 7 }: { size?: number; strokeWidth?: number }) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const center = size / 2;
+  const segments = [
+    { percent: 45, color: REWARD_COLORS.creator },
+    { percent: 40, color: REWARD_COLORS.voter },
+    { percent: 15, color: REWARD_COLORS.platform },
+  ];
+  let cumulative = 0;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <circle cx={center} cy={center} r={radius} fill="none" stroke="hsl(0,0%,20%)" strokeWidth={strokeWidth} />
+      {segments.map((seg, i) => {
+        const dash = `${(seg.percent / 100) * circumference} ${circumference}`;
+        const rot = (cumulative / 100) * 360 - 90;
+        cumulative += seg.percent;
+        return (
+          <circle key={i} cx={center} cy={center} r={radius} fill="none" stroke={seg.color}
+            strokeWidth={strokeWidth} strokeDasharray={dash} strokeDashoffset="0"
+            transform={`rotate(${rot} ${center} ${center})`} strokeLinecap="butt" />
+        );
+      })}
+    </svg>
+  );
+}
+
+interface RewardBreakdownData {
+  shareRatios: { creator: number; voter: number; platform: number };
+  creators: { wallet: string; percent: number }[];
+  voters: { wallet: string; percent: number }[];
+  totalVotes: number;
+  totalSamuSpent: number;
+}
+
+function MapRevenueWidget({ order, walletAddress }: { order: MapOrder; walletAddress?: string }) {
+  const { data: rewardData, isLoading: rewardLoading } = useQuery<RewardBreakdownData>({
+    queryKey: [`/api/memes/contest/${order.contestId}/reward-breakdown`],
+    staleTime: 30000,
+    enabled: !!order.contestId && !!walletAddress,
+  });
+
+  const totalPaid = order.escrow?.totalSolPaid || order.solAmount || 0;
+  const productionCost = order.escrow?.costSol || (order.distribution ? totalPaid - (order.distribution.creatorAmount + order.distribution.voterPoolAmount + order.distribution.platformAmount) : 0);
+  const profit = order.escrow?.profitSol || (order.distribution ? order.distribution.creatorAmount + order.distribution.voterPoolAmount + order.distribution.platformAmount : 0);
+
+  const creatorPct = 45;
+  const voterPct = 40;
+  const platformPct = 15;
+
+  let myCreatorShareInPool = 0;
+  let myVoterShareInPool = 0;
+  if (rewardData && walletAddress) {
+    const myCreator = rewardData.creators.find(c => c.wallet === walletAddress);
+    const myVoter = rewardData.voters.find(v => v.wallet === walletAddress);
+    if (myCreator) myCreatorShareInPool = myCreator.percent;
+    if (myVoter) myVoterShareInPool = myVoter.percent;
+  }
+  const myCreatorOverall = (myCreatorShareInPool / 100) * creatorPct;
+  const myVoterOverall = (myVoterShareInPool / 100) * voterPct;
+  const myTotalShare = myCreatorOverall + myVoterOverall;
+  const myEstimatedSol = profit > 0 ? profit * (myTotalShare / 100) : 0;
+
+  const hasDistribution = order.distribution || order.escrow;
+  const hasMyShare = myTotalShare > 0;
+
+  return (
+    <div className="p-3 rounded-lg bg-accent/30 border border-border/30 space-y-3">
+      <div className="flex items-center gap-3">
+        <MiniDonut size={40} strokeWidth={6} />
+        <div className="flex-1">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <PieChart className="h-3 w-3 text-primary" />
+            <span className="text-xs font-semibold">Revenue Split</span>
+          </div>
+          <div className="flex gap-2.5 text-[10px] text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: REWARD_COLORS.creator }} />
+              Creator {creatorPct}%
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: REWARD_COLORS.voter }} />
+              Voter {voterPct}%
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: REWARD_COLORS.platform }} />
+              Platform {platformPct}%
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {hasDistribution && (
+        <div className="space-y-1.5 text-xs">
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Total Paid</span>
+            <span className="font-medium">{totalPaid > 0 ? `${totalPaid.toFixed(4)} SOL` : "—"}</span>
+          </div>
+          {totalPaid > 0 && productionCost > 0 && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Production Cost</span>
+              <span className="text-red-400">-{productionCost.toFixed(4)} SOL</span>
+            </div>
+          )}
+          <div className="flex justify-between border-t border-border/30 pt-1.5">
+            <span className="text-muted-foreground font-medium">Profit</span>
+            <span className="font-semibold text-green-400">{profit > 0 ? `${profit.toFixed(4)} SOL` : "—"}</span>
+          </div>
+        </div>
+      )}
+
+      {!hasDistribution && (
+        <div className="text-xs text-muted-foreground">
+          <div className="flex justify-between">
+            <span>Item Price</span>
+            <span className="font-medium">${order.totalPrice.toFixed(2)}</span>
+          </div>
+          <p className="text-[10px] mt-1 opacity-70">Revenue details appear after escrow processing.</p>
+        </div>
+      )}
+
+      {walletAddress && rewardLoading && (
+        <div className="bg-primary/5 rounded-md p-2.5 flex items-center gap-2">
+          <div className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full" />
+          <span className="text-[10px] text-muted-foreground">Loading your share...</span>
+        </div>
+      )}
+
+      {hasMyShare && (
+        <div className="bg-green-500/10 border border-green-500/20 rounded-md p-2.5 space-y-1.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <TrendingUp className="h-3 w-3 text-green-400" />
+              <span className="text-[11px] text-green-400 font-medium">My Revenue Share</span>
+            </div>
+            {myEstimatedSol > 0 && (
+              <span className="text-sm font-bold text-green-400">+{myEstimatedSol.toFixed(4)} SOL</span>
+            )}
+          </div>
+          <div className="text-[10px] text-green-400/70 leading-relaxed space-y-0.5">
+            {myCreatorShareInPool > 0 && (
+              <div>Creator: {myCreatorShareInPool.toFixed(1)}% of pool → <span className="text-[hsl(45,90%,55%)]">{myCreatorOverall.toFixed(1)}%</span> of total</div>
+            )}
+            {myVoterShareInPool > 0 && (
+              <div>Voter: {myVoterShareInPool.toFixed(1)}% of pool → <span className="text-[hsl(200,80%,55%)]">{myVoterOverall.toFixed(1)}%</span> of total</div>
+            )}
+            <div className="font-medium text-green-400 pt-0.5">
+              Total share: {myTotalShare.toFixed(1)}% of profit
+            </div>
+          </div>
+        </div>
+      )}
+
+      {order.hasRevenue && !hasMyShare && !rewardLoading && (
+        <div className="bg-green-500/10 border border-green-500/20 rounded-md p-2.5">
+          <div className="flex items-center gap-1.5">
+            <DollarSign className="h-3 w-3 text-green-400" />
+            <span className="text-[11px] text-green-400 font-medium">
+              {getRevenueRoleLabel(order.revenueRole)}
+            </span>
+          </div>
+          {order.revenueRole === "buyer" && (
+            <p className="text-[10px] text-green-400/50 mt-1">Your purchase generates revenue for creators and voters.</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 interface SamuMapProps {
@@ -494,176 +669,7 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                    <TrendingUp className="h-3 w-3" /> How Revenue is Calculated
-                  </h4>
-
-                  {selectedOrder.escrow ? (
-                    <div className="p-3 rounded-lg bg-accent/50 space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Total Paid</span>
-                        <span className="font-medium text-primary">{selectedOrder.escrow.totalSolPaid.toFixed(4)} SOL</span>
-                      </div>
-                      <div className="w-full h-px bg-border/50" />
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Production Cost</span>
-                        <span className="font-medium text-red-400">-{selectedOrder.escrow.costSol.toFixed(4)} SOL</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground font-semibold">Profit (to Escrow)</span>
-                        <span className="font-bold text-green-400">{selectedOrder.escrow.profitSol.toFixed(4)} SOL</span>
-                      </div>
-
-                      {selectedOrder.distribution && (
-                        <>
-                          <div className="w-full h-px bg-border/50 my-1" />
-                          <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Profit Distribution</div>
-                          <div className="flex gap-1 h-2 rounded-full overflow-hidden mb-1.5">
-                            <div className="bg-yellow-400" style={{ width: "45%" }} />
-                            <div className="bg-orange-400" style={{ width: "40%" }} />
-                            <div className="bg-gray-500" style={{ width: "15%" }} />
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground flex items-center gap-1">
-                              <span className="inline-block w-2 h-2 rounded-full bg-yellow-400" />Creators 45%
-                            </span>
-                            <span className="font-medium text-yellow-400">
-                              {selectedOrder.distribution.creatorAmount.toFixed(4)} SOL
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground flex items-center gap-1">
-                              <span className="inline-block w-2 h-2 rounded-full bg-orange-400" />Voters 40%
-                            </span>
-                            <span className="font-medium text-orange-400">
-                              {selectedOrder.distribution.voterPoolAmount.toFixed(4)} SOL
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground flex items-center gap-1">
-                              <span className="inline-block w-2 h-2 rounded-full bg-gray-500" />Platform 15%
-                            </span>
-                            <span className="font-medium text-gray-400">
-                              {selectedOrder.distribution.platformAmount.toFixed(4)} SOL
-                            </span>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ) : selectedOrder.distribution ? (
-                    (() => {
-                      const dist = selectedOrder.distribution;
-                      const totalProfit = dist.creatorAmount + dist.voterPoolAmount + dist.platformAmount;
-                      const totalPaid = selectedOrder.solAmount || 0;
-                      const productionCost = totalPaid > totalProfit ? totalPaid - totalProfit : 0;
-                      return (
-                        <div className="p-3 rounded-lg bg-accent/50 space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Total Paid</span>
-                            <span className="font-medium text-primary">
-                              {totalPaid > 0 ? `${totalPaid.toFixed(4)} SOL` : "—"}
-                            </span>
-                          </div>
-                          {selectedOrder.totalPrice > 0 && (
-                            <div className="text-[10px] text-muted-foreground">(${selectedOrder.totalPrice.toFixed(2)} USD at time of purchase)</div>
-                          )}
-                          <div className="w-full h-px bg-border/50" />
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Production Cost</span>
-                            <span className="font-medium text-red-400">
-                              {productionCost > 0 ? `-${productionCost.toFixed(4)} SOL` : "—"}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground font-semibold">Profit</span>
-                            <span className="font-bold text-green-400">{totalProfit.toFixed(4)} SOL</span>
-                          </div>
-                          <div className="w-full h-px bg-border/50 my-1" />
-                          <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Profit Distribution</div>
-                          <div className="flex gap-1 h-2 rounded-full overflow-hidden mb-1.5">
-                            <div className="bg-yellow-400" style={{ width: "45%" }} />
-                            <div className="bg-orange-400" style={{ width: "40%" }} />
-                            <div className="bg-gray-500" style={{ width: "15%" }} />
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground flex items-center gap-1">
-                              <span className="inline-block w-2 h-2 rounded-full bg-yellow-400" />Creators 45%
-                            </span>
-                            <span className="font-medium text-yellow-400">
-                              {dist.creatorAmount.toFixed(4)} SOL
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground flex items-center gap-1">
-                              <span className="inline-block w-2 h-2 rounded-full bg-orange-400" />Voters 40%
-                            </span>
-                            <span className="font-medium text-orange-400">
-                              {dist.voterPoolAmount.toFixed(4)} SOL
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground flex items-center gap-1">
-                              <span className="inline-block w-2 h-2 rounded-full bg-gray-500" />Platform 15%
-                            </span>
-                            <span className="font-medium text-gray-400">
-                              {dist.platformAmount.toFixed(4)} SOL
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })()
-                  ) : (
-                    <div className="p-3 rounded-lg bg-accent/50">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Item Price</span>
-                        <span className="font-medium">${selectedOrder.totalPrice.toFixed(2)}</span>
-                      </div>
-                      {selectedOrder.solAmount && (
-                        <div className="flex justify-between text-sm mt-1">
-                          <span className="text-muted-foreground">SOL Paid</span>
-                          <span className="font-medium text-primary">{selectedOrder.solAmount.toFixed(4)} SOL</span>
-                        </div>
-                      )}
-                      <p className="text-[10px] text-muted-foreground mt-2">Revenue details will appear after escrow processing.</p>
-                    </div>
-                  )}
-                </div>
-
-                {selectedOrder.hasRevenue && selectedOrder.myEstimatedRevenue != null && selectedOrder.myEstimatedRevenue > 0 && (
-                  <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="h-4 w-4 text-green-400" />
-                        <span className="text-sm text-green-400 font-medium">
-                          {getRevenueRoleLabel(selectedOrder.revenueRole)}
-                        </span>
-                      </div>
-                      <span className="text-lg font-bold text-green-400">
-                        +{selectedOrder.myEstimatedRevenue.toFixed(4)} SOL
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {selectedOrder.contestId && (
-                  <RewardInfoChart
-                    contestId={selectedOrder.contestId}
-                    compact={true}
-                    walletAddress={walletAddress}
-                  />
-                )}
-
-                {selectedOrder.hasRevenue && !selectedOrder.myEstimatedRevenue && !selectedOrder.contestId && (
-                  <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-green-400" />
-                      <span className="text-sm text-green-400 font-medium">
-                        {getRevenueRoleLabel(selectedOrder.revenueRole)}
-                      </span>
-                    </div>
-                  </div>
-                )}
+                <MapRevenueWidget order={selectedOrder} walletAddress={walletAddress} />
               </div>
             )}
           </div>
