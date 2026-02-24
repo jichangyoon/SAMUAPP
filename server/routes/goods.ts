@@ -159,6 +159,21 @@ async function getSOLPriceUSD(): Promise<number> {
   }
 }
 
+async function getPrintfulCatalogPrice(variantId: number): Promise<number | null> {
+  if (!PRINTFUL_API_KEY) return null;
+  try {
+    const data = await printfulRequest("GET", `/products/${STICKER_PRODUCT_ID}`);
+    const variants = data.result?.variants || [];
+    const variant = variants.find((v: any) => v.id === variantId);
+    if (variant?.price) {
+      return parseFloat(variant.price);
+    }
+  } catch (err: any) {
+    console.error("Printful catalog price fetch failed:", err.message);
+  }
+  return null;
+}
+
 async function getPrintfulProductCost(item: any, shippingAddress?: any): Promise<{ productCost: number; shippingCost: number; totalCost: number }> {
   if (!PRINTFUL_API_KEY) {
     const fallbackCost = (item.basePrice || item.retailPrice * 0.6);
@@ -374,14 +389,14 @@ router.post("/admin/create-simple", requireAdmin, async (req, res) => {
       return res.status(400).json({ error: "title, imageUrl, and retailPrice are required" });
     }
 
+    const selectedSizes = sizes || ['3"×3"', '4"×4"', '5.5"×5.5"'];
+    const firstSize = selectedSizes[0] || '3"×3"';
+    const variantId = STICKER_VARIANT_MAP[firstSize] || 10163;
+
     let actualBasePrice = retailPrice * 0.6;
-    try {
-      const costEstimate = await getPrintfulProductCost({ imageUrl, retailPrice, sizes: sizes || ['3"×3"'] });
-      if (costEstimate.productCost > 0) {
-        actualBasePrice = costEstimate.productCost;
-      }
-    } catch (err: any) {
-      console.error("Failed to fetch Printful cost for base_price, using fallback:", err.message);
+    const catalogPrice = await getPrintfulCatalogPrice(variantId);
+    if (catalogPrice && catalogPrice > 0) {
+      actualBasePrice = catalogPrice;
     }
 
     const goodsData = insertGoodsSchema.parse({
@@ -395,7 +410,7 @@ router.post("/admin/create-simple", requireAdmin, async (req, res) => {
       productType: productType || "sticker",
       basePrice: actualBasePrice,
       retailPrice,
-      sizes: sizes || ['3"×3"', '4"×4"', '5.5"×5.5"'],
+      sizes: selectedSizes,
       colors: [],
       status: "active",
     });
@@ -465,14 +480,13 @@ router.post("/admin/create", requireAdmin, async (req, res) => {
       }
     }
 
+    const firstSize = selectedSizes[0] || '3"×3"';
+    const firstVariantId = STICKER_VARIANT_MAP[firstSize] || 10163;
+
     let actualBasePrice = retailPrice * 0.6;
-    try {
-      const costEstimate = await getPrintfulProductCost({ imageUrl, retailPrice, sizes: selectedSizes });
-      if (costEstimate.productCost > 0) {
-        actualBasePrice = costEstimate.productCost;
-      }
-    } catch (err: any) {
-      console.error("Failed to fetch Printful cost for base_price, using fallback:", err.message);
+    const catalogPrice = await getPrintfulCatalogPrice(firstVariantId);
+    if (catalogPrice && catalogPrice > 0) {
+      actualBasePrice = catalogPrice;
     }
 
     const goodsData = insertGoodsSchema.parse({
