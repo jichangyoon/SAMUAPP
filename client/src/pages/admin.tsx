@@ -31,7 +31,7 @@ export function Admin() {
   const [showGoodsCreate, setShowGoodsCreate] = useState(false);
   const [goodsForm, setGoodsForm] = useState({
     title: '', description: '', imageUrl: '', contestId: 0, memeId: 0,
-    retailPrice: 29.99, sizes: ['S', 'M', 'L', 'XL', '2XL'], colors: ['Black', 'White']
+    retailPrice: 29.99,
   });
   const [expandedArchiveId, setExpandedArchiveId] = useState<number | null>(null);
 
@@ -47,7 +47,7 @@ export function Admin() {
     onSuccess: () => {
       toast({ title: "Goods product created!" });
       setShowGoodsCreate(false);
-      setGoodsForm({ title: '', description: '', imageUrl: '', contestId: 0, memeId: 0, retailPrice: 29.99, sizes: ['S', 'M', 'L', 'XL', '2XL'], colors: ['Black', 'White'] });
+      setGoodsForm({ title: '', description: '', imageUrl: '', contestId: 0, memeId: 0, retailPrice: 29.99 });
       queryClient.invalidateQueries({ queryKey: ['/api/goods'] });
     },
     onError: (e: any) => {
@@ -82,7 +82,7 @@ export function Admin() {
     onSuccess: () => {
       toast({ title: "Printful product created and synced!" });
       setShowGoodsCreate(false);
-      setGoodsForm({ title: '', description: '', imageUrl: '', contestId: 0, memeId: 0, retailPrice: 29.99, sizes: ['S', 'M', 'L', 'XL', '2XL'], colors: ['Black', 'White'] });
+      setGoodsForm({ title: '', description: '', imageUrl: '', contestId: 0, memeId: 0, retailPrice: 29.99 });
       queryClient.invalidateQueries({ queryKey: ['/api/goods'] });
     },
     onError: (e: any) => {
@@ -145,8 +145,6 @@ export function Admin() {
       contestId: contestId,
       memeId: meme.id,
       retailPrice: 29.99,
-      sizes: ['S', 'M', 'L', 'XL', '2XL'],
-      colors: ['Black', 'White'],
     });
     setShowGoodsCreate(true);
     setTimeout(() => {
@@ -642,22 +640,6 @@ export function Admin() {
                       onChange={(e) => setGoodsForm(f => ({ ...f, retailPrice: parseFloat(e.target.value) || 0 }))}
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-xs text-muted-foreground">Sizes (comma separated)</label>
-                      <Input
-                        value={goodsForm.sizes.join(', ')}
-                        onChange={(e) => setGoodsForm(f => ({ ...f, sizes: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }))}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground">Colors (comma separated)</label>
-                      <Input
-                        value={goodsForm.colors.join(', ')}
-                        onChange={(e) => setGoodsForm(f => ({ ...f, colors: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }))}
-                      />
-                    </div>
-                  </div>
                   <div className="flex gap-2">
                     <Button
                       onClick={() => createGoodsMutation.mutate(goodsForm)}
@@ -689,7 +671,7 @@ export function Admin() {
                           <div className="flex-1 min-w-0">
                             <div className="font-semibold text-sm text-foreground truncate">{item.title}</div>
                             <div className="text-xs text-muted-foreground">
-                              ${item.retailPrice} | {item.sizes?.join(', ')} | {item.colors?.join(', ')}
+                              ${item.retailPrice} | Kiss-Cut Sticker
                             </div>
                             <div className="text-xs mt-0.5 space-y-0.5">
                               {item.printfulProductId ? (
