@@ -791,6 +791,7 @@ export function GoodsShop() {
                         onValueChange={(val) => {
                           const countryInfo = getCountryInfo(val);
                           setShippingForm(f => ({ ...f, country: val, state: '', zip: '', phoneDialCode: countryInfo.dialCode }));
+                          setShippingEstimate(null);
                         }}
                       >
                         <SelectTrigger>
@@ -824,7 +825,7 @@ export function GoodsShop() {
                       <label className="text-xs text-muted-foreground">{getCountryInfo(shippingForm.country).addressLabel} *</label>
                       <Input
                         value={shippingForm.address1}
-                        onChange={(e) => setShippingForm(f => ({ ...f, address1: e.target.value }))}
+                        onChange={(e) => { setShippingForm(f => ({ ...f, address1: e.target.value })); setShippingEstimate(null); }}
                         placeholder={getCountryInfo(shippingForm.country).addressPlaceholder}
                       />
                     </div>
@@ -841,7 +842,7 @@ export function GoodsShop() {
                         <label className="text-xs text-muted-foreground">{getCountryInfo(shippingForm.country).cityLabel} *</label>
                         <Input
                           value={shippingForm.city}
-                          onChange={(e) => setShippingForm(f => ({ ...f, city: e.target.value }))}
+                          onChange={(e) => { setShippingForm(f => ({ ...f, city: e.target.value })); setShippingEstimate(null); }}
                           placeholder={getCountryInfo(shippingForm.country).cityPlaceholder}
                         />
                       </div>
@@ -860,7 +861,7 @@ export function GoodsShop() {
                       <label className="text-xs text-muted-foreground">{getCountryInfo(shippingForm.country).zipLabel} *</label>
                       <Input
                         value={shippingForm.zip}
-                        onChange={(e) => setShippingForm(f => ({ ...f, zip: e.target.value }))}
+                        onChange={(e) => { setShippingForm(f => ({ ...f, zip: e.target.value })); setShippingEstimate(null); }}
                         placeholder={getCountryInfo(shippingForm.country).zipPlaceholder}
                       />
                     </div>
