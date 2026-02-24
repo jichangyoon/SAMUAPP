@@ -18,6 +18,7 @@ import { useLocation } from "wouter";
 import { SendTokensSimple } from "@/components/send-tokens-simple";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { MediaDisplay } from "@/components/media-display";
+import { getMediaType } from "@/utils/media-utils";
 
 const Profile = memo(() => {
   const { user, authenticated } = usePrivy();
@@ -956,7 +957,13 @@ const Profile = memo(() => {
                                 } catch {}
                               }}
                             >
-                              {v.memeImageUrl && <img src={v.memeImageUrl} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />}
+                              {v.memeImageUrl && (
+                                getMediaType(v.memeImageUrl) === 'video' ? (
+                                  <video src={v.memeImageUrl} muted playsInline preload="metadata" className="w-8 h-8 rounded object-cover flex-shrink-0" />
+                                ) : (
+                                  <img src={v.memeImageUrl} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
+                                )
+                              )}
                               <span className="flex-1 text-foreground truncate">{v.memeTitle}</span>
                               <span className="font-bold text-primary flex-shrink-0">{(v.samuAmount || 0).toLocaleString()} SAMU</span>
                             </div>
