@@ -10,9 +10,10 @@ interface ImageCarouselProps {
   onClick?: () => void;
   autoPlayVideo?: boolean;
   containMode?: boolean;
+  instagramMode?: boolean;
 }
 
-export function ImageCarousel({ images, alt, className = "", showControls = false, onClick, autoPlayVideo = false, containMode = false }: ImageCarouselProps) {
+export function ImageCarousel({ images, alt, className = "", showControls = false, onClick, autoPlayVideo = false, containMode = false, instagramMode = false }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
@@ -28,12 +29,13 @@ export function ImageCarousel({ images, alt, className = "", showControls = fals
         src={images[0]}
         alt={alt}
         className={className}
-        showControls={showControls}
+        showControls={instagramMode ? false : showControls}
         onClick={onClick}
         muted={!showControls}
         loop={!showControls}
         autoPlayOnVisible={autoPlayVideo}
         containMode={containMode}
+        instagramMode={instagramMode}
       />
     );
   }
@@ -77,12 +79,13 @@ export function ImageCarousel({ images, alt, className = "", showControls = fals
               src={src}
               alt={`${alt} ${idx + 1}`}
               className={containMode ? "w-full" : "w-full h-full"}
-              showControls={showControls && idx === currentIndex}
+              showControls={instagramMode ? false : (showControls && idx === currentIndex)}
               onClick={onClick}
               muted={true}
               loop={true}
               autoPlayOnVisible={autoPlayVideo && idx === currentIndex}
               containMode={containMode}
+              instagramMode={instagramMode && idx === currentIndex}
             />
           </div>
         ))}

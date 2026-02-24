@@ -110,8 +110,8 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
             <ImageCarousel
               images={[meme.imageUrl, ...(meme.additionalImages || [])]}
               alt={meme.title}
-              className="w-full rounded-lg"
-              showControls={true}
+              className="w-full rounded-lg overflow-hidden"
+              instagramMode={true}
               containMode={true}
             />
           </div>

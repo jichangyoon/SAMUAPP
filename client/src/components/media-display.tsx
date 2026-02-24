@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from "react";
-import { Play, ImageOff } from "lucide-react";
+import { Play, ImageOff, Volume2, VolumeX } from "lucide-react";
 import { getMediaType } from "@/utils/media-utils";
 
 interface MediaDisplayProps {
@@ -14,6 +14,130 @@ interface MediaDisplayProps {
   preload?: "auto" | "metadata" | "none";
   autoPlayOnVisible?: boolean;
   containMode?: boolean;
+  instagramMode?: boolean;
+}
+
+function InstagramVideoPlayer({ src, className = "", containMode = false }: { src: string; className?: string; containMode?: boolean }) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const progressRef = useRef<HTMLDivElement | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [isMuted, setIsMuted] = useState(true);
+  const [videoReady, setVideoReady] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const onTimeUpdate = () => {
+      if (!isDragging && video.duration) {
+        setProgress((video.currentTime / video.duration) * 100);
+      }
+    };
+    video.addEventListener("timeupdate", onTimeUpdate);
+    return () => video.removeEventListener("timeupdate", onTimeUpdate);
+  }, [isDragging]);
+
+  const seekTo = useCallback((clientX: number) => {
+    const bar = progressRef.current;
+    const video = videoRef.current;
+    if (!bar || !video || !video.duration) return;
+    const rect = bar.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    video.currentTime = ratio * video.duration;
+    setProgress(ratio * 100);
+  }, []);
+
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    seekTo(e.clientX);
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  }, [seekTo]);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (!isDragging) return;
+    seekTo(e.clientX);
+  }, [isDragging, seekTo]);
+
+  const handlePointerUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  const handlePointerCancel = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  const toggleMute = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setIsMuted(videoRef.current.muted);
+    }
+  }, []);
+
+  const togglePlay = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.paused) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  }, []);
+
+  if (hasError) {
+    return (
+      <div className={`bg-accent flex flex-col items-center justify-center ${className}`}>
+        <ImageOff className="h-8 w-8 text-muted-foreground mb-2" />
+        <span className="text-xs text-muted-foreground text-center px-2">Video unavailable</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`relative ${className}`}>
+      {!videoReady && (
+        <div className="absolute inset-0 bg-accent animate-pulse z-10" />
+      )}
+      <video
+        ref={videoRef}
+        src={src}
+        className={`w-full ${containMode ? 'object-contain' : 'h-full object-cover'} cursor-pointer transition-opacity duration-200 ${videoReady ? 'opacity-100' : 'opacity-0'}`}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        controlsList="nodownload"
+        disablePictureInPicture
+        onClick={togglePlay}
+        onLoadedMetadata={() => setVideoReady(true)}
+        onError={() => setHasError(true)}
+      />
+      <button
+        onClick={toggleMute}
+        className="absolute top-3 right-3 bg-black/60 rounded-full p-1.5 text-white hover:bg-black/80 transition-colors z-20"
+      >
+        {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+      </button>
+      <div
+        ref={progressRef}
+        className="absolute bottom-0 left-0 right-0 h-6 flex items-end cursor-pointer z-20 touch-none"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
+      >
+        <div className="w-full h-[3px] bg-white/20 relative">
+          <div
+            className="absolute top-0 left-0 h-full bg-white rounded-r-full transition-[width] duration-75"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function MediaDisplay({ 
@@ -27,7 +151,8 @@ export function MediaDisplay({
   onClick,
   preload = "metadata",
   autoPlayOnVisible = false,
-  containMode = false
+  containMode = false,
+  instagramMode = false
 }: MediaDisplayProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -104,6 +229,10 @@ export function MediaDisplay({
   };
   
   if (mediaType === 'video') {
+    if (instagramMode) {
+      return <InstagramVideoPlayer src={src} className={className} containMode={containMode} />;
+    }
+
     return (
       <div ref={containerRef} className={`relative group ${className}`}>
         {!videoReady && !hasError && (
