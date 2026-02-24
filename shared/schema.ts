@@ -174,6 +174,7 @@ export const orders = pgTable("orders", {
   color: text("color").notNull(),
   quantity: integer("quantity").notNull().default(1),
   totalPrice: doublePrecision("total_price").notNull(),
+  shippingCostUsd: doublePrecision("shipping_cost_usd"),
   solAmount: doublePrecision("sol_amount"),
   txSignature: text("tx_signature"),
   shippingName: text("shipping_name").notNull(),

@@ -509,13 +509,31 @@ export function GoodsShop() {
               <div className="space-y-2">
                 <div className="text-sm font-semibold text-foreground">Payment</div>
                 <div className="bg-accent/30 rounded-lg p-3 space-y-1.5 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Amount (USD)</span>
-                    <span className="font-medium text-foreground">${selectedOrder.totalPrice}</span>
-                  </div>
+                  {selectedOrder.shippingCostUsd != null && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Product Price</span>
+                        <span className="text-foreground">${(selectedOrder.totalPrice - selectedOrder.shippingCostUsd).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Shipping</span>
+                        <span className="text-foreground">${selectedOrder.shippingCostUsd.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between border-t border-border pt-1.5">
+                        <span className="text-muted-foreground font-medium">Total (USD)</span>
+                        <span className="font-semibold text-foreground">${selectedOrder.totalPrice.toFixed(2)}</span>
+                      </div>
+                    </>
+                  )}
+                  {selectedOrder.shippingCostUsd == null && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Total (USD)</span>
+                      <span className="font-medium text-foreground">${selectedOrder.totalPrice}</span>
+                    </div>
+                  )}
                   {selectedOrder.solAmount && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Amount (SOL)</span>
+                      <span className="text-muted-foreground">Paid (SOL)</span>
                       <span className="font-medium text-foreground">{selectedOrder.solAmount.toFixed(6)} SOL</span>
                     </div>
                   )}
