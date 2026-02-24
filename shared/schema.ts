@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, bigint, timestamp, boolean, uniqueIndex, doublePrecision } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, bigint, timestamp, boolean, uniqueIndex, doublePrecision, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -13,7 +13,9 @@ export const contests = pgTable("contests", {
   durationDays: integer("duration_days").default(7), // 콘테스트 기간 (일 단위)
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_contests_status").on(table.status),
+]);
 
 export const memes = pgTable("memes", {
   id: serial("id").primaryKey(),
@@ -27,7 +29,9 @@ export const memes = pgTable("memes", {
   authorAvatarUrl: text("author_avatar_url"),
   votes: bigint("votes", { mode: "number" }).notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_memes_contest_id").on(table.contestId),
+]);
 
 export const archivedContests = pgTable("archived_contests", {
   id: serial("id").primaryKey(),
@@ -53,7 +57,10 @@ export const votes = pgTable("votes", {
   samuAmount: bigint("samu_amount", { mode: "number" }).notNull().default(0),
   txSignature: text("tx_signature"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_votes_meme_id").on(table.memeId),
+  index("idx_votes_voter_wallet").on(table.voterWallet),
+]);
 
 
 export const partnerMemes = pgTable("partner_memes", {
@@ -98,7 +105,9 @@ export const loginLogs = pgTable("login_logs", {
   walletAddress: text("wallet_address").notNull(),
   userAgent: text("user_agent"),
   loginTime: timestamp("login_time").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_login_logs_wallet_address").on(table.walletAddress),
+]);
 
 export const blockedIps = pgTable("blocked_ips", {
   id: serial("id").primaryKey(),
@@ -151,7 +160,9 @@ export const goods = pgTable("goods", {
   colors: text("colors").array(),
   status: text("status").notNull().default("active"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_goods_contest_id").on(table.contestId),
+]);
 
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
@@ -181,7 +192,10 @@ export const orders = pgTable("orders", {
   shippingLng: doublePrecision("shipping_lng"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_orders_goods_id").on(table.goodsId),
+  index("idx_orders_buyer_wallet").on(table.buyerWallet),
+]);
 
 export const goodsRevenueDistributions = pgTable("goods_revenue_distributions", {
   id: serial("id").primaryKey(),
@@ -193,7 +207,10 @@ export const goodsRevenueDistributions = pgTable("goods_revenue_distributions", 
   voterPoolAmount: doublePrecision("voter_pool_amount").notNull(),
   status: text("status").notNull().default("completed"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_goods_revenue_distributions_order_id").on(table.orderId),
+  index("idx_goods_revenue_distributions_contest_id").on(table.contestId),
+]);
 
 export const voterRewardPool = pgTable("voter_reward_pool", {
   id: serial("id").primaryKey(),
@@ -213,7 +230,9 @@ export const voterClaimRecords = pgTable("voter_claim_records", {
   lastClaimedRewardPerShare: doublePrecision("last_claimed_reward_per_share").notNull().default(0),
   totalClaimed: doublePrecision("total_claimed").notNull().default(0),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_voter_claim_records_contest_voter").on(table.contestId, table.voterWallet),
+]);
 
 export const creatorRewardDistributions = pgTable("creator_reward_distributions", {
   id: serial("id").primaryKey(),
@@ -225,7 +244,10 @@ export const creatorRewardDistributions = pgTable("creator_reward_distributions"
   solAmount: doublePrecision("sol_amount").notNull(),
   voteSharePercent: doublePrecision("vote_share_percent").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_creator_reward_distributions_order_id").on(table.orderId),
+  index("idx_creator_reward_distributions_contest_id").on(table.contestId),
+]);
 
 export const escrowDeposits = pgTable("escrow_deposits", {
   id: serial("id").primaryKey(),
@@ -240,7 +262,9 @@ export const escrowDeposits = pgTable("escrow_deposits", {
   status: text("status").notNull().default("locked"),
   distributedAt: timestamp("distributed_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_escrow_deposits_order_id").on(table.orderId),
+]);
 
 export const insertRevenueSchema = createInsertSchema(revenues).omit({
   id: true,
