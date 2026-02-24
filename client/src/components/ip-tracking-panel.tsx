@@ -213,8 +213,6 @@ export function IPTrackingPanel() {
                           size="sm"
                           variant="outline"
                           onClick={() => {
-                            // TODO: 디바이스 차단 기능 구현하기
-                            console.log('Device block not implemented yet');
                           }}
                         >
                           <Ban className="h-4 w-4 mr-2" />

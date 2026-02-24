@@ -158,7 +158,7 @@ export const UserProfile = React.memo(({ isOpen, onClose, samuBalance, solBalanc
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl h-[90vh] bg-black border-yellow-500/20">
+      <DialogContent className="max-w-3xl h-[90vh] bg-black border-yellow-500/20" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-yellow-400">Profile</DialogTitle>
         </DialogHeader>
