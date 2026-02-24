@@ -374,6 +374,16 @@ router.post("/admin/create-simple", requireAdmin, async (req, res) => {
       return res.status(400).json({ error: "title, imageUrl, and retailPrice are required" });
     }
 
+    let actualBasePrice = retailPrice * 0.6;
+    try {
+      const costEstimate = await getPrintfulProductCost({ imageUrl, retailPrice, sizes: sizes || ['3"×3"'] });
+      if (costEstimate.productCost > 0) {
+        actualBasePrice = costEstimate.productCost;
+      }
+    } catch (err: any) {
+      console.error("Failed to fetch Printful cost for base_price, using fallback:", err.message);
+    }
+
     const goodsData = insertGoodsSchema.parse({
       title,
       description: description || null,
@@ -383,7 +393,7 @@ router.post("/admin/create-simple", requireAdmin, async (req, res) => {
       memeId: memeId || null,
       category: category || "sticker",
       productType: productType || "sticker",
-      basePrice: retailPrice * 0.6,
+      basePrice: actualBasePrice,
       retailPrice,
       sizes: sizes || ['3"×3"', '4"×4"', '5.5"×5.5"'],
       colors: [],
@@ -455,6 +465,16 @@ router.post("/admin/create", requireAdmin, async (req, res) => {
       }
     }
 
+    let actualBasePrice = retailPrice * 0.6;
+    try {
+      const costEstimate = await getPrintfulProductCost({ imageUrl, retailPrice, sizes: selectedSizes });
+      if (costEstimate.productCost > 0) {
+        actualBasePrice = costEstimate.productCost;
+      }
+    } catch (err: any) {
+      console.error("Failed to fetch Printful cost for base_price, using fallback:", err.message);
+    }
+
     const goodsData = insertGoodsSchema.parse({
       printfulProductId,
       printfulVariantId,
@@ -466,7 +486,7 @@ router.post("/admin/create", requireAdmin, async (req, res) => {
       mockupUrls: [imageUrl],
       category: "sticker",
       productType: "sticker",
-      basePrice: retailPrice * 0.6,
+      basePrice: actualBasePrice,
       retailPrice,
       sizes: selectedSizes,
       colors: [],
