@@ -41,7 +41,7 @@ export function Admin() {
 
   const createGoodsMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/goods/admin/create-simple", data);
+      const res = await apiRequest("POST", "/api/goods/admin/create-simple", { ...data, adminEmail });
       return res.json();
     },
     onSuccess: () => {
@@ -76,7 +76,7 @@ export function Admin() {
 
   const createPrintfulGoodsMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/goods/admin/create", data);
+      const res = await apiRequest("POST", "/api/goods/admin/create", { ...data, adminEmail });
       return res.json();
     },
     onSuccess: () => {
