@@ -255,7 +255,18 @@ router.get("/orders/:wallet", async (req, res) => {
   try {
     const walletAddress = req.params.wallet;
     const userOrders = await storage.getOrders(walletAddress);
-    res.json(userOrders);
+    const allGoods = await storage.getGoods();
+    const goodsMap = new Map(allGoods.map(g => [g.id, g]));
+    const enriched = userOrders.map(order => {
+      const goodsItem = goodsMap.get(order.goodsId);
+      return {
+        ...order,
+        goodsTitle: goodsItem?.title || '',
+        goodsImageUrl: goodsItem?.imageUrl || '',
+        goodsDescription: goodsItem?.description || '',
+      };
+    });
+    res.json(enriched);
   } catch (error) {
     console.error("Error fetching orders:", error);
     res.status(500).json({ error: "Failed to fetch orders" });

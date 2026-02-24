@@ -229,6 +229,7 @@ export function GoodsShop() {
   });
   const [shippingEstimate, setShippingEstimate] = useState<any>(null);
   const [showOrders, setShowOrders] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [paymentInfo, setPaymentInfo] = useState<any>(null);
   const [txSignature, setTxSignature] = useState<string>('');
   const [isPaying, setIsPaying] = useState(false);
@@ -415,27 +416,178 @@ export function GoodsShop() {
       {showOrders && (
         <div className="space-y-2">
           {(userOrders as any[]).map((order: any) => (
-            <Card key={order.id} className="border-border">
+            <Card
+              key={order.id}
+              className="border-border cursor-pointer hover:bg-accent/50 transition-colors"
+              onClick={() => setSelectedOrder(order)}
+            >
               <CardContent className="p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-semibold text-foreground">Order #{order.id}</div>
+                <div className="flex items-center gap-3">
+                  {order.goodsImageUrl && (
+                    <img src={order.goodsImageUrl} alt="" className="w-10 h-10 rounded object-cover flex-shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-foreground truncate">{order.goodsTitle || `Order #${order.id}`}</div>
                     <div className="text-xs text-muted-foreground">
-                      {order.size} - ${order.totalPrice}
+                      {order.size} · ${order.totalPrice}
                     </div>
                   </div>
-                  <Badge className={getStatusBadge(order.status)}>{order.status}</Badge>
-                </div>
-                {order.trackingNumber && (
-                  <div className="text-xs text-primary mt-1">
-                    Tracking: {order.trackingUrl ? <a href={order.trackingUrl} target="_blank" rel="noopener noreferrer" className="underline">{order.trackingNumber}</a> : order.trackingNumber}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Badge className={getStatusBadge(order.status)}>{order.status}</Badge>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </div>
-                )}
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+
+      {/* Order Detail Modal */}
+      <Drawer open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
+        <DrawerContent className="max-h-[90vh]">
+          <DrawerHeader className="pb-2">
+            <DrawerTitle className="text-lg font-bold text-foreground">Order Details</DrawerTitle>
+          </DrawerHeader>
+          {selectedOrder && (
+            <div className="px-4 pb-6 space-y-4 overflow-y-auto max-h-[75vh]">
+              {/* Product Info */}
+              <div className="flex items-center gap-3 p-3 bg-accent/30 rounded-lg">
+                {selectedOrder.goodsImageUrl && (
+                  <img src={selectedOrder.goodsImageUrl} alt="" className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-foreground">{selectedOrder.goodsTitle || `Order #${selectedOrder.id}`}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">{selectedOrder.goodsDescription}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">Size: {selectedOrder.size}</div>
+                </div>
+              </div>
+
+              {/* Order Status Timeline */}
+              <div className="space-y-1">
+                <div className="text-sm font-semibold text-foreground mb-2">Order Status</div>
+                {(() => {
+                  const steps = [
+                    { key: 'confirmed', label: 'Order Confirmed', icon: '✓' },
+                    { key: 'production', label: 'In Production', icon: '🏭' },
+                    { key: 'shipping', label: 'Shipped', icon: '📦' },
+                    { key: 'delivered', label: 'Delivered', icon: '✅' },
+                  ];
+                  const statusOrder: Record<string, number> = {
+                    'confirmed': 0, 'pending': 0, 'draft': 0,
+                    'in_production': 1, 'inprocess': 1, 'fulfilled': 2,
+                    'shipped': 2, 'delivered': 3, 'completed': 3,
+                    'canceled': -1, 'cancelled': -1, 'failed': -1, 'error': -1,
+                  };
+                  const currentStep = statusOrder[selectedOrder.printfulStatus] ?? statusOrder[selectedOrder.status] ?? 0;
+                  const isCanceled = currentStep === -1;
+                  return isCanceled ? (
+                    <div className="p-3 bg-red-500/10 rounded-lg text-center">
+                      <span className="text-red-400 font-medium text-sm">❌ Order Canceled / Failed</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      {steps.map((step, idx) => (
+                        <div key={step.key} className="flex items-center flex-1">
+                          <div className={`flex flex-col items-center flex-1 ${idx <= currentStep ? 'text-primary' : 'text-muted-foreground/50'}`}>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${idx <= currentStep ? 'bg-primary/20 text-primary' : 'bg-accent text-muted-foreground/50'}`}>
+                              {step.icon}
+                            </div>
+                            <span className="text-[10px] mt-1 text-center leading-tight">{step.label}</span>
+                          </div>
+                          {idx < steps.length - 1 && (
+                            <div className={`h-0.5 w-full mt-[-12px] ${idx < currentStep ? 'bg-primary' : 'bg-accent'}`} />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Payment Info */}
+              <div className="space-y-2">
+                <div className="text-sm font-semibold text-foreground">Payment</div>
+                <div className="bg-accent/30 rounded-lg p-3 space-y-1.5 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Amount (USD)</span>
+                    <span className="font-medium text-foreground">${selectedOrder.totalPrice}</span>
+                  </div>
+                  {selectedOrder.solAmount && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Amount (SOL)</span>
+                      <span className="font-medium text-foreground">{selectedOrder.solAmount.toFixed(6)} SOL</span>
+                    </div>
+                  )}
+                  {selectedOrder.txSignature && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Transaction</span>
+                      <a
+                        href={`https://solscan.io/tx/${selectedOrder.txSignature}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary underline truncate max-w-[180px]"
+                      >
+                        {selectedOrder.txSignature.slice(0, 12)}...
+                      </a>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Order Date</span>
+                    <span className="text-foreground">{new Date(selectedOrder.createdAt).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Shipping Info */}
+              <div className="space-y-2">
+                <div className="text-sm font-semibold text-foreground">Shipping Address</div>
+                <div className="bg-accent/30 rounded-lg p-3 space-y-1 text-sm">
+                  <div className="font-medium text-foreground">{selectedOrder.shippingName}</div>
+                  <div className="text-muted-foreground">{selectedOrder.shippingAddress1}</div>
+                  {selectedOrder.shippingAddress2 && (
+                    <div className="text-muted-foreground">{selectedOrder.shippingAddress2}</div>
+                  )}
+                  <div className="text-muted-foreground">
+                    {[selectedOrder.shippingCity, selectedOrder.shippingState, selectedOrder.shippingZip].filter(Boolean).join(', ')}
+                  </div>
+                  <div className="text-muted-foreground">{selectedOrder.shippingCountry}</div>
+                  {selectedOrder.shippingPhone && (
+                    <div className="text-muted-foreground mt-1">📞 {selectedOrder.shippingPhone}</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Tracking Info */}
+              {selectedOrder.trackingNumber && (
+                <div className="space-y-2">
+                  <div className="text-sm font-semibold text-foreground">Tracking</div>
+                  <div className="bg-accent/30 rounded-lg p-3 text-sm">
+                    {selectedOrder.trackingUrl ? (
+                      <a href={selectedOrder.trackingUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline flex items-center gap-2">
+                        <Truck className="h-4 w-4" />
+                        {selectedOrder.trackingNumber}
+                      </a>
+                    ) : (
+                      <span className="flex items-center gap-2 text-foreground">
+                        <Truck className="h-4 w-4" />
+                        {selectedOrder.trackingNumber}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Order ID & Printful Info */}
+              <div className="text-xs text-muted-foreground space-y-0.5 pt-2 border-t border-border">
+                <div>Order ID: #{selectedOrder.id}</div>
+                {selectedOrder.printfulOrderId && <div>Printful Order: #{selectedOrder.printfulOrderId}</div>}
+                <div>Status: {selectedOrder.status} {selectedOrder.printfulStatus ? `(${selectedOrder.printfulStatus})` : ''}</div>
+              </div>
+            </div>
+          )}
+        </DrawerContent>
+      </Drawer>
 
       {isLoading ? (
         <div className="text-center py-8">
