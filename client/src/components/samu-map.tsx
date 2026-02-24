@@ -578,15 +578,15 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
 
                 <div className="flex items-center gap-1.5 flex-wrap">
                   {selectedOrder.isBuyer && (
-                    <Badge className="text-[10px] bg-blue-500/20 text-blue-400 border-blue-500/30">🛒 My Order</Badge>
+                    <Badge className="text-[10px] bg-green-500/20 text-green-400 border-green-500/30">🛒 My Order</Badge>
                   )}
                   {selectedOrder.revenueRole?.includes("creator") && (
-                    <Badge className="text-[10px] bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                    <Badge className="text-[10px] bg-green-500/20 text-green-400 border-green-500/30">
                       🎨 Creator{selectedOrder.revenueStatus === "pending" ? " (pending)" : ""}
                     </Badge>
                   )}
                   {selectedOrder.revenueRole?.includes("voter") && (
-                    <Badge className="text-[10px] bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
+                    <Badge className="text-[10px] bg-green-500/20 text-green-400 border-green-500/30">
                       🗳️ Voter{selectedOrder.revenueStatus === "pending" ? " (pending)" : ""}
                     </Badge>
                   )}
