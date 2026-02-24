@@ -884,6 +884,8 @@ router.post("/:id/prepare-payment", async (req, res) => {
       solAmount,
       solPriceUSD,
       totalUSD,
+      shippingCostUSD: parseFloat(shippingCostUSD) || 0,
+      retailPrice: item.retailPrice,
       lamports: totalLamports,
       splits,
       costBreakdown: {
@@ -918,7 +920,7 @@ router.post("/:id/order", async (req, res) => {
     }
 
     const {
-      size, buyerWallet, buyerEmail, txSignature, solAmount,
+      size, buyerWallet, buyerEmail, txSignature, solAmount, shippingCostUSD,
       shippingName, shippingAddress1, shippingAddress2,
       shippingCity, shippingState, shippingCountry, shippingZip, shippingPhone,
     } = req.body;

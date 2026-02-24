@@ -328,6 +328,7 @@ export function GoodsShop() {
         buyerEmail: shipping.email,
         txSignature: sig,
         solAmount: payment?.solAmount,
+        shippingCostUSD: payment?.shippingCostUSD,
         shippingName: shipping.name,
         shippingAddress1: shipping.address1,
         shippingAddress2: shipping.address2,
