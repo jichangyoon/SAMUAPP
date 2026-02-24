@@ -845,7 +845,13 @@ router.post("/:id/estimate-shipping", async (req, res) => {
     };
 
     const data = await printfulRequest("POST", "/shipping/rates", shippingPayload);
-    res.json({ shipping_rates: data.result || [] });
+    const allRates = data.result || [];
+    if (allRates.length > 1) {
+      allRates.sort((a: any, b: any) => parseFloat(a.rate) - parseFloat(b.rate));
+      res.json({ shipping_rates: [allRates[0]] });
+    } else {
+      res.json({ shipping_rates: allRates });
+    }
   } catch (error: any) {
     console.error("Error estimating shipping:", error);
     res.status(500).json({ error: error.message || "Failed to estimate shipping" });
