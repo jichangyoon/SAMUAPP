@@ -288,7 +288,7 @@ function MapRevenueWidget({ order, walletAddress }: { order: MapOrder; walletAdd
               <div>Voter: {myVoterShareInPool.toFixed(1)}% of pool → <span className="text-[hsl(200,80%,55%)]">{myVoterOverall.toFixed(1)}%</span> of total</div>
             )}
           </div>
-          <div className="text-sm font-bold text-green-400 pt-0.5">
+          <div className="text-xs font-bold text-green-400 pt-0.5">
             Total share: {myTotalShare.toFixed(1)}% of profit
           </div>
         </div>
