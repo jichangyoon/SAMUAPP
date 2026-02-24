@@ -61,7 +61,9 @@ interface MapOrder {
   createdAt: string;
   contestId: number | null;
   hasRevenue: boolean;
+  isBuyer: boolean;
   revenueRole: string | null;
+  revenueStatus: string | null;
   myEstimatedRevenue: number | null;
   distribution: {
     creatorAmount: number;
@@ -302,7 +304,7 @@ function MapRevenueWidget({ order, walletAddress }: { order: MapOrder; walletAdd
               {getRevenueRoleLabel(order.revenueRole)}
             </span>
           </div>
-          {order.revenueRole === "buyer" && (
+          {(order.revenueRole === "buyer" || order.isBuyer) && !order.revenueRole?.includes("creator") && !order.revenueRole?.includes("voter") && (
             <p className="text-[10px] text-green-400/50 mt-1">Your purchase generates revenue for creators and voters.</p>
           )}
         </div>
@@ -574,13 +576,23 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Badge
-                    variant={selectedOrder.hasRevenue ? "default" : "secondary"}
-                    className={`text-[10px] ${selectedOrder.hasRevenue ? "bg-green-500/20 text-green-400 border-green-500/30" : ""}`}
-                  >
-                    {getRevenueRoleLabel(selectedOrder.revenueRole)}
-                  </Badge>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {selectedOrder.isBuyer && (
+                    <Badge className="text-[10px] bg-blue-500/20 text-blue-400 border-blue-500/30">🛒 My Order</Badge>
+                  )}
+                  {selectedOrder.revenueRole?.includes("creator") && (
+                    <Badge className="text-[10px] bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                      🎨 Creator{selectedOrder.revenueStatus === "pending" ? " (pending)" : ""}
+                    </Badge>
+                  )}
+                  {selectedOrder.revenueRole?.includes("voter") && (
+                    <Badge className="text-[10px] bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
+                      🗳️ Voter{selectedOrder.revenueStatus === "pending" ? " (pending)" : ""}
+                    </Badge>
+                  )}
+                  {!selectedOrder.revenueRole && (
+                    <Badge variant="secondary" className="text-[10px]">📦 Standard Order</Badge>
+                  )}
 
                   {selectedOrder.hasRevenue && selectedOrder.myEstimatedRevenue != null && selectedOrder.myEstimatedRevenue > 0 && (
                     <Badge
@@ -589,6 +601,7 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                     >
                       <DollarSign className="h-2.5 w-2.5 mr-0.5" />
                       +{selectedOrder.myEstimatedRevenue.toFixed(4)} SOL
+                      {selectedOrder.revenueStatus === "pending" ? " (est.)" : ""}
                     </Badge>
                   )}
                 </div>

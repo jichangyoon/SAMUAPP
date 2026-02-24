@@ -144,17 +144,28 @@ router.get("/map", async (req, res) => {
       }
     }
 
+    const allMemes = await storage.getAllMemes();
+    const memeContestMap = new Map<number, number | null>();
+    const memeAuthorMap = new Map<number, string>();
+    allMemes.forEach(m => {
+      memeContestMap.set(m.id, m.contestId);
+      memeAuthorMap.set(m.id, m.authorWallet);
+    });
+
+    const userCreatedContests = new Set<number>();
     let userVotedContests = new Set<number>();
     let userVoteShareByContest = new Map<number, number>();
     let userSamuByContest = new Map<number, number>();
     let totalSamuByContest = new Map<number, number>();
     if (walletAddress) {
+      for (const m of allMemes) {
+        if (m.authorWallet === walletAddress && m.contestId != null) {
+          userCreatedContests.add(m.contestId);
+        }
+      }
+
       const userVotes = await storage.getUserVotes(walletAddress);
       if (userVotes.length > 0) {
-        const allMemes = await storage.getAllMemes();
-        const memeContestMap = new Map<number, number | null>();
-        allMemes.forEach(m => memeContestMap.set(m.id, m.contestId));
-
         for (const vote of userVotes) {
           const contestId = memeContestMap.get(vote.memeId);
           if (contestId != null) {
@@ -191,15 +202,18 @@ router.get("/map", async (req, res) => {
         let hasRevenue = false;
         let revenueRole: string | null = null;
         let myEstimatedRevenue: number | null = null;
+        let revenueStatus: string | null = null;
+
+        const contestId = dist?.contestId || good?.contestId || escrow?.contestId || null;
 
         if (walletAddress && dist) {
           const myCreatorEarning = creatorDistByOrder.get(o.id) || 0;
           const isCreator = myCreatorEarning > 0;
-          const contestId = dist.contestId || good?.contestId;
           const isVoter = contestId != null && userVotedContests.has(contestId);
 
           if (isCreator || isVoter) {
             hasRevenue = true;
+            revenueStatus = "distributed";
             let estimated = 0;
 
             if (isCreator) {
@@ -221,14 +235,51 @@ router.get("/map", async (req, res) => {
 
             myEstimatedRevenue = estimated;
           }
+        } else if (walletAddress && escrow && !dist) {
+          const isCreator = contestId != null && userCreatedContests.has(contestId);
+          const isVoter = contestId != null && userVotedContests.has(contestId);
+
+          if (isCreator || isVoter) {
+            hasRevenue = true;
+            revenueStatus = escrow.status === "locked" ? "pending" : escrow.status;
+            const profitSol = escrow.profitSol || 0;
+            let estimated = 0;
+
+            if (isCreator) {
+              const creatorPool = profitSol * 0.45;
+              const contestMemes = allMemes.filter(m => m.contestId === contestId);
+              const totalVotes = contestMemes.reduce((sum: number, m: any) => sum + (m.votes || 0), 0);
+              const myMemes = contestMemes.filter(m => m.authorWallet === walletAddress);
+              const myVotes = myMemes.reduce((sum: number, m: any) => sum + (m.votes || 0), 0);
+              const myShare = totalVotes > 0 ? myVotes / totalVotes : 0;
+              estimated += creatorPool * myShare;
+            }
+
+            if (isVoter && contestId != null) {
+              const voterPool = profitSol * 0.40;
+              const voteShare = userVoteShareByContest.get(contestId) || 0;
+              estimated += voterPool * voteShare;
+            }
+
+            if (isCreator && isVoter) {
+              revenueRole = "creator_voter";
+            } else if (isCreator) {
+              revenueRole = "creator";
+            } else {
+              revenueRole = "voter";
+            }
+
+            myEstimatedRevenue = estimated;
+          }
         }
 
-        if (walletAddress && o.buyerWallet === walletAddress) {
+        const isBuyer = !!(walletAddress && o.buyerWallet === walletAddress);
+        if (isBuyer) {
           hasRevenue = true;
           if (!revenueRole) revenueRole = "buyer";
         }
 
-        const orderContestId = dist?.contestId || good?.contestId || null;
+        const orderContestId = dist?.contestId || good?.contestId || escrow?.contestId || null;
 
         return {
           id: o.id,
@@ -247,7 +298,9 @@ router.get("/map", async (req, res) => {
           createdAt: o.createdAt,
           contestId: orderContestId,
           hasRevenue,
+          isBuyer,
           revenueRole,
+          revenueStatus,
           myEstimatedRevenue,
           distribution: dist ? {
             creatorAmount: dist.creatorAmount,
