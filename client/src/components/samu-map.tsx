@@ -582,12 +582,12 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                   )}
                   {selectedOrder.revenueRole?.includes("creator") && (
                     <Badge className="text-[10px] bg-green-500/20 text-green-400 border-green-500/30">
-                      🎨 Creator{selectedOrder.revenueStatus === "pending" ? " (pending)" : ""}
+                      🎨 Creator
                     </Badge>
                   )}
                   {selectedOrder.revenueRole?.includes("voter") && (
                     <Badge className="text-[10px] bg-green-500/20 text-green-400 border-green-500/30">
-                      🗳️ Voter{selectedOrder.revenueStatus === "pending" ? " (pending)" : ""}
+                      🗳️ Voter
                     </Badge>
                   )}
                   {!selectedOrder.revenueRole && (
@@ -601,8 +601,7 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                     >
                       <DollarSign className="h-2.5 w-2.5 mr-0.5" />
                       +{selectedOrder.myEstimatedRevenue.toFixed(4)} SOL
-                      {selectedOrder.revenueStatus === "pending" ? " (est.)" : ""}
-                    </Badge>
+                                          </Badge>
                   )}
                 </div>
 
