@@ -870,16 +870,20 @@ router.post("/:id/prepare-payment", async (req, res) => {
       return res.status(404).json({ error: "Goods not found" });
     }
 
-    const { buyerWallet, shippingCostUSD, shippingAddress } = req.body;
+    const { buyerWallet, shippingAddress } = req.body;
     if (!buyerWallet) {
       return res.status(400).json({ error: "buyerWallet is required" });
     }
+    if (!shippingAddress || !shippingAddress.address1 || !shippingAddress.city || !shippingAddress.country_code) {
+      return res.status(400).json({ error: "Complete shipping address is required" });
+    }
 
-    const totalUSD = item.retailPrice + (parseFloat(shippingCostUSD) || 0);
+    const printfulCost = await getPrintfulProductCost(item, shippingAddress);
+    const serverShippingCost = printfulCost.shippingCost;
+    const totalUSD = item.retailPrice + serverShippingCost;
     const solPriceUSD = await getSOLPriceUSD();
     const solAmount = parseFloat((totalUSD / solPriceUSD).toFixed(6));
 
-    const printfulCost = await getPrintfulProductCost(item, shippingAddress);
     const costUSD = printfulCost.totalCost;
     const profitUSD = Math.max(0, totalUSD - costUSD);
 
@@ -924,7 +928,7 @@ router.post("/:id/prepare-payment", async (req, res) => {
       solAmount,
       solPriceUSD,
       totalUSD,
-      shippingCostUSD: parseFloat(shippingCostUSD) || 0,
+      shippingCostUSD: serverShippingCost,
       retailPrice: item.retailPrice,
       lamports: totalLamports,
       splits,
@@ -995,7 +999,11 @@ router.post("/:id/order", async (req, res) => {
           },
           items: [{ variant_id: sVariantId, quantity: 1 }],
         });
-        return parseFloat(data.result?.[0]?.rate) || 4.99;
+        const rates = data.result || [];
+        if (rates.length > 1) {
+          rates.sort((a: any, b: any) => parseFloat(a.rate) - parseFloat(b.rate));
+        }
+        return parseFloat(rates[0]?.rate) || 4.99;
       } catch { return 4.99; }
     })();
 

@@ -938,12 +938,20 @@ export function GoodsShop() {
                     onClick={async () => {
                       setOrderStep('payment');
                       try {
-                        const rates = shippingEstimate?.shipping_rates || [];
-                        const shippingCost = rates[0]?.rate || 0;
                         const prepareRes = await fetch(`/api/goods/${selectedItem.id}/prepare-payment`, {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ buyerWallet: walletAddress, shippingCostUSD: shippingCost }),
+                          body: JSON.stringify({
+                            buyerWallet: walletAddress,
+                            shippingAddress: {
+                              address1: shippingForm.address1,
+                              address2: shippingForm.address2 || undefined,
+                              city: shippingForm.city,
+                              state_code: shippingForm.state || undefined,
+                              country_code: shippingForm.country,
+                              zip: shippingForm.zip,
+                            },
+                          }),
                         });
                         if (prepareRes.ok) {
                           const payData = await prepareRes.json();
@@ -951,7 +959,7 @@ export function GoodsShop() {
                         }
                       } catch {}
                     }}
-                    disabled={!shippingForm.name || !shippingForm.email || !shippingForm.address1 || !shippingForm.city || !shippingForm.country || !shippingForm.zip}
+                    disabled={!shippingForm.name || !shippingForm.email || !shippingForm.address1 || !shippingForm.city || !shippingForm.country || !shippingForm.zip || !shippingEstimate?.shipping_rates?.length}
                   >
                     Continue to Payment
                   </Button>
