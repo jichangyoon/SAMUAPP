@@ -588,15 +588,15 @@ export function Admin() {
               className="flex items-center gap-2"
             >
               <Package className="h-4 w-4" />
-              {showGoodsCreate ? 'Cancel' : 'Create T-Shirt Product'}
+              {showGoodsCreate ? 'Cancel' : 'Create Sticker Product'}
             </Button>
 
             {showGoodsCreate && (
               <Card className="border-primary/30">
                 <CardContent className="p-4 space-y-3">
-                  <h3 className="font-semibold text-foreground">Create T-Shirt from Meme</h3>
+                  <h3 className="font-semibold text-foreground">Create Sticker from Meme</h3>
                   <Input
-                    placeholder="Product title (e.g., SAMU Wolf Champion Tee)"
+                    placeholder="Product title (e.g., SAMU Sensei Sticker)"
                     value={goodsForm.title}
                     onChange={(e) => setGoodsForm(f => ({ ...f, title: e.target.value }))}
                   />
