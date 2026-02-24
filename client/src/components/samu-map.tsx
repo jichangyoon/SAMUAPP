@@ -385,7 +385,7 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
           height={400}
           style={{ width: "100%", height: isActive ? "100%" : "auto" }}
         >
-          <ZoomableGroup>
+          <ZoomableGroup maxZoom={20}>
             <Geographies geography={GEO_URL}>
               {({ geographies }) =>
                 geographies.map((geo) => (
