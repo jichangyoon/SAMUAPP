@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Trophy, Users, Vote, Sparkles, PieChart, User } from "lucide-react";
+import { Trophy, Users, Vote, Sparkles, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface GoodsStory {
@@ -60,7 +60,7 @@ export default function GoodsStorySection({ goodsId }: { goodsId: number }) {
 
   if (!story || (!story.meme && !story.contest)) return null;
 
-  const { meme, contest, stats, shareRatios } = story;
+  const { meme, contest, stats } = story;
 
   return (
     <div className="space-y-3">
@@ -120,22 +120,6 @@ export default function GoodsStorySection({ goodsId }: { goodsId: number }) {
         )}
       </div>
 
-      <div className="bg-accent/30 border border-border/50 rounded-lg p-3">
-        <div className="flex items-center gap-2 mb-2">
-          <PieChart className="h-3.5 w-3.5 text-primary" />
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Revenue Split</span>
-        </div>
-        <div className="flex gap-1 h-2 rounded-full overflow-hidden mb-2">
-          <div className="bg-[hsl(50,85%,65%)]" style={{ width: `${shareRatios.creator * 100}%` }} />
-          <div className="bg-[hsl(30,80%,55%)]" style={{ width: `${shareRatios.voter * 100}%` }} />
-          <div className="bg-muted-foreground/40" style={{ width: `${shareRatios.platform * 100}%` }} />
-        </div>
-        <div className="flex justify-between text-[10px] text-muted-foreground">
-          <span><span className="inline-block w-2 h-2 rounded-full bg-[hsl(50,85%,65%)] mr-1" />Creators {shareRatios.creator * 100}%</span>
-          <span><span className="inline-block w-2 h-2 rounded-full bg-[hsl(30,80%,55%)] mr-1" />Voters {shareRatios.voter * 100}%</span>
-          <span><span className="inline-block w-2 h-2 rounded-full bg-muted-foreground/40 mr-1" />Platform {shareRatios.platform * 100}%</span>
-        </div>
-      </div>
     </div>
   );
 }
