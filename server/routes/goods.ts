@@ -204,10 +204,13 @@ async function getPrintfulProductCost(item: any, shippingAddress?: any): Promise
 
     const data = await printfulRequest("POST", "/orders/estimate-costs", estimatePayload);
     const costs = data.result?.costs;
+    console.log("[Printful estimate-costs] Full costs response:", JSON.stringify(costs));
     if (costs) {
       const productCost = parseFloat(costs.subtotal) || (item.basePrice || item.retailPrice * 0.6);
       const shippingCost = parseFloat(costs.shipping) || 4.99;
-      return { productCost, shippingCost, totalCost: productCost + shippingCost };
+      const totalCost = parseFloat(costs.total) || (productCost + shippingCost);
+      console.log(`[Printful estimate-costs] productCost=${productCost}, shippingCost=${shippingCost}, totalCost(from API)=${totalCost}, manual total=${productCost + shippingCost}`);
+      return { productCost, shippingCost, totalCost };
     }
   } catch (err: any) {
     console.error("Printful cost estimate failed, using fallback:", err.message);
@@ -889,6 +892,8 @@ router.post("/:id/prepare-payment", async (req, res) => {
 
     const costSol = parseFloat((costUSD / solPriceUSD).toFixed(6));
     const profitSol = parseFloat((profitUSD / solPriceUSD).toFixed(6));
+
+    console.log(`[prepare-payment] retailPrice=$${item.retailPrice}, shippingCost=$${serverShippingCost}, totalUSD=$${totalUSD}, costUSD=$${costUSD}, profitUSD=$${profitUSD}, solPrice=$${solPriceUSD}, costSol=${costSol}, profitSol=${profitSol}, totalSol=${solAmount}`);
 
     const connection = getSolConnection();
     const buyerPubkey = new PublicKey(buyerWallet);
