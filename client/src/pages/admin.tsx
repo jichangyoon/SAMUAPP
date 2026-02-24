@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Play, Square, Archive, Plus, Clock, Trophy, ArrowLeft, Shield, Eye, Ban, Shirt, Package, Image, Loader2 } from "lucide-react";
+import { Play, Square, Archive, Plus, Clock, Trophy, ArrowLeft, Shield, Eye, Ban, Shirt, Package, Image, Loader2, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import type { Contest, ArchivedContest } from "@shared/schema";
 import { useLocation } from "wouter";
 import { IPTrackingPanel } from "@/components/ip-tracking-panel";
@@ -33,6 +33,7 @@ export function Admin() {
     title: '', description: '', imageUrl: '', contestId: 0, memeId: 0,
     retailPrice: 29.99, sizes: ['S', 'M', 'L', 'XL', '2XL'], colors: ['Black', 'White']
   });
+  const [expandedArchiveId, setExpandedArchiveId] = useState<number | null>(null);
 
   const { data: goodsList = [] } = useQuery({
     queryKey: ['/api/goods'],
@@ -120,6 +121,38 @@ export function Admin() {
     staleTime: 0,
     refetchOnMount: true,
   });
+
+  const expandedContest = archivedContests.find(c => c.id === expandedArchiveId);
+  const expandedContestId = expandedContest?.originalContestId;
+
+  const { data: archivedMemesData, isLoading: archivedMemesLoading } = useQuery<{ memes: any[] }>({
+    queryKey: ['/api/memes', { contestId: expandedContestId }],
+    queryFn: async () => {
+      const res = await fetch(`/api/memes?contestId=${expandedContestId}&sortBy=votes`);
+      if (!res.ok) throw new Error('Failed to fetch memes');
+      return res.json();
+    },
+    enabled: !!expandedContestId,
+  });
+
+  const archivedTopMemes = (archivedMemesData?.memes || []).slice(0, 5);
+
+  const handleMakeGoods = (meme: any, contestId: number) => {
+    setGoodsForm({
+      title: `${meme.title} Sticker`,
+      description: `Kiss-Cut Sticker featuring "${meme.title}" by ${meme.authorUsername}`,
+      imageUrl: meme.imageUrl,
+      contestId: contestId,
+      memeId: meme.id,
+      retailPrice: 29.99,
+      sizes: ['S', 'M', 'L', 'XL', '2XL'],
+      colors: ['Black', 'White'],
+    });
+    setShowGoodsCreate(true);
+    setTimeout(() => {
+      document.getElementById('goods-create-section')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
 
 
   // Create contest mutation
@@ -452,44 +485,97 @@ export function Admin() {
               <p className="text-muted-foreground text-center py-8">No archived contests yet</p>
             ) : (
               <div className="space-y-4">
-                {archivedContests.map((contest) => (
-                  <Card key={contest.id} className="border-border/50">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <div>
-                          <h3 className="font-semibold text-foreground">{contest.title}</h3>
-                          <p className="text-sm text-muted-foreground">{contest.description}</p>
+                {archivedContests.map((contest) => {
+                  const isExpanded = expandedArchiveId === contest.id;
+                  return (
+                    <Card key={contest.id} className="border-border/50">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <h3 className="font-semibold text-foreground">{contest.title}</h3>
+                            <p className="text-sm text-muted-foreground">{contest.description}</p>
+                          </div>
+                          <Badge className="bg-blue-500/20 text-blue-400">
+                            Archived
+                          </Badge>
                         </div>
-                        <Badge className="bg-blue-500/20 text-blue-400">
-                          Archived
-                        </Badge>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-4 text-sm mb-3">
-                        <div>
-                          <span className="text-muted-foreground">Memes: </span>
-                          <span className="font-medium">{contest.totalMemes}</span>
+                        
+                        <div className="grid grid-cols-3 gap-4 text-sm mb-3">
+                          <div>
+                            <span className="text-muted-foreground">Memes: </span>
+                            <span className="font-medium">{contest.totalMemes}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Votes: </span>
+                            <span className="font-medium">{contest.totalVotes.toLocaleString()}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Participants: </span>
+                            <span className="font-medium">{contest.totalParticipants}</span>
+                          </div>
                         </div>
-                        <div>
-                          <span className="text-muted-foreground">Votes: </span>
-                          <span className="font-medium">{contest.totalVotes.toLocaleString()}</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Participants: </span>
-                          <span className="font-medium">{contest.totalParticipants}</span>
-                        </div>
-                      </div>
 
-                    </CardContent>
-                  </Card>
-                ))}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setExpandedArchiveId(isExpanded ? null : contest.id)}
+                          className="flex items-center gap-1 text-xs"
+                        >
+                          <Trophy className="h-3 w-3" />
+                          Top Memes
+                          {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                        </Button>
+
+                        {isExpanded && (
+                          <div className="mt-3 space-y-2 border-t border-border/50 pt-3">
+                            {archivedMemesLoading ? (
+                              <div className="flex items-center justify-center py-4">
+                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                              </div>
+                            ) : archivedTopMemes.length === 0 ? (
+                              <p className="text-sm text-muted-foreground text-center py-2">No memes found</p>
+                            ) : (
+                              archivedTopMemes.map((meme: any, idx: number) => (
+                                <div key={meme.id} className="flex items-center gap-3 p-2 rounded-lg bg-accent/50">
+                                  <span className="text-xs font-bold text-yellow-400 w-5 text-center">
+                                    {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}`}
+                                  </span>
+                                  <img
+                                    src={meme.imageUrl}
+                                    alt={meme.title}
+                                    className="w-10 h-10 object-cover rounded"
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="text-sm font-medium text-foreground truncate">{meme.title}</div>
+                                    <div className="text-xs text-muted-foreground">
+                                      by {meme.authorUsername} · {(meme.votes || 0).toLocaleString()} votes
+                                    </div>
+                                  </div>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-xs h-7 border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
+                                    onClick={() => handleMakeGoods(meme, contest.originalContestId)}
+                                  >
+                                    <Sparkles className="h-3 w-3 mr-1" />
+                                    Make Goods
+                                  </Button>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </CardContent>
         </Card>
 
         {/* Goods Management */}
-        <Card className="border-border bg-card">
+        <Card id="goods-create-section" className="border-border bg-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shirt className="h-5 w-5" />
