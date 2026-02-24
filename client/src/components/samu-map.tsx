@@ -1,20 +1,13 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  ComposableMap,
-  Geographies,
-  Geography,
-  Line,
-  Marker,
-  ZoomableGroup,
-} from "react-simple-maps";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { X, Package, MapPin, ExternalLink, TrendingUp, Clock, DollarSign, Truck, PieChart, ChevronUp, ChevronDown } from "lucide-react";
 import { getCoordinates, getCountryName } from "@/data/country-coordinates";
 import samuLogoImg from "@/assets/samu-logo.webp";
-
-const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 interface FulfillmentCenter {
   coords: [number, number];
@@ -22,12 +15,12 @@ interface FulfillmentCenter {
 }
 
 const FULFILLMENT_CENTERS: Record<string, FulfillmentCenter> = {
-  japan: { coords: [130.19, 32.30], label: "Amakusa, JP" },
-  us: { coords: [-80.84, 35.23], label: "Charlotte, US" },
-  europe: { coords: [24.11, 56.95], label: "Riga, LV" },
-  australia: { coords: [153.03, -27.47], label: "Brisbane, AU" },
-  brazil: { coords: [-43.17, -22.91], label: "Rio, BR" },
-  mexico: { coords: [-117.03, 32.53], label: "Tijuana, MX" },
+  japan: { coords: [32.30, 130.19], label: "Amakusa, JP" },
+  us: { coords: [35.23, -80.84], label: "Charlotte, US" },
+  europe: { coords: [56.95, 24.11], label: "Riga, LV" },
+  australia: { coords: [-27.47, 153.03], label: "Brisbane, AU" },
+  brazil: { coords: [-22.91, -43.17], label: "Rio, BR" },
+  mexico: { coords: [32.53, -117.03], label: "Tijuana, MX" },
 };
 
 const ASIA_COUNTRIES = ["JP", "KR", "CN", "TW", "HK", "SG", "TH", "VN", "MY", "ID", "PH", "IN", "BD", "LK", "NP", "MM", "KH", "LA", "MN", "BN"];
@@ -42,6 +35,30 @@ function getFulfillmentCenter(country: string): FulfillmentCenter {
   if (SOUTH_AMERICA_COUNTRIES.includes(country)) return FULFILLMENT_CENTERS.brazil;
   if (country === "MX") return FULFILLMENT_CENTERS.mexico;
   return FULFILLMENT_CENTERS.us;
+}
+
+function createDotIcon(color: string, isSelected: boolean): L.DivIcon {
+  const size = isSelected ? 18 : 12;
+  const borderColor = isSelected ? "#fbbf24" : "#fff";
+  const borderWidth = isSelected ? 3 : 2;
+  return L.divIcon({
+    className: "",
+    html: `<div style="position:relative;width:${size}px;height:${size}px;">
+      <div style="width:${size}px;height:${size}px;background:${color};border:${borderWidth}px solid ${borderColor};border-radius:50%;box-shadow:0 0 8px ${color}80;"></div>
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:${size * 2}px;height:${size * 2}px;background:${color};border-radius:50%;opacity:0.3;animation:pulse-ring 2s infinite;pointer-events:none;"></div>
+    </div>`,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  });
+}
+
+function createFulfillmentIcon(): L.DivIcon {
+  return L.divIcon({
+    className: "",
+    html: `<div style="width:12px;height:12px;background:#fbbf24;border:2px solid #fff;border-radius:50%;box-shadow:0 0 6px #fbbf2480;"></div>`,
+    iconSize: [12, 12],
+    iconAnchor: [6, 6],
+  });
 }
 
 interface MapOrder {
@@ -313,6 +330,26 @@ function MapRevenueWidget({ order, walletAddress }: { order: MapOrder; walletAdd
   );
 }
 
+function MapController({ selectedOrder, markers }: { selectedOrder: MapOrder | null; markers: (MapOrder & { lat: number; lng: number })[] }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (selectedOrder) {
+      const marker = markers.find(m => m.id === selectedOrder.id);
+      if (marker) {
+        const center = getFulfillmentCenter(marker.country);
+        const bounds = L.latLngBounds(
+          [center.coords[0], center.coords[1]],
+          [marker.lat, marker.lng]
+        );
+        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 6 });
+      }
+    }
+  }, [selectedOrder, markers, map]);
+
+  return null;
+}
+
 interface SamuMapProps {
   walletAddress?: string;
 }
@@ -343,8 +380,8 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
         }
         if (lat == null || lng == null) return null;
         const seed = order.id * 2654435761;
-        const jitterLat = ((seed % 1000) / 1000 - 0.5) * 3;
-        const jitterLng = (((seed * 7) % 1000) / 1000 - 0.5) * 3;
+        const jitterLat = ((seed % 1000) / 1000 - 0.5) * 0.5;
+        const jitterLng = (((seed * 7) % 1000) / 1000 - 0.5) * 0.5;
         return { ...order, lat: lat + jitterLat, lng: lng + jitterLng };
       })
       .filter(Boolean) as (MapOrder & { lat: number; lng: number })[];
@@ -376,104 +413,69 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
 
   const isActive = !!selectedOrder;
 
+  const selectedMarker = selectedOrder ? markers.find(m => m.id === selectedOrder.id) : null;
+  const fulfillmentCenter = selectedMarker ? getFulfillmentCenter(selectedMarker.country) : null;
+  const routeLine: [number, number][] = selectedMarker && fulfillmentCenter
+    ? [fulfillmentCenter.coords, [selectedMarker.lat, selectedMarker.lng]]
+    : [];
+
   return (
     <div className={`${isActive ? "fixed inset-0 z-[60] bg-[#0d0d1a] flex flex-col" : "space-y-4"}`}>
-      <div className={`relative overflow-hidden bg-[#1a1a2e] ${isActive ? "h-[33vh] flex-shrink-0" : "rounded-lg border border-border/50"}`}>
-        <ComposableMap
-          projectionConfig={{ scale: 147, center: [0, 20] }}
-          width={800}
-          height={400}
-          style={{ width: "100%", height: isActive ? "100%" : "auto" }}
+      <div className={`relative overflow-hidden ${isActive ? "h-[33vh] flex-shrink-0" : "rounded-lg border border-border/50"}`}>
+        <MapContainer
+          center={[20, 0]}
+          zoom={2}
+          minZoom={2}
+          maxZoom={18}
+          style={{ width: "100%", height: isActive ? "100%" : "300px", background: "#0d0d1a" }}
+          zoomControl={true}
+          attributionControl={false}
         >
-          <ZoomableGroup maxZoom={20}>
-            <Geographies geography={GEO_URL}>
-              {({ geographies }) =>
-                geographies.map((geo) => (
-                  <Geography
-                    key={geo.rsmKey}
-                    geography={geo}
-                    fill="#2a2a4a"
-                    stroke="#3a3a5a"
-                    strokeWidth={0.5}
-                    style={{
-                      default: { outline: "none" },
-                      hover: { fill: "#3a3a6a", outline: "none" },
-                      pressed: { outline: "none" },
-                    }}
-                  />
-                ))
-              }
-            </Geographies>
+          <TileLayer
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          />
 
-            {markers.map((marker) => (
-              <Marker
-                key={marker.id}
-                coordinates={[marker.lng, marker.lat]}
-                onClick={() => {
-                  setSelectedOrder(marker);
+          <MapController selectedOrder={selectedOrder} markers={markers} />
+
+          {markers.map((marker) => (
+            <Marker
+              key={marker.id}
+              position={[marker.lat, marker.lng]}
+              icon={createDotIcon(
+                marker.hasRevenue ? "#22c55e" : "#ef4444",
+                selectedOrder?.id === marker.id
+              )}
+              eventHandlers={{
+                click: () => setSelectedOrder(marker),
+              }}
+            />
+          ))}
+
+          {fulfillmentCenter && selectedMarker && (
+            <>
+              <Polyline
+                positions={routeLine}
+                pathOptions={{
+                  color: selectedMarker.hasRevenue ? "#22c55e" : "#ef4444",
+                  weight: 2,
+                  dashArray: "8 6",
+                  opacity: 0.7,
                 }}
+              />
+              <Marker
+                position={fulfillmentCenter.coords}
+                icon={createFulfillmentIcon()}
               >
-                <circle
-                  r={4}
-                  fill={marker.hasRevenue ? "#22c55e" : "#ef4444"}
-                  stroke={selectedOrder?.id === marker.id ? "#fbbf24" : "#fff"}
-                  strokeWidth={selectedOrder?.id === marker.id ? 2 : 1}
-                  className="cursor-pointer"
-                  opacity={0.9}
-                />
-                <circle
-                  r={8}
-                  fill={marker.hasRevenue ? "#22c55e" : "#ef4444"}
-                  opacity={0.2}
-                  className="cursor-pointer"
-                >
-                  <animate
-                    attributeName="r"
-                    from="4"
-                    to="12"
-                    dur="2s"
-                    repeatCount="indefinite"
-                  />
-                  <animate
-                    attributeName="opacity"
-                    from="0.3"
-                    to="0"
-                    dur="2s"
-                    repeatCount="indefinite"
-                  />
-                </circle>
+                <Popup className="leaflet-dark-popup">
+                  <span className="text-xs font-bold">{fulfillmentCenter.label}</span>
+                </Popup>
               </Marker>
-            ))}
-
-            {selectedOrder && (() => {
-              const selMarker = markers.find(m => m.id === selectedOrder.id);
-              if (!selMarker) return null;
-              const center = getFulfillmentCenter(selMarker.country);
-              return (
-                <>
-                  <Line
-                    from={center.coords}
-                    to={[selMarker.lng, selMarker.lat]}
-                    stroke={selMarker.hasRevenue ? "#22c55e" : "#ef4444"}
-                    strokeWidth={1.2}
-                    strokeLinecap="round"
-                    strokeDasharray="4 3"
-                    strokeOpacity={0.6}
-                  />
-                  <Marker coordinates={center.coords}>
-                    <circle r={3.5} fill="#fbbf24" stroke="#fff" strokeWidth={1} opacity={0.9} />
-                    <text textAnchor="middle" y={-8} style={{ fontSize: 6, fill: "#fbbf24", fontWeight: "bold" }}>
-                      {center.label}
-                    </text>
-                  </Marker>
-                </>
-              );
-            })()}
-          </ZoomableGroup>
-        </ComposableMap>
+            </>
+          )}
+        </MapContainer>
 
         {markers.length === 0 && !isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[400]">
             <div className="text-center text-muted-foreground">
               <Package className="h-10 w-10 mx-auto mb-2 opacity-50" />
               <p className="text-sm">No deliveries yet</p>
@@ -482,7 +484,7 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
           </div>
         )}
 
-        <div className="absolute bottom-2 left-2 flex items-center gap-3 text-[10px] text-white/70">
+        <div className="absolute bottom-2 left-2 z-[400] flex items-center gap-3 text-[10px] text-white/70 bg-black/40 backdrop-blur-sm rounded px-2 py-1">
           {isActive && (
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full bg-[#fbbf24]" />
@@ -502,7 +504,7 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
         {isActive && (
           <button
             onClick={closeSheet}
-            className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white hover:bg-black/80 transition-all"
+            className="absolute top-3 right-3 z-[500] w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white hover:bg-black/80 transition-all"
           >
             <X className="h-4 w-4" />
           </button>
@@ -601,7 +603,7 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                     >
                       <DollarSign className="h-2.5 w-2.5 mr-0.5" />
                       +{selectedOrder.myEstimatedRevenue.toFixed(4)} SOL
-                                          </Badge>
+                    </Badge>
                   )}
                 </div>
 
