@@ -424,11 +424,9 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
       <div className={`relative overflow-hidden ${isActive ? "h-[33vh] flex-shrink-0" : "rounded-lg border border-border/50"}`}>
         <MapContainer
           center={[20, 0]}
-          zoom={0}
-          minZoom={0}
+          zoom={1}
+          minZoom={1}
           maxZoom={18}
-          maxBounds={[[-90, -180], [90, 180]]}
-          maxBoundsViscosity={1.0}
           style={{ width: "100%", height: isActive ? "100%" : "300px", background: "#0d0d1a" }}
           zoomControl={true}
           attributionControl={false}
