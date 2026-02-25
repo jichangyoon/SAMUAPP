@@ -37,8 +37,8 @@ const Profile = memo(() => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [memeToDelete, setMemeToDelete] = useState<any>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [showAllMemes, setShowAllMemes] = useState(false);
   const [showAllVotes, setShowAllVotes] = useState(false);
+  const [expandedMemeContests, setExpandedMemeContests] = useState<Set<number>>(new Set());
   const [expandedVoteContests, setExpandedVoteContests] = useState<Set<number>>(new Set());
   // 지갑 주소 가져오기 (홈과 동일한 로직)
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
@@ -94,6 +94,18 @@ const Profile = memo(() => {
       if (!walletAddress) return [];
       const res = await fetch(`/api/users/${walletAddress}/memes`);
       if (!res.ok) throw new Error('Failed to fetch memes');
+      return res.json();
+    },
+    enabled: !!walletAddress,
+  });
+
+  // User memes grouped by contest
+  const { data: memesByContest = [] } = useQuery({
+    queryKey: ['user-memes-by-contest', walletAddress],
+    queryFn: async () => {
+      if (!walletAddress) return [];
+      const res = await fetch(`/api/users/${walletAddress}/memes-by-contest`);
+      if (!res.ok) throw new Error('Failed to fetch memes by contest');
       return res.json();
     },
     enabled: !!walletAddress,
@@ -455,6 +467,7 @@ const Profile = memo(() => {
         // Invalidate related queries to refresh the data
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: ['user-memes', walletAddress] }),
+          queryClient.invalidateQueries({ queryKey: ['user-memes-by-contest', walletAddress] }),
           queryClient.invalidateQueries({ queryKey: ['memes'] }),
           queryClient.invalidateQueries({ queryKey: ['user-stats', walletAddress] })
         ]);
@@ -544,11 +557,6 @@ const Profile = memo(() => {
     myMemes: userMemes || [],
     myVotes: userVoteHistory || [],
   }), [userMemes, userVoteHistory]);
-
-  // Display limited memes with More button
-  const displayedMemes = useMemo(() => {
-    return showAllMemes ? myMemes : myMemes.slice(0, 5);
-  }, [myMemes, showAllMemes]);
 
   // Display limited votes with More button
   const displayedVotes = useMemo(() => {
@@ -827,85 +835,91 @@ const Profile = memo(() => {
                 <CardTitle className="text-lg text-foreground">My Memes ({myMemes.length})</CardTitle>
               </CardHeader>
               <CardContent>
-                {myMemes.length > 0 ? (
-                  <div className="space-y-2">
-                    {displayedMemes.map((meme: any) => (
-                      <div 
-                        key={meme.id} 
-                        className="flex items-center gap-3 p-2 bg-accent/50 rounded-lg hover:bg-accent/70 transition-colors"
-                      >
-                        <div 
-                          className="w-10 h-10 cursor-pointer"
-                          onClick={() => {
-                            setSelectedMeme(meme);
-                            setIsModalOpen(true);
-                          }}
-                        >
-                          <MediaDisplay
-                            src={meme.imageUrl}
-                            alt={meme.title}
-                            className="w-full h-full rounded"
-                            showControls={false}
-                          />
+                {memesByContest.length > 0 ? (
+                  <div className="space-y-3">
+                    {(memesByContest as any[]).map((contest: any) => (
+                      <div key={contest.contestId} className="border border-border rounded-lg overflow-hidden">
+                        <div className="p-3 bg-accent/30 flex items-center justify-between">
+                          <div>
+                            <div className="font-semibold text-foreground text-sm">{contest.contestTitle}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {contest.contestStatus === 'active' ? 'Active' : contest.contestStatus === 'archived' ? 'Archived' : 'Ended'}
+                              {contest.endTime && ` - ${new Date(contest.endTime).toLocaleDateString()}`}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-bold text-primary text-sm">{(contest.totalVotesReceived || 0).toLocaleString()} SAMU</div>
+                            <div className="text-xs text-muted-foreground">received</div>
+                          </div>
                         </div>
-                        <div 
-                          className="flex-1 min-w-0 cursor-pointer"
-                          onClick={() => {
-                            setSelectedMeme(meme);
-                            setIsModalOpen(true);
-                          }}
-                        >
-                          <h4 className="font-medium text-foreground text-sm truncate">{meme.title}</h4>
-                          <p className="text-xs text-muted-foreground truncate">{meme.description}</p>
+                        <div className="p-2 space-y-1">
+                          {(expandedMemeContests.has(contest.contestId) ? contest.memes : contest.memes?.slice(0, 5))?.map((meme: any) => (
+                            <div
+                              key={meme.id}
+                              className="flex items-center gap-2 p-1.5 rounded text-xs cursor-pointer hover:bg-accent/50 transition-colors"
+                              onClick={() => {
+                                setSelectedMeme(meme);
+                                setIsModalOpen(true);
+                              }}
+                            >
+                              {meme.imageUrl && (
+                                getMediaType(meme.imageUrl) === 'video' ? (
+                                  <video src={meme.imageUrl} muted playsInline preload="metadata" className="w-8 h-8 rounded object-cover flex-shrink-0" />
+                                ) : (
+                                  <img src={meme.imageUrl} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
+                                )
+                              )}
+                              <span className="flex-1 text-foreground truncate">{meme.title}</span>
+                              <span className="font-bold text-primary flex-shrink-0">{(meme.votes || 0).toLocaleString()} SAMU</span>
+                              {authenticated && walletAddress && (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-6 w-6 p-0 hover:bg-accent flex-shrink-0"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <MoreVertical className="h-3 w-3" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem
+                                      className="text-destructive focus:text-destructive cursor-pointer"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setMemeToDelete(meme);
+                                        setShowDeleteDialog(true);
+                                      }}
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                      Delete Meme
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              )}
+                            </div>
+                          ))}
+                          {contest.memes?.length > 5 && (
+                            <button
+                              onClick={() => {
+                                setExpandedMemeContests(prev => {
+                                  const next = new Set(prev);
+                                  if (next.has(contest.contestId)) next.delete(contest.contestId);
+                                  else next.add(contest.contestId);
+                                  return next;
+                                });
+                              }}
+                              className="w-full text-xs text-primary hover:text-primary/80 text-center py-1.5"
+                            >
+                              {expandedMemeContests.has(contest.contestId)
+                                ? 'Show less'
+                                : `+${contest.memes.length - 5} more memes`}
+                            </button>
+                          )}
                         </div>
-                        <Badge variant="secondary" className="text-primary text-xs">
-                          {meme.votes}
-                        </Badge>
-                        
-                        {/* Delete button - only show for authenticated users */}
-                        {authenticated && walletAddress && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="h-8 w-8 p-0 hover:bg-accent"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem 
-                                className="text-destructive focus:text-destructive cursor-pointer"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setMemeToDelete(meme);
-                                  setShowDeleteDialog(true);
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete Meme
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        )}
                       </div>
                     ))}
-                    
-                    {/* More button - only show if there are more than 5 memes */}
-                    {myMemes.length > 5 && (
-                      <div className="flex justify-center pt-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setShowAllMemes(!showAllMemes)}
-                          className="text-foreground border-border hover:bg-accent"
-                        >
-                          {showAllMemes ? 'Show Less' : `More (${myMemes.length - 5})`}
-                        </Button>
-                      </div>
-                    )}
                   </div>
                 ) : (
                   <div className="text-center py-6 text-muted-foreground">

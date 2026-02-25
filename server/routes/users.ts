@@ -139,6 +139,18 @@ router.get("/:walletAddress/memes", async (req, res) => {
   }
 });
 
+// Get user's memes grouped by contest
+router.get("/:walletAddress/memes-by-contest", async (req, res) => {
+  try {
+    const { walletAddress } = req.params;
+    const data = await storage.getUserMemesByContest(walletAddress);
+    res.json(data);
+  } catch (error) {
+    console.error("Error fetching user memes by contest:", error);
+    res.status(500).json({ message: "Failed to fetch user memes by contest" });
+  }
+});
+
 // Get user's votes
 router.get("/:walletAddress/votes", async (req, res) => {
   try {

@@ -10,6 +10,7 @@ export interface IStorage {
   updateUser(walletAddress: string, updates: Partial<InsertUser & { displayName?: string; avatarUrl?: string }>): Promise<User>;
   updateUserMemeAuthorInfo(walletAddress: string, newDisplayName: string, newAvatarUrl?: string): Promise<void>;
   getUserMemes(walletAddress: string): Promise<Meme[]>;
+  getUserMemesByContest(walletAddress: string): Promise<any[]>;
   getUserVotes(walletAddress: string): Promise<Vote[]>;
   // Meme operations
   createMeme(meme: InsertMeme): Promise<Meme>;
@@ -232,6 +233,10 @@ export class MemStorage implements IStorage {
     return Array.from(this.memes.values())
       .filter(meme => meme.authorWallet === walletAddress)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getUserMemesByContest(walletAddress: string): Promise<any[]> {
+    return [];
   }
 
   async getUserVotes(walletAddress: string): Promise<Vote[]> {
@@ -543,6 +548,55 @@ export class DatabaseStorage implements IStorage {
       .from(memes)
       .where(eq(memes.authorWallet, walletAddress))
       .orderBy(desc(memes.createdAt));
+  }
+
+  async getUserMemesByContest(walletAddress: string): Promise<any[]> {
+    if (!this.db) throw new Error("Database not available");
+
+    const userMemes = await this.db
+      .select()
+      .from(memes)
+      .where(eq(memes.authorWallet, walletAddress))
+      .orderBy(desc(memes.createdAt));
+
+    const contestIds = Array.from(new Set(userMemes.map(m => m.contestId).filter(Boolean))) as number[];
+
+    const contestMap: Record<number, any> = {};
+    const contestIsArchived: Record<number, boolean> = {};
+    for (const cid of contestIds) {
+      const archived = await this.db.select().from(archivedContests).where(eq(archivedContests.originalContestId, cid));
+      if (archived.length > 0) {
+        contestMap[cid] = archived[0];
+        contestIsArchived[cid] = true;
+      } else {
+        const contest = await this.db.select().from(contests).where(eq(contests.id, cid));
+        if (contest.length > 0) {
+          contestMap[cid] = contest[0];
+          contestIsArchived[cid] = false;
+        }
+      }
+    }
+
+    const grouped: Record<string, any> = {};
+    for (const meme of userMemes) {
+      const cid = meme.contestId || 0;
+      const key = String(cid);
+      if (!grouped[key]) {
+        const contestInfo = contestMap[cid];
+        grouped[key] = {
+          contestId: cid,
+          contestTitle: contestInfo?.title || 'Current Contest',
+          contestStatus: contestIsArchived[cid] ? 'archived' : (contestInfo?.status || 'active'),
+          endTime: contestInfo?.endTime || contestInfo?.end_time,
+          totalVotesReceived: 0,
+          memes: [],
+        };
+      }
+      grouped[key].totalVotesReceived += (meme.votes || 0);
+      grouped[key].memes.push(meme);
+    }
+
+    return Object.values(grouped).sort((a, b) => (b.contestId || 0) - (a.contestId || 0));
   }
 
   async getUserVotes(walletAddress: string): Promise<Vote[]> {
