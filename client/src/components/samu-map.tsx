@@ -427,6 +427,8 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
           zoom={0}
           minZoom={0}
           maxZoom={18}
+          maxBounds={[[-90, -180], [90, 180]]}
+          maxBoundsViscosity={1.0}
           style={{ width: "100%", height: isActive ? "100%" : "300px", background: "#0d0d1a" }}
           zoomControl={true}
           attributionControl={false}
