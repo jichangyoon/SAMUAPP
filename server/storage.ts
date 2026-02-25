@@ -29,6 +29,7 @@ export interface IStorage {
   updateMemeVoteCount(memeId: number): Promise<void>;
   getUserVoteHistoryByContest(walletAddress: string): Promise<any[]>;
   getUserVotesForContest(walletAddress: string, contestId: number): Promise<any[]>;
+  getVotesByContestIds(contestIds: number[]): Promise<Vote[]>;
   
   // Partner Meme operations
   createPartnerMeme(meme: InsertMeme, partnerId: string): Promise<Meme>;
@@ -250,6 +251,10 @@ export class MemStorage implements IStorage {
   }
 
   async getUserVotesForContest(walletAddress: string, contestId: number): Promise<any[]> {
+    return [];
+  }
+
+  async getVotesByContestIds(contestIds: number[]): Promise<Vote[]> {
     return [];
   }
 
@@ -725,6 +730,17 @@ export class DatabaseStorage implements IStorage {
       myRevenueSharePercent,
       votes: userVotes,
     } as any;
+  }
+
+  async getVotesByContestIds(contestIds: number[]): Promise<Vote[]> {
+    if (!this.db) throw new Error("Database not available");
+    if (contestIds.length === 0) return [];
+
+    return await this.db
+      .select({ ...votes })
+      .from(votes)
+      .innerJoin(memes, eq(votes.memeId, memes.id))
+      .where(inArray(memes.contestId, contestIds));
   }
 
   async createMeme(insertMeme: InsertMeme): Promise<Meme> {

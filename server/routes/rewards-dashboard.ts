@@ -174,15 +174,16 @@ router.get("/map", async (req, res) => {
           }
         }
 
-        const allVotes = await storage.getAllVotes();
-        for (const vote of allVotes) {
+        const contestIds = Array.from(userVotedContests);
+        const contestVotes = await storage.getVotesByContestIds(contestIds);
+        for (const vote of contestVotes) {
           const contestId = memeContestMap.get(vote.memeId);
-          if (contestId != null && userVotedContests.has(contestId)) {
+          if (contestId != null) {
             totalSamuByContest.set(contestId, (totalSamuByContest.get(contestId) || 0) + (vote.samuAmount || 0));
           }
         }
 
-        for (const contestId of Array.from(userVotedContests)) {
+        for (const contestId of contestIds) {
           const userTotal = userSamuByContest.get(contestId) || 0;
           const total = totalSamuByContest.get(contestId) || 0;
           if (total > 0) {

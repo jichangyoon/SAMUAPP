@@ -362,7 +362,7 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
   const mapUrl = walletAddress ? `/api/rewards/map?wallet=${walletAddress}` : "/api/rewards/map";
   const { data: mapData, isLoading } = useQuery<MapData>({
     queryKey: [mapUrl],
-    refetchInterval: 30000,
+    refetchInterval: 60000,
   });
 
   const markers = useMemo(() => {
