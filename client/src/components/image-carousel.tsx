@@ -73,29 +73,22 @@ export function ImageCarousel({ images, alt, className = "", showControls = fals
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {images.map((src, idx) => {
-          const isNearby = Math.abs(idx - currentIndex) <= 1;
-          return (
-            <div key={idx} className={`min-w-full flex-shrink-0 ${containMode ? '' : 'h-full'}`}>
-              {isNearby ? (
-                <MediaDisplay
-                  src={src}
-                  alt={`${alt} ${idx + 1}`}
-                  className={containMode ? "w-full" : "w-full h-full"}
-                  showControls={instagramMode ? false : (showControls && idx === currentIndex)}
-                  onClick={onClick}
-                  muted={true}
-                  loop={true}
-                  autoPlayOnVisible={autoPlayVideo && idx === currentIndex}
-                  containMode={containMode}
-                  instagramMode={instagramMode && idx === currentIndex}
-                />
-              ) : (
-                <div className={`bg-accent ${containMode ? "w-full" : "w-full h-full"}`} />
-              )}
-            </div>
-          );
-        })}
+        {images.map((src, idx) => (
+          <div key={idx} className={`min-w-full flex-shrink-0 ${containMode ? '' : 'h-full'}`}>
+            <MediaDisplay
+              src={src}
+              alt={`${alt} ${idx + 1}`}
+              className={containMode ? "w-full" : "w-full h-full"}
+              showControls={instagramMode ? false : (showControls && idx === currentIndex)}
+              onClick={onClick}
+              muted={true}
+              loop={true}
+              autoPlayOnVisible={autoPlayVideo && idx === currentIndex}
+              containMode={containMode}
+              instagramMode={instagramMode && idx === currentIndex}
+            />
+          </div>
+        ))}
       </div>
 
       {currentIndex > 0 && (
