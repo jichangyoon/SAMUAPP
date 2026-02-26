@@ -37,9 +37,8 @@ import samuLogoImg from "@/assets/samu-logo.webp";
 import { getDeviceId } from "@/utils/deviceFingerprint";
 
 // Real-time archive card component
-function RealTimeArchiveCard({ contest, isConnected, isLoadingContestDetails, onContestClick }: {
+function RealTimeArchiveCard({ contest, isLoadingContestDetails, onContestClick }: {
   contest: any;
-  isConnected: boolean;
   isLoadingContestDetails: boolean;
   onContestClick: () => void;
 }) {
@@ -84,7 +83,7 @@ function RealTimeArchiveCard({ contest, isConnected, isLoadingContestDetails, on
       className="w-full"
       disabled={isLoadingContestDetails}
     >
-      <Card className={`border-border/50 hover:border-primary/30 transition-colors relative ${!isConnected ? 'opacity-70' : ''} ${isLoadingContestDetails ? 'opacity-50 cursor-not-allowed' : ''}`}>
+      <Card className={`border-border/50 hover:border-primary/30 transition-colors relative ${isLoadingContestDetails ? 'opacity-50 cursor-not-allowed' : ''}`}>
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="text-left">
@@ -95,9 +94,6 @@ function RealTimeArchiveCard({ contest, isConnected, isLoadingContestDetails, on
                 ) : (
                   <>
                     {displayParticipants} participants • {displayVotes} votes
-                    {!isConnected && (
-                      <span className="text-primary ml-2">• Login to view</span>
-                    )}
                   </>
                 )}
               </p>
@@ -110,11 +106,6 @@ function RealTimeArchiveCard({ contest, isConnected, isLoadingContestDetails, on
                   <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-400/20">
                     Completed
                   </Badge>
-                  {!isConnected && (
-                    <Badge variant="outline" className="text-primary border-primary/50">
-                      🔒
-                    </Badge>
-                  )}
                 </>
               )}
             </div>
@@ -704,18 +695,8 @@ export default function Home() {
                       <RealTimeArchiveCard
                         key={contest.id}
                         contest={contest}
-                        isConnected={isConnected}
                         isLoadingContestDetails={isLoadingContestDetails}
                         onContestClick={async () => {
-                          if (!isConnected) {
-                            toast({
-                              title: "Please login first",
-                              description: "You need to login to view contest archives - our community heritage",
-                              duration: 1000
-                            });
-                            return;
-                          }
-                          
                           setIsLoadingContestDetails(true);
                           
                           try {
