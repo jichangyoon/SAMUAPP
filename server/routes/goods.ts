@@ -4,6 +4,7 @@ import { insertGoodsSchema, insertOrderSchema } from "@shared/schema";
 import { config } from "../config";
 import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { uploadToR2 } from "../r2-storage";
+import { geocodeAddress } from "../utils/geocode";
 
 const router = Router();
 
@@ -1110,6 +1111,8 @@ router.post("/:id/order", async (req, res) => {
       }
     }
 
+    const geoCoords = await geocodeAddress(shippingZip, shippingCountry, shippingCity).catch(() => null);
+
     const orderData = insertOrderSchema.parse({
       goodsId: id,
       buyerWallet,
@@ -1130,6 +1133,8 @@ router.post("/:id/order", async (req, res) => {
       shippingCountry,
       shippingZip,
       shippingPhone: shippingPhone || null,
+      shippingLat: geoCoords?.lat ?? null,
+      shippingLng: geoCoords?.lng ?? null,
       status: printfulOrderId ? "confirmed" : "pending",
       printfulStatus,
       trackingNumber: null,
