@@ -311,7 +311,8 @@ export function MediaDisplay({
           e.stopPropagation();
           onClick();
         } : undefined}
-        loading="eager"
+        loading="lazy"
+        decoding="async"
         onLoad={() => setImageLoaded(true)}
         onError={() => setHasError(true)}
       />
