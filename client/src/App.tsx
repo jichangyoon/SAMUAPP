@@ -72,8 +72,6 @@ function App() {
           // Partner logos
           '/src/assets/wagus-logo.webp',
           '/src/assets/doctorbird-logo.webp',
-          // Goods shop image
-          '/src/assets/samu-shirt.webp',
           // SAMU logo
           '/src/assets/samu-logo.webp'
         ];
