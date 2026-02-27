@@ -12,7 +12,7 @@ SAMU is a web-based meme incubator platform on Solana where community-voted meme
 
 ```
 1. Meme Contest      →  Community submits & votes on memes using SAMU tokens
-2. Contest Archive   →  Past contests preserved with full stats & reward data
+2. Contest Archive   →  Past contests preserved with full stats & reward data (publicly viewable, no login required)
 3. Merchandise       →  Admin selects winning designs → turned into goods via Printful (Kiss-Cut Stickers)
 4. Ecosystem Rewards →  SOL rewards distributed to creators & voters proportionally
 ```
@@ -34,7 +34,7 @@ SAMU is a web-based meme incubator platform on Solana where community-voted meme
 
 - Revenue source: Goods sales (Printful merchandise)
 - Reward currency: SOL (from goods profits)
-- Instant distribution: Goods payment splits SOL directly on-chain (Creator 45% + Treasury 55%)
+- Payment splitting: Goods payment splits SOL directly on-chain at time of purchase
 - Voter claim system: Per-contest reward pool using "Reward Per Share" mechanism (DeFi pattern), voters claim anytime via profile
 
 ## Key Features
@@ -49,8 +49,10 @@ The standout feature: a world map that turns boring shipping logistics into a co
 - Per-order revenue split display (Creator 45% / Voters 40% / Platform 15%)
 - Personal revenue estimation per order ("My Estimated Revenue: +0.0042 SOL")
 - Stats dashboard: total orders, in-transit, delivered, countries reached
-- 30-second auto-refresh for near real-time updates
+- 60-second auto-refresh for near real-time updates
 - Printful fulfillment center mapping (Japan, US, Europe, Australia, Brazil, Mexico)
+- Geocoded order locations: accurate lat/lng from postal code via OpenStreetMap Nominatim API
+- Lazy-loaded bundle — map JS only loads when Rewards tab is visited
 
 ### On-Chain Voting (SAMU SPL Transfer)
 - Real SAMU SPL token transfers to treasury wallet
@@ -71,10 +73,12 @@ The standout feature: a world map that turns boring shipping logistics into a co
 - Kiss-Cut Sticker merchandise from winning meme designs via Printful
 - Real-time SOL/USD pricing via CoinGecko
 - International shipping with localized address forms
-- Multi-instruction Solana TX: splits SOL directly to Creator wallet (45%) + Treasury (55%)
+- Multi-instruction Solana TX: splits SOL at point of payment (production cost → treasury, profit → escrow)
 - Full on-chain payment verification before Printful order creation
+- Escrow vault: profit locked in escrow until delivery confirmed, then distributed 45/40/15
 
 ### Contest Archive System
+- Publicly viewable — no login required to browse past contests and memes
 - Parallel file processing (10 concurrent) with retry logic for large-scale archiving (1000+ memes)
 - "Archiving" status with loading UI during archive process
 - Contest status flow: draft → active → ended → archiving → archived
@@ -112,7 +116,8 @@ The standout feature: a world map that turns boring shipping logistics into a co
 ### User Profiles
 - Editable display names and profile pictures (stored on R2)
 - Personal statistics: memes submitted, votes cast, votes received
-- Meme history and vote history per contest
+- My Memes tab: contest-grouped view with total SAMU received per contest
+- My Votes tab: vote history grouped by contest
 - Voter reward claims tab
 
 ## Tech Stack
@@ -125,7 +130,9 @@ The standout feature: a world map that turns boring shipping logistics into a co
 | Auth | Privy (email login + embedded Solana wallet, Solana-only mode) |
 | Blockchain | Solana, @solana/web3.js, @solana/spl-token, Solana Actions (Blinks) |
 | Storage | Cloudflare R2 (images, videos, profile pictures) |
-| Merchandise | Printful API (Kiss-Cut Stickers) |
+| Map | react-leaflet + CartoDB dark tiles |
+| Geocoding | OpenStreetMap Nominatim API (free, no key required) |
+| Merchandise | Printful API (Kiss-Cut Stickers, product ID 358) |
 | Pricing | CoinGecko API (SOL/USD real-time) |
 | Smart Contract | Anchor 0.30.1 + anchor-spl (Phase 2) |
 
@@ -164,12 +171,12 @@ The standout feature: a world map that turns boring shipping logistics into a co
 | `votes` | On-chain vote records (SAMU amount + tx signature) |
 | `archivedContests` | Completed contest snapshots with preserved data |
 | `users` | User profiles with wallet addresses |
-| `orders` | Goods purchase records |
+| `orders` | Goods purchase records with geocoded lat/lng |
 | `goods` | Merchandise catalog |
 | `goodsRevenueDistributions` | Per-sale SOL distribution records |
 | `voterRewardPool` | Per-contest cumulative voter rewards |
 | `voterClaimRecords` | Individual voter claim history |
-| `escrowDeposits` | Escrow vault for delivery-based fund release (schema ready, logic planned) |
+| `escrowDeposits` | Escrow vault — profit locked until delivery, then released |
 | `partnerMemes` / `partnerVotes` | Partner community contest data |
 | `loginLogs` / `blockedIps` | Security tracking |
 
@@ -187,12 +194,20 @@ Located in `contracts/programs/samu-rewards/src/lib.rs`:
 - Features: initialize config, update share ratios, lock config, batch distribute rewards (up to 50), transfer admin
 - Hybrid model: server calculates revenue/recipients, smart contract executes on-chain distribution
 
-## Planned Features
+## Roadmap
 
-- **Escrow System**: SOL payment → escrow vault → delivery confirmed → funds released to reward pools
-- **Printful Webhooks**: Real-time shipping status updates → SAMU Map live tracking + escrow unlock on delivery
-- **SAMU Map Gamification**: Delivery progress = reward unlock progress, SAMU character animations (sleeping at customs, celebrating on delivery)
-- **Phantom Direct Login**: Connect Phantom wallet directly alongside Privy email login
+### In Progress
+- **Creator SOL Payout**: On-chain transfer from escrow wallet → creator wallets after delivery (DB ledger complete, on-chain TX pending)
+- **Voter Claim SOL Payout**: On-chain transfer from pool wallet → voter wallet on claim (DB accounting complete, on-chain TX pending)
+- **Webhook → Auto Distribution**: Connect Printful `package_delivered` event → auto-trigger reward distribution
+
+### Planned
+- **Escrow Refund**: Auto-refund flow for failed/cancelled Printful orders
+- **SAMU Map Gamification**: Delivery progress = reward unlock progress bar, SAMU character animations
+- **Phantom Direct Login**: Connect Phantom wallet alongside Privy email login
+
+### Phase 2
+- **Smart Contract Migration**: Move reward distribution fully on-chain via Rust/Anchor
 
 ## Inspiration
 
