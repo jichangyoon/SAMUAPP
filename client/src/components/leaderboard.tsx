@@ -129,7 +129,7 @@ export function Leaderboard() {
       creatorStats: stats,
       displayedCreators: showAllCreators ? creators : creators.slice(0, 10)
     };
-  }, [memesArray, showAllCreators]);
+  }, [activeMemes, showAllCreators]);
 
   // Process archived contests for Hall of Fame
   const hallOfFameData = useMemo(() => {
