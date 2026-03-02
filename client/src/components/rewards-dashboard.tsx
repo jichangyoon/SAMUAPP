@@ -11,7 +11,7 @@ import {
   DrawerTitle,
   DrawerDescription,
 } from "@/components/ui/drawer";
-import { Wallet, Lock, Globe, ChevronRight, ExternalLink, Package, MapPin } from "lucide-react";
+import { Wallet, Lock, ChevronRight, ExternalLink, MapPin } from "lucide-react";
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   pending:      { label: "Pending",      color: "bg-yellow-500/20 text-yellow-400 border-yellow-400/30" },
@@ -228,7 +228,7 @@ export function RewardsDashboard() {
       <p className="text-xs text-muted-foreground">Platform Total</p>
       <div className="grid grid-cols-2 gap-3">
         <SummaryCard
-          icon={<Globe className="h-4 w-4" />}
+          icon={<Wallet className="h-4 w-4" />}
           label="Total Claimable"
           sublabel="All distributed"
           value={total.claimable}
@@ -237,7 +237,7 @@ export function RewardsDashboard() {
           onClick={() => setOpenDrawer("total-claimable")}
         />
         <SummaryCard
-          icon={<Package className="h-4 w-4" />}
+          icon={<Lock className="h-4 w-4" />}
           label="Total Escrow"
           sublabel="Locked on-chain"
           value={total.escrow}
