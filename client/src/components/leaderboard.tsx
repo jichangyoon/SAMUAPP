@@ -59,26 +59,48 @@ export function Leaderboard() {
   // Extract memes array with proper type checking
   const memesArray: Meme[] = memesResponse?.memes || [];
 
+  // Get most recent archived contest for fallback when no active contest
+  const mostRecentArchive = useMemo(() => {
+    if (!archivedContests || !Array.isArray(archivedContests) || archivedContests.length === 0) return null;
+    return [...archivedContests].sort((a: any, b: any) =>
+      new Date(b.archivedAt).getTime() - new Date(a.archivedAt).getTime()
+    )[0];
+  }, [archivedContests]);
+
+  const { data: fallbackMemesResponse } = useQuery({
+    queryKey: ['/api/memes/fallback', mostRecentArchive?.originalContestId],
+    queryFn: async () => {
+      const res = await fetch(`/api/memes?contestId=${mostRecentArchive?.originalContestId}&limit=100&sortBy=votes`);
+      return res.json();
+    },
+    enabled: memesArray.length === 0 && !!mostRecentArchive?.originalContestId,
+    staleTime: 5 * 60 * 1000,
+  });
+  const fallbackMemes: Meme[] = fallbackMemesResponse?.memes || [];
+
+  const isFallback = memesArray.length === 0 && fallbackMemes.length > 0;
+  const activeMemes = isFallback ? fallbackMemes : memesArray;
+
   // Optimize meme sorting with useMemo
   const { sortedMemes, topMemes, displayedMemes } = useMemo(() => {
-    if (!Array.isArray(memesArray) || memesArray.length === 0) {
+    if (!Array.isArray(activeMemes) || activeMemes.length === 0) {
       return { sortedMemes: [], topMemes: [], displayedMemes: [] };
     }
-    const sorted = [...memesArray].sort((a, b) => b.votes - a.votes);
+    const sorted = [...activeMemes].sort((a, b) => b.votes - a.votes);
     return {
       sortedMemes: sorted,
       topMemes: sorted.slice(0, 10),
       displayedMemes: showAllCurrent ? sorted : sorted.slice(0, 10)
     };
-  }, [memesArray, showAllCurrent]);
+  }, [activeMemes, showAllCurrent]);
 
   // Optimize creator stats calculation with useMemo
   const { creatorStats, displayedCreators } = useMemo(() => {
-    if (!Array.isArray(memesArray) || memesArray.length === 0) {
+    if (!Array.isArray(activeMemes) || activeMemes.length === 0) {
       return { creatorStats: {}, displayedCreators: [] };
     }
     
-    const stats = memesArray.reduce((acc, meme) => {
+    const stats = activeMemes.reduce((acc, meme) => {
       if (!acc[meme.authorUsername]) {
         acc[meme.authorUsername] = {
           username: meme.authorUsername,
@@ -170,11 +192,6 @@ export function Leaderboard() {
     );
   }
   
-  // Empty state
-  if (!Array.isArray(memesArray) || memesArray.length === 0) {
-    return <div className="text-center py-8 text-muted-foreground">No memes available</div>;
-  }
-
   return (
     <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -188,10 +205,18 @@ export function Leaderboard() {
         <TabsContent value="current" className="mt-4 space-y-3">
           <Card className="border-border bg-card">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg text-primary flex items-center">
-                <TrendingUp className="h-5 w-5 mr-2 text-primary" />
-                Current Contest Rankings
+              <CardTitle className="text-lg text-primary flex items-center gap-2 flex-wrap">
+                <TrendingUp className="h-5 w-5 text-primary shrink-0" />
+                {isFallback ? "Last Contest Rankings" : "Current Contest Rankings"}
+                {isFallback && mostRecentArchive && (
+                  <Badge variant="outline" className="text-yellow-400 border-yellow-400/40 text-xs font-normal">
+                    {mostRecentArchive.title}
+                  </Badge>
+                )}
               </CardTitle>
+              {isFallback && (
+                <p className="text-xs text-muted-foreground">No active contest — showing most recent results</p>
+              )}
             </CardHeader>
             <CardContent className="space-y-3">
               {displayedMemes.map((meme, index) => (
@@ -233,7 +258,7 @@ export function Leaderboard() {
               
               {displayedMemes.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
-                  No memes with votes yet
+                  {archiveLoading ? "Loading..." : "No contest data yet"}
                 </div>
               )}
               
@@ -272,10 +297,18 @@ export function Leaderboard() {
         <TabsContent value="creators" className="mt-4 space-y-3">
           <Card className="border-border bg-card">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg text-primary flex items-center">
-                <Crown className="h-5 w-5 mr-2 text-primary" />
+              <CardTitle className="text-lg text-primary flex items-center gap-2 flex-wrap">
+                <Crown className="h-5 w-5 text-primary shrink-0" />
                 Top Creators
+                {isFallback && mostRecentArchive && (
+                  <Badge variant="outline" className="text-yellow-400 border-yellow-400/40 text-xs font-normal">
+                    {mostRecentArchive.title}
+                  </Badge>
+                )}
               </CardTitle>
+              {isFallback && (
+                <p className="text-xs text-muted-foreground">No active contest — showing most recent results</p>
+              )}
             </CardHeader>
             <CardContent className="space-y-3">
               {displayedCreators.map((creator: any, index) => (
