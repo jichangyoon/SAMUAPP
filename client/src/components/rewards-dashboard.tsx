@@ -92,7 +92,7 @@ function OrderRow({ order, showMyCut }: { order: any; showMyCut: boolean }) {
       )}
 
       <p className="text-xs text-muted-foreground">
-        {new Date(order.createdAt).toLocaleDateString("ko-KR", {
+        {new Date(order.createdAt).toLocaleDateString("en-US", {
           year: "numeric", month: "short", day: "numeric",
         })}
       </p>
@@ -117,7 +117,6 @@ function SummaryCard({
   accent: "primary" | "muted";
   onClick: () => void;
 }) {
-  const valueClass = accent === "primary" ? "text-primary" : "text-foreground";
   return (
     <Card
       className="border-border/50 cursor-pointer hover:border-primary/40 transition-colors active:scale-[0.98]"
@@ -130,9 +129,9 @@ function SummaryCard({
           </div>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </div>
-        <div className={`text-xl font-bold ${valueClass} mb-0.5`}>
+        <div className="text-xl font-bold text-green-400 mb-0.5">
           {value.toFixed(4)}
-          <span className="text-xs font-normal text-muted-foreground ml-1">SOL</span>
+          <span className="text-xs font-normal text-green-400 ml-1">SOL</span>
         </div>
         <div className="text-xs font-medium text-foreground">{label}</div>
         <div className="text-xs text-muted-foreground mt-0.5">{sublabel}</div>
