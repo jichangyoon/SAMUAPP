@@ -902,7 +902,7 @@ export default function Home() {
 
               <TabsContent value="dashboard" className="mt-4">
                 <Suspense fallback={<div className="min-h-[200px]" />}>
-                  <RewardsDashboard />
+                  <RewardsDashboard walletAddress={walletAddress || undefined} />
                 </Suspense>
               </TabsContent>
             </Tabs>

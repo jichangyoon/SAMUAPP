@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
-import { useSolanaWallets } from "@privy-io/react-auth/solana";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -147,10 +146,8 @@ function SummaryCard({
   );
 }
 
-export function RewardsDashboard() {
+export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) {
   const { authenticated } = usePrivy();
-  const { wallets: solWallets } = useSolanaWallets();
-  const walletAddress = solWallets?.[0]?.address;
 
   const [openDrawer, setOpenDrawer] = useState<"my-claimable" | "my-escrow" | "total-claimable" | "total-escrow" | null>(null);
 
