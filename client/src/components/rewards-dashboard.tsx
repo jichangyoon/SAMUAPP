@@ -10,7 +10,7 @@ import {
   DrawerTitle,
   DrawerDescription,
 } from "@/components/ui/drawer";
-import { Wallet, Lock, ChevronRight, ExternalLink, MapPin } from "lucide-react";
+import { Wallet, Lock, ChevronRight, ExternalLink, MapPin, TrendingUp } from "lucide-react";
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   pending:      { label: "Pending",      color: "bg-yellow-500/20 text-yellow-400 border-yellow-400/30" },
@@ -24,14 +24,212 @@ const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   failed:       { label: "Failed",       color: "bg-red-500/20 text-red-400 border-red-400/30" },
 };
 
+const REWARD_COLORS = {
+  creator:  "hsl(45,90%,55%)",
+  voter:    "hsl(200,80%,55%)",
+  platform: "hsl(0,0%,50%)",
+};
+
 function getStatusStyle(status: string) {
   return STATUS_LABEL[status] ?? { label: status, color: "bg-gray-500/20 text-gray-400" };
 }
 
-function OrderRow({ order, showMyCut }: { order: any; showMyCut: boolean }) {
+function MiniDonut({ size = 44, strokeWidth = 7 }: { size?: number; strokeWidth?: number }) {
+  const segments = [
+    { percent: 45, color: REWARD_COLORS.creator },
+    { percent: 40, color: REWARD_COLORS.voter },
+    { percent: 15, color: REWARD_COLORS.platform },
+  ];
+  const r = (size - strokeWidth) / 2;
+  const circ = 2 * Math.PI * r;
+  let offset = 0;
+  return (
+    <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
+      {segments.map((seg, i) => {
+        const dash = (seg.percent / 100) * circ;
+        const el = (
+          <circle key={i} cx={size / 2} cy={size / 2} r={r}
+            fill="none" stroke={seg.color} strokeWidth={strokeWidth}
+            strokeDasharray={`${dash} ${circ - dash}`}
+            strokeDashoffset={-offset} />
+        );
+        offset += dash;
+        return el;
+      })}
+    </svg>
+  );
+}
+
+function OrderDetailDrawer({ order, walletAddress, open, onClose }: {
+  order: any;
+  walletAddress?: string;
+  open: boolean;
+  onClose: () => void;
+}) {
+  const { data: rewardData, isLoading: rewardLoading } = useQuery<any>({
+    queryKey: [`/api/memes/contest/${order?.contestId}/reward-breakdown`],
+    staleTime: 30000,
+    enabled: !!order?.contestId && !!walletAddress,
+  });
+
+  if (!order) return null;
+
+  const s = getStatusStyle(order.status);
+  const totalPaid = order.solAmount || 0;
+  const productionCost = order.escrowAmount > 0
+    ? (totalPaid - order.escrowAmount > 0 ? totalPaid - order.escrowAmount : 0)
+    : 0;
+  const profit = order.escrowAmount || (order.distribution
+    ? (order.distribution.creatorAmount + order.distribution.voterPoolAmount + order.distribution.platformAmount)
+    : 0);
+
+  let myCreatorShareInPool = 0;
+  let myVoterShareInPool = 0;
+  if (rewardData && walletAddress) {
+    const myCreator = rewardData.creators?.find((c: any) => c.wallet === walletAddress);
+    const myVoter = rewardData.voters?.find((v: any) => v.wallet === walletAddress);
+    if (myCreator) myCreatorShareInPool = myCreator.percent;
+    if (myVoter) myVoterShareInPool = myVoter.percent;
+  }
+  const myCreatorOverall = (myCreatorShareInPool / 100) * 45;
+  const myVoterOverall = (myVoterShareInPool / 100) * 40;
+  const myTotalShare = myCreatorOverall + myVoterOverall;
+  const myEstimatedSol = profit > 0 ? profit * (myTotalShare / 100) : 0;
+  const hasMyShare = myTotalShare > 0;
+
+  return (
+    <Drawer open={open} onOpenChange={(o) => !o && onClose()}>
+      <DrawerContent className="max-h-[85vh]">
+        <DrawerHeader>
+          <DrawerTitle className="flex items-center gap-2">
+            <MapPin className="h-4 w-4 text-muted-foreground" />
+            {order.city ? `${order.city}, ` : ""}{order.country}
+          </DrawerTitle>
+          <DrawerDescription className="flex items-center gap-2">
+            <Badge variant="outline" className={`text-xs ${s.color}`}>{s.label}</Badge>
+            <span className="text-xs">{order.goodsTitle}</span>
+          </DrawerDescription>
+        </DrawerHeader>
+
+        <div className="overflow-y-auto px-4 pb-8 space-y-4">
+          <div className="p-3 rounded-lg bg-accent/30 border border-border/30 space-y-3">
+            <div className="flex items-center gap-3">
+              <MiniDonut size={40} strokeWidth={6} />
+              <div className="flex-1">
+                <div className="text-xs font-semibold mb-0.5">Revenue Split</div>
+                <div className="flex gap-2.5 text-[10px] text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: REWARD_COLORS.creator }} />
+                    Creator 45%
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: REWARD_COLORS.voter }} />
+                    Voter 40%
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: REWARD_COLORS.platform }} />
+                    Platform 15%
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-1.5 text-xs">
+              {totalPaid > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Total Paid</span>
+                  <span className="font-medium">{totalPaid.toFixed(4)} SOL</span>
+                </div>
+              )}
+              {productionCost > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Production Cost</span>
+                  <span className="text-red-400">-{productionCost.toFixed(4)} SOL</span>
+                </div>
+              )}
+              {profit > 0 && (
+                <div className="flex justify-between border-t border-border/30 pt-1.5">
+                  <span className="text-muted-foreground font-medium">Profit</span>
+                  <span className="font-semibold text-green-400">{profit.toFixed(4)} SOL</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {walletAddress && rewardLoading && (
+            <div className="bg-primary/5 rounded-md p-2.5 flex items-center gap-2">
+              <div className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full" />
+              <span className="text-[10px] text-muted-foreground">Loading your share...</span>
+            </div>
+          )}
+
+          {hasMyShare && (
+            <div className="bg-green-500/10 border border-green-500/20 rounded-md p-3 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <TrendingUp className="h-3 w-3 text-green-400" />
+                  <span className="text-[11px] text-green-400 font-medium">My Revenue Share</span>
+                </div>
+                {myEstimatedSol > 0 && (
+                  <span className="text-sm font-bold text-green-400">+{myEstimatedSol.toFixed(4)} SOL</span>
+                )}
+              </div>
+              <div className="text-[10px] text-green-400/70 leading-relaxed space-y-0.5">
+                {myCreatorShareInPool > 0 && (
+                  <div>
+                    Creator: {myCreatorShareInPool.toFixed(1)}% of pool →{" "}
+                    <span style={{ color: REWARD_COLORS.creator }}>{myCreatorOverall.toFixed(1)}%</span> of total
+                  </div>
+                )}
+                {myVoterShareInPool > 0 && (
+                  <div>
+                    Voter: {myVoterShareInPool.toFixed(1)}% of pool →{" "}
+                    <span style={{ color: REWARD_COLORS.voter }}>{myVoterOverall.toFixed(1)}%</span> of total
+                  </div>
+                )}
+              </div>
+              <div className="text-xs font-bold text-green-400 pt-0.5">
+                Total share: {myTotalShare.toFixed(1)}% of profit
+              </div>
+            </div>
+          )}
+
+          {order.revenueStatus === "locked" && (
+            <p className="text-xs text-muted-foreground">
+              Funds locked in escrow — released when delivered
+            </p>
+          )}
+
+          {order.trackingUrl && (
+            <a
+              href={order.trackingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-xs text-primary hover:underline"
+            >
+              <ExternalLink className="h-3 w-3" />
+              Track shipment {order.trackingNumber ? `(${order.trackingNumber})` : ""}
+            </a>
+          )}
+
+          <p className="text-xs text-muted-foreground">
+            {new Date(order.createdAt).toLocaleDateString("en-US", {
+              year: "numeric", month: "short", day: "numeric",
+            })}
+          </p>
+        </div>
+      </DrawerContent>
+    </Drawer>
+  );
+}
+
+function OrderRow({ order, showMyCut, onClick }: { order: any; showMyCut: boolean; onClick: () => void }) {
   const s = getStatusStyle(order.status);
   return (
-    <div className="border border-border/30 rounded-lg p-3 space-y-2">
+    <div
+      className="border border-border/30 rounded-lg p-3 space-y-2 cursor-pointer hover:border-primary/40 hover:bg-accent/20 transition-colors active:scale-[0.98]"
+      onClick={onClick}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -39,9 +237,12 @@ function OrderRow({ order, showMyCut }: { order: any; showMyCut: boolean }) {
             {order.city ? `${order.city}, ` : ""}{order.country}
           </span>
         </div>
-        <Badge variant="outline" className={`text-xs shrink-0 ${s.color}`}>
-          {s.label}
-        </Badge>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <Badge variant="outline" className={`text-xs ${s.color}`}>
+            {s.label}
+          </Badge>
+          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
@@ -72,30 +273,6 @@ function OrderRow({ order, showMyCut }: { order: any; showMyCut: boolean }) {
           </>
         )}
       </div>
-
-      {order.revenueStatus === "locked" && (
-        <p className="text-xs text-muted-foreground">
-          Funds locked in escrow — released when delivered
-        </p>
-      )}
-
-      {order.trackingUrl && (
-        <a
-          href={order.trackingUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1 text-xs text-primary hover:underline"
-        >
-          <ExternalLink className="h-3 w-3" />
-          Track shipment {order.trackingNumber ? `(${order.trackingNumber})` : ""}
-        </a>
-      )}
-
-      <p className="text-xs text-muted-foreground">
-        {new Date(order.createdAt).toLocaleDateString("en-US", {
-          year: "numeric", month: "short", day: "numeric",
-        })}
-      </p>
     </div>
   );
 }
@@ -150,6 +327,7 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
   const { authenticated } = usePrivy();
 
   const [openDrawer, setOpenDrawer] = useState<"my-claimable" | "my-escrow" | "total-claimable" | "total-escrow" | null>(null);
+  const [selectedDetailOrder, setSelectedDetailOrder] = useState<any | null>(null);
 
   const { data: summary, isLoading } = useQuery({
     queryKey: ["/api/rewards/summary", walletAddress],
@@ -257,12 +435,24 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
               </div>
             ) : (
               active?.orders.map((order: any) => (
-                <OrderRow key={order.id} order={order} showMyCut={active.showMyCut} />
+                <OrderRow
+                  key={order.id}
+                  order={order}
+                  showMyCut={active.showMyCut}
+                  onClick={() => setSelectedDetailOrder(order)}
+                />
               ))
             )}
           </div>
         </DrawerContent>
       </Drawer>
+
+      <OrderDetailDrawer
+        order={selectedDetailOrder}
+        walletAddress={walletAddress}
+        open={!!selectedDetailOrder}
+        onClose={() => setSelectedDetailOrder(null)}
+      />
     </div>
   );
 }
