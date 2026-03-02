@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { storage } from "../storage";
 import crypto from "crypto";
+import { distributeEscrowProfit } from "./goods";
 
 const router = Router();
 
@@ -74,6 +75,17 @@ router.post("/printful", async (req, res) => {
         updates.printfulStatus = "delivered";
         updates.status = "delivered";
         console.log(`[Printful Webhook] Order ${order.id} delivered!`);
+        try {
+          const escrow = await storage.getEscrowDepositByOrderId(order.id);
+          if (escrow && escrow.status === "locked") {
+            await distributeEscrowProfit(escrow);
+            console.log(`[Printful Webhook] Escrow profit distributed for order ${order.id}`);
+          } else {
+            console.log(`[Printful Webhook] No locked escrow for order ${order.id}, skipping distribution`);
+          }
+        } catch (distErr: any) {
+          console.error(`[Printful Webhook] Escrow distribution failed for order ${order.id}:`, distErr.message);
+        }
         break;
 
       case "order_failed":

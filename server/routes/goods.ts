@@ -17,7 +17,7 @@ const SHARE_RATIOS = {
 const TREASURY_WALLET = process.env.TREASURY_WALLET_ADDRESS || "4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk";
 const ESCROW_WALLET = process.env.ESCROW_WALLET_ADDRESS || "ojzHLw6QxUqprnEjk4gfQM3QXS1RKHWjTLXzZS543cg";
 
-async function distributeEscrowProfit(escrowDeposit: any) {
+export async function distributeEscrowProfit(escrowDeposit: any) {
   const profitSol = escrowDeposit.profitSol;
   if (!profitSol || profitSol <= 0) return;
 
