@@ -46,6 +46,169 @@ router.get("/dashboard", async (_req, res) => {
   }
 });
 
+router.get("/summary", async (req, res) => {
+  try {
+    const walletAddress = req.query.wallet as string | undefined;
+
+    const [allOrders, distributions, allEscrow, allGoods, allMemes] = await Promise.all([
+      storage.getAllOrders(),
+      storage.getAllGoodsRevenueDistributions(),
+      storage.getAllEscrowDeposits(),
+      storage.getGoods(),
+      storage.getAllMemes(),
+    ]);
+
+    const distributionByOrderId = new Map<number, any>();
+    distributions.forEach(d => distributionByOrderId.set(d.orderId, d));
+
+    const escrowByOrderId = new Map<number, any>();
+    allEscrow.forEach(e => escrowByOrderId.set(e.orderId, e));
+
+    const goodsMap = new Map<number, any>();
+    allGoods.forEach(g => goodsMap.set(g.id, g));
+
+    const memeContestMap = new Map<number, number | null>();
+    allMemes.forEach(m => memeContestMap.set(m.id, m.contestId));
+
+    let userCreatedContests = new Set<number>();
+    let userVotedContests = new Set<number>();
+    let userVoteShareByContest = new Map<number, number>();
+    let creatorDistByOrder = new Map<number, number>();
+
+    if (walletAddress) {
+      for (const m of allMemes) {
+        if (m.authorWallet === walletAddress && m.contestId != null) {
+          userCreatedContests.add(m.contestId);
+        }
+      }
+
+      const userVotes = await storage.getUserVotes(walletAddress);
+      const userSamuByContest = new Map<number, number>();
+      const totalSamuByContest = new Map<number, number>();
+
+      if (userVotes.length > 0) {
+        for (const vote of userVotes) {
+          const contestId = memeContestMap.get(vote.memeId);
+          if (contestId != null) {
+            userVotedContests.add(contestId);
+            userSamuByContest.set(contestId, (userSamuByContest.get(contestId) || 0) + (vote.samuAmount || 0));
+          }
+        }
+
+        const contestIds = Array.from(userVotedContests);
+        const contestVotes = await storage.getVotesByContestIds(contestIds);
+        for (const vote of contestVotes) {
+          const contestId = memeContestMap.get(vote.memeId);
+          if (contestId != null) {
+            totalSamuByContest.set(contestId, (totalSamuByContest.get(contestId) || 0) + (vote.samuAmount || 0));
+          }
+        }
+
+        for (const contestId of contestIds) {
+          const userTotal = userSamuByContest.get(contestId) || 0;
+          const total = totalSamuByContest.get(contestId) || 0;
+          if (total > 0) userVoteShareByContest.set(contestId, userTotal / total);
+        }
+      }
+
+      const creatorDists = await storage.getCreatorRewardDistributionsByWallet(walletAddress);
+      for (const cd of creatorDists) {
+        creatorDistByOrder.set(cd.orderId, (creatorDistByOrder.get(cd.orderId) || 0) + cd.solAmount);
+      }
+    }
+
+    const ordersWithData = allOrders
+      .filter(o => o.shippingCountry)
+      .map(o => {
+        const dist = distributionByOrderId.get(o.id);
+        const escrow = escrowByOrderId.get(o.id);
+        const good = goodsMap.get(o.goodsId);
+        const contestId = dist?.contestId || good?.contestId || escrow?.contestId || null;
+
+        let myEstimatedRevenue = 0;
+        let revenueStatus: string | null = null;
+        let hasRevenue = false;
+
+        if (walletAddress && dist) {
+          const myCreatorEarning = creatorDistByOrder.get(o.id) || 0;
+          const isCreator = myCreatorEarning > 0;
+          const isVoter = contestId != null && userVotedContests.has(contestId);
+          if (isCreator || isVoter) {
+            hasRevenue = true;
+            revenueStatus = "distributed";
+            if (isCreator) myEstimatedRevenue += myCreatorEarning;
+            if (isVoter && contestId != null) {
+              myEstimatedRevenue += (dist.voterPoolAmount || 0) * (userVoteShareByContest.get(contestId) || 0);
+            }
+          }
+        } else if (walletAddress && escrow && !dist) {
+          const isCreator = contestId != null && userCreatedContests.has(contestId);
+          const isVoter = contestId != null && userVotedContests.has(contestId);
+          if (isCreator || isVoter) {
+            hasRevenue = true;
+            revenueStatus = escrow.status === "locked" ? "locked" : escrow.status;
+            const profitSol = escrow.profitSol || 0;
+            if (isCreator) {
+              const contestMemes = allMemes.filter(m => m.contestId === contestId);
+              const totalVotes = contestMemes.reduce((sum: number, m: any) => sum + (m.votes || 0), 0);
+              const myVotes = contestMemes.filter(m => m.authorWallet === walletAddress).reduce((sum: number, m: any) => sum + (m.votes || 0), 0);
+              myEstimatedRevenue += (profitSol * 0.45) * (totalVotes > 0 ? myVotes / totalVotes : 0);
+            }
+            if (isVoter && contestId != null) {
+              myEstimatedRevenue += (profitSol * 0.40) * (userVoteShareByContest.get(contestId) || 0);
+            }
+          }
+        }
+
+        return {
+          id: o.id,
+          country: o.shippingCountry,
+          city: o.shippingCity,
+          status: o.printfulStatus || o.status,
+          trackingUrl: o.trackingUrl,
+          trackingNumber: o.trackingNumber,
+          goodsTitle: good?.title || "SAMU Goods",
+          createdAt: o.createdAt,
+          solAmount: o.solAmount,
+          contestId,
+          hasRevenue,
+          myEstimatedRevenue,
+          revenueStatus,
+          escrowAmount: escrow?.profitSol || 0,
+          escrowStatus: escrow?.status || null,
+          distribution: dist ? {
+            creatorAmount: dist.creatorAmount,
+            voterPoolAmount: dist.voterPoolAmount,
+            platformAmount: dist.platformAmount,
+            totalSolAmount: dist.totalSolAmount,
+          } : null,
+        };
+      });
+
+    const myClaimableOrders = walletAddress ? ordersWithData.filter(o => o.hasRevenue && o.revenueStatus === "distributed") : [];
+    const myEscrowOrders = walletAddress ? ordersWithData.filter(o => o.hasRevenue && o.revenueStatus === "locked") : [];
+    const totalClaimableOrders = ordersWithData.filter(o => o.distribution);
+    const totalEscrowOrders = ordersWithData.filter(o => o.escrowStatus === "locked");
+
+    res.json({
+      my: {
+        claimable: myClaimableOrders.reduce((s, o) => s + o.myEstimatedRevenue, 0),
+        escrow: myEscrowOrders.reduce((s, o) => s + o.myEstimatedRevenue, 0),
+        claimableOrders: myClaimableOrders,
+        escrowOrders: myEscrowOrders,
+      },
+      total: {
+        claimable: totalClaimableOrders.reduce((s, o) => s + ((o.distribution?.creatorAmount || 0) + (o.distribution?.voterPoolAmount || 0)), 0),
+        escrow: totalEscrowOrders.reduce((s, o) => s + o.escrowAmount, 0),
+        claimableOrders: totalClaimableOrders,
+        escrowOrders: totalEscrowOrders,
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get("/voter-pool/:contestId", async (req, res) => {
   try {
     const contestId = parseInt(req.params.contestId);
