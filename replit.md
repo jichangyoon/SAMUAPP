@@ -55,13 +55,15 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 
 - ❌ **크리에이터 SOL 미전송**: DB에 "줘야 할 금액" 기록만 됨. Escrow wallet → Creator wallet 온체인 TX 없음
 - ❌ **투표자 클레임 SOL 미전송**: 클레임 버튼 누르면 DB 잔액만 업데이트. 실제 SOL 안 나감
-- ❌ **웹훅 → 자동 분배 연결 없음**: `package_delivered` 수신해도 `distributeEscrowProfit` 자동 미실행
 
-### ✅ Printful Webhook (구현 완료 - 상태 업데이트만)
-- HMAC-SHA256 서명 검증
-- 처리 이벤트: `package_shipped`, `package_in_transit`, `package_delivered`, `order_failed`, `order_canceled`, `order_created`, `order_updated`
-- 이벤트 수신 시 DB `printfulStatus`, `trackingNumber`, `trackingUrl` 업데이트
-- **단, delivered 이벤트가 와도 에스크로 자동 분배 미실행** (수동 어드민 작업 필요)
+### ✅ Printful Webhook (완전 구현 - v1 + v2 이중 등록)
+- **v1 등록** (store_id=17717241): `package_shipped`, `order_created/updated/failed/canceled`
+- **v2 등록** (store_id=17717241, default_url=samu.ink): `shipment_sent`, `shipment_delivered`, `shipment_returned`, `shipment_canceled`, `order_created/updated/failed/canceled`
+- 등록 관리: `POST /api/admin/register-printful-webhook` (v2 우선, v1 폴백)
+- `shipment_delivered` (v2) 수신 시 → `distributeEscrowProfit` 자동 실행 (45/40/15 분배)
+- `package_delivered` (v1 레거시) 수신 시에도 동일 트리거 (이중 안전망, 에스크로 상태 체크로 중복 방지)
+- DB `printfulStatus`, `trackingNumber`, `trackingUrl` 자동 업데이트
+- 웹훅 URL: `https://samu.ink/api/webhooks/printful`
 
 ### ✅ 리워드 시스템 (DB 레벨 구현)
 - 투표자 40% → `voterRewardPool`에 적립 (DeFi Reward Per Share 방식)
