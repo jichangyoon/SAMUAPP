@@ -291,31 +291,11 @@ router.post("/register-printful-webhook", async (req, res) => {
 
     if (v2Response.ok) {
       console.log("[Admin] Printful webhook registered via v2:", JSON.stringify(v2Data));
-      return res.json({ ok: true, api: "v2", result: v2Data });
+      return res.json({ ok: true, result: v2Data });
     }
 
-    console.warn("[Admin] v2 failed, falling back to v1:", JSON.stringify(v2Data));
-
-    // v1 폴백 (package_shipped 등 기본 이벤트)
-    const V1_EVENTS = ["package_shipped", "order_failed", "order_canceled", "order_created", "order_updated"];
-    const v1Response = await fetch(`https://api.printful.com/webhooks`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.PRINTFUL_API_KEY}`,
-        "X-PF-Store-Id": STORE_ID,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ url: WEBHOOK_URL, types: V1_EVENTS }),
-    });
-    const v1Data = await v1Response.json() as any;
-
-    if (v1Response.ok) {
-      console.log("[Admin] Printful webhook registered via v1 fallback:", JSON.stringify(v1Data));
-      return res.json({ ok: true, api: "v1", result: v1Data });
-    }
-
-    console.error("[Admin] Both v2/v1 failed:", JSON.stringify(v1Data));
-    return res.status(500).json({ ok: false, v2: v2Data, v1: v1Data });
+    console.error("[Admin] v2 registration failed:", JSON.stringify(v2Data));
+    return res.status(500).json({ ok: false, error: v2Data });
   } catch (error: any) {
     console.error("[Admin] Webhook registration error:", error.message);
     res.status(500).json({ error: error.message });
