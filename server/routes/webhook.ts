@@ -58,6 +58,15 @@ router.post("/printful", async (req, res) => {
           updates.trackingUrl = data.shipment.tracking_url;
         }
         console.log(`[Printful Webhook] Order ${order.id} shipped. Tracking: ${updates.trackingNumber || "N/A"}`);
+        try {
+          const escrow = await storage.getEscrowDepositByOrderId(order.id);
+          if (escrow && escrow.status === "locked") {
+            await distributeEscrowProfit(escrow);
+            console.log(`[Printful Webhook] Escrow profit distributed on shipment for order ${order.id}`);
+          }
+        } catch (distErr: any) {
+          console.error(`[Printful Webhook] Escrow distribution failed for order ${order.id}:`, distErr.message);
+        }
         break;
 
       case "package_in_transit":
