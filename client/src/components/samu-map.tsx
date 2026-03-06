@@ -652,19 +652,57 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                       <img src={selectedOrder.goodsImage} alt={selectedOrder.goodsTitle} className="w-full h-full object-cover" />
                     </div>
                   ) : (
-                    <div className="text-2xl flex-shrink-0">{getStatusEmoji(selectedOrder.status)}</div>
+                    <div className="w-14 h-14 rounded-lg bg-yellow-400/20 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      <img src={samuLogoImg} alt="SAMU" className="w-10 h-10 object-contain" />
+                    </div>
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold truncate">{selectedOrder.goodsTitle}</div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-lg">{getStatusEmoji(selectedOrder.status)}</span>
-                      <span className="text-xs text-muted-foreground">{getStatusLabel(selectedOrder.status)}</span>
-                    </div>
                     <div className="text-xs text-muted-foreground mt-0.5">
                       {getSamuMessage(selectedOrder.status, selectedOrder.city, selectedOrder.country)}
                     </div>
                   </div>
                 </div>
+
+                {/* Order Status Timeline */}
+                {(() => {
+                  const steps = [
+                    { key: 'confirmed', label: 'Order Confirmed', icon: '✓' },
+                    { key: 'production', label: 'In Production', icon: '🏭' },
+                    { key: 'shipping', label: 'Shipped', icon: '📦' },
+                    { key: 'delivered', label: 'Delivered', icon: '✅' },
+                  ];
+                  const statusOrder: Record<string, number> = {
+                    'draft': 0, 'confirmed': 0, 'pending': 0,
+                    'in_production': 1, 'inprocess': 1,
+                    'fulfilled': 2, 'shipped': 2,
+                    'delivered': 3, 'completed': 3,
+                    'canceled': -1, 'cancelled': -1, 'failed': -1,
+                  };
+                  const currentStep = statusOrder[selectedOrder.status] ?? 0;
+                  const isCanceled = currentStep === -1;
+                  return isCanceled ? (
+                    <div className="p-3 bg-red-500/10 rounded-lg text-center">
+                      <span className="text-red-400 font-medium text-sm">❌ Order Canceled / Failed</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      {steps.map((step, idx) => (
+                        <div key={step.key} className="flex items-center flex-1">
+                          <div className={`flex flex-col items-center flex-1 ${idx <= currentStep ? 'text-primary' : 'text-muted-foreground/50'}`}>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${idx <= currentStep ? 'bg-primary/20 text-primary' : 'bg-accent text-muted-foreground/50'}`}>
+                              {step.icon}
+                            </div>
+                            <span className="text-[10px] mt-1 text-center leading-tight">{step.label}</span>
+                          </div>
+                          {idx < steps.length - 1 && (
+                            <div className={`h-0.5 w-full mt-[-12px] ${idx < currentStep ? 'bg-primary' : 'bg-accent'}`} />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
 
                 <div className="space-y-2">
                   <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Shipping Info</h4>
