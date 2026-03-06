@@ -52,7 +52,7 @@ router.get("/summary", async (req, res) => {
       storage.getGoodsRevenueDistributions(),
       storage.getAllEscrowDeposits(),
       storage.getGoods(),
-      storage.getMemes(),
+      storage.getAllMemes(),
     ]);
 
     const distributionByOrderId = new Map<number, any>();
