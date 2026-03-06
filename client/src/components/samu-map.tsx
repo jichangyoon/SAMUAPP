@@ -106,51 +106,66 @@ interface MapData {
 
 function getStatusLabel(status: string): string {
   switch (status) {
-    case "pending": return "Preparing";
-    case "confirmed": return "Confirmed";
-    case "shipped": return "Shipped";
+    case "draft": return "Order Received";
+    case "pending": return "In Queue";
+    case "confirmed": return "In Queue";
+    case "in_production":
+    case "inprocess": return "Making Your Sticker";
+    case "fulfilled":
+    case "shipped": return "On the Way";
     case "in_transit": return "In Transit";
     case "delivered": return "Delivered";
+    case "returned": return "Returned";
     case "failed": return "Failed";
     case "canceled": return "Canceled";
-    default: return status;
+    default: return "In Queue";
   }
 }
 
 function getStatusEmoji(status: string): string {
   switch (status) {
-    case "pending": return "📦";
-    case "confirmed": return "✅";
+    case "draft":
+    case "pending":
+    case "confirmed": return "📋";
+    case "in_production":
+    case "inprocess": return "🏭";
+    case "fulfilled":
     case "shipped": return "🚀";
     case "in_transit": return "✈️";
     case "delivered": return "🎉";
+    case "returned": return "↩️";
     case "failed": return "😢";
     case "canceled": return "❌";
-    default: return "📦";
+    default: return "📋";
   }
 }
 
 function getSamuMessage(status: string, city: string, country: string): string {
   const location = city || getCountryName(country);
   switch (status) {
-    case "pending": return `SAMU is getting ready for ${location}!`;
-    case "confirmed": return `SAMU is packed and heading to ${location}!`;
+    case "draft":
+    case "pending":
+    case "confirmed": return `Order received! SAMU is heading to ${location}!`;
+    case "in_production":
+    case "inprocess": return `SAMU sticker is being made for ${location}!`;
+    case "fulfilled":
     case "shipped": return `SAMU just departed for ${location}! 🚀`;
-    case "in_transit": return `SAMU is traveling to ${location}! ✈️`;
+    case "in_transit": return `SAMU is on the way to ${location}! ✈️`;
     case "delivered": return `SAMU arrived in ${location}! 🎉`;
+    case "returned": return `SAMU returned from ${location}`;
     case "failed": return `SAMU couldn't make it to ${location}... 😢`;
     case "canceled": return `SAMU's trip to ${location} was canceled`;
     default: return `SAMU is heading to ${location}!`;
   }
 }
 
-function getRevenueRoleLabel(role: string | null): string {
+function getRevenueRoleLabel(role: string | null): string | null {
   switch (role) {
     case "creator": return "🎨 Creator Revenue";
     case "voter": return "🗳️ Voter Revenue";
     case "creator_voter": return "🎨🗳️ Creator + Voter";
     case "buyer": return "🛒 My Order";
-    default: return "📦 Standard Order";
+    default: return null;
   }
 }
 
@@ -593,9 +608,6 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                     <Badge className="text-[10px] bg-green-500/20 text-green-400 border-green-500/30">
                       🗳️ Voter
                     </Badge>
-                  )}
-                  {!selectedOrder.revenueRole && (
-                    <Badge variant="secondary" className="text-[10px]">📦 Standard Order</Badge>
                   )}
 
                   {selectedOrder.hasRevenue && selectedOrder.myEstimatedRevenue != null && selectedOrder.myEstimatedRevenue > 0 && (

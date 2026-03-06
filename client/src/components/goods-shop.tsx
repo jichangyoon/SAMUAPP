@@ -372,16 +372,42 @@ export function GoodsShop() {
     setMockupIndex(0);
   };
 
+  const getStatusLabel = (status: string): string => {
+    switch (status) {
+      case "draft": return "Order Received";
+      case "pending":
+      case "confirmed": return "In Queue";
+      case "in_production":
+      case "inprocess": return "Making Sticker";
+      case "fulfilled":
+      case "shipped": return "On the Way";
+      case "in_transit": return "In Transit";
+      case "delivered": return "Delivered";
+      case "returned": return "Returned";
+      case "failed": return "Failed";
+      case "canceled":
+      case "cancelled": return "Canceled";
+      default: return "In Queue";
+    }
+  };
+
   const getStatusBadge = (status: string) => {
-    const map: Record<string, string> = {
-      pending: 'bg-yellow-500/20 text-yellow-400',
-      confirmed: 'bg-blue-500/20 text-blue-400',
-      fulfilled: 'bg-purple-500/20 text-purple-400',
-      shipped: 'bg-green-500/20 text-green-400',
-      delivered: 'bg-green-500/20 text-green-300',
-      cancelled: 'bg-red-500/20 text-red-400',
-    };
-    return map[status] || 'bg-gray-500/20 text-gray-400';
+    switch (status) {
+      case "draft":
+      case "pending":
+      case "confirmed": return 'bg-yellow-500/20 text-yellow-400';
+      case "in_production":
+      case "inprocess": return 'bg-orange-500/20 text-orange-400';
+      case "fulfilled":
+      case "shipped": return 'bg-blue-500/20 text-blue-400';
+      case "in_transit": return 'bg-purple-500/20 text-purple-400';
+      case "delivered": return 'bg-green-500/20 text-green-300';
+      case "returned": return 'bg-orange-500/20 text-orange-400';
+      case "failed":
+      case "canceled":
+      case "cancelled": return 'bg-red-500/20 text-red-400';
+      default: return 'bg-gray-500/20 text-gray-400';
+    }
   };
 
   const goodsArray = goods as any[];
@@ -434,7 +460,7 @@ export function GoodsShop() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <Badge className={getStatusBadge(order.status)}>{order.status}</Badge>
+                    <Badge className={getStatusBadge(order.printfulStatus || order.status)}>{getStatusLabel(order.printfulStatus || order.status)}</Badge>
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </div>
                 </div>
@@ -597,11 +623,10 @@ export function GoodsShop() {
                 </div>
               )}
 
-              {/* Order ID & Printful Info */}
+              {/* Order ID */}
               <div className="text-xs text-muted-foreground space-y-0.5 pt-2 border-t border-border">
                 <div>Order ID: #{selectedOrder.id}</div>
                 {selectedOrder.printfulOrderId && <div>Printful Order: #{selectedOrder.printfulOrderId}</div>}
-                <div>Status: {selectedOrder.status} {selectedOrder.printfulStatus ? `(${selectedOrder.printfulStatus})` : ''}</div>
               </div>
             </div>
           )}
