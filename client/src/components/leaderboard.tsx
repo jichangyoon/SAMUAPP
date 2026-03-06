@@ -12,6 +12,7 @@ import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { usePrivy } from '@privy-io/react-auth';
 import { useSolanaWallets } from '@privy-io/react-auth/solana';
 import type { Meme } from "@shared/schema";
+import { getMediaType } from "@/utils/media-utils";
 
 function formatCompactNumber(num: number): string {
   if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'B';
@@ -477,7 +478,11 @@ export function Leaderboard() {
                               setShowMemeModal(true);
                             }}
                           >
-                            <img src={winner.winnerMeme.imageUrl} alt={winner.winnerMeme.title} className="w-12 h-12 rounded object-cover shrink-0" />
+                            {getMediaType(winner.winnerMeme.imageUrl) === 'video' ? (
+                              <video src={winner.winnerMeme.imageUrl} className="w-12 h-12 rounded object-cover shrink-0" muted preload="metadata" />
+                            ) : (
+                              <img src={winner.winnerMeme.imageUrl} alt={winner.winnerMeme.title} className="w-12 h-12 rounded object-cover shrink-0" />
+                            )}
                             <div className="flex-1 min-w-0">
                               <div className="text-sm font-semibold text-foreground truncate">{winner.winnerMeme.title}</div>
                               <div className="text-xs text-muted-foreground truncate">by {winner.winnerMeme.authorUsername}</div>
@@ -508,7 +513,13 @@ export function Leaderboard() {
                                 {(showAllVotes ? myContestVotes.votes : myContestVotes.votes.slice(0, 5)).map((v: any, vi: number) => (
                                   <div key={vi} className="flex items-center justify-between p-1.5 bg-accent/50 rounded text-xs">
                                     <div className="flex items-center space-x-2 min-w-0 flex-1">
-                                      {v.memeImageUrl && <img src={v.memeImageUrl} alt="" className="w-6 h-6 rounded object-cover shrink-0" />}
+                                      {v.memeImageUrl && (
+                                        getMediaType(v.memeImageUrl) === 'video' ? (
+                                          <video src={v.memeImageUrl} className="w-6 h-6 rounded object-cover shrink-0" muted preload="metadata" />
+                                        ) : (
+                                          <img src={v.memeImageUrl} alt="" className="w-6 h-6 rounded object-cover shrink-0" />
+                                        )
+                                      )}
                                       <span className="text-foreground truncate">{v.memeTitle}</span>
                                     </div>
                                     <span className="font-bold text-primary shrink-0 ml-2">{formatCompactNumber(v.samuAmount || 0)}</span>
