@@ -304,7 +304,7 @@ router.get("/map", async (req, res) => {
       }
     }
 
-    const allMemes = await storage.getMemes();
+    const allMemes = await storage.getAllMemes();
     const memeContestMap = new Map<number, number | null>();
     const memeAuthorMap = new Map<number, string>();
     allMemes.forEach(m => {
