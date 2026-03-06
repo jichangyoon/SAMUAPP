@@ -518,7 +518,7 @@ export function GoodsShop() {
                         <div key={step.key} className="flex items-center flex-1">
                           <div className={`flex flex-col items-center flex-1 ${idx <= currentStep ? 'text-primary' : 'text-muted-foreground/50'}`}>
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${idx <= currentStep ? 'bg-primary/20 text-primary' : 'bg-accent text-muted-foreground/50'}`}>
-                              {step.icon}
+                              {idx < currentStep ? '✓' : step.icon}
                             </div>
                             <span className="text-[10px] mt-1 text-center leading-tight">{step.label}</span>
                           </div>
@@ -609,7 +609,7 @@ export function GoodsShop() {
                   <div className="text-sm font-semibold text-foreground">Tracking</div>
                   <div className="bg-accent/30 rounded-lg p-3 text-sm">
                     {selectedOrder.trackingUrl ? (
-                      <a href={selectedOrder.trackingUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline flex items-center gap-2">
+                      <a href={selectedOrder.trackingUrl} target="_blank" rel="noopener noreferrer" className="text-white hover:text-white/80 underline flex items-center gap-2">
                         <Truck className="h-4 w-4" />
                         {selectedOrder.trackingNumber}
                       </a>

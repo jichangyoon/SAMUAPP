@@ -691,7 +691,7 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                         <div key={step.key} className="flex items-center flex-1">
                           <div className={`flex flex-col items-center flex-1 ${idx <= currentStep ? 'text-primary' : 'text-muted-foreground/50'}`}>
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${idx <= currentStep ? 'bg-primary/20 text-primary' : 'bg-accent text-muted-foreground/50'}`}>
-                              {step.icon}
+                              {idx < currentStep ? '✓' : step.icon}
                             </div>
                             <span className="text-[10px] mt-1 text-center leading-tight">{step.label}</span>
                           </div>
@@ -723,7 +723,7 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                             href={selectedOrder.trackingUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-primary hover:text-primary/80 flex items-center gap-1"
+                            className="text-white hover:text-white/80 flex items-center gap-1"
                           >
                             Track Package <ExternalLink className="h-3 w-3" />
                           </a>
