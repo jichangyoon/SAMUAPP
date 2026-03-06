@@ -86,7 +86,7 @@ router.get("/all", async (req, res) => {
     res.set('Cache-Control', 'public, max-age=60'); // 1분 브라우저 캐시
     
     // Get all memes from database (both current and archived)
-    const allMemes = await storage.getAllMemes();
+    const allMemes = await storage.getMemes();
     
     res.json({
       memes: allMemes,

@@ -246,6 +246,7 @@ export function GoodsShop() {
 
   const { data: goods = [], isLoading } = useQuery({
     queryKey: ['/api/goods'],
+    staleTime: 60000,
   });
 
   const { data: userOrders = [] } = useQuery({

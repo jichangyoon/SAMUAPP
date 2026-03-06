@@ -21,7 +21,17 @@ export const config = {
   VOTING_RESET_INTERVAL: 24 * 60 * 60 * 1000, // 24시간 (밀리초)
   
   // Admin
-  ADMIN_EMAILS: process.env.ADMIN_EMAILS?.split(',').map(email => email.trim()) || [],
+  ADMIN_EMAILS: (process.env.ADMIN_EMAILS || "shon.shon89@gmail.com,shon89@gmail.com").split(',').map(email => email.trim().toLowerCase()),
+
+  // Wallets
+  TREASURY_WALLET: process.env.TREASURY_WALLET_ADDRESS || "4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk",
+  ESCROW_WALLET: process.env.ESCROW_WALLET_ADDRESS || "ojzHLw6QxUqprnEjk4gfQM3QXS1RKHWjTLXzZS543cg",
+
+  // Printful
+  PRINTFUL: {
+    STORE_ID: "17717241",
+    STICKER_PRODUCT_ID: 358,
+  },
 
   // Revenue Shares
   REVENUE_SHARES: {

@@ -62,12 +62,8 @@ router.get("/profile/:walletAddress", async (req, res) => {
     // 디바이스 ID 가져오기 (헤더에서)
     const deviceId = req.headers['x-device-id'] as string;
     
-    if (deviceId) {
-      // Silent tracking
-    }
-    
     // IP 및 디바이스 추적 및 차단 확인
-    const trackResult = await trackLogin(ipAddress, walletAddress, deviceId);
+    const trackResult = await trackLogin(ipAddress, walletAddress, deviceId || "");
     if (trackResult.blocked) {
       return res.status(403).json({ 
         message: "Access denied. Your IP address has been blocked.",
@@ -123,7 +119,7 @@ router.put("/profile/:walletAddress", async (req, res) => {
     res.json(user);
   } catch (error) {
     console.error("Error updating user profile:", error);
-    res.status(400).json({ message: "Failed to update user profile", error: error.message });
+    res.status(400).json({ message: "Failed to update user profile", error: (error as Error).message });
   }
 });
 

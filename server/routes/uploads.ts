@@ -106,8 +106,6 @@ router.delete("/delete", async (req, res) => {
   }
 });
 
-// Remove this duplicate - already handled below
-
 // Health check endpoint for R2 connectivity
 router.get("/health", async (req, res) => {
   try {

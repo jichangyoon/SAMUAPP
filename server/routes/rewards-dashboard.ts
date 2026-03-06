@@ -4,11 +4,9 @@ import { config } from "../config";
 
 const router = Router();
 
-const TREASURY_WALLET = "4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk";
-
 router.get("/dashboard", async (_req, res) => {
   try {
-    const distributions = await storage.getAllGoodsRevenueDistributions();
+    const distributions = await storage.getGoodsRevenueDistributions();
     const allOrders = await storage.getAllOrders();
 
     const confirmedOrders = allOrders.filter(o => o.status === "confirmed" && o.solAmount);
@@ -31,7 +29,7 @@ router.get("/dashboard", async (_req, res) => {
       shareBreakdown: {
         creator: { percent: config.REVENUE_SHARES.CREATOR * 100, totalSol: creatorTotal },
         voter: { percent: config.REVENUE_SHARES.VOTERS * 100, totalSol: voterTotal },
-        platform: { percent: config.REVENUE_SHARES.PLATFORM * 100, totalSol: platformTotal, wallet: TREASURY_WALLET },
+        platform: { percent: config.REVENUE_SHARES.PLATFORM * 100, totalSol: platformTotal, wallet: config.TREASURY_WALLET },
       },
       recentDistributions: distributions.slice(0, 20),
       shareRatios: {
@@ -51,10 +49,10 @@ router.get("/summary", async (req, res) => {
 
     const [allOrders, distributions, allEscrow, allGoods, allMemes] = await Promise.all([
       storage.getAllOrders(),
-      storage.getAllGoodsRevenueDistributions(),
+      storage.getGoodsRevenueDistributions(),
       storage.getAllEscrowDeposits(),
       storage.getGoods(),
-      storage.getAllMemes(),
+      storage.getMemes(),
     ]);
 
     const distributionByOrderId = new Map<number, any>();
@@ -285,7 +283,7 @@ router.get("/map", async (req, res) => {
   try {
     const walletAddress = req.query.wallet as string | undefined;
     const allOrders = await storage.getAllOrders();
-    const distributions = await storage.getAllGoodsRevenueDistributions();
+    const distributions = await storage.getGoodsRevenueDistributions();
 
     const distributionByOrderId = new Map<number, any>();
     distributions.forEach(d => distributionByOrderId.set(d.orderId, d));
@@ -306,7 +304,7 @@ router.get("/map", async (req, res) => {
       }
     }
 
-    const allMemes = await storage.getAllMemes();
+    const allMemes = await storage.getMemes();
     const memeContestMap = new Map<number, number | null>();
     const memeAuthorMap = new Map<number, string>();
     allMemes.forEach(m => {

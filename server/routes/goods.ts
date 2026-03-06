@@ -5,17 +5,9 @@ import { config } from "../config";
 import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { uploadToR2 } from "../r2-storage";
 import { geocodeAddress } from "../utils/geocode";
+import { getConnection } from "../utils/solana";
 
 const router = Router();
-
-const SHARE_RATIOS = {
-  creator: 0.45,
-  voter: 0.40,
-  platform: 0.15,
-};
-
-const TREASURY_WALLET = process.env.TREASURY_WALLET_ADDRESS || "4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk";
-const ESCROW_WALLET = process.env.ESCROW_WALLET_ADDRESS || "ojzHLw6QxUqprnEjk4gfQM3QXS1RKHWjTLXzZS543cg";
 
 export async function distributeEscrowProfit(escrowDeposit: any) {
   const profitSol = escrowDeposit.profitSol;
@@ -24,9 +16,9 @@ export async function distributeEscrowProfit(escrowDeposit: any) {
   const contestId = escrowDeposit.contestId;
   if (!contestId) return;
 
-  const creatorPool = profitSol * SHARE_RATIOS.creator;
-  const voterPoolAmount = profitSol * SHARE_RATIOS.voter;
-  const platformAmount = profitSol * SHARE_RATIOS.platform;
+  const creatorPool = profitSol * config.REVENUE_SHARES.CREATOR;
+  const voterPoolAmount = profitSol * config.REVENUE_SHARES.VOTERS;
+  const platformAmount = profitSol * config.REVENUE_SHARES.PLATFORM;
 
   const memeVoteSummary = await storage.getMemeVoteSummary(contestId);
   const totalVotesReceived = memeVoteSummary.reduce((sum, m) => sum + m.totalSamuReceived, 0);
@@ -48,7 +40,7 @@ export async function distributeEscrowProfit(escrowDeposit: any) {
     }
   } else {
     creatorShares.push({
-      wallet: TREASURY_WALLET,
+      wallet: config.TREASURY_WALLET,
       amount: creatorPool,
       memeId: 0,
       votePercent: 100,
@@ -124,9 +116,8 @@ function requireAdmin(req: any, res: any, next: any) {
 }
 
 const PRINTFUL_API_KEY = process.env.PRINTFUL_API_KEY || "";
-const PRINTFUL_STORE_ID = "17717241";
 const PRINTFUL_BASE_URL = "https://api.printful.com";
-const STICKER_PRODUCT_ID = 358;
+const STICKER_PRODUCT_ID = config.PRINTFUL.STICKER_PRODUCT_ID;
 
 const STICKER_VARIANT_MAP: Record<string, number> = {
   '3"×3"': 10163,
@@ -143,11 +134,7 @@ const STICKER_PRINTFILE_SIZE: Record<number, { width: number; height: number }> 
 };
 
 function getSolConnection(): Connection {
-  const HELIUS_API_KEY = process.env.VITE_HELIUS_API_KEY;
-  const rpcUrl = HELIUS_API_KEY
-    ? `https://rpc.helius.xyz/?api-key=${HELIUS_API_KEY}`
-    : 'https://api.mainnet-beta.solana.com';
-  return new Connection(rpcUrl, 'confirmed');
+  return getConnection();
 }
 
 async function getSOLPriceUSD(): Promise<number> {
@@ -224,7 +211,7 @@ async function getPrintfulProductCost(item: any, shippingAddress?: any): Promise
 function getPrintfulHeaders() {
   return {
     "Authorization": `Bearer ${PRINTFUL_API_KEY}`,
-    "X-PF-Store-Id": PRINTFUL_STORE_ID,
+    "X-PF-Store-Id": config.PRINTFUL.STORE_ID,
     "Content-Type": "application/json",
   };
 }
@@ -378,7 +365,7 @@ router.get("/:id/story", async (req, res) => {
         memeRank,
         votePercent: totalVotes > 0 ? (memeVotes / totalVotes) * 100 : 0,
       },
-      shareRatios: SHARE_RATIOS,
+      shareRatios: config.REVENUE_SHARES,
     });
   } catch (error: any) {
     console.error("Error fetching goods story:", error);

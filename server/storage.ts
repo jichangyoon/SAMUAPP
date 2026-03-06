@@ -16,7 +16,6 @@ export interface IStorage {
   // Meme operations
   createMeme(meme: InsertMeme): Promise<Meme>;
   getMemes(): Promise<Meme[]>;
-  getAllMemes(): Promise<Meme[]>;
   getMemeById(id: number): Promise<Meme | undefined>;
   getMemesByContestId(contestId: number): Promise<Meme[]>;
   deleteMeme(id: number): Promise<void>;
@@ -69,7 +68,6 @@ export interface IStorage {
   updateRevenueStatus(id: number, status: string, distributedAt?: Date): Promise<Revenue>;
   createRevenueShare(share: InsertRevenueShare): Promise<RevenueShare>;
   createRevenueShares(shares: InsertRevenueShare[]): Promise<RevenueShare[]>;
-  getRevenueSharesByRevenueId(revenueId: number): Promise<RevenueShare[]>;
   getRevenueSharesByWallet(walletAddress: string): Promise<RevenueShare[]>;
   getRevenueSharesByContestId(contestId: number): Promise<RevenueShare[]>;
   getContestVoteSummary(contestId: number): Promise<{voterWallet: string, totalSamuAmount: number}[]>;
@@ -89,7 +87,6 @@ export interface IStorage {
   // Goods Revenue Distribution operations
   createGoodsRevenueDistribution(data: InsertGoodsRevenueDistribution): Promise<GoodsRevenueDistribution>;
   getGoodsRevenueDistributions(contestId?: number): Promise<GoodsRevenueDistribution[]>;
-  getAllGoodsRevenueDistributions(): Promise<GoodsRevenueDistribution[]>;
 
   // Voter Reward Pool operations
   getOrCreateVoterRewardPool(contestId: number, totalShares: number): Promise<VoterRewardPool>;
@@ -103,7 +100,6 @@ export interface IStorage {
   getVoterClaimsByWallet(walletAddress: string): Promise<VoterClaimRecord[]>;
 
   createCreatorRewardDistributions(data: InsertCreatorRewardDistribution[]): Promise<CreatorRewardDistribution[]>;
-  getCreatorRewardDistributionsByDistributionId(distributionId: number): Promise<CreatorRewardDistribution[]>;
   getCreatorRewardDistributionsByContestId(contestId: number): Promise<CreatorRewardDistribution[]>;
   getCreatorRewardDistributionsByWallet(walletAddress: string): Promise<CreatorRewardDistribution[]>;
   createEscrowDeposit(data: InsertEscrowDeposit): Promise<EscrowDeposit>;
@@ -158,10 +154,6 @@ export class MemStorage implements IStorage {
   }
 
   async getMemes(): Promise<Meme[]> {
-    return Array.from(this.memes.values()).sort((a, b) => b.votes - a.votes);
-  }
-
-  async getAllMemes(): Promise<Meme[]> {
     return Array.from(this.memes.values()).sort((a, b) => b.votes - a.votes);
   }
 
@@ -396,7 +388,6 @@ export class MemStorage implements IStorage {
   async updateRevenueStatus(_id: number, _status: string): Promise<Revenue> { throw new Error("Not implemented"); }
   async createRevenueShare(_share: InsertRevenueShare): Promise<RevenueShare> { throw new Error("Not implemented"); }
   async createRevenueShares(_shares: InsertRevenueShare[]): Promise<RevenueShare[]> { return []; }
-  async getRevenueSharesByRevenueId(_revenueId: number): Promise<RevenueShare[]> { return []; }
   async getRevenueSharesByWallet(_walletAddress: string): Promise<RevenueShare[]> { return []; }
   async getRevenueSharesByContestId(_contestId: number): Promise<RevenueShare[]> { return []; }
   async getContestVoteSummary(_contestId: number): Promise<{voterWallet: string, totalSamuAmount: number}[]> { return []; }
@@ -435,7 +426,6 @@ export class MemStorage implements IStorage {
   async updateOrder(_id: number, _data: Partial<InsertOrder>): Promise<Order> { throw new Error("Not implemented"); }
   async createGoodsRevenueDistribution(_data: InsertGoodsRevenueDistribution): Promise<GoodsRevenueDistribution> { throw new Error("Not implemented"); }
   async getGoodsRevenueDistributions(_contestId?: number): Promise<GoodsRevenueDistribution[]> { return []; }
-  async getAllGoodsRevenueDistributions(): Promise<GoodsRevenueDistribution[]> { return []; }
   async getOrCreateVoterRewardPool(_contestId: number, _totalShares: number): Promise<VoterRewardPool> { throw new Error("Not implemented"); }
   async updateVoterRewardPool(_contestId: number, _depositAmount: number): Promise<VoterRewardPool> { throw new Error("Not implemented"); }
   async getVoterRewardPool(_contestId: number): Promise<VoterRewardPool | undefined> { return undefined; }
@@ -444,7 +434,6 @@ export class MemStorage implements IStorage {
   async claimVoterReward(_contestId: number, _voterWallet: string): Promise<{ claimedAmount: number }> { throw new Error("Not implemented"); }
   async getVoterClaimsByWallet(_walletAddress: string): Promise<VoterClaimRecord[]> { return []; }
   async createCreatorRewardDistributions(_data: InsertCreatorRewardDistribution[]): Promise<CreatorRewardDistribution[]> { return []; }
-  async getCreatorRewardDistributionsByDistributionId(_distributionId: number): Promise<CreatorRewardDistribution[]> { return []; }
   async getCreatorRewardDistributionsByContestId(_contestId: number): Promise<CreatorRewardDistribution[]> { return []; }
   async getCreatorRewardDistributionsByWallet(_walletAddress: string): Promise<CreatorRewardDistribution[]> { return []; }
   async createEscrowDeposit(_data: InsertEscrowDeposit): Promise<EscrowDeposit> { throw new Error("Not implemented"); }
@@ -751,11 +740,20 @@ export class DatabaseStorage implements IStorage {
     if (!this.db) throw new Error("Database not available");
     if (contestIds.length === 0) return [];
 
-    return await this.db
-      .select({ ...votes })
+    const result = await this.db
+      .select({
+        id: votes.id,
+        memeId: votes.memeId,
+        voterWallet: votes.voterWallet,
+        samuAmount: votes.samuAmount,
+        txSignature: votes.txSignature,
+        createdAt: votes.createdAt,
+      })
       .from(votes)
       .innerJoin(memes, eq(votes.memeId, memes.id))
       .where(inArray(memes.contestId, contestIds));
+    
+    return result;
   }
 
   async createMeme(insertMeme: InsertMeme): Promise<Meme> {
@@ -792,18 +790,6 @@ export class DatabaseStorage implements IStorage {
         .orderBy(desc(memes.createdAt))
         .limit(100);
     }
-    
-    return result;
-  }
-
-  async getAllMemes(): Promise<Meme[]> {
-    if (!this.db) throw new Error("Database not available");
-    
-    // Get ALL memes from database (both current and archived contests)
-    const result = await this.db
-      .select()
-      .from(memes)
-      .orderBy(desc(memes.createdAt));
     
     return result;
   }
@@ -1674,12 +1660,6 @@ export class DatabaseStorage implements IStorage {
         .where(eq(goodsRevenueDistributions.contestId, contestId))
         .orderBy(desc(goodsRevenueDistributions.createdAt));
     }
-    return this.db.select().from(goodsRevenueDistributions)
-      .orderBy(desc(goodsRevenueDistributions.createdAt));
-  }
-
-  async getAllGoodsRevenueDistributions(): Promise<GoodsRevenueDistribution[]> {
-    if (!this.db) throw new Error("Database not available");
     return this.db.select().from(goodsRevenueDistributions)
       .orderBy(desc(goodsRevenueDistributions.createdAt));
   }
