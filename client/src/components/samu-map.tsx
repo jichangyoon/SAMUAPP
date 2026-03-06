@@ -1,5 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { getStatusLabel, statusOrder } from "@/lib/order-utils";
+import { REWARD_COLORS, MiniDonut } from "@/lib/reward-utils";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -104,23 +106,6 @@ interface MapData {
   };
 }
 
-function getStatusLabel(status: string): string {
-  switch (status) {
-    case "draft":
-    case "pending":
-    case "confirmed": return "Order Received";
-    case "in_production":
-    case "inprocess": return "Making Your Sticker";
-    case "fulfilled":
-    case "shipped": return "On the Way";
-    case "in_transit": return "In Transit";
-    case "delivered": return "Delivered";
-    case "returned": return "Returned";
-    case "failed": return "Failed";
-    case "canceled": return "Canceled";
-    default: return "In Queue";
-  }
-}
 
 function getStatusEmoji(status: string): string {
   switch (status) {
@@ -169,38 +154,6 @@ function getRevenueRoleLabel(role: string | null): string | null {
   }
 }
 
-const REWARD_COLORS = {
-  creator: "hsl(45, 90%, 55%)",
-  voter: "hsl(200, 80%, 55%)",
-  platform: "hsl(280, 60%, 55%)",
-};
-
-function MiniDonut({ size = 44, strokeWidth = 7 }: { size?: number; strokeWidth?: number }) {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const center = size / 2;
-  const segments = [
-    { percent: 45, color: REWARD_COLORS.creator },
-    { percent: 40, color: REWARD_COLORS.voter },
-    { percent: 15, color: REWARD_COLORS.platform },
-  ];
-  let cumulative = 0;
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <circle cx={center} cy={center} r={radius} fill="none" stroke="hsl(0,0%,20%)" strokeWidth={strokeWidth} />
-      {segments.map((seg, i) => {
-        const dash = `${(seg.percent / 100) * circumference} ${circumference}`;
-        const rot = (cumulative / 100) * 360 - 90;
-        cumulative += seg.percent;
-        return (
-          <circle key={i} cx={center} cy={center} r={radius} fill="none" stroke={seg.color}
-            strokeWidth={strokeWidth} strokeDasharray={dash} strokeDashoffset="0"
-            transform={`rotate(${rot} ${center} ${center})`} strokeLinecap="butt" />
-        );
-      })}
-    </svg>
-  );
-}
 
 interface RewardBreakdownData {
   shareRatios: { creator: number; voter: number; platform: number };
@@ -672,13 +625,6 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                     { key: 'shipping', label: 'Shipped', icon: '📦' },
                     { key: 'delivered', label: 'Delivered', icon: '✅' },
                   ];
-                  const statusOrder: Record<string, number> = {
-                    'draft': 0, 'confirmed': 0, 'pending': 0,
-                    'in_production': 1, 'inprocess': 1,
-                    'fulfilled': 2, 'shipped': 2,
-                    'delivered': 3, 'completed': 3,
-                    'canceled': -1, 'cancelled': -1, 'failed': -1,
-                  };
                   const currentStep = statusOrder[selectedOrder.status] ?? 0;
                   const isCanceled = currentStep === -1;
                   return isCanceled ? (

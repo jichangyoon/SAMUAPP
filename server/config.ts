@@ -22,4 +22,11 @@ export const config = {
   
   // Admin
   ADMIN_EMAILS: process.env.ADMIN_EMAILS?.split(',').map(email => email.trim()) || [],
+
+  // Revenue Shares
+  REVENUE_SHARES: {
+    CREATOR: 0.45,
+    VOTERS: 0.40,
+    PLATFORM: 0.15,
+  },
 } as const;

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
+import { REWARD_COLORS, MiniDonut } from "@/lib/reward-utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -24,41 +25,11 @@ const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   failed:       { label: "Failed",       color: "bg-red-500/20 text-red-400 border-red-400/30" },
 };
 
-const REWARD_COLORS = {
-  creator:  "hsl(45,90%,55%)",
-  voter:    "hsl(200,80%,55%)",
-  platform: "hsl(0,0%,50%)",
-};
 
 function getStatusStyle(status: string) {
   return STATUS_LABEL[status] ?? { label: status, color: "bg-gray-500/20 text-gray-400" };
 }
 
-function MiniDonut({ size = 44, strokeWidth = 7 }: { size?: number; strokeWidth?: number }) {
-  const segments = [
-    { percent: 45, color: REWARD_COLORS.creator },
-    { percent: 40, color: REWARD_COLORS.voter },
-    { percent: 15, color: REWARD_COLORS.platform },
-  ];
-  const r = (size - strokeWidth) / 2;
-  const circ = 2 * Math.PI * r;
-  let offset = 0;
-  return (
-    <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
-      {segments.map((seg, i) => {
-        const dash = (seg.percent / 100) * circ;
-        const el = (
-          <circle key={i} cx={size / 2} cy={size / 2} r={r}
-            fill="none" stroke={seg.color} strokeWidth={strokeWidth}
-            strokeDasharray={`${dash} ${circ - dash}`}
-            strokeDashoffset={-offset} />
-        );
-        offset += dash;
-        return el;
-      })}
-    </svg>
-  );
-}
 
 function OrderDetailDrawer({ order, walletAddress, open, onClose }: {
   order: any;

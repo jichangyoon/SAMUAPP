@@ -3,21 +3,14 @@ import { Router } from "express";
 import { storage } from "../storage";
 import { insertVoteSchema } from "@shared/schema";
 import { Connection, PublicKey, Transaction } from "@solana/web3.js";
-import { createTransferInstruction, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, getAccount, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { createTransferInstruction, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, getAccount } from "@solana/spl-token";
+import { getConnection } from "../utils/solana";
 
 const router = Router();
 
 const SAMU_TOKEN_MINT = new PublicKey("EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF");
 const SAMU_DECIMALS = 8;
 const TREASURY_WALLET = process.env.TREASURY_WALLET_ADDRESS || "4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk";
-
-function getConnection(): Connection {
-  const HELIUS_API_KEY = process.env.VITE_HELIUS_API_KEY;
-  const rpcUrl = HELIUS_API_KEY 
-    ? `https://rpc.helius.xyz/?api-key=${HELIUS_API_KEY}`
-    : 'https://api.mainnet-beta.solana.com';
-  return new Connection(rpcUrl, 'confirmed');
-}
 
 export async function verifyTransaction(
   connection: Connection,
@@ -270,13 +263,12 @@ router.get("/:id/voters", async (req, res) => {
     }
 
     const wallets = Array.from(voterMap.keys());
-    const userProfiles = await Promise.all(
-      wallets.map(w => storage.getUserByWallet(w))
-    );
+    const userProfilesList = await storage.getUsersByWallets(wallets);
+    const userProfileMap = new Map(userProfilesList.map(u => [u.walletAddress, u]));
 
-    const voters = wallets.map((wallet, i) => {
+    const voters = wallets.map((wallet) => {
       const data = voterMap.get(wallet)!;
-      const user = userProfiles[i];
+      const user = userProfileMap.get(wallet);
       return {
         walletAddress: wallet,
         username: user?.displayName || user?.username || wallet.slice(0, 6) + '...',
@@ -371,13 +363,12 @@ router.get("/contest/:contestId/reward-breakdown", async (req, res) => {
     const totalSamuSpent = flatVotes.reduce((sum: number, v) => sum + v.samuAmount, 0);
     
     const voterWallets = Array.from(voterMap.keys());
-    const voterProfiles = await Promise.all(
-      voterWallets.map(w => storage.getUserByWallet(w))
-    );
+    const voterProfilesList = await storage.getUsersByWallets(voterWallets);
+    const voterProfileMap = new Map(voterProfilesList.map(u => [u.walletAddress, u]));
 
-    const voters = voterWallets.map((wallet, i) => {
+    const voters = voterWallets.map((wallet) => {
       const data = voterMap.get(wallet)!;
-      const user = voterProfiles[i];
+      const user = voterProfileMap.get(wallet);
       return {
         wallet,
         username: user?.displayName || `${wallet.slice(0, 4)}...${wallet.slice(-4)}`,

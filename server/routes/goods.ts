@@ -349,7 +349,8 @@ router.get("/:id/story", async (req, res) => {
         memeVotes = memeEntry?.totalSamuReceived || 0;
 
         const sorted = [...voteSummary].sort((a, b) => b.totalSamuReceived - a.totalSamuReceived);
-        memeRank = sorted.findIndex(m => m.memeId === item.memeId) + 1;
+        const idx = sorted.findIndex(m => m.memeId === item.memeId);
+        memeRank = Math.max(1, idx + 1);
       }
     }
 

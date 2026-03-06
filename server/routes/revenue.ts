@@ -5,12 +5,6 @@ import { config } from "../config";
 
 const router = Router();
 
-const REVENUE_SHARES = {
-  CREATOR: 0.45,
-  VOTERS: 0.40,
-  PLATFORM: 0.15,
-};
-
 const PLATFORM_WALLET = process.env.TREASURY_WALLET_ADDRESS || "4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk";
 
 async function requireAdmin(req: any, res: any): Promise<boolean> {
@@ -80,8 +74,8 @@ router.post("/:id/distribute", async (req, res) => {
           contestId,
           walletAddress: winnerMeme.authorWallet,
           role: "creator",
-          sharePercent: REVENUE_SHARES.CREATOR * 100,
-          amountSol: totalSol * REVENUE_SHARES.CREATOR,
+          sharePercent: config.REVENUE_SHARES.CREATOR * 100,
+          amountSol: totalSol * config.REVENUE_SHARES.CREATOR,
           status: "pending",
         });
       }
@@ -94,8 +88,8 @@ router.post("/:id/distribute", async (req, res) => {
           contestId,
           walletAddress: topMeme.authorWallet,
           role: "creator",
-          sharePercent: REVENUE_SHARES.CREATOR * 100,
-          amountSol: totalSol * REVENUE_SHARES.CREATOR,
+          sharePercent: config.REVENUE_SHARES.CREATOR * 100,
+          amountSol: totalSol * config.REVENUE_SHARES.CREATOR,
           status: "pending",
         });
       }
@@ -105,7 +99,7 @@ router.post("/:id/distribute", async (req, res) => {
     const totalVotedSamu = voteSummary.reduce((sum, v) => sum + v.totalSamuAmount, 0);
 
     if (totalVotedSamu > 0) {
-      const voterPool = totalSol * REVENUE_SHARES.VOTERS;
+      const voterPool = totalSol * config.REVENUE_SHARES.VOTERS;
       for (const voter of voteSummary) {
         const voterShare = voter.totalSamuAmount / totalVotedSamu;
         shares.push({
@@ -113,7 +107,7 @@ router.post("/:id/distribute", async (req, res) => {
           contestId,
           walletAddress: voter.voterWallet,
           role: "voter",
-          sharePercent: voterShare * REVENUE_SHARES.VOTERS * 100,
+          sharePercent: voterShare * config.REVENUE_SHARES.VOTERS * 100,
           amountSol: voterPool * voterShare,
           status: "pending",
         });
@@ -125,8 +119,8 @@ router.post("/:id/distribute", async (req, res) => {
       contestId,
       walletAddress: PLATFORM_WALLET,
       role: "platform",
-      sharePercent: REVENUE_SHARES.PLATFORM * 100,
-      amountSol: totalSol * REVENUE_SHARES.PLATFORM,
+      sharePercent: config.REVENUE_SHARES.PLATFORM * 100,
+      amountSol: totalSol * config.REVENUE_SHARES.PLATFORM,
       status: "pending",
     });
 
@@ -163,7 +157,7 @@ router.get("/contest/:contestId", async (req, res) => {
         totalSamuVoted: totalVotedSamu,
         voterBreakdown,
       },
-      shareConfig: REVENUE_SHARES,
+      shareConfig: config.REVENUE_SHARES,
     });
   } catch (error: any) {
     console.error("Error fetching contest revenue:", error);
@@ -199,7 +193,7 @@ router.get("/contest/:contestId/my-share/:wallet", async (req, res) => {
       isCreator,
       revenueShares: myRevenueShares,
       totalEarnedSol,
-      shareConfig: REVENUE_SHARES,
+      shareConfig: config.REVENUE_SHARES,
     });
   } catch (error: any) {
     console.error("Error fetching my share:", error);

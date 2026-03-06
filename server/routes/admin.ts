@@ -147,17 +147,6 @@ router.get("/current-contest", async (req, res) => {
   }
 });
 
-// Get archived contests with winner details
-router.get("/archived-contests", async (req, res) => {
-  try {
-    const archivedContests = await storage.getArchivedContests();
-    res.json(archivedContests);
-  } catch (error) {
-    console.error("Error fetching archived contests:", error);
-    res.status(500).json({ error: "Failed to fetch archived contests" });
-  }
-});
-
 // IP 추적 관리 API들
 // 의심스러운 IP 목록 조회
 router.get("/suspicious-ips", async (req, res) => {

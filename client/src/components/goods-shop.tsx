@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { getStatusLabel, statusOrder } from "@/lib/order-utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -372,24 +373,6 @@ export function GoodsShop() {
     setMockupIndex(0);
   };
 
-  const getStatusLabel = (status: string): string => {
-    switch (status) {
-      case "draft":
-      case "pending":
-      case "confirmed": return "Order Received";
-      case "in_production":
-      case "inprocess": return "Making Sticker";
-      case "fulfilled":
-      case "shipped": return "On the Way";
-      case "in_transit": return "In Transit";
-      case "delivered": return "Delivered";
-      case "returned": return "Returned";
-      case "failed": return "Failed";
-      case "canceled":
-      case "cancelled": return "Canceled";
-      default: return "In Queue";
-    }
-  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -500,12 +483,6 @@ export function GoodsShop() {
                     { key: 'shipping', label: 'Shipped', icon: '📦' },
                     { key: 'delivered', label: 'Delivered', icon: '✅' },
                   ];
-                  const statusOrder: Record<string, number> = {
-                    'confirmed': 0, 'pending': 0, 'draft': 0,
-                    'in_production': 1, 'inprocess': 1, 'fulfilled': 2,
-                    'shipped': 2, 'delivered': 3, 'completed': 3,
-                    'canceled': -1, 'cancelled': -1, 'failed': -1, 'error': -1,
-                  };
                   const currentStep = statusOrder[selectedOrder.printfulStatus] ?? statusOrder[selectedOrder.status] ?? 0;
                   const isCanceled = currentStep === -1;
                   return isCanceled ? (

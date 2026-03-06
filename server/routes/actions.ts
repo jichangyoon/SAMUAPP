@@ -10,9 +10,10 @@ import {
   PublicKey, 
   Transaction
 } from "@solana/web3.js";
-import { createTransferInstruction, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, getAccount, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { createTransferInstruction, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, getAccount } from "@solana/spl-token";
 import { storage } from "../storage";
 import { verifyTransaction } from "./votes";
+import { getConnection } from "../utils/solana";
 
 const router = Router();
 
@@ -21,13 +22,6 @@ const SAMU_TOKEN_MINT = new PublicKey('EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1G
 const SAMU_TOKEN_MINT_STR = 'EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF';
 const SAMU_DECIMALS = 8;
 const TREASURY_WALLET = process.env.TREASURY_WALLET_ADDRESS || "4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk";
-
-function getConnection(): Connection {
-  const rpcUrl = HELIUS_API_KEY
-    ? `https://rpc.helius.xyz/?api-key=${HELIUS_API_KEY}`
-    : 'https://api.mainnet-beta.solana.com';
-  return new Connection(rpcUrl, 'confirmed');
-}
 
 interface PendingVoteIntent {
   memeId: number;

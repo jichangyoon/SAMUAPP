@@ -7,6 +7,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   getUserByWallet(walletAddress: string): Promise<User | undefined>;
   getUserByDisplayName(displayName: string): Promise<User | undefined>;
+  getUsersByWallets(wallets: string[]): Promise<User[]>;
   updateUser(walletAddress: string, updates: Partial<InsertUser & { displayName?: string; avatarUrl?: string }>): Promise<User>;
   updateUserMemeAuthorInfo(walletAddress: string, newDisplayName: string, newAvatarUrl?: string): Promise<void>;
   getUserMemes(walletAddress: string): Promise<Meme[]>;
@@ -204,6 +205,10 @@ export class MemStorage implements IStorage {
 
   async getUserByWallet(walletAddress: string): Promise<User | undefined> {
     return this.users.get(walletAddress);
+  }
+
+  async getUsersByWallets(wallets: string[]): Promise<User[]> {
+    return wallets.map(w => this.users.get(w)).filter((u): u is User => u !== undefined);
   }
 
   async getUserByDisplayName(displayName: string): Promise<User | undefined> {
@@ -500,6 +505,16 @@ export class DatabaseStorage implements IStorage {
       .from(users)
       .where(eq(users.walletAddress, walletAddress));
     return user;
+  }
+
+  async getUsersByWallets(wallets: string[]): Promise<User[]> {
+    if (!this.db) throw new Error("Database not available");
+    if (wallets.length === 0) return [];
+
+    return await this.db
+      .select()
+      .from(users)
+      .where(inArray(users.walletAddress, wallets));
   }
 
   async getUserByDisplayName(displayName: string): Promise<User | undefined> {
@@ -1350,13 +1365,17 @@ export class DatabaseStorage implements IStorage {
   async getTodayLoginsByIp(ipAddress: string): Promise<string[]> {
     if (!this.db) throw new Error("Database not available");
     
-    // 오늘 해당 IP로 로그인한 고유 지갑 주소들을 반환
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
     const result = await this.db
       .selectDistinct({ walletAddress: loginLogs.walletAddress })
       .from(loginLogs)
       .where(and(
         eq(loginLogs.ipAddress, ipAddress),
-        sql`DATE(${loginLogs.loginTime}) = CURRENT_DATE`
+        sql`${loginLogs.loginTime} >= ${today} AND ${loginLogs.loginTime} < ${tomorrow}`
       ));
     
     return result.map(row => row.walletAddress);
@@ -1365,13 +1384,17 @@ export class DatabaseStorage implements IStorage {
   async getTodayLoginsByDeviceId(deviceId: string): Promise<string[]> {
     if (!this.db) throw new Error("Database not available");
     
-    // 오늘 해당 디바이스로 로그인한 고유 지갑 주소들을 반환
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
     const result = await this.db
       .selectDistinct({ walletAddress: loginLogs.walletAddress })
       .from(loginLogs)
       .where(and(
         eq(loginLogs.deviceId, deviceId),
-        sql`DATE(${loginLogs.loginTime}) = CURRENT_DATE`
+        sql`${loginLogs.loginTime} >= ${today} AND ${loginLogs.loginTime} < ${tomorrow}`
       ));
     
     return result.map(row => row.walletAddress);
@@ -1428,7 +1451,11 @@ export class DatabaseStorage implements IStorage {
   async getSuspiciousIps(): Promise<{ipAddress: string, walletCount: number, wallets: string[]}[]> {
     if (!this.db) throw new Error("Database not available");
     
-    // 오늘 3개 이상의 서로 다른 지갑으로 로그인한 의심스러운 IP들
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
     const suspiciousIps = await this.db
       .select({
         ipAddress: loginLogs.ipAddress,
@@ -1436,7 +1463,7 @@ export class DatabaseStorage implements IStorage {
         wallets: sql<string[]>`array_agg(distinct ${loginLogs.walletAddress})`
       })
       .from(loginLogs)
-      .where(sql`DATE(${loginLogs.loginTime}) = CURRENT_DATE`)
+      .where(sql`${loginLogs.loginTime} >= ${today} AND ${loginLogs.loginTime} < ${tomorrow}`)
       .groupBy(loginLogs.ipAddress)
       .having(sql`count(distinct ${loginLogs.walletAddress}) >= 3`);
     
@@ -1446,7 +1473,11 @@ export class DatabaseStorage implements IStorage {
   async getSuspiciousDevices(): Promise<{deviceId: string, walletCount: number, wallets: string[]}[]> {
     if (!this.db) throw new Error("Database not available");
     
-    // 오늘 3개 이상의 서로 다른 지갑으로 로그인한 의심스러운 디바이스들
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
     const suspiciousDevices = await this.db
       .select({
         deviceId: loginLogs.deviceId,
@@ -1455,7 +1486,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(loginLogs)
       .where(and(
-        sql`DATE(${loginLogs.loginTime}) = CURRENT_DATE`,
+        sql`${loginLogs.loginTime} >= ${today} AND ${loginLogs.loginTime} < ${tomorrow}`,
         sql`${loginLogs.deviceId} IS NOT NULL`
       ))
       .groupBy(loginLogs.deviceId)

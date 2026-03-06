@@ -1,13 +1,8 @@
 import { Router } from "express";
 import { storage } from "../storage";
+import { config } from "../config";
 
 const router = Router();
-
-const SHARE_RATIOS = {
-  creator: 0.45,
-  voter: 0.40,
-  platform: 0.15,
-};
 
 const TREASURY_WALLET = "4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk";
 
@@ -34,12 +29,16 @@ router.get("/dashboard", async (_req, res) => {
         totalDistributed,
       },
       shareBreakdown: {
-        creator: { percent: SHARE_RATIOS.creator * 100, totalSol: creatorTotal },
-        voter: { percent: SHARE_RATIOS.voter * 100, totalSol: voterTotal },
-        platform: { percent: SHARE_RATIOS.platform * 100, totalSol: platformTotal, wallet: TREASURY_WALLET },
+        creator: { percent: config.REVENUE_SHARES.CREATOR * 100, totalSol: creatorTotal },
+        voter: { percent: config.REVENUE_SHARES.VOTERS * 100, totalSol: voterTotal },
+        platform: { percent: config.REVENUE_SHARES.PLATFORM * 100, totalSol: platformTotal, wallet: TREASURY_WALLET },
       },
       recentDistributions: distributions.slice(0, 20),
-      shareRatios: SHARE_RATIOS,
+      shareRatios: {
+        creator: config.REVENUE_SHARES.CREATOR,
+        voter: config.REVENUE_SHARES.VOTERS,
+        platform: config.REVENUE_SHARES.PLATFORM,
+      },
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
