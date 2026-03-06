@@ -19,6 +19,7 @@ import { SendTokensSimple } from "@/components/send-tokens-simple";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { MediaDisplay } from "@/components/media-display";
 import { useSamuBalance } from "@/hooks/use-samu-balance";
+import { getMediaType } from "@/utils/media-utils";
 
 const Profile = memo(() => {
   const { user, authenticated } = usePrivy();
