@@ -106,9 +106,9 @@ interface MapData {
 
 function getStatusLabel(status: string): string {
   switch (status) {
-    case "draft": return "Order Received";
-    case "pending": return "In Queue";
-    case "confirmed": return "In Queue";
+    case "draft":
+    case "pending":
+    case "confirmed": return "Order Received";
     case "in_production":
     case "inprocess": return "Making Your Sticker";
     case "fulfilled":

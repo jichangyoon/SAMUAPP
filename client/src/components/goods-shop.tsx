@@ -374,9 +374,9 @@ export function GoodsShop() {
 
   const getStatusLabel = (status: string): string => {
     switch (status) {
-      case "draft": return "Order Received";
+      case "draft":
       case "pending":
-      case "confirmed": return "In Queue";
+      case "confirmed": return "Order Received";
       case "in_production":
       case "inprocess": return "Making Sticker";
       case "fulfilled":
