@@ -55,23 +55,19 @@ function createDotIcon(color: string, isSelected: boolean): L.DivIcon {
 }
 
 function createFlagIcon(color: string, isSelected: boolean): L.DivIcon {
-  const scale = isSelected ? 1.4 : 1;
-  const poleH = Math.round(22 * scale);
-  const flagW = Math.round(14 * scale);
-  const flagH = Math.round(10 * scale);
-  const poleW = Math.round(2 * scale);
-  const poleX = Math.round(4 * scale);
-  const totalW = Math.round(20 * scale);
-  const totalH = poleH + 2;
-  const borderColor = isSelected ? "#fbbf24" : "#fff";
+  const w = isSelected ? 15 : 12;
+  const h = isSelected ? 22 : 18;
+  const poleColor = isSelected ? "#fbbf24" : "rgba(255,255,255,0.9)";
+  const flagW = isSelected ? 10 : 8;
+  const flagH = isSelected ? 7 : 5.5;
   return L.divIcon({
     className: "",
-    html: `<div style="position:relative;width:${totalW}px;height:${totalH}px;">
-      <div style="position:absolute;left:${poleX}px;bottom:0;width:${poleW}px;height:${poleH}px;background:${borderColor};border-radius:1px;"></div>
-      <div style="position:absolute;top:0;left:${poleX + poleW}px;width:${flagW}px;height:${flagH}px;background:${color};clip-path:polygon(0 0, 100% 50%, 0 100%);box-shadow:0 0 6px ${color}80;"></div>
-    </div>`,
-    iconSize: [totalW, totalH],
-    iconAnchor: [poleX + poleW / 2, totalH],
+    html: `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5));">
+      <line x1="2" y1="1" x2="2" y2="${h - 1}" stroke="${poleColor}" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M2,1.5 L${2 + flagW},${1.5 + flagH / 2} L2,${1.5 + flagH} Z" fill="${color}" opacity="0.95"/>
+    </svg>`,
+    iconSize: [w, h],
+    iconAnchor: [2, h],
   });
 }
 
