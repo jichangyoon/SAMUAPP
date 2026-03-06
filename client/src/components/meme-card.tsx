@@ -18,6 +18,7 @@ import { UserInfoModal } from "@/components/user-info-modal";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { MediaDisplay } from "@/components/media-display";
 import { ImageCarousel, MultiImageBadge } from "@/components/image-carousel";
+import { useSamuBalance } from "@/hooks/use-samu-balance";
 import type { Meme } from "@shared/schema";
 
 interface MemeCardProps {
@@ -56,17 +57,7 @@ export const MemeCard = memo(function MemeCard({ meme, onVote, canVote }: MemeCa
   const walletAddress = selectedWalletAccount?.address || '';
   const { toast } = useToast();
 
-  const { data: samuBalanceData } = useQuery({
-    queryKey: ['samu-balance', walletAddress],
-    queryFn: async () => {
-      if (!walletAddress) return null;
-      const res = await fetch(`/api/samu-balance/${walletAddress}`);
-      if (!res.ok) throw new Error('Failed to fetch SAMU balance');
-      return res.json();
-    },
-    enabled: !!walletAddress,
-    staleTime: 5000,
-  });
+  const { data: samuBalanceData } = useSamuBalance(walletAddress);
 
   const samuBalance = samuBalanceData?.balance || 0;
 

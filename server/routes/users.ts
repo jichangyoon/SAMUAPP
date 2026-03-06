@@ -63,7 +63,7 @@ router.get("/profile/:walletAddress", async (req, res) => {
     const deviceId = req.headers['x-device-id'] as string;
     
     // IP 및 디바이스 추적 및 차단 확인
-    const trackResult = await trackLogin(ipAddress, walletAddress, deviceId || "");
+    const trackResult = await trackLogin(ipAddress as string, walletAddress, deviceId || "");
     if (trackResult.blocked) {
       return res.status(403).json({ 
         message: "Access denied. Your IP address has been blocked.",

@@ -9,6 +9,10 @@ import { getConnection } from "../utils/solana";
 
 const router = Router();
 
+const TREASURY_WALLET = config.TREASURY_WALLET;
+const ESCROW_WALLET = config.ESCROW_WALLET;
+const SHARE_RATIOS = config.REVENUE_SHARES;
+
 export async function distributeEscrowProfit(escrowDeposit: any) {
   const profitSol = escrowDeposit.profitSol;
   if (!profitSol || profitSol <= 0) return;

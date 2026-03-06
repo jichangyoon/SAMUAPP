@@ -34,7 +34,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Meme } from "@shared/schema";
 import samuLogoImg from "@/assets/samu-logo.webp";
-import { getDeviceId } from "@/utils/deviceFingerprint";
+import { useSamuBalance } from "@/hooks/use-samu-balance";
 
 // Real-time archive card component
 function RealTimeArchiveCard({ contest, isLoadingContestDetails, onContestClick }: {
@@ -189,16 +189,7 @@ export default function Home() {
     staleTime: 30000,
   });
 
-  const { data: samuBalanceData } = useQuery({
-    queryKey: ['samu-balance', walletAddress],
-    queryFn: async () => {
-      if (!walletAddress) return null;
-      const res = await fetch(`/api/samu-balance/${walletAddress}`);
-      return res.json();
-    },
-    enabled: !!walletAddress && authenticated,
-    staleTime: 5000,
-  });
+  const { data: samuBalanceData } = useSamuBalance(walletAddress);
 
   const samuBalance = samuBalanceData?.balance || 0;
 

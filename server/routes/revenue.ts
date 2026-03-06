@@ -5,7 +5,7 @@ import { config } from "../config";
 
 const router = Router();
 
-const PLATFORM_WALLET = process.env.TREASURY_WALLET_ADDRESS || "4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk";
+const PLATFORM_WALLET = config.TREASURY_WALLET;
 
 async function requireAdmin(req: any, res: any): Promise<boolean> {
   const email = req.headers["x-admin-email"] || req.body?.adminEmail;

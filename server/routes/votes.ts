@@ -5,12 +5,13 @@ import { insertVoteSchema } from "@shared/schema";
 import { Connection, PublicKey, Transaction } from "@solana/web3.js";
 import { createTransferInstruction, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, getAccount } from "@solana/spl-token";
 import { getConnection } from "../utils/solana";
+import { config } from "../config";
 
 const router = Router();
 
-const SAMU_TOKEN_MINT = new PublicKey("EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF");
+const SAMU_TOKEN_MINT = new PublicKey(config.SAMU_TOKEN_MINT);
 const SAMU_DECIMALS = 8;
-const TREASURY_WALLET = process.env.TREASURY_WALLET_ADDRESS || "4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk";
+const TREASURY_WALLET = config.TREASURY_WALLET;
 
 export async function verifyTransaction(
   connection: Connection,

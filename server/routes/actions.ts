@@ -13,15 +13,15 @@ import {
 import { createTransferInstruction, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, getAccount } from "@solana/spl-token";
 import { storage } from "../storage";
 import { verifyTransaction } from "./votes";
-import { getConnection } from "../utils/solana";
+import { getConnection, getSamuBalance } from "../utils/solana";
+import { config } from "../config";
 
 const router = Router();
 
 const HELIUS_API_KEY = process.env.VITE_HELIUS_API_KEY;
-const SAMU_TOKEN_MINT = new PublicKey('EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF');
-const SAMU_TOKEN_MINT_STR = 'EHy2UQWKKVWYvMTzbEfYy1jvZD8VhRBUAvz3bnJ1GnuF';
+const SAMU_TOKEN_MINT = new PublicKey(config.SAMU_TOKEN_MINT);
 const SAMU_DECIMALS = 8;
-const TREASURY_WALLET = process.env.TREASURY_WALLET_ADDRESS || "4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk";
+const TREASURY_WALLET = config.TREASURY_WALLET;
 
 interface PendingVoteIntent {
   memeId: number;
@@ -44,47 +44,6 @@ setInterval(() => {
   });
   keysToDelete.forEach(key => pendingVotes.delete(key));
 }, 60 * 1000);
-
-async function getSamuBalance(walletAddress: string): Promise<number> {
-  const RPC_ENDPOINTS = [
-    `https://rpc.helius.xyz/?api-key=${HELIUS_API_KEY}`,
-    'https://api.mainnet-beta.solana.com',
-    'https://rpc.ankr.com/solana'
-  ];
-
-  for (const endpoint of RPC_ENDPOINTS) {
-    try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: Math.floor(Math.random() * 1000),
-          method: 'getTokenAccountsByOwner',
-          params: [
-            walletAddress,
-            { mint: SAMU_TOKEN_MINT_STR },
-            { encoding: 'jsonParsed' },
-          ],
-        }),
-      });
-
-      if (!response.ok) continue;
-
-      const data = await response.json();
-      if (data.error) continue;
-
-      const tokenAccounts = data.result?.value || [];
-      if (tokenAccounts.length === 0) return 0;
-
-      const tokenAccount = tokenAccounts[0];
-      return tokenAccount?.account?.data?.parsed?.info?.tokenAmount?.uiAmount || 0;
-    } catch {
-      continue;
-    }
-  }
-  return 0;
-}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

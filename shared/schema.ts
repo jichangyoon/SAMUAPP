@@ -127,7 +127,9 @@ export const revenues = pgTable("revenues", {
   status: text("status").notNull().default("pending"), // 'pending', 'distributed', 'cancelled'
   createdAt: timestamp("created_at").notNull().defaultNow(),
   distributedAt: timestamp("distributed_at"),
-});
+}, (table) => [
+  index("idx_revenues_contest_id").on(table.contestId),
+]);
 
 export const revenueShares = pgTable("revenue_shares", {
   id: serial("id").primaryKey(),
@@ -140,7 +142,10 @@ export const revenueShares = pgTable("revenue_shares", {
   txSignature: text("tx_signature"),
   status: text("status").notNull().default("pending"), // 'pending', 'paid', 'failed'
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_revenue_shares_wallet_address").on(table.walletAddress),
+  index("idx_revenue_shares_contest_id").on(table.contestId),
+]);
 
 export const goods = pgTable("goods", {
   id: serial("id").primaryKey(),
@@ -196,6 +201,8 @@ export const orders = pgTable("orders", {
 }, (table) => [
   index("idx_orders_goods_id").on(table.goodsId),
   index("idx_orders_buyer_wallet").on(table.buyerWallet),
+  index("idx_orders_status").on(table.status),
+  index("idx_orders_tx_signature").on(table.txSignature),
 ]);
 
 export const goodsRevenueDistributions = pgTable("goods_revenue_distributions", {
@@ -221,7 +228,9 @@ export const voterRewardPool = pgTable("voter_reward_pool", {
   totalClaimed: doublePrecision("total_claimed").notNull().default(0),
   totalShares: doublePrecision("total_shares").notNull().default(0),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_voter_reward_pool_contest_id").on(table.contestId),
+]);
 
 export const voterClaimRecords = pgTable("voter_claim_records", {
   id: serial("id").primaryKey(),
@@ -248,6 +257,7 @@ export const creatorRewardDistributions = pgTable("creator_reward_distributions"
 }, (table) => [
   index("idx_creator_reward_distributions_order_id").on(table.orderId),
   index("idx_creator_reward_distributions_contest_id").on(table.contestId),
+  index("idx_creator_reward_distributions_creator_wallet").on(table.creatorWallet),
 ]);
 
 export const escrowDeposits = pgTable("escrow_deposits", {
@@ -265,6 +275,7 @@ export const escrowDeposits = pgTable("escrow_deposits", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => [
   index("idx_escrow_deposits_order_id").on(table.orderId),
+  index("idx_escrow_deposits_status").on(table.status),
 ]);
 
 export const insertRevenueSchema = createInsertSchema(revenues).omit({

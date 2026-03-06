@@ -18,7 +18,7 @@ import { useLocation } from "wouter";
 import { SendTokensSimple } from "@/components/send-tokens-simple";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { MediaDisplay } from "@/components/media-display";
-import { getMediaType } from "@/utils/media-utils";
+import { useSamuBalance } from "@/hooks/use-samu-balance";
 
 const Profile = memo(() => {
   const { user, authenticated } = usePrivy();
@@ -148,16 +148,7 @@ const Profile = memo(() => {
   const allMemes = memesResponse?.memes || [];
 
   // Balance fetching
-  const { data: samuData } = useQuery({
-    queryKey: ['samu-balance', walletAddress],
-    queryFn: async () => {
-      if (!walletAddress) return { balance: 0 };
-      const res = await fetch(`/api/samu-balance/${walletAddress}`);
-      if (!res.ok) throw new Error('Failed to fetch SAMU balance');
-      return res.json();
-    },
-    enabled: !!walletAddress,
-  });
+  const { data: samuData } = useSamuBalance(walletAddress);
 
   const { data: solData } = useQuery({
     queryKey: ['sol-balance', walletAddress],

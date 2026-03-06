@@ -37,15 +37,13 @@ export function Leaderboard() {
 
   // Optimized data fetching - use same query as home page to avoid duplication
   const { data: memesResponse, isLoading } = useQuery({
-    queryKey: ["/api/memes", { page: 1, limit: 100, sortBy: "votes" }],
+    queryKey: ["/api/memes", { sortBy: "votes" }],
     queryFn: async () => {
-      const response = await fetch(`/api/memes?page=1&limit=100&sortBy=votes`);
+      const response = await fetch(`/api/memes?sortBy=votes`);
       return response.json();
     },
     enabled: true,
-    staleTime: 5 * 60 * 1000, // 5분 캐시 (더 길게)
-    refetchOnWindowFocus: false,
-    refetchOnMount: false, // 중복 호출 방지
+    staleTime: 30000,
   });
 
   // Fetch archived contests for Hall of Fame
