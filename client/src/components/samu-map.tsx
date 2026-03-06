@@ -54,6 +54,27 @@ function createDotIcon(color: string, isSelected: boolean): L.DivIcon {
   });
 }
 
+function createFlagIcon(color: string, isSelected: boolean): L.DivIcon {
+  const scale = isSelected ? 1.4 : 1;
+  const poleH = Math.round(22 * scale);
+  const flagW = Math.round(14 * scale);
+  const flagH = Math.round(10 * scale);
+  const poleW = Math.round(2 * scale);
+  const poleX = Math.round(4 * scale);
+  const totalW = Math.round(20 * scale);
+  const totalH = poleH + 2;
+  const borderColor = isSelected ? "#fbbf24" : "#fff";
+  return L.divIcon({
+    className: "",
+    html: `<div style="position:relative;width:${totalW}px;height:${totalH}px;">
+      <div style="position:absolute;left:${poleX}px;bottom:0;width:${poleW}px;height:${poleH}px;background:${borderColor};border-radius:1px;"></div>
+      <div style="position:absolute;top:0;left:${poleX + poleW}px;width:${flagW}px;height:${flagH}px;background:${color};clip-path:polygon(0 0, 100% 50%, 0 100%);box-shadow:0 0 6px ${color}80;"></div>
+    </div>`,
+    iconSize: [totalW, totalH],
+    iconAnchor: [poleX + poleW / 2, totalH],
+  });
+}
+
 function createFulfillmentIcon(): L.DivIcon {
   return L.divIcon({
     className: "",
@@ -411,10 +432,11 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
             <Marker
               key={marker.id}
               position={[marker.lat, marker.lng]}
-              icon={createDotIcon(
-                marker.hasRevenue ? "#22c55e" : "#ef4444",
-                selectedOrder?.id === marker.id
-              )}
+              icon={
+                (marker.status === 'delivered' || marker.status === 'completed')
+                  ? createFlagIcon(marker.hasRevenue ? "#22c55e" : "#ef4444", selectedOrder?.id === marker.id)
+                  : createDotIcon(marker.hasRevenue ? "#22c55e" : "#ef4444", selectedOrder?.id === marker.id)
+              }
               eventHandlers={{
                 click: () => setSelectedOrder(marker),
               }}
@@ -468,6 +490,10 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
           <div className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full bg-[#ef4444]" />
             <span>Other</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span style={{fontSize:"10px", lineHeight:1}}>🚩</span>
+            <span>Delivered</span>
           </div>
         </div>
 
