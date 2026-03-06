@@ -302,4 +302,65 @@ router.post("/register-printful-webhook", async (req, res) => {
   }
 });
 
+router.post("/sync-printful-orders", async (req, res) => {
+  try {
+    const STORE_ID = "17717241";
+    const orders = await storage.getAllOrders();
+    const results: any[] = [];
+
+    for (const order of orders) {
+      if (!order.printfulOrderId) continue;
+
+      try {
+        const [orderRes, shipmentsRes] = await Promise.all([
+          fetch(`https://api.printful.com/v2/orders/${order.printfulOrderId}?store_id=${STORE_ID}`, {
+            headers: { "Authorization": `Bearer ${process.env.PRINTFUL_API_KEY}` },
+          }),
+          fetch(`https://api.printful.com/v2/orders/${order.printfulOrderId}/shipments?store_id=${STORE_ID}`, {
+            headers: { "Authorization": `Bearer ${process.env.PRINTFUL_API_KEY}` },
+          }),
+        ]);
+
+        const orderData = orderRes.ok ? (await orderRes.json() as any).data : null;
+        const shipmentsData = shipmentsRes.ok ? (await shipmentsRes.json() as any).data : [];
+
+        const updates: Record<string, any> = {};
+        const alreadyDelivered = ["delivered", "returned"].includes(order.status);
+
+        if (orderData?.status && !alreadyDelivered) {
+          updates.printfulStatus = orderData.status;
+        }
+
+        const shipment = shipmentsData?.[0];
+        if (shipment) {
+          if (shipment.tracking_number) updates.trackingNumber = shipment.tracking_number;
+          if (shipment.tracking_url) updates.trackingUrl = shipment.tracking_url;
+          if (!alreadyDelivered) {
+            if (shipment.shipment_status === "shipped") updates.printfulStatus = "shipped";
+            if (shipment.delivery_status === "delivered") {
+              updates.printfulStatus = "delivered";
+              updates.status = "delivered";
+            }
+          }
+        }
+
+        if (Object.keys(updates).length > 0) {
+          await storage.updateOrder(order.id, updates);
+          results.push({ orderId: order.id, printfulOrderId: order.printfulOrderId, updates });
+          console.log(`[Admin Sync] Order ${order.id} updated:`, updates);
+        } else {
+          results.push({ orderId: order.id, printfulOrderId: order.printfulOrderId, updates: "no changes" });
+        }
+      } catch (err: any) {
+        results.push({ orderId: order.id, error: err.message });
+      }
+    }
+
+    return res.json({ ok: true, synced: results.filter(r => typeof r.updates === "object" && r.updates !== "no changes").length, results });
+  } catch (error: any) {
+    console.error("[Admin] Sync error:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
