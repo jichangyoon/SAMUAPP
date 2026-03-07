@@ -43,18 +43,12 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
   - **수익** (판매가 - 원가) → Escrow (잠금)
 - DB에 EscrowDeposit 기록: `locked` 상태로 저장
 - `distributeEscrowProfit` 함수: 수익을 45/40/15로 수학 계산 후 DB 기록
-  - Creator 45%: 콘테스트 내 득표 비율로 각 크리에이터에게 할당
-  - Voters 40%: `voterRewardPool`에 적립
+  - Creator 45%: 콘테스트 내 득표 비율로 각 크리에이터에게 할당 → `creatorRewardDistributions` + `creatorRewardPool`
+  - Voters 40%: `voterRewardPool`에 적립 (DeFi Reward Per Share 방식)
   - Platform 15%: 플랫폼 보관
 - Escrow 상태: `locked` → `distributed`
 - Admin API: `POST /api/goods/admin/distribute-escrow/:orderId` (수동 분배 트리거)
 - Admin API: `GET /api/goods/admin/escrow-deposits` (locked 목록 조회)
-
-### ⚠️ Escrow - 실제 SOL 지급 (미구현 - 핵심 과제)
-**현재:** 회계 장부(DB)만 완성. 실제 SOL이 지갑으로 나가는 코드 없음.
-
-- ❌ **크리에이터 SOL 미전송**: DB에 "줘야 할 금액" 기록만 됨. Escrow wallet → Creator wallet 온체인 TX 없음
-- ❌ **투표자 클레임 SOL 미전송**: 클레임 버튼 누르면 DB 잔액만 업데이트. 실제 SOL 안 나감
 
 ### ✅ Printful Webhook (완전 구현 - v1 + v2 이중 등록)
 - **v1 등록** (store_id=17717241): `package_shipped`, `order_created/updated/failed/canceled`
@@ -66,11 +60,28 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 - 웹훅 URL: `https://samu.ink/api/webhooks/printful`
 
 ### ✅ 리워드 시스템 (DB 레벨 구현)
-- 투표자 40% → `voterRewardPool`에 적립 (DeFi Reward Per Share 방식)
-- 투표자 프로필 페이지에서 클레임 가능 (DB 잔액 업데이트만, SOL 실전송 없음)
-- DB: `goodsRevenueDistributions`, `voterRewardPool`, `voterClaimRecords`
-- API: `/api/rewards/dashboard`, `/api/rewards/voter-pool/:contestId`, `/api/rewards/claimable/:contestId/:wallet`, `/api/rewards/claim/:contestId`, `/api/rewards/my-claims/:wallet`
+
+**Creator 45%:**
+- `creatorRewardDistributions`: 판매마다 크리에이터별 row (주문 상세 기록용)
+- `creatorRewardPool`: 콘테스트당 DeFi 풀 (Voter와 동일 패턴) — `reward_per_share = 적립액 / 100`
+- API: `GET /api/rewards/claimable/:contestId/:wallet` (크리에이터도 동일 엔드포인트)
+
+**Voter 40%:**
+- `voterRewardPool`: 콘테스트당 DeFi 풀 — `reward_per_share = 적립액 / 100`, `total_shares = 100`
+- `voterClaimRecords`: 투표자별 클레임 포지션 추적
+- 클레임 가능액: `reward_per_share × (내 SAMU / 전체 SAMU × 100)`
+- API: `/api/rewards/claim/:contestId` (클레임 버튼)
+
+**공통:**
+- Total Earned = creatorEarned + voterEarned (누적값, 클레임 후에도 불변)
+  - creatorEarned = 모든 `creator_reward_distributions.sol_amount` 합산
+  - voterEarned = `claimable + totalClaimed` (클레임 전후 합계 동일)
+- DB: `goodsRevenueDistributions`, `voterRewardPool`, `voterClaimRecords`, `creatorRewardDistributions`
+- API: `/api/rewards/dashboard`, `/api/rewards/voter-pool/:contestId`, `/api/rewards/claimable/:contestId/:wallet`, `/api/rewards/claim/:contestId`, `/api/rewards/summary`
 - Rewards Dashboard UI: 파이차트, 요약 카드, 분배 히스토리
+
+**⚠️ 미구현 (핵심 과제):**
+- ❌ **클레임 실제 SOL 전송**: 클레임 버튼 누르면 DB 잔액만 업데이트. 실제 Escrow wallet → 유저 wallet 온체인 TX 없음 (크리에이터 + 투표자 모두)
 
 ### ✅ SAMU Map (구현 완료)
 - `react-leaflet` + CartoDB 다크 타일
@@ -89,12 +100,26 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 - `client/src/data/country-coordinates.ts`: 한국 20개 지역 좌표 (송파구, 강남구, 마포구 등)
 - KR 기본 좌표: 한국 중앙 → 서울(37.5665, 126.978)
 
-### ✅ My Profile - My Memes 탭 (업데이트 완료)
-- 콘테스트별 그룹화 (My Votes와 동일 구조)
+### ✅ My Profile (구현 완료)
+
+**My Memes 탭:**
+- 콘테스트별 그룹화
 - 헤더: 콘테스트명, 상태, 받은 총 SAMU 투표수
 - 5개 초과 시 접기/펼치기
 - API: `GET /api/users/:wallet/memes-by-contest`
-- Storage: `getUserMemesByContest`, `getVotesByContestIds`
+
+**My Votes 탭:**
+- 콘테스트별 그룹화, 투표한 밈 목록
+
+**Rewards 탭 (구 Claims):**
+- 통합 리워드 요약: creatorEarned, voterEarned, claimable
+- 클레임 버튼 (DB 업데이트, 실제 TX 미구현)
+
+**Activity 탭:**
+- **CREATOR 섹션**: 참여 콘테스트 수 / 제출 밈 수 / 받은 SAMU 총량 + Pipeline 뱃지 (굿즈 된 밈 수) + 베스트 밈
+- **VOTER 섹션**: 투표한 콘테스트 수 / 총 투표 횟수 / 사용한 SAMU 총량
+- **EARNINGS 섹션**: Creator SOL / Voter SOL / Total Earned (누적, 클레임 후 불변)
+- API: `GET /api/users/:wallet/stats`, `GET /api/rewards/summary?wallet=`
 
 ### ✅ 아카이브 시스템 (구현 완료)
 - 병렬 처리: R2 10개 동시 작업
@@ -107,17 +132,16 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 ## 다음에 할 일 (우선순위 순)
 
 ### 🔴 높은 우선순위 (핵심 기능 완성)
-1. **크리에이터 실제 SOL 온체인 전송**: `distributeEscrowProfit` 내에 Escrow wallet → Creator wallet 실제 Solana TX 추가
-2. **투표자 클레임 실제 SOL 전송**: 클레임 시 Pool wallet → Voter wallet 실제 Solana TX 추가
-3. **Printful Webhook → 자동 분배**: `package_delivered` 이벤트 → `distributeEscrowProfit` 자동 호출
+1. **클레임 실제 SOL 온체인 전송**: 클레임 시 Escrow wallet → 유저 wallet 실제 Solana TX 추가 (크리에이터 + 투표자 동일 방식)
+2. **Escrow Refund**: 주문 실패/취소 시 자동 환불 플로우
 
 ### 🟡 중간 우선순위
-4. **Escrow Refund**: 주문 실패/취소 시 자동 환불 플로우
-5. **SAMU Map 게임화**: 배송 진행 = 리워드 언락 진행도, SAMU 캐릭터 애니메이션
-6. **Phantom 직접 로그인**: Privy 이메일 외에 Phantom 지갑 직접 연결
+3. **SAMU Map 게임화**: 배송 진행 = 리워드 언락 진행도, SAMU 캐릭터 애니메이션
+4. **Phantom 직접 로그인**: Privy 이메일 외에 Phantom 지갑 직접 연결
 
 ### 🟢 낮은 우선순위
-7. **Smart Contract 이전**: Phase 2 — Rust/Anchor로 리워드 분배 온체인 자동화
+5. **Creator/Voter 풀 스토리지 통일**: creator_reward_pool 추가해서 voter_reward_pool과 동일 패턴으로 리팩토링 (기능상 문제 없음, 코드 일관성 목적)
+6. **Smart Contract 이전**: Phase 2 — Rust/Anchor로 리워드 분배 온체인 자동화
 
 ---
 
@@ -132,6 +156,9 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 - 지도 드래그 블랙 스크린: `maxBounds` + `maxBoundsViscosity=1.0` 설정으로 해결
 - 주문 위치 부정확: Nominatim geocoding으로 우편번호 기반 정확한 좌표 저장
 - KR 기본 좌표: 한국 중앙 → 서울로 수정
+- `voter_reward_pool.total_shares=0` 버그 수정: `reward_per_share` 항상 0이던 문제. `total_shares=100` 고정, 기존 contest 45 DB 데이터 직접 수정
+- Activity 탭 EARNINGS UI 개선: Pending 제거, Total Earned(누적) 추가
+- voterEarned 계산 수정: `claimable + totalClaimed` 합산으로 클레임 후에도 불변
 
 ---
 
@@ -157,11 +184,11 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 **주요 서버 라우트:**
 - `server/routes/memes.ts`: 밈/투표
 - `server/routes/admin.ts`: 어드민
-- `server/routes/goods.ts`: 굿즈/에스크로
-- `server/routes/rewards-dashboard.ts`: 리워드 대시보드/맵
+- `server/routes/goods.ts`: 굿즈/에스크로 + `distributeEscrowProfit`
+- `server/routes/rewards-dashboard.ts`: 리워드 대시보드/맵/summary
 - `server/routes/revenue.ts`: 수익
 - `server/routes/actions.ts`: Solana Blinks
-- `server/routes/users.ts`: 유저 프로필
+- `server/routes/users.ts`: 유저 프로필 + stats
 - `server/routes/webhook.ts`: Printful 웹훅
 - `server/routes/partners.ts`: 파트너 콘테스트
 
@@ -189,3 +216,9 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 - `contracts/programs/samu-rewards/src/lib.rs`
 - Anchor 0.30.1 + anchor-spl
 - Solana Playground에서 빌드/배포 (Replit 내 빌드 불가)
+
+**리워드 풀 알고리즘 (DeFi Reward Per Share):**
+- `total_shares = 100` (고정 — 지분율 0~100% 기반)
+- 판매 발생 → `reward_per_share += deposit / 100`
+- 유저 수령액 = `reward_per_share × (내 SAMU / 전체 SAMU × 100)`
+- Creator와 Voter 모두 동일 알고리즘 적용 (저장 방식은 현재 상이, 리팩토링 예정)

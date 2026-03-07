@@ -14,7 +14,7 @@ SAMU is a web-based meme incubator platform on Solana where community-voted meme
 1. Meme Contest      →  Community submits & votes on memes using SAMU tokens
 2. Contest Archive   →  Past contests preserved with full stats & reward data (publicly viewable, no login required)
 3. Merchandise       →  Admin selects winning designs → turned into goods via Printful (Kiss-Cut Stickers)
-4. Ecosystem Rewards →  SOL rewards distributed to creators & voters proportionally
+4. Ecosystem Rewards →  SOL rewards claimable by creators & voters proportionally
 ```
 
 ## Dual Token Model
@@ -28,16 +28,23 @@ SAMU is a web-based meme incubator platform on Solana where community-voted meme
 
 | Recipient | Share | Description |
 |-----------|-------|-------------|
-| Meme Creators | 45% | Vote-proportional — all creators receive shares based on votes received |
+| Meme Creators | 45% | Vote-proportional — shares based on votes received by their memes |
 | All Voters | 40% | Proportional to SAMU spent voting per contest round |
 | Platform | 15% | Operational costs |
 
 - Revenue source: Goods sales (Printful merchandise)
 - Reward currency: SOL (from goods profits)
 - Payment splitting: Goods payment splits SOL directly on-chain at time of purchase
-- Voter claim system: Per-contest reward pool using "Reward Per Share" mechanism (DeFi pattern), voters claim anytime via profile
+- Claim system: Both creators and voters claim SOL via profile page — per-contest reward pool using "Reward Per Share" mechanism (DeFi pattern)
+- Total Earned display: Cumulative value that never decreases after claiming
 
 ## Key Features
+
+### Activity Dashboard
+A personal stats page showing each user's full participation summary.
+- **Creator section**: Contests participated, memes submitted, total SAMU received, "Pipeline" badge showing how many memes became goods
+- **Voter section**: Contests voted in, total votes cast, total SAMU spent
+- **Earnings section**: Creator SOL earned / Voter SOL earned / Total Earned (cumulative — does not decrease after claiming)
 
 ### Global SAMU Map — Gamified Logistics
 The standout feature: a world map that turns boring shipping logistics into a community experience.
@@ -76,6 +83,7 @@ The standout feature: a world map that turns boring shipping logistics into a co
 - Multi-instruction Solana TX: splits SOL at point of payment (production cost → treasury, profit → escrow)
 - Full on-chain payment verification before Printful order creation
 - Escrow vault: profit locked in escrow until delivery confirmed, then distributed 45/40/15
+- Automatic distribution trigger: Printful `shipment_delivered` webhook → `distributeEscrowProfit` (v1 + v2 dual webhook registration)
 
 ### Contest Archive System
 - Publicly viewable — no login required to browse past contests and memes
@@ -92,11 +100,12 @@ The standout feature: a world map that turns boring shipping logistics into a co
 - Voter breakdown by SAMU spent
 - Distribution history with status tracking
 
-### Voter Claim System
-- Per-contest reward pools with "Reward Per Share" calculation
-- Claim button in profile page
+### Claim System (Creator + Voter)
+- Per-contest reward pools with "Reward Per Share" calculation (`total_shares = 100`)
+- Both creators and voters claim via profile Rewards tab
 - Full claim history tracking
 - Claimable amount display per contest
+- Total Earned = cumulative (claim-invariant): `voterEarned = claimable + totalClaimed`
 
 ### Partner Communities
 - Other meme coin communities can host their own isolated contests
@@ -116,9 +125,10 @@ The standout feature: a world map that turns boring shipping logistics into a co
 ### User Profiles
 - Editable display names and profile pictures (stored on R2)
 - Personal statistics: memes submitted, votes cast, votes received
-- My Memes tab: contest-grouped view with total SAMU received per contest
-- My Votes tab: vote history grouped by contest
-- Voter reward claims tab
+- **My Memes tab**: contest-grouped view with total SAMU received per contest
+- **My Votes tab**: vote history grouped by contest
+- **Rewards tab**: unified claimable/earned summary with claim button
+- **Activity tab**: Creator stats / Voter stats / Earnings dashboard
 
 ## Tech Stack
 
@@ -173,9 +183,10 @@ The standout feature: a world map that turns boring shipping logistics into a co
 | `users` | User profiles with wallet addresses |
 | `orders` | Goods purchase records with geocoded lat/lng |
 | `goods` | Merchandise catalog |
-| `goodsRevenueDistributions` | Per-sale SOL distribution records |
-| `voterRewardPool` | Per-contest cumulative voter rewards |
-| `voterClaimRecords` | Individual voter claim history |
+| `goodsRevenueDistributions` | Per-sale SOL distribution summary records |
+| `creatorRewardDistributions` | Per-sale, per-creator SOL allocation records |
+| `voterRewardPool` | Per-contest cumulative voter rewards (DeFi reward-per-share) |
+| `voterClaimRecords` | Individual voter claim position tracking |
 | `escrowDeposits` | Escrow vault — profit locked until delivery, then released |
 | `partnerMemes` / `partnerVotes` | Partner community contest data |
 | `loginLogs` / `blockedIps` | Security tracking |
@@ -197,12 +208,10 @@ Located in `contracts/programs/samu-rewards/src/lib.rs`:
 ## Roadmap
 
 ### In Progress
-- **Creator SOL Payout**: On-chain transfer from escrow wallet → creator wallets after delivery (DB ledger complete, on-chain TX pending)
-- **Voter Claim SOL Payout**: On-chain transfer from pool wallet → voter wallet on claim (DB accounting complete, on-chain TX pending)
-- **Webhook → Auto Distribution**: Connect Printful `package_delivered` event → auto-trigger reward distribution
+- **Claim SOL Payout (Creator + Voter)**: On-chain transfer from escrow wallet → user wallet on claim action (DB accounting complete, on-chain TX pending)
+- **Escrow Refund**: Auto-refund flow for failed/cancelled Printful orders
 
 ### Planned
-- **Escrow Refund**: Auto-refund flow for failed/cancelled Printful orders
 - **SAMU Map Gamification**: Delivery progress = reward unlock progress bar, SAMU character animations
 - **Phantom Direct Login**: Connect Phantom wallet alongside Privy email login
 
