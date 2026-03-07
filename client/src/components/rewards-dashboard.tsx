@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
 import { REWARD_COLORS, MiniDonut } from "@/lib/reward-utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Drawer,
   DrawerContent,
@@ -11,7 +12,8 @@ import {
   DrawerTitle,
   DrawerDescription,
 } from "@/components/ui/drawer";
-import { Wallet, Lock, ChevronRight, ExternalLink, MapPin, TrendingUp } from "lucide-react";
+import { Wallet, Lock, ChevronRight, ExternalLink, MapPin, TrendingUp, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   pending:      { label: "Pending",      color: "bg-yellow-500/20 text-yellow-400 border-yellow-400/30" },
@@ -296,6 +298,8 @@ function SummaryCard({
 
 export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) {
   const { authenticated } = usePrivy();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const [openDrawer, setOpenDrawer] = useState<"my-claimable" | "my-escrow" | "total-claimable" | "total-escrow" | null>(null);
   const [selectedDetailOrder, setSelectedDetailOrder] = useState<any | null>(null);
@@ -311,6 +315,34 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
     },
     staleTime: 30000,
     refetchInterval: 60000,
+  });
+
+  const claimMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/rewards/claim-all", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ walletAddress }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Claim failed");
+      return data;
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "클레임 완료!",
+        description: `${data.totalSol.toFixed(4)} SOL이 지갑으로 전송됐어요.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/rewards/summary", walletAddress] });
+      setOpenDrawer(null);
+    },
+    onError: (err: any) => {
+      toast({
+        title: "클레임 실패",
+        description: err.message,
+        variant: "destructive",
+      });
+    },
   });
 
   if (isLoading) {
@@ -399,6 +431,29 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
             <DrawerTitle>{active?.title}</DrawerTitle>
             <DrawerDescription>{active?.desc}</DrawerDescription>
           </DrawerHeader>
+
+          {openDrawer === "my-claimable" && my.claimable > 0 && walletAddress && (
+            <div className="px-4 pb-3">
+              <Button
+                className="w-full font-bold text-base"
+                onClick={() => claimMutation.mutate()}
+                disabled={claimMutation.isPending}
+              >
+                {claimMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    전송 중...
+                  </>
+                ) : (
+                  <>
+                    <Wallet className="h-4 w-4 mr-2" />
+                    {my.claimable.toFixed(4)} SOL 클레임
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+
           <div className="overflow-y-auto px-4 pb-6 space-y-3">
             {active?.orders.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground text-sm">

@@ -1,5 +1,6 @@
-import { Connection } from "@solana/web3.js";
+import { Connection, Keypair, PublicKey, SystemProgram, Transaction, sendAndConfirmTransaction, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { config } from "../config";
+import bs58 from "bs58";
 
 export function getConnection(): Connection {
   const HELIUS_API_KEY = process.env.VITE_HELIUS_API_KEY;
@@ -50,4 +51,25 @@ export async function getSamuBalance(walletAddress: string): Promise<number> {
     }
   }
   return 0;
+}
+
+export async function sendSolFromEscrow(toWallet: string, amountSol: number): Promise<string> {
+  const privateKeyStr = process.env.ESCROW_WALLET_PRIVATE_KEY;
+  if (!privateKeyStr) throw new Error("ESCROW_WALLET_PRIVATE_KEY not configured");
+
+  const secretKey = bs58.decode(privateKeyStr);
+  const keypair = Keypair.fromSecretKey(secretKey);
+  const connection = getConnection();
+  const lamports = Math.round(amountSol * LAMPORTS_PER_SOL);
+
+  const tx = new Transaction().add(
+    SystemProgram.transfer({
+      fromPubkey: keypair.publicKey,
+      toPubkey: new PublicKey(toWallet),
+      lamports,
+    })
+  );
+
+  const signature = await sendAndConfirmTransaction(connection, tx, [keypair]);
+  return signature;
 }

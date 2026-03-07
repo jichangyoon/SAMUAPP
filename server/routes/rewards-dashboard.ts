@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { storage } from "../storage";
 import { config } from "../config";
+import { sendSolFromEscrow } from "../utils/solana";
 
 const router = Router();
 
@@ -253,6 +254,76 @@ router.post("/claim/:contestId", async (req, res) => {
     res.json(result);
   } catch (error: any) {
     res.status(400).json({ error: error.message });
+  }
+});
+
+router.post("/claim-all", async (req, res) => {
+  try {
+    const { walletAddress } = req.body;
+    if (!walletAddress) return res.status(400).json({ error: "walletAddress is required" });
+
+    // 1. Unclaimed creator distributions
+    const unclaimedCreatorDists = await storage.getUnclaimedCreatorDistributionsByWallet(walletAddress);
+    const creatorTotal = unclaimedCreatorDists.reduce((s, d) => s + d.solAmount, 0);
+
+    // 2. Voter claimable across all contests where user voted
+    const userVotes = await storage.getUserVotes(walletAddress);
+    const allMemes = await storage.getAllMemes();
+    const memeContestMap = new Map<number, number>();
+    for (const m of allMemes) {
+      if (m.contestId != null) memeContestMap.set(m.id, m.contestId);
+    }
+
+    const votedContestIds = new Set<number>();
+    for (const v of userVotes) {
+      const cid = memeContestMap.get(v.memeId);
+      if (cid != null) votedContestIds.add(cid);
+    }
+
+    const allPools = await storage.getAllVoterRewardPools();
+    const poolContestIds = new Set(allPools.map(p => p.contestId));
+
+    let voterTotal = 0;
+    const voterContestsToClaim: number[] = [];
+
+    for (const contestId of votedContestIds) {
+      if (!poolContestIds.has(contestId)) continue;
+      const { claimable } = await storage.getClaimableAmount(contestId, walletAddress);
+      if (claimable > 0.000001) {
+        voterTotal += claimable;
+        voterContestsToClaim.push(contestId);
+      }
+    }
+
+    const totalSol = creatorTotal + voterTotal;
+    if (totalSol < 0.000001) {
+      return res.status(400).json({ error: "No rewards to claim" });
+    }
+
+    // 3. Send SOL from escrow wallet
+    const txSignature = await sendSolFromEscrow(walletAddress, totalSol);
+
+    // 4. Mark creator distributions as claimed
+    if (unclaimedCreatorDists.length > 0) {
+      await storage.markCreatorDistributionsClaimed(
+        unclaimedCreatorDists.map(d => d.id),
+        txSignature
+      );
+    }
+
+    // 5. Update voter claim records per contest
+    for (const contestId of voterContestsToClaim) {
+      await storage.claimVoterReward(contestId, walletAddress);
+    }
+
+    res.json({
+      txSignature,
+      totalSol,
+      creatorTotal,
+      voterTotal,
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 });
 

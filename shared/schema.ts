@@ -254,6 +254,8 @@ export const creatorRewardDistributions = pgTable("creator_reward_distributions"
   solAmount: doublePrecision("sol_amount").notNull(),
   voteSharePercent: doublePrecision("vote_share_percent").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  claimedAt: timestamp("claimed_at"),
+  claimTxSignature: text("claim_tx_signature"),
 }, (table) => [
   index("idx_creator_reward_distributions_order_id").on(table.orderId),
   index("idx_creator_reward_distributions_contest_id").on(table.contestId),

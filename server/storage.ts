@@ -103,6 +103,9 @@ export interface IStorage {
   createCreatorRewardDistributions(data: InsertCreatorRewardDistribution[]): Promise<CreatorRewardDistribution[]>;
   getCreatorRewardDistributionsByContestId(contestId: number): Promise<CreatorRewardDistribution[]>;
   getCreatorRewardDistributionsByWallet(walletAddress: string): Promise<CreatorRewardDistribution[]>;
+  getUnclaimedCreatorDistributionsByWallet(walletAddress: string): Promise<CreatorRewardDistribution[]>;
+  markCreatorDistributionsClaimed(ids: number[], txSignature: string): Promise<void>;
+  getAllVoterRewardPools(): Promise<VoterRewardPool[]>;
   createEscrowDeposit(data: InsertEscrowDeposit): Promise<EscrowDeposit>;
   getAllEscrowDeposits(): Promise<EscrowDeposit[]>;
   getEscrowDepositsByContestId(contestId: number): Promise<EscrowDeposit[]>;
@@ -441,6 +444,9 @@ export class MemStorage implements IStorage {
   async createCreatorRewardDistributions(_data: InsertCreatorRewardDistribution[]): Promise<CreatorRewardDistribution[]> { return []; }
   async getCreatorRewardDistributionsByContestId(_contestId: number): Promise<CreatorRewardDistribution[]> { return []; }
   async getCreatorRewardDistributionsByWallet(_walletAddress: string): Promise<CreatorRewardDistribution[]> { return []; }
+  async getUnclaimedCreatorDistributionsByWallet(_walletAddress: string): Promise<CreatorRewardDistribution[]> { return []; }
+  async markCreatorDistributionsClaimed(_ids: number[], _txSignature: string): Promise<void> {}
+  async getAllVoterRewardPools(): Promise<VoterRewardPool[]> { return []; }
   async createEscrowDeposit(_data: InsertEscrowDeposit): Promise<EscrowDeposit> { throw new Error("Not implemented"); }
   async getAllEscrowDeposits(): Promise<EscrowDeposit[]> { return []; }
   async getEscrowDepositsByContestId(_contestId: number): Promise<EscrowDeposit[]> { return []; }
@@ -1836,6 +1842,28 @@ export class DatabaseStorage implements IStorage {
     return this.db.select().from(creatorRewardDistributions)
       .where(eq(creatorRewardDistributions.creatorWallet, walletAddress))
       .orderBy(desc(creatorRewardDistributions.createdAt));
+  }
+
+  async getUnclaimedCreatorDistributionsByWallet(walletAddress: string): Promise<CreatorRewardDistribution[]> {
+    if (!this.db) throw new Error("Database not available");
+    return this.db.select().from(creatorRewardDistributions)
+      .where(and(
+        eq(creatorRewardDistributions.creatorWallet, walletAddress),
+        isNull(creatorRewardDistributions.claimedAt)
+      ));
+  }
+
+  async markCreatorDistributionsClaimed(ids: number[], txSignature: string): Promise<void> {
+    if (!this.db) throw new Error("Database not available");
+    if (ids.length === 0) return;
+    await this.db.update(creatorRewardDistributions)
+      .set({ claimedAt: new Date(), claimTxSignature: txSignature })
+      .where(inArray(creatorRewardDistributions.id, ids));
+  }
+
+  async getAllVoterRewardPools(): Promise<VoterRewardPool[]> {
+    if (!this.db) throw new Error("Database not available");
+    return this.db.select().from(voterRewardPool);
   }
 
   async createEscrowDeposit(data: InsertEscrowDeposit): Promise<EscrowDeposit> {
