@@ -168,24 +168,25 @@ const Profile = memo(() => {
     staleTime: 30 * 1000,
   });
 
-  const { data: voterClaims = [], refetch: refetchClaims } = useQuery({
-    queryKey: ['voter-claims', walletAddress],
+  const { data: rewardSummary, refetch: refetchRewards } = useQuery({
+    queryKey: ['/api/rewards/summary', walletAddress],
     queryFn: async () => {
-      if (!walletAddress) return [];
-      const res = await fetch(`/api/rewards/my-claims/${walletAddress}`);
-      if (!res.ok) throw new Error('Failed to fetch claims');
+      if (!walletAddress) return null;
+      const res = await fetch(`/api/rewards/summary?wallet=${walletAddress}`);
+      if (!res.ok) throw new Error('Failed to fetch rewards');
       return res.json();
     },
     enabled: !!walletAddress,
+    staleTime: 30000,
   });
 
-  const [isClaiming, setIsClaiming] = useState<number | null>(null);
+  const [isClaiming, setIsClaiming] = useState(false);
 
-  const handleClaim = useCallback(async (contestId: number) => {
+  const handleClaimAll = useCallback(async () => {
     if (!walletAddress) return;
-    setIsClaiming(contestId);
+    setIsClaiming(true);
     try {
-      const res = await fetch(`/api/rewards/claim/${contestId}`, {
+      const res = await fetch('/api/rewards/claim-all', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ walletAddress }),
@@ -193,10 +194,10 @@ const Profile = memo(() => {
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || 'Claim failed');
       toast({
-        title: "Claim Successful!",
-        description: `Claimed ${result.claimedAmount.toFixed(6)} SOL from Contest #${contestId}`,
+        title: "Claimed!",
+        description: `${result.totalSol.toFixed(4)} SOL sent to your wallet.`,
       });
-      refetchClaims();
+      refetchRewards();
     } catch (error: any) {
       toast({
         title: "Claim Failed",
@@ -204,9 +205,9 @@ const Profile = memo(() => {
         variant: "destructive",
       });
     } finally {
-      setIsClaiming(null);
+      setIsClaiming(false);
     }
-  }, [walletAddress, toast, refetchClaims]);
+  }, [walletAddress, toast, refetchRewards]);
 
   // Profile data now comes from database, not localStorage
 
@@ -1011,68 +1012,64 @@ const Profile = memo(() => {
               <CardHeader className="flex-shrink-0">
                 <CardTitle className="text-lg text-foreground flex items-center gap-2">
                   <Coins className="h-5 w-5 text-[hsl(50,85%,75%)]" />
-                  Voter Rewards
+                  Rewards
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex-1 overflow-y-auto space-y-3">
-                {voterClaims.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Coins className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                    <p className="text-sm text-muted-foreground">No claimable rewards yet</p>
-                    <p className="text-xs text-muted-foreground mt-1">Vote on memes to earn rewards when goods are sold!</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {voterClaims.map((claim: any) => (
-                      <div key={`${claim.contestId}-${claim.voterWallet}`} className="border border-border/30 rounded-lg p-3">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <span className="font-medium text-foreground text-sm">Contest #{claim.contestId}</span>
-                            <div className="text-xs text-muted-foreground mt-0.5">
-                              Vote Share: {(claim.sharePercent * 100).toFixed(2)}%
-                            </div>
-                          </div>
-                          <Badge variant="outline" className="text-xs">
-                            {claim.pendingAmount > 0.000001 ? 'Claimable' : 'Claimed'}
-                          </Badge>
+              <CardContent className="flex-1 overflow-y-auto space-y-4">
+                {(() => {
+                  const claimable = rewardSummary?.my?.claimable ?? 0;
+                  const escrow = rewardSummary?.my?.escrow ?? 0;
+
+                  if (claimable > 0.000001) {
+                    return (
+                      <>
+                        <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 text-center space-y-1">
+                          <p className="text-xs text-muted-foreground">Ready to claim</p>
+                          <p className="text-3xl font-bold text-primary">{claimable.toFixed(4)}</p>
+                          <p className="text-sm text-muted-foreground">SOL</p>
                         </div>
-                        <div className="grid grid-cols-2 gap-2 text-xs mb-2">
-                          <div className="bg-accent/30 rounded p-2">
-                            <div className="text-muted-foreground">Total Claimed</div>
-                            <div className="font-medium text-green-400">{claim.totalClaimed.toFixed(6)} SOL</div>
-                          </div>
-                          <div className="bg-accent/30 rounded p-2">
-                            <div className="text-muted-foreground">Pending</div>
-                            <div className="font-medium text-[hsl(50,85%,75%)]">{claim.pendingAmount.toFixed(6)} SOL</div>
-                          </div>
-                        </div>
-                        {claim.pendingAmount > 0.000001 && (
-                          <Button
-                            size="sm"
-                            className="w-full bg-[hsl(50,85%,50%)] hover:bg-[hsl(50,85%,40%)] text-black font-medium"
-                            onClick={() => handleClaim(claim.contestId)}
-                            disabled={isClaiming === claim.contestId}
-                          >
-                            {isClaiming === claim.contestId ? (
-                              <>
-                                <div className="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></div>
-                                Claiming...
-                              </>
-                            ) : (
-                              <>
-                                <Coins className="h-4 w-4 mr-2" />
-                                Claim {claim.pendingAmount.toFixed(6)} SOL
-                              </>
-                            )}
-                          </Button>
-                        )}
+                        <Button
+                          className="w-full font-bold text-base"
+                          onClick={handleClaimAll}
+                          disabled={isClaiming}
+                        >
+                          {isClaiming ? (
+                            <>
+                              <div className="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2" />
+                              Sending...
+                            </>
+                          ) : (
+                            <>
+                              <Coins className="h-4 w-4 mr-2" />
+                              Claim {claimable.toFixed(4)} SOL
+                            </>
+                          )}
+                        </Button>
+                      </>
+                    );
+                  }
+
+                  if (escrow > 0.000001) {
+                    return (
+                      <div className="text-center py-8">
+                        <Coins className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                        <p className="text-sm text-foreground font-medium">{escrow.toFixed(4)} SOL pending</p>
+                        <p className="text-xs text-muted-foreground mt-1">Waiting for delivery confirmation</p>
                       </div>
-                    ))}
-                  </div>
-                )}
-                <div className="text-xs text-muted-foreground bg-accent/50 p-3 rounded-lg space-y-1 mt-2">
-                  <p>• Voter rewards accumulate from goods sales</p>
-                  <p>• Your share is proportional to your SAMU votes</p>
+                    );
+                  }
+
+                  return (
+                    <div className="text-center py-8">
+                      <Coins className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                      <p className="text-sm text-muted-foreground">No claimable rewards yet</p>
+                      <p className="text-xs text-muted-foreground mt-1">Create or vote on memes to earn rewards when goods are sold!</p>
+                    </div>
+                  );
+                })()}
+                <div className="text-xs text-muted-foreground bg-accent/50 p-3 rounded-lg space-y-1">
+                  <p>• Rewards accumulate from goods sales</p>
+                  <p>• Your share is based on your SAMU votes and created memes</p>
                   <p>• Claim anytime - rewards never expire</p>
                 </div>
               </CardContent>
