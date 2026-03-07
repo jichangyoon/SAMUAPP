@@ -93,7 +93,8 @@ export async function verifyTransaction(
         if (signerKey && signerKey !== voterPubkey.toBase58()) {
           return { valid: false, error: "Transaction signer does not match voter wallet" };
         }
-      } catch {
+      } catch (signerErr) {
+        console.warn('Could not parse transaction signer key, skipping signer check:', signerErr);
       }
 
       return { valid: true };

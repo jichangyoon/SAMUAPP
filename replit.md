@@ -160,6 +160,8 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 - `voter_reward_pool.total_shares=0` 버그 수정: `reward_per_share` 항상 0이던 문제. `total_shares=100` 고정, 기존 contest 45 DB 데이터 직접 수정
 - Activity 탭 EARNINGS UI 개선: Pending 제거, Total Earned(누적) 추가
 - voterEarned 계산 수정: `claimable + totalClaimed` 합산으로 클레임 후에도 불변
+- `127.0.0.1` Suspicious IP 오탐 수정: 로컬호스트(`127.0.0.1`, `::1`, `::ffff:127.0.0.1`) 제외 처리
+- `verifyTransaction` silent catch 수정: 서명자 키 파싱 실패 시 경고 로그 출력
 
 ---
 

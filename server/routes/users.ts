@@ -30,8 +30,9 @@ const trackLogin = async (ipAddress: string, walletAddress: string, deviceId?: s
       todayWalletsByDevice = await storage.getTodayLoginsByDeviceId(deviceId);
     }
     
-    // 3개 이상의 다른 지갑으로 로그인한 경우 의심스러운 활동으로 간주
-    if (todayWalletsByIp.length >= 3) {
+    // 3개 이상의 다른 지갑으로 로그인한 경우 의심스러운 활동으로 간주 (로컬호스트 제외)
+    const isLoopback = ipAddress === '127.0.0.1' || ipAddress === '::1' || ipAddress === '::ffff:127.0.0.1';
+    if (!isLoopback && todayWalletsByIp.length >= 3) {
       console.warn(`Suspicious IP detected: ${ipAddress} with ${todayWalletsByIp.length} different wallets today`);
     }
     
