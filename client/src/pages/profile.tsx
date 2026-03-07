@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send, Trash2, MoreVertical, Image as ImageIcon, RefreshCw, Coins, BarChart2, Palette, TrendingUp } from "lucide-react";
+import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send, Trash2, MoreVertical, Image as ImageIcon, RefreshCw, Coins, BarChart2, Palette, TrendingUp, ShoppingBag } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
@@ -533,6 +533,8 @@ const Profile = memo(() => {
       }
     }
 
+    const memesToGoods = userStats?.memesToGoods || 0;
+
     return {
       currentSamuBalance,
       currentSolBalance,
@@ -542,6 +544,7 @@ const Profile = memo(() => {
       totalSamuSpent,
       contestProgress,
       contestStatus,
+      memesToGoods,
     };
   }, [samuData, solData, userStats, activeContest]); 
 
@@ -1112,6 +1115,15 @@ const Profile = memo(() => {
                       <div className="text-[10px] text-muted-foreground mt-0.5">SAMU Recv'd</div>
                     </div>
                   </div>
+                  {stats.memesToGoods > 0 && (
+                    <div className="bg-green-900/30 border border-green-700/30 rounded-lg px-2.5 py-1.5 flex items-center gap-2">
+                      <ShoppingBag className="h-3 w-3 text-green-400 flex-shrink-0" />
+                      <span className="text-xs text-green-200 flex-1">
+                        {stats.memesToGoods} meme{stats.memesToGoods > 1 ? 's' : ''} became goods
+                      </span>
+                      <span className="text-[10px] bg-green-700/50 text-green-300 px-1.5 py-0.5 rounded-full">Pipeline</span>
+                    </div>
+                  )}
                   {(() => {
                     const bestContest = memesByContest.reduce((best: any, contest: any) => {
                       const topMeme = contest.memes?.reduce((m: any, cur: any) =>

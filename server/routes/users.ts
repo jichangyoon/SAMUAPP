@@ -165,10 +165,11 @@ router.get("/:walletAddress/stats", async (req, res) => {
   try {
     const { walletAddress } = req.params;
     
-    const [user, memes, votes] = await Promise.all([
+    const [user, memes, votes, allGoods] = await Promise.all([
       storage.getUserByWallet(walletAddress),
       storage.getUserMemes(walletAddress),
-      storage.getUserVotes(walletAddress)
+      storage.getUserVotes(walletAddress),
+      storage.getGoods()
     ]);
     
     if (!user) {
@@ -177,6 +178,11 @@ router.get("/:walletAddress/stats", async (req, res) => {
     
     const totalMemesVotes = memes.reduce((sum, meme) => sum + meme.votes, 0);
     const totalSamuSpent = votes.reduce((sum, vote) => sum + vote.samuAmount, 0);
+
+    const memeIds = new Set(memes.map(m => m.id));
+    const goodsMemeIds = new Set(
+      allGoods.filter(g => g.memeId != null && memeIds.has(g.memeId)).map(g => g.memeId)
+    );
     
     const stats = {
       totalMemes: memes.length,
@@ -184,7 +190,8 @@ router.get("/:walletAddress/stats", async (req, res) => {
       totalVotesCast: votes.length,
       totalSamuSpent,
       samuBalance: user.samuBalance,
-      memberSince: user.createdAt
+      memberSince: user.createdAt,
+      memesToGoods: goodsMemeIds.size
     };
     
     res.json(stats);
