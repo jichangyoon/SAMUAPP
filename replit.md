@@ -50,21 +50,19 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 - Admin API: `POST /api/goods/admin/distribute-escrow/:orderId` (수동 분배 트리거)
 - Admin API: `GET /api/goods/admin/escrow-deposits` (locked 목록 조회)
 
-### ✅ Printful Webhook (완전 구현 - v1 + v2 이중 등록)
-- **v1 등록** (store_id=17717241): `package_shipped`, `order_created/updated/failed/canceled`
-- **v2 등록** (store_id=17717241, default_url=samu.ink): `shipment_sent`, `shipment_delivered`, `shipment_returned`, `shipment_canceled`, `order_created/updated/failed/canceled`
-- 등록 관리: `POST /api/admin/register-printful-webhook` (v2 우선, v1 폴백)
-- `shipment_delivered` (v2) 수신 시 → `distributeEscrowProfit` 자동 실행 (45/40/15 분배)
-- `package_delivered` (v1 레거시) 수신 시에도 동일 트리거 (이중 안전망, 에스크로 상태 체크로 중복 방지)
+### ✅ Printful Webhook (완전 구현 - v2)
+- **v2 등록** (store_id=17717241): `shipment_sent`, `shipment_delivered`, `shipment_returned`, `shipment_canceled`, `order_created/updated/failed/canceled`
+- 등록 관리: `POST /api/admin/register-printful-webhook` (v2 API)
+- `shipment_delivered` 수신 시 → `distributeEscrowProfit` 자동 실행 (45/40/15 분배)
 - DB `printfulStatus`, `trackingNumber`, `trackingUrl` 자동 업데이트
 - 웹훅 URL: `https://samu.ink/api/webhooks/printful`
 
 ### ✅ 리워드 시스템 (DB 레벨 구현)
 
 **Creator 45%:**
-- `creatorRewardDistributions`: 판매마다 크리에이터별 row (주문 상세 기록용)
-- `creatorRewardPool`: 콘테스트당 DeFi 풀 (Voter와 동일 패턴) — `reward_per_share = 적립액 / 100`
-- API: `GET /api/rewards/claimable/:contestId/:wallet` (크리에이터도 동일 엔드포인트)
+- `creatorRewardDistributions`: 판매마다 크리에이터별 row — `voteSharePercent` × creatorPool로 각자 금액 계산
+- creatorEarned = `creator_reward_distributions.sol_amount` 합산 (누적, 클레임 후 불변)
+- DeFi 풀 미사용 (현재는 개별 row 방식. 리팩토링 예정)
 
 **Voter 40%:**
 - `voterRewardPool`: 콘테스트당 DeFi 풀 — `reward_per_share = 적립액 / 100`, `total_shares = 100`
@@ -217,8 +215,9 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 - Anchor 0.30.1 + anchor-spl
 - Solana Playground에서 빌드/배포 (Replit 내 빌드 불가)
 
-**리워드 풀 알고리즘 (DeFi Reward Per Share):**
+**리워드 풀 알고리즘 (DeFi Reward Per Share) — Voter 40%에 적용:**
 - `total_shares = 100` (고정 — 지분율 0~100% 기반)
 - 판매 발생 → `reward_per_share += deposit / 100`
 - 유저 수령액 = `reward_per_share × (내 SAMU / 전체 SAMU × 100)`
-- Creator와 Voter 모두 동일 알고리즘 적용 (저장 방식은 현재 상이, 리팩토링 예정)
+- **Creator 45%는 DeFi 풀 미사용** — 판매마다 개별 row로 기록 (`creatorRewardDistributions`)
+- 향후 Creator도 동일한 DeFi 풀 패턴으로 통일 예정 (🟢 낮은 우선순위)
