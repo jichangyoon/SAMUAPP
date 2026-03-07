@@ -99,6 +99,7 @@ export interface IStorage {
   // Voter Claim operations
   getOrCreateVoterClaimRecord(contestId: number, voterWallet: string, sharePercent: number): Promise<VoterClaimRecord>;
   getClaimableAmount(contestId: number, voterWallet: string): Promise<{ claimable: number; totalClaimed: number; sharePercent: number }>;
+  getBatchClaimableAmounts(contestIds: number[], voterWallet: string): Promise<Map<number, { claimable: number; totalClaimed: number }>>;
   claimVoterReward(contestId: number, voterWallet: string): Promise<{ claimedAmount: number }>;
   getVoterClaimsByWallet(walletAddress: string): Promise<VoterClaimRecord[]>;
 
@@ -443,6 +444,7 @@ export class MemStorage implements IStorage {
   async getVoterRewardPool(_contestId: number): Promise<VoterRewardPool | undefined> { return undefined; }
   async getOrCreateVoterClaimRecord(_contestId: number, _voterWallet: string, _sharePercent: number): Promise<VoterClaimRecord> { throw new Error("Not implemented"); }
   async getClaimableAmount(_contestId: number, _voterWallet: string): Promise<{ claimable: number; totalClaimed: number; sharePercent: number }> { return { claimable: 0, totalClaimed: 0, sharePercent: 0 }; }
+  async getBatchClaimableAmounts(_contestIds: number[], _voterWallet: string): Promise<Map<number, { claimable: number; totalClaimed: number }>> { return new Map(); }
   async claimVoterReward(_contestId: number, _voterWallet: string): Promise<{ claimedAmount: number }> { throw new Error("Not implemented"); }
   async getVoterClaimsByWallet(_walletAddress: string): Promise<VoterClaimRecord[]> { return []; }
   async createCreatorRewardDistributions(_data: InsertCreatorRewardDistribution[]): Promise<CreatorRewardDistribution[]> { return []; }
@@ -1795,6 +1797,42 @@ export class DatabaseStorage implements IStorage {
     const unclaimedRewardPerShare = pool.rewardPerShare - claimRecord.lastClaimedRewardPerShare;
     const claimable = unclaimedRewardPerShare * claimRecord.sharePercent;
     return { claimable, totalClaimed: claimRecord.totalClaimed, sharePercent: claimRecord.sharePercent };
+  }
+
+  async getBatchClaimableAmounts(contestIds: number[], voterWallet: string): Promise<Map<number, { claimable: number; totalClaimed: number }>> {
+    if (!this.db) throw new Error("Database not available");
+    const result = new Map<number, { claimable: number; totalClaimed: number }>();
+    if (contestIds.length === 0) return result;
+
+    // 한 번에 모든 풀 + 클레임 레코드 조회
+    const [pools, claimRecords] = await Promise.all([
+      this.db.select().from(voterRewardPool).where(inArray(voterRewardPool.contestId, contestIds)),
+      this.db.select().from(voterClaimRecords).where(
+        and(eq(voterClaimRecords.voterWallet, voterWallet), inArray(voterClaimRecords.contestId, contestIds))
+      ),
+    ]);
+
+    const poolByContest = new Map(pools.map(p => [p.contestId, p]));
+    const claimByContest = new Map(claimRecords.map(c => [c.contestId, c]));
+
+    for (const cid of contestIds) {
+      const pool = poolByContest.get(cid);
+      if (!pool) { result.set(cid, { claimable: 0, totalClaimed: 0 }); continue; }
+
+      const claimRecord = claimByContest.get(cid);
+      if (!claimRecord) {
+        // 클레임 기록 없음 = 아직 한 번도 클레임 안 한 경우 → 개별 조회로 fallback
+        const individual = await this.getClaimableAmount(cid, voterWallet);
+        result.set(cid, { claimable: individual.claimable, totalClaimed: individual.totalClaimed });
+      } else {
+        const unclaimedRps = pool.rewardPerShare - claimRecord.lastClaimedRewardPerShare;
+        result.set(cid, {
+          claimable: unclaimedRps * claimRecord.sharePercent,
+          totalClaimed: claimRecord.totalClaimed,
+        });
+      }
+    }
+    return result;
   }
 
   async claimVoterReward(contestId: number, voterWallet: string): Promise<{ claimedAmount: number }> {

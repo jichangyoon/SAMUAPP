@@ -116,9 +116,10 @@ router.get("/summary", async (req, res) => {
       }
 
       walletEarned.creatorEarned = creatorDists.reduce((s, d) => s + d.solAmount, 0);
+      // 배치 쿼리로 N+1 제거: 투표한 모든 콘테스트 claimable을 한 번에 조회
+      const batchResults = await storage.getBatchClaimableAmounts(Array.from(userVotedContests), walletAddress);
       let voterEarnedTotal = 0;
-      for (const cid of userVotedContests) {
-        const { claimable, totalClaimed } = await storage.getClaimableAmount(cid, walletAddress);
+      for (const { claimable, totalClaimed } of batchResults.values()) {
         voterEarnedTotal += claimable + totalClaimed;
       }
       walletEarned.voterEarned = voterEarnedTotal;
@@ -128,11 +129,12 @@ router.get("/summary", async (req, res) => {
     let actualClaimable = 0;
     const claimedContestIds = new Set<number>();
     if (walletAddress) {
-      const allPools = await storage.getAllVoterRewardPools();
-      const poolContestIds = new Set(allPools.map((p: any) => p.contestId));
-      for (const cid of userVotedContests) {
-        if (!poolContestIds.has(cid)) continue;
-        const { claimable } = await storage.getClaimableAmount(cid, walletAddress);
+      // batchResults는 이미 위에서 조회됨 — wallet이 있는 경우에만 다시 구성
+      const contestIdsArr = Array.from(userVotedContests);
+      const batchForClaimable = contestIdsArr.length > 0
+        ? await storage.getBatchClaimableAmounts(contestIdsArr, walletAddress)
+        : new Map<number, { claimable: number; totalClaimed: number }>();
+      for (const [cid, { claimable }] of batchForClaimable.entries()) {
         actualClaimable += claimable;
         if (claimable <= 0.000001) claimedContestIds.add(cid);
       }

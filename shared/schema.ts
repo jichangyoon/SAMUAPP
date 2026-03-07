@@ -73,7 +73,10 @@ export const partnerMemes = pgTable("partner_memes", {
   authorUsername: text("author_username").notNull(),
   votes: bigint("votes", { mode: "number" }).notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_partner_memes_partner_id").on(table.partnerId),
+  index("idx_partner_memes_author_wallet").on(table.authorWallet),
+]);
 
 export const partnerVotes = pgTable("partner_votes", {
   id: serial("id").primaryKey(),
@@ -83,7 +86,11 @@ export const partnerVotes = pgTable("partner_votes", {
   samuAmount: bigint("samu_amount", { mode: "number" }).notNull().default(0),
   txSignature: text("tx_signature"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_partner_votes_partner_id").on(table.partnerId),
+  index("idx_partner_votes_meme_id").on(table.memeId),
+  index("idx_partner_votes_voter_wallet").on(table.voterWallet),
+]);
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),

@@ -1,13 +1,8 @@
 import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { PrivyProvider } from '@privy-io/react-auth';
-import { toSolanaWalletConnectors } from '@privy-io/react-auth/solana';
 import { useEffect, useState, memo } from 'react';
 
-const solanaConnectors = toSolanaWalletConnectors();
 import Home from "@/pages/home";
 import Profile from "@/pages/profile";
 import { Partners } from "@/pages/partners";
@@ -21,7 +16,6 @@ import { getDeviceId } from "./utils/deviceFingerprint";
 window.addEventListener('error', (event) => {
   const target = event.target as HTMLElement;
   if (event.message?.includes('Privy iframe') || target?.tagName === 'IFRAME') {
-    // Silent error handling for production
     event.preventDefault();
     return false;
   }
@@ -30,7 +24,6 @@ window.addEventListener('error', (event) => {
 // Handle unhandled promise rejections
 window.addEventListener('unhandledrejection', (event) => {
   if (event.reason?.message?.includes('Privy') || event.reason?.message?.includes('iframe')) {
-    // Silent error handling for production
     event.preventDefault();
   }
 });
@@ -78,7 +71,7 @@ function App() {
         
         // Load all images with Promise.all to wait for completion
         const imagePromises = imagesToPreload.map(src => {
-          return new Promise((resolve, reject) => {
+          return new Promise((resolve) => {
             const img = new Image();
             img.onload = resolve;
             img.onerror = resolve; // Continue even if some images fail
@@ -89,8 +82,7 @@ function App() {
         try {
           await Promise.all(imagePromises);
           setPreloadComplete(true);
-        } catch (error) {
-          // Continue even if preload fails
+        } catch {
           setPreloadComplete(true);
         }
       } catch (error) {
@@ -114,39 +106,10 @@ function App() {
   }
 
   return (
-    <PrivyProvider
-      appId="cmc3cduly00mrjs0nuj2jyuz8"
-      config={{
-        appearance: {
-          theme: 'dark',
-          accentColor: '#fbbf24',
-          walletChainType: 'solana-only',
-        },
-        loginMethods: ['email'],
-        embeddedWallets: {
-          createOnLogin: 'users-without-wallets',
-          solana: {
-            createOnLogin: 'users-without-wallets',
-          },
-        },
-        externalWallets: {
-          solana: {
-            connectors: solanaConnectors,
-          },
-        },
-        solanaClusters: [{
-          name: 'mainnet-beta',
-          rpcUrl: `https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`
-        }]
-      }}
-    >
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </QueryClientProvider>
-    </PrivyProvider>
+    <TooltipProvider>
+      <Toaster />
+      <Router />
+    </TooltipProvider>
   );
 }
 

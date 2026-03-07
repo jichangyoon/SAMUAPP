@@ -140,6 +140,11 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 2. **SAMU Map 게임화**: 배송 진행 = 리워드 언락 진행도, SAMU 캐릭터 애니메이션
 3. **Phantom 직접 로그인**: Privy 이메일 외에 Phantom 지갑 직접 연결
 
+### ✅ 성능/안정성 개선 (완료)
+- `/api/rewards/summary` N+1 쿼리 → `getBatchClaimableAmounts()` 배치 쿼리로 교체 (N*2 → 2 쿼리)
+- `partner_memes`, `partner_votes` 테이블 인덱스 추가 (partner_id, meme_id, author_wallet, voter_wallet)
+- `PrivyProvider`를 `main.tsx`로 이동: 스플래시 화면 전환 시 리마운트 방지 → WalletConnect 이중 초기화 이슈 개선
+
 ### 🟢 낮은 우선순위
 4. **Creator/Voter 풀 스토리지 통일**: creator_reward_pool 추가해서 voter_reward_pool과 동일 패턴으로 리팩토링 (기능상 문제 없음, 코드 일관성 목적)
 5. **Smart Contract 이전**: Phase 2 — Rust/Anchor로 리워드 분배 온체인 자동화
