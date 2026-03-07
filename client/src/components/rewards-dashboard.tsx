@@ -198,20 +198,28 @@ function OrderDetailDrawer({ order, walletAddress, open, onClose }: {
 
 function OrderRow({ order, showMyCut, onClick }: { order: any; showMyCut: boolean; onClick: () => void }) {
   const s = getStatusStyle(order.status);
+  const claimed = order.isClaimed === true;
   return (
     <div
-      className="border border-border/30 rounded-lg p-3 space-y-2 cursor-pointer hover:border-primary/40 hover:bg-accent/20 transition-colors active:scale-[0.98]"
+      className={`border rounded-lg p-3 space-y-2 cursor-pointer transition-colors active:scale-[0.98] ${
+        claimed
+          ? 'border-border/20 bg-muted/20 opacity-50 hover:opacity-60'
+          : 'border-border/30 hover:border-primary/40 hover:bg-accent/20'
+      }`}
       onClick={onClick}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-          <span className="text-sm font-medium text-foreground truncate">
+          <MapPin className={`h-3.5 w-3.5 shrink-0 ${claimed ? 'text-muted-foreground/50' : 'text-muted-foreground'}`} />
+          <span className={`text-sm font-medium truncate ${claimed ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
             {order.city ? `${order.city}, ` : ""}{order.country}
           </span>
+          {claimed && (
+            <span className="text-xs text-muted-foreground/70 shrink-0">Claimed</span>
+          )}
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          <Badge variant="outline" className={`text-xs ${s.color}`}>
+          <Badge variant="outline" className={`text-xs ${claimed ? 'opacity-40' : s.color}`}>
             {s.label}
           </Badge>
           <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
@@ -221,14 +229,14 @@ function OrderRow({ order, showMyCut, onClick }: { order: any; showMyCut: boolea
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
         <div className="text-muted-foreground">
           Escrow:{" "}
-          <span className="text-foreground font-medium">
+          <span className={`font-medium ${claimed ? 'text-muted-foreground/50 line-through' : 'text-foreground'}`}>
             {order.escrowAmount > 0 ? `${order.escrowAmount.toFixed(4)} SOL` : "—"}
           </span>
         </div>
         {showMyCut && (
           <div className="text-muted-foreground">
             Your cut:{" "}
-            <span className="text-primary font-medium">
+            <span className={`font-medium ${claimed ? 'text-muted-foreground/50 line-through' : 'text-primary'}`}>
               ~{order.myEstimatedRevenue > 0 ? `${order.myEstimatedRevenue.toFixed(4)} SOL` : "0 SOL"}
             </span>
           </div>

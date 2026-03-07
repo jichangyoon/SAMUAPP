@@ -126,6 +126,7 @@ router.get("/summary", async (req, res) => {
 
     // Actual claimable: DB-backed (respects claim history)
     let actualClaimable = 0;
+    const claimedContestIds = new Set<number>();
     if (walletAddress) {
       const allPools = await storage.getAllVoterRewardPools();
       const poolContestIds = new Set(allPools.map((p: any) => p.contestId));
@@ -133,9 +134,17 @@ router.get("/summary", async (req, res) => {
         if (!poolContestIds.has(cid)) continue;
         const { claimable } = await storage.getClaimableAmount(cid, walletAddress);
         actualClaimable += claimable;
+        if (claimable <= 0.000001) claimedContestIds.add(cid);
       }
       const unclaimedCreator = await storage.getUnclaimedCreatorDistributionsByWallet(walletAddress);
       actualClaimable += unclaimedCreator.reduce((s: number, d: any) => s + d.solAmount, 0);
+      // Mark contests where creator rewards are also fully claimed
+      const allCreatorDists = await storage.getCreatorRewardDistributionsByWallet(walletAddress);
+      const contestsWithCreator = new Set(allCreatorDists.map((d: any) => d.contestId));
+      for (const cid of contestsWithCreator) {
+        const unclaimed = allCreatorDists.filter((d: any) => d.contestId === cid && !d.claimedAt);
+        if (unclaimed.length === 0) claimedContestIds.add(cid);
+      }
     }
 
     const ordersWithData = allOrders
@@ -181,6 +190,8 @@ router.get("/summary", async (req, res) => {
           }
         }
 
+        const isClaimed = contestId != null && claimedContestIds.has(contestId);
+
         return {
           id: o.id,
           country: o.shippingCountry,
@@ -195,6 +206,7 @@ router.get("/summary", async (req, res) => {
           hasRevenue,
           myEstimatedRevenue,
           revenueStatus,
+          isClaimed,
           escrowAmount: escrow?.profitSol || 0,
           escrowStatus: escrow?.status || null,
           distribution: dist ? {
