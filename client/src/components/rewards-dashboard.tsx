@@ -198,7 +198,7 @@ function OrderDetailDrawer({ order, walletAddress, open, onClose }: {
 
 function OrderRow({ order, showMyCut, onClick }: { order: any; showMyCut: boolean; onClick: () => void }) {
   const s = getStatusStyle(order.status);
-  const claimed = order.isClaimed === true;
+  const claimed = showMyCut && order.isClaimed === true;
   return (
     <div
       className={`border rounded-lg p-3 space-y-2 cursor-pointer transition-colors active:scale-[0.98] ${
