@@ -6,6 +6,15 @@ import { config } from "../config";
 
 const router = Router();
 
+// Admin 인증 미들웨어
+const requireAdmin = (req: any, res: any, next: any) => {
+  const email = (req.body?.adminEmail || req.headers['x-admin-email'] || '').toLowerCase();
+  if (!email || !config.ADMIN_EMAILS.includes(email)) {
+    return res.status(401).json({ error: "Admin access required" });
+  }
+  next();
+};
+
 // Check if user is admin
 router.post("/check-admin", async (req, res) => {
   try {
@@ -54,7 +63,7 @@ router.get("/archived-contests", async (req, res) => {
 });
 
 // Create contest
-router.post("/contests", async (req, res) => {
+router.post("/contests", requireAdmin, async (req, res) => {
   try {
     const contestData = insertContestSchema.parse({
       ...req.body,
@@ -71,7 +80,7 @@ router.post("/contests", async (req, res) => {
 });
 
 // Start contest
-router.post("/contests/:id/start", async (req, res) => {
+router.post("/contests/:id/start", requireAdmin, async (req, res) => {
   try {
     const contestId = parseInt(req.params.id);
     
@@ -107,7 +116,7 @@ router.post("/contests/:id/start", async (req, res) => {
 });
 
 // End contest and archive
-router.post("/contests/:id/end", async (req, res) => {
+router.post("/contests/:id/end", requireAdmin, async (req, res) => {
   try {
     const contestId = parseInt(req.params.id);
     
@@ -194,7 +203,7 @@ router.get("/blocked-ips", async (req, res) => {
 });
 
 // IP 차단하기
-router.post("/block-ip", async (req, res) => {
+router.post("/block-ip", requireAdmin, async (req, res) => {
   try {
     const { ipAddress, reason } = req.body;
     
@@ -216,7 +225,7 @@ router.post("/block-ip", async (req, res) => {
 });
 
 // IP 차단 해제하기
-router.post("/unblock-ip", async (req, res) => {
+router.post("/unblock-ip", requireAdmin, async (req, res) => {
   try {
     const { ipAddress } = req.body;
     
@@ -252,7 +261,7 @@ router.get("/ip-status/:ipAddress", async (req, res) => {
   }
 });
 
-router.post("/register-printful-webhook", async (req, res) => {
+router.post("/register-printful-webhook", requireAdmin, async (req, res) => {
   try {
     const STORE_ID = "17717241";
     const WEBHOOK_URL = "https://samu.ink/api/webhooks/printful";
@@ -291,7 +300,7 @@ router.post("/register-printful-webhook", async (req, res) => {
   }
 });
 
-router.post("/sync-printful-orders", async (req, res) => {
+router.post("/sync-printful-orders", requireAdmin, async (req, res) => {
   try {
     const STORE_ID = "17717241";
     const orders = await storage.getAllOrders();

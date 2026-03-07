@@ -156,7 +156,7 @@ export function Admin() {
   // Create contest mutation
   const createContestMutation = useMutation({
     mutationFn: async (contestData: typeof newContest) => {
-      return apiRequest("POST", "/api/admin/contests", contestData);
+      return apiRequest("POST", "/api/admin/contests", { ...contestData, adminEmail });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/contests"] });
@@ -173,7 +173,7 @@ export function Admin() {
   // Start contest mutation
   const startContestMutation = useMutation({
     mutationFn: async (contestId: number) => {
-      return apiRequest("POST", `/api/admin/contests/${contestId}/start`);
+      return apiRequest("POST", `/api/admin/contests/${contestId}/start`, { adminEmail });
     },
     onSuccess: async () => {
       // 즉시 모든 관련 캐시 무효화
@@ -201,7 +201,7 @@ export function Admin() {
   // End contest mutation
   const endContestMutation = useMutation({
     mutationFn: async (contestId: number) => {
-      return apiRequest("POST", `/api/admin/contests/${contestId}/end`);
+      return apiRequest("POST", `/api/admin/contests/${contestId}/end`, { adminEmail });
     },
     onSuccess: async () => {
       // 즉시 모든 관련 캐시 무효화

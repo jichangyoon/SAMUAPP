@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Shield, Ban, Eye, AlertTriangle } from "lucide-react";
+import { usePrivy } from "@privy-io/react-auth";
 
 interface SuspiciousIp {
   ipAddress: string;
@@ -37,6 +38,8 @@ interface BlockedIp {
 }
 
 export function IPTrackingPanel() {
+  const { user } = usePrivy();
+  const adminEmail = user?.email?.address || "";
   const { toast } = useToast();
   const [blockIpAddress, setBlockIpAddress] = useState("");
   const [blockReason, setBlockReason] = useState("");
@@ -68,7 +71,7 @@ export function IPTrackingPanel() {
   // Block IP mutation
   const blockIpMutation = useMutation({
     mutationFn: async (data: { ipAddress: string; reason: string }) => {
-      return apiRequest("POST", "/api/admin/block-ip", data);
+      return apiRequest("POST", "/api/admin/block-ip", { ...data, adminEmail });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/blocked-ips"] });
@@ -85,7 +88,7 @@ export function IPTrackingPanel() {
   // Unblock IP mutation
   const unblockIpMutation = useMutation({
     mutationFn: async (ipAddress: string) => {
-      return apiRequest("POST", "/api/admin/unblock-ip", { ipAddress });
+      return apiRequest("POST", "/api/admin/unblock-ip", { ipAddress, adminEmail });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/blocked-ips"] });
