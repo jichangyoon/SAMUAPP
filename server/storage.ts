@@ -541,19 +541,26 @@ export class DatabaseStorage implements IStorage {
 
   async updateUser(walletAddress: string, updates: Partial<InsertUser & { displayName?: string; avatarUrl?: string }>): Promise<User> {
     if (!this.db) throw new Error("Database not available");
-    
-    const [user] = await this.db
-      .update(users)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(users.walletAddress, walletAddress))
-      .returning();
-    
-    // Update author info in all memes if profile changed
-    if (updates.displayName || updates.avatarUrl) {
-      await this.updateUserMemeAuthorInfo(walletAddress, updates.displayName || '', updates.avatarUrl);
-    }
-    
-    return user;
+
+    return await this.db.transaction(async (tx) => {
+      const [user] = await tx
+        .update(users)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(users.walletAddress, walletAddress))
+        .returning();
+
+      if (updates.displayName || updates.avatarUrl) {
+        const updateData: Record<string, string> = {};
+        if (updates.displayName) updateData.authorUsername = updates.displayName;
+        if (updates.avatarUrl) updateData.authorAvatarUrl = updates.avatarUrl;
+        await tx
+          .update(memes)
+          .set(updateData)
+          .where(eq(memes.authorWallet, walletAddress));
+      }
+
+      return user;
+    });
   }
 
   async updateUserMemeAuthorInfo(walletAddress: string, newDisplayName: string, newAvatarUrl?: string): Promise<void> {
@@ -595,16 +602,21 @@ export class DatabaseStorage implements IStorage {
 
     const contestMap: Record<number, any> = {};
     const contestIsArchived: Record<number, boolean> = {};
-    for (const cid of contestIds) {
-      const archived = await this.db.select().from(archivedContests).where(eq(archivedContests.originalContestId, cid));
-      if (archived.length > 0) {
-        contestMap[cid] = archived[0];
-        contestIsArchived[cid] = true;
-      } else {
-        const contest = await this.db.select().from(contests).where(eq(contests.id, cid));
-        if (contest.length > 0) {
-          contestMap[cid] = contest[0];
-          contestIsArchived[cid] = false;
+    if (contestIds.length > 0) {
+      const archivedList = await this.db.select().from(archivedContests)
+        .where(inArray(archivedContests.originalContestId, contestIds));
+      const archivedIdSet = new Set(archivedList.map(a => a.originalContestId));
+      for (const a of archivedList) {
+        contestMap[a.originalContestId] = a;
+        contestIsArchived[a.originalContestId] = true;
+      }
+      const remainingIds = contestIds.filter(id => !archivedIdSet.has(id));
+      if (remainingIds.length > 0) {
+        const activeList = await this.db.select().from(contests)
+          .where(inArray(contests.id, remainingIds));
+        for (const c of activeList) {
+          contestMap[c.id] = c;
+          contestIsArchived[c.id] = false;
         }
       }
     }
@@ -665,17 +677,39 @@ export class DatabaseStorage implements IStorage {
     
     const contestMap: Record<number, any> = {};
     const contestIsArchived: Record<number, boolean> = {};
-    for (const cid of contestIds) {
-      const archived = await this.db.select().from(archivedContests).where(eq(archivedContests.originalContestId, cid));
-      if (archived.length > 0) {
-        contestMap[cid] = archived[0];
-        contestIsArchived[cid] = true;
-      } else {
-        const contest = await this.db.select().from(contests).where(eq(contests.id, cid));
-        if (contest.length > 0) {
-          contestMap[cid] = contest[0];
-          contestIsArchived[cid] = false;
+    if (contestIds.length > 0) {
+      const archivedList = await this.db.select().from(archivedContests)
+        .where(inArray(archivedContests.originalContestId, contestIds));
+      const archivedIdSet = new Set(archivedList.map(a => a.originalContestId));
+      for (const a of archivedList) {
+        contestMap[a.originalContestId] = a;
+        contestIsArchived[a.originalContestId] = true;
+      }
+      const remainingIds = contestIds.filter(id => !archivedIdSet.has(id));
+      if (remainingIds.length > 0) {
+        const activeList = await this.db.select().from(contests)
+          .where(inArray(contests.id, remainingIds));
+        for (const c of activeList) {
+          contestMap[c.id] = c;
+          contestIsArchived[c.id] = false;
         }
+      }
+    }
+
+    // 콘테스트별 총 투표 SAMU 단일 GROUP BY 쿼리 (N+1 제거)
+    const samuByContest: Record<number, number> = {};
+    if (contestIds.length > 0) {
+      const samuRows = await this.db
+        .select({
+          contestId: memes.contestId,
+          total: sql<number>`COALESCE(SUM(${votes.samuAmount}), 0)`
+        })
+        .from(votes)
+        .innerJoin(memes, eq(votes.memeId, memes.id))
+        .where(inArray(memes.contestId, contestIds))
+        .groupBy(memes.contestId);
+      for (const row of samuRows) {
+        if (row.contestId != null) samuByContest[row.contestId] = Number(row.total);
       }
     }
 
@@ -685,19 +719,13 @@ export class DatabaseStorage implements IStorage {
       const key = String(cid);
       if (!grouped[key]) {
         const contestInfo = contestMap[cid];
-        const totalContestVotes = await this.db
-          .select({ total: sql<number>`COALESCE(SUM(${votes.samuAmount}), 0)` })
-          .from(votes)
-          .innerJoin(memes, eq(votes.memeId, memes.id))
-          .where(cid ? eq(memes.contestId, cid) : isNull(memes.contestId));
-        
         grouped[key] = {
           contestId: cid,
           contestTitle: contestInfo?.title || 'Current Contest',
           contestStatus: contestIsArchived[cid] ? 'archived' : (contestInfo?.status || 'active'),
           startTime: contestInfo?.startTime || contestInfo?.start_time,
           endTime: contestInfo?.endTime || contestInfo?.end_time,
-          totalContestSamu: Number(totalContestVotes[0]?.total || 0),
+          totalContestSamu: samuByContest[cid] ?? 0,
           myTotalSamu: 0,
           myRevenueSharePercent: 0,
           votes: [],
@@ -865,16 +893,20 @@ export class DatabaseStorage implements IStorage {
 
   async createVote(insertVote: InsertVote): Promise<Vote> {
     if (!this.db) throw new Error("Database not available");
-    
-    const [vote] = await this.db
-      .insert(votes)
-      .values(insertVote)
-      .returning();
-    
-    // Update meme vote count
-    await this.updateMemeVoteCount(insertVote.memeId);
-    
-    return vote;
+
+    return await this.db.transaction(async (tx) => {
+      const [vote] = await tx
+        .insert(votes)
+        .values(insertVote)
+        .returning();
+
+      await tx
+        .update(memes)
+        .set({ votes: sql<number>`(SELECT COALESCE(SUM(samu_amount), 0) FROM votes WHERE meme_id = ${insertVote.memeId})` })
+        .where(eq(memes.id, insertVote.memeId));
+
+      return vote;
+    });
   }
 
   async getVotesByMemeId(memeId: number): Promise<Vote[]> {
@@ -997,23 +1029,27 @@ export class DatabaseStorage implements IStorage {
 
   async createPartnerVote(insertVote: InsertVote, partnerId: string): Promise<Vote> {
     if (!this.db) throw new Error("Database not available");
-    
-    const [vote] = await this.db
-      .insert(partnerVotes)
-      .values({ ...insertVote, partnerId })
-      .returning();
-    
-    // Update partner meme vote count
-    await this.updatePartnerMemeVoteCount(partnerId, insertVote.memeId);
-    
-    return {
-      id: vote.id,
-      memeId: vote.memeId,
-      voterWallet: vote.voterWallet,
-      samuAmount: vote.samuAmount,
-      txSignature: vote.txSignature,
-      createdAt: vote.createdAt
-    };
+
+    return await this.db.transaction(async (tx) => {
+      const [vote] = await tx
+        .insert(partnerVotes)
+        .values({ ...insertVote, partnerId })
+        .returning();
+
+      await tx
+        .update(partnerMemes)
+        .set({ votes: sql<number>`(SELECT COALESCE(SUM(samu_amount), 0) FROM partner_votes WHERE partner_id = ${partnerId} AND meme_id = ${insertVote.memeId})` })
+        .where(and(eq(partnerMemes.partnerId, partnerId), eq(partnerMemes.id, insertVote.memeId)));
+
+      return {
+        id: vote.id,
+        memeId: vote.memeId,
+        voterWallet: vote.voterWallet,
+        samuAmount: vote.samuAmount,
+        txSignature: vote.txSignature,
+        createdAt: vote.createdAt
+      };
+    });
   }
 
   async hasUserVotedPartner(partnerId: string, memeId: number, voterWallet: string): Promise<boolean> {
