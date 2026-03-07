@@ -88,6 +88,8 @@ export interface IStorage {
   // Goods Revenue Distribution operations
   createGoodsRevenueDistribution(data: InsertGoodsRevenueDistribution): Promise<GoodsRevenueDistribution>;
   getGoodsRevenueDistributions(contestId?: number): Promise<GoodsRevenueDistribution[]>;
+  getGoodsRevenueDistributionByOrderId(orderId: number): Promise<GoodsRevenueDistribution | undefined>;
+  deleteGoodsRevenueDistribution(id: number): Promise<void>;
 
   // Voter Reward Pool operations
   getOrCreateVoterRewardPool(contestId: number, totalShares: number): Promise<VoterRewardPool>;
@@ -434,6 +436,8 @@ export class MemStorage implements IStorage {
   async updateOrder(_id: number, _data: Partial<InsertOrder>): Promise<Order> { throw new Error("Not implemented"); }
   async createGoodsRevenueDistribution(_data: InsertGoodsRevenueDistribution): Promise<GoodsRevenueDistribution> { throw new Error("Not implemented"); }
   async getGoodsRevenueDistributions(_contestId?: number): Promise<GoodsRevenueDistribution[]> { return []; }
+  async getGoodsRevenueDistributionByOrderId(_orderId: number): Promise<GoodsRevenueDistribution | undefined> { return undefined; }
+  async deleteGoodsRevenueDistribution(_id: number): Promise<void> {}
   async getOrCreateVoterRewardPool(_contestId: number, _totalShares: number): Promise<VoterRewardPool> { throw new Error("Not implemented"); }
   async updateVoterRewardPool(_contestId: number, _depositAmount: number): Promise<VoterRewardPool> { throw new Error("Not implemented"); }
   async getVoterRewardPool(_contestId: number): Promise<VoterRewardPool | undefined> { return undefined; }
@@ -1678,6 +1682,19 @@ export class DatabaseStorage implements IStorage {
     }
     return this.db.select().from(goodsRevenueDistributions)
       .orderBy(desc(goodsRevenueDistributions.createdAt));
+  }
+
+  async getGoodsRevenueDistributionByOrderId(orderId: number): Promise<GoodsRevenueDistribution | undefined> {
+    if (!this.db) throw new Error("Database not available");
+    const [dist] = await this.db.select().from(goodsRevenueDistributions)
+      .where(eq(goodsRevenueDistributions.orderId, orderId))
+      .limit(1);
+    return dist;
+  }
+
+  async deleteGoodsRevenueDistribution(id: number): Promise<void> {
+    if (!this.db) throw new Error("Database not available");
+    await this.db.delete(goodsRevenueDistributions).where(eq(goodsRevenueDistributions.id, id));
   }
 
   async getOrCreateVoterRewardPool(contestId: number, totalShares: number = 100): Promise<VoterRewardPool> {

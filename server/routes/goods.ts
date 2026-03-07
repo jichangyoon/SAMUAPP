@@ -20,6 +20,13 @@ export async function distributeEscrowProfit(escrowDeposit: any) {
   const contestId = escrowDeposit.contestId;
   if (!contestId) return;
 
+  // 멱등성 체크: 이미 배포된 주문이면 중단 (중복 배포 방지)
+  const existing = await storage.getGoodsRevenueDistributionByOrderId(escrowDeposit.orderId);
+  if (existing) {
+    console.warn(`[distributeEscrowProfit] Order ${escrowDeposit.orderId} already has a distribution (id=${existing.id}), skipping.`);
+    return;
+  }
+
   const creatorPool = profitSol * config.REVENUE_SHARES.CREATOR;
   const voterPoolAmount = profitSol * config.REVENUE_SHARES.VOTERS;
   const platformAmount = profitSol * config.REVENUE_SHARES.PLATFORM;
@@ -51,6 +58,7 @@ export async function distributeEscrowProfit(escrowDeposit: any) {
     });
   }
 
+  // Step 1: distribution 헤더 레코드 생성
   const dist = await storage.createGoodsRevenueDistribution({
     orderId: escrowDeposit.orderId,
     contestId,
@@ -61,22 +69,35 @@ export async function distributeEscrowProfit(escrowDeposit: any) {
     status: "distributed_from_escrow",
   });
 
-  await storage.createCreatorRewardDistributions(
-    creatorShares.map(cs => ({
-      distributionId: dist.id,
-      contestId,
-      orderId: escrowDeposit.orderId,
-      creatorWallet: cs.wallet,
-      memeId: cs.memeId,
-      solAmount: cs.amount,
-      voteSharePercent: cs.votePercent,
-    }))
-  );
+  // Step 2-4: 나머지 단계 실패 시 헤더 롤백
+  try {
+    await storage.createCreatorRewardDistributions(
+      creatorShares.map(cs => ({
+        distributionId: dist.id,
+        contestId,
+        orderId: escrowDeposit.orderId,
+        creatorWallet: cs.wallet,
+        memeId: cs.memeId,
+        solAmount: cs.amount,
+        voteSharePercent: cs.votePercent,
+      }))
+    );
 
-  await storage.getOrCreateVoterRewardPool(contestId, 100);
-  await storage.updateVoterRewardPool(contestId, voterPoolAmount);
+    await storage.getOrCreateVoterRewardPool(contestId, 100);
+    await storage.updateVoterRewardPool(contestId, voterPoolAmount);
 
-  await storage.updateEscrowStatus(escrowDeposit.id, "distributed", new Date());
+    await storage.updateEscrowStatus(escrowDeposit.id, "distributed", new Date());
+  } catch (err) {
+    // 부분 실패 시 distribution 헤더 롤백 시도
+    console.error(`[distributeEscrowProfit] Failed after creating distribution ${dist.id}, attempting rollback:`, err);
+    try {
+      await storage.deleteGoodsRevenueDistribution(dist.id);
+      console.warn(`[distributeEscrowProfit] Rolled back distribution ${dist.id} for order ${escrowDeposit.orderId}`);
+    } catch (rollbackErr) {
+      console.error(`[distributeEscrowProfit] Rollback also failed for distribution ${dist.id}:`, rollbackErr);
+    }
+    throw err; // 에러를 상위로 전파
+  }
 
   console.log(`Escrow profit distributed for order ${escrowDeposit.orderId}: Total profit=${profitSol.toFixed(6)} SOL`);
   console.log(`  Creators (${creatorShares.length}): ${creatorShares.map(c => `${c.wallet.slice(0,8)}...(${c.votePercent.toFixed(1)}%)=${c.amount.toFixed(6)} SOL`).join(', ')}`);
