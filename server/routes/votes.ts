@@ -346,8 +346,7 @@ router.get("/contest/:contestId/reward-breakdown", async (req, res) => {
       .sort((a, b) => b.totalVotesReceived - a.totalVotesReceived);
 
     const memeIds = contestMemes.map((m) => m.id);
-    const allVotes = await Promise.all(memeIds.map((id) => storage.getVotesByMemeId(id)));
-    const flatVotes = allVotes.flat();
+    const flatVotes = await storage.getVotesByMemeIds(memeIds);
 
     const voterMap = new Map<string, { wallet: string; totalSamuSpent: number }>();
     for (const vote of flatVotes) {

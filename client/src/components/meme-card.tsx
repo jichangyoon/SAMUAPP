@@ -1,4 +1,4 @@
-import { useState, useEffect, memo } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -35,6 +35,7 @@ export const MemeCard = memo(function MemeCard({ meme, onVote, canVote }: MemeCa
   const [showUserModal, setShowUserModal] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
   const [voteAmount, setVoteAmount] = useState(1);
+  const samuBalanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { authenticated, user } = usePrivy();
   const { signTransaction } = useSignTransaction();
   const { wallets, ready: walletsReady } = useSolanaWallets();
@@ -49,6 +50,12 @@ export const MemeCard = memo(function MemeCard({ meme, onVote, canVote }: MemeCa
 
     window.addEventListener('profileUpdated', handleProfileUpdate);
     return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (samuBalanceTimerRef.current) clearTimeout(samuBalanceTimerRef.current);
+    };
   }, []);
 
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
@@ -160,8 +167,10 @@ export const MemeCard = memo(function MemeCard({ meme, onVote, canVote }: MemeCa
       
       queryClient.invalidateQueries({ queryKey: ['/api/memes'], exact: false });
       
-      setTimeout(() => {
+      if (samuBalanceTimerRef.current) clearTimeout(samuBalanceTimerRef.current);
+      samuBalanceTimerRef.current = setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: ['samu-balance', walletAddress] });
+        samuBalanceTimerRef.current = null;
       }, 5000);
       
       onVote();

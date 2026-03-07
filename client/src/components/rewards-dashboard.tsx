@@ -300,17 +300,19 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
   const [openDrawer, setOpenDrawer] = useState<"my-claimable" | "my-escrow" | "total-claimable" | "total-escrow" | null>(null);
   const [selectedDetailOrder, setSelectedDetailOrder] = useState<any | null>(null);
 
-  const { data: summary, isLoading } = useQuery({
+  const { data: summary, isLoading, isError, refetch } = useQuery({
     queryKey: ["/api/rewards/summary", walletAddress],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       const url = walletAddress
         ? `/api/rewards/summary?wallet=${walletAddress}`
         : "/api/rewards/summary";
-      const res = await fetch(url, { cache: 'no-cache' });
+      const res = await fetch(url, { cache: 'no-cache', signal });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json();
     },
     staleTime: 0,
     refetchInterval: 60000,
+    retry: 2,
   });
 
   const claimMutation = useMutation({
@@ -345,6 +347,20 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
     return (
       <div className="min-h-[40vh] flex items-center justify-center">
         <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-[40vh] flex flex-col items-center justify-center gap-3 p-6">
+        <p className="text-muted-foreground text-sm">데이터를 불러오지 못했습니다.</p>
+        <button
+          onClick={() => refetch()}
+          className="text-xs text-primary underline underline-offset-2"
+        >
+          새로고침
+        </button>
       </div>
     );
   }

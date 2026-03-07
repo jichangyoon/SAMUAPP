@@ -25,6 +25,7 @@ export interface IStorage {
   createVote(vote: InsertVote): Promise<Vote>;
   getAllVotes(): Promise<Vote[]>;
   getVotesByMemeId(memeId: number): Promise<Vote[]>;
+  getVotesByMemeIds(memeIds: number[]): Promise<Vote[]>;
   getVoteByTxSignature(txSignature: string): Promise<Vote | undefined>;
   hasUserVoted(memeId: number, voterWallet: string): Promise<boolean>;
   updateMemeVoteCount(memeId: number): Promise<void>;
@@ -290,6 +291,11 @@ export class MemStorage implements IStorage {
 
   async getVotesByMemeId(memeId: number): Promise<Vote[]> {
     return Array.from(this.votes.values()).filter(vote => vote.memeId === memeId);
+  }
+
+  async getVotesByMemeIds(memeIds: number[]): Promise<Vote[]> {
+    const set = new Set(memeIds);
+    return Array.from(this.votes.values()).filter(vote => set.has(vote.memeId));
   }
 
   async getVoteByTxSignature(txSignature: string): Promise<Vote | undefined> {
@@ -873,11 +879,13 @@ export class DatabaseStorage implements IStorage {
 
   async getVotesByMemeId(memeId: number): Promise<Vote[]> {
     if (!this.db) throw new Error("Database not available");
-    
-    return await this.db
-      .select()
-      .from(votes)
-      .where(eq(votes.memeId, memeId));
+    return await this.db.select().from(votes).where(eq(votes.memeId, memeId));
+  }
+
+  async getVotesByMemeIds(memeIds: number[]): Promise<Vote[]> {
+    if (!this.db) throw new Error("Database not available");
+    if (memeIds.length === 0) return [];
+    return await this.db.select().from(votes).where(inArray(votes.memeId, memeIds));
   }
 
   async getVoteByTxSignature(txSignature: string): Promise<Vote | undefined> {
@@ -903,13 +911,10 @@ export class DatabaseStorage implements IStorage {
 
   async updateMemeVoteCount(memeId: number): Promise<void> {
     if (!this.db) throw new Error("Database not available");
-    
-    const memeVotes = await this.getVotesByMemeId(memeId);
-    const totalSamu = memeVotes.reduce((sum, vote) => sum + vote.samuAmount, 0);
-    
+    // 원자적 서브쿼리 방식 — SELECT+UPDATE 분리로 인한 race condition 제거
     await this.db
       .update(memes)
-      .set({ votes: totalSamu })
+      .set({ votes: sql<number>`(SELECT COALESCE(SUM(samu_amount), 0) FROM votes WHERE meme_id = ${memeId})` })
       .where(eq(memes.id, memeId));
   }
 
@@ -1566,9 +1571,7 @@ export class DatabaseStorage implements IStorage {
     if (contestMemes.length === 0) return [];
     
     const memeIds = contestMemes.map(m => m.id);
-    const allVotes = await this.db.select().from(votes).where(
-      sql`${votes.memeId} IN (${sql.raw(memeIds.join(','))})`
-    );
+    const allVotes = await this.db.select().from(votes).where(inArray(votes.memeId, memeIds));
     
     const summary = new Map<string, number>();
     for (const vote of allVotes) {
@@ -1701,17 +1704,17 @@ export class DatabaseStorage implements IStorage {
 
   async getOrCreateVoterRewardPool(contestId: number, totalShares: number = 100): Promise<VoterRewardPool> {
     if (!this.db) throw new Error("Database not available");
-    const [existing] = await this.db.select().from(voterRewardPool)
-      .where(eq(voterRewardPool.contestId, contestId)).limit(1);
-    if (existing) return existing;
-    const [pool] = await this.db.insert(voterRewardPool).values({
+    // onConflictDoNothing: unique index on contestId가 있어 동시 요청 시 race condition 없이 안전하게 처리
+    await this.db.insert(voterRewardPool).values({
       contestId,
       rewardPerShare: 0,
       totalDeposited: 0,
       totalClaimed: 0,
       totalShares: 100,
-    }).returning();
-    return pool;
+    }).onConflictDoNothing();
+    const [pool] = await this.db.select().from(voterRewardPool)
+      .where(eq(voterRewardPool.contestId, contestId)).limit(1);
+    return pool!;
   }
 
   async updateVoterRewardPool(contestId: number, depositAmount: number): Promise<VoterRewardPool> {
@@ -1852,22 +1855,32 @@ export class DatabaseStorage implements IStorage {
 
     if (claimable <= 0) throw new Error("No rewards to claim");
 
-    await this.db.update(voterClaimRecords)
-      .set({
-        lastClaimedRewardPerShare: pool.rewardPerShare,
-        totalClaimed: claimRecord.totalClaimed + claimable,
-        updatedAt: new Date(),
-      })
-      .where(and(eq(voterClaimRecords.contestId, contestId), eq(voterClaimRecords.voterWallet, voterWallet)));
+    // 트랜잭션 + optimistic locking: lastClaimedRewardPerShare가 읽은 값과 다르면 0 rows updated → 이중클레임 차단
+    return await this.db.transaction(async (tx) => {
+      const [updated] = await tx.update(voterClaimRecords)
+        .set({
+          lastClaimedRewardPerShare: pool.rewardPerShare,
+          totalClaimed: claimRecord.totalClaimed + claimable,
+          updatedAt: new Date(),
+        })
+        .where(and(
+          eq(voterClaimRecords.contestId, contestId),
+          eq(voterClaimRecords.voterWallet, voterWallet),
+          eq(voterClaimRecords.lastClaimedRewardPerShare, claimRecord.lastClaimedRewardPerShare),
+        ))
+        .returning();
 
-    await this.db.update(voterRewardPool)
-      .set({
-        totalClaimed: pool.totalClaimed + claimable,
-        updatedAt: new Date(),
-      })
-      .where(eq(voterRewardPool.contestId, contestId));
+      if (!updated) throw new Error("이미 처리 중인 클레임입니다. 잠시 후 다시 시도해주세요.");
 
-    return { claimedAmount: claimable };
+      await tx.update(voterRewardPool)
+        .set({
+          totalClaimed: pool.totalClaimed + claimable,
+          updatedAt: new Date(),
+        })
+        .where(eq(voterRewardPool.contestId, contestId));
+
+      return { claimedAmount: claimable };
+    });
   }
 
   async getVoterClaimsByWallet(walletAddress: string): Promise<VoterClaimRecord[]> {

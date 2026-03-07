@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, bigint, timestamp, boolean, uniqueIndex, doublePrecision, index } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, bigint, timestamp, boolean, uniqueIndex, doublePrecision, index, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -114,6 +114,9 @@ export const loginLogs = pgTable("login_logs", {
   loginTime: timestamp("login_time").notNull().defaultNow(),
 }, (table) => [
   index("idx_login_logs_wallet_address").on(table.walletAddress),
+  index("idx_login_logs_ip").on(table.ipAddress),
+  index("idx_login_logs_device_id").on(table.deviceId),
+  index("idx_login_logs_ip_time").on(table.ipAddress, table.loginTime),
 ]);
 
 export const blockedIps = pgTable("blocked_ips", {
@@ -210,6 +213,8 @@ export const orders = pgTable("orders", {
   index("idx_orders_buyer_wallet").on(table.buyerWallet),
   index("idx_orders_status").on(table.status),
   index("idx_orders_tx_signature").on(table.txSignature),
+  index("idx_orders_printful_order_id").on(table.printfulOrderId),
+  index("idx_orders_created_at").on(table.createdAt),
 ]);
 
 export const goodsRevenueDistributions = pgTable("goods_revenue_distributions", {
@@ -236,7 +241,7 @@ export const voterRewardPool = pgTable("voter_reward_pool", {
   totalShares: doublePrecision("total_shares").notNull().default(0),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (table) => [
-  index("idx_voter_reward_pool_contest_id").on(table.contestId),
+  uniqueIndex("idx_voter_reward_pool_contest_id").on(table.contestId),
 ]);
 
 export const voterClaimRecords = pgTable("voter_claim_records", {

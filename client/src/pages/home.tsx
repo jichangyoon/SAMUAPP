@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, Suspense, lazy } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef, Suspense, lazy } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { WalletConnect } from "@/components/wallet-connect";
 import { ContestHeader } from "@/components/contest-header";
@@ -42,40 +42,25 @@ function RealTimeArchiveCard({ contest, isLoadingContestDetails, onContestClick 
   isLoadingContestDetails: boolean;
   onContestClick: () => void;
 }) {
-  const [realTimeStats, setRealTimeStats] = useState<{
-    participants: number;
-    votes: number;
-    loading: boolean;
-  }>({ participants: 0, votes: 0, loading: false });
-
   // Calculate real-time statistics if archival stats are 0
   const needsRealTimeStats = contest.totalParticipants === 0 && contest.totalVotes === 0;
 
-  useEffect(() => {
-    if (needsRealTimeStats) {
-      setRealTimeStats(prev => ({ ...prev, loading: true }));
-      
-      fetch(`/api/memes?contestId=${contest.originalContestId}`)
-        .then(res => res.json())
-        .then(data => {
-          const memes = data.memes || [];
-          const uniqueAuthors = new Set(memes.map((m: any) => m.authorUsername)).size;
-          const totalVotes = memes.reduce((sum: number, m: any) => sum + m.votes, 0);
-          
-          setRealTimeStats({
-            participants: uniqueAuthors,
-            votes: totalVotes,
-            loading: false
-          });
-        })
-        .catch(() => {
-          setRealTimeStats({ participants: 0, votes: 0, loading: false });
-        });
-    }
-  }, [contest.originalContestId, needsRealTimeStats]);
+  const { data: memesData, isLoading: memesLoading } = useQuery({
+    queryKey: ['/api/memes', contest.originalContestId],
+    queryFn: async ({ signal }) => {
+      const res = await fetch(`/api/memes?contestId=${contest.originalContestId}`, { signal });
+      return res.json();
+    },
+    enabled: needsRealTimeStats,
+    staleTime: 120000,
+  });
 
-  const displayParticipants = needsRealTimeStats ? realTimeStats.participants : contest.totalParticipants;
-  const displayVotes = needsRealTimeStats ? realTimeStats.votes : contest.totalVotes;
+  const displayParticipants = needsRealTimeStats
+    ? (memesData ? new Set(memesData.memes?.map((m: any) => m.authorUsername)).size : 0)
+    : contest.totalParticipants;
+  const displayVotes = needsRealTimeStats
+    ? (memesData ? (memesData.memes || []).reduce((sum: number, m: any) => sum + m.votes, 0) : 0)
+    : contest.totalVotes;
 
   return (
     <button
@@ -89,7 +74,7 @@ function RealTimeArchiveCard({ contest, isLoadingContestDetails, onContestClick 
             <div className="text-left">
               <h4 className="font-semibold text-foreground">{contest.title}</h4>
               <p className="text-sm text-muted-foreground">
-                {needsRealTimeStats && realTimeStats.loading ? (
+                {needsRealTimeStats && memesLoading ? (
                   "Loading statistics..."
                 ) : (
                   <>
@@ -117,6 +102,7 @@ function RealTimeArchiveCard({ contest, isLoadingContestDetails, onContestClick 
 }
 
 export default function Home() {
+  const samuBalanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [sortBy, setSortBy] = useState("votes");
   const [currentTab, setCurrentTab] = useState("contest");
   const [viewMode, setViewMode] = useState<'card' | 'grid'>('card');
@@ -232,10 +218,19 @@ export default function Home() {
     }
   }, [samuBalance, voteAmount]);
 
+  // 언마운트 시 지연된 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (samuBalanceTimerRef.current) clearTimeout(samuBalanceTimerRef.current);
+    };
+  }, []);
+
   const handleVoteUpdate = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ['/api/memes'], exact: false });
-    setTimeout(() => {
+    if (samuBalanceTimerRef.current) clearTimeout(samuBalanceTimerRef.current);
+    samuBalanceTimerRef.current = setTimeout(() => {
       queryClient.invalidateQueries({ queryKey: ['samu-balance'] });
+      samuBalanceTimerRef.current = null;
     }, 5000);
   }, [queryClient]);
 

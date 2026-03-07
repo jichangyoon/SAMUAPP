@@ -8,7 +8,8 @@ const router = Router();
 function verifyPrintfulWebhook(req: any): boolean {
   const webhookSecret = process.env.PRINTFUL_WEBHOOK_SECRET;
   if (!webhookSecret) {
-    return true;
+    console.warn("[Printful Webhook] PRINTFUL_WEBHOOK_SECRET not set — rejecting request for security");
+    return false;
   }
   const signature = req.headers["x-printful-signature"] || req.headers["x-pf-signature"];
   if (!signature) {
