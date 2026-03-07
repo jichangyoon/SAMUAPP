@@ -35,7 +35,9 @@ SAMU is a web-based meme incubator platform on Solana where community-voted meme
 - Revenue source: Goods sales (Printful merchandise)
 - Reward currency: SOL (from goods profits)
 - Payment splitting: Goods payment splits SOL directly on-chain at time of purchase
-- Claim system: Both creators and voters claim SOL via profile page — per-contest reward pool using "Reward Per Share" mechanism (DeFi pattern)
+- Claim system: Both creators and voters claim SOL via profile Rewards tab
+  - Voters: per-contest DeFi reward pool ("Reward Per Share" mechanism)
+  - Creators: per-sale distribution rows, accumulated and claimable
 - Total Earned display: Cumulative value that never decreases after claiming
 
 ## Key Features
@@ -74,7 +76,7 @@ The standout feature: a world map that turns boring shipping logistics into a co
 - No login required — connect Phantom or any Solana wallet directly
 - Same on-chain verification as in-app voting
 - Shareable Blink URLs for each meme entry
-- Vote options: 1, 5, 10, or custom SAMU amount (1-100)
+- Vote options: 100, 1,000, or 10,000 SAMU
 
 ### Goods Shop (SOL Payment)
 - Kiss-Cut Sticker merchandise from winning meme designs via Printful
@@ -83,7 +85,7 @@ The standout feature: a world map that turns boring shipping logistics into a co
 - Multi-instruction Solana TX: splits SOL at point of payment (production cost → treasury, profit → escrow)
 - Full on-chain payment verification before Printful order creation
 - Escrow vault: profit locked in escrow until delivery confirmed, then distributed 45/40/15
-- Automatic distribution trigger: Printful `shipment_delivered` webhook → `distributeEscrowProfit` (v1 + v2 dual webhook registration)
+- Automatic distribution trigger: Printful `shipment_delivered` webhook → `distributeEscrowProfit` (v2 webhook)
 
 ### Contest Archive System
 - Publicly viewable — no login required to browse past contests and memes
@@ -101,11 +103,10 @@ The standout feature: a world map that turns boring shipping logistics into a co
 - Distribution history with status tracking
 
 ### Claim System (Creator + Voter)
-- Per-contest reward pools with "Reward Per Share" calculation (`total_shares = 100`)
-- Both creators and voters claim via profile Rewards tab
-- Full claim history tracking
-- Claimable amount display per contest
-- Total Earned = cumulative (claim-invariant): `voterEarned = claimable + totalClaimed`
+- Both creators and voters claim SOL via profile Rewards tab
+- **Voters**: per-contest DeFi reward pool (`total_shares = 100`, "Reward Per Share" pattern). `voterEarned = claimable + totalClaimed` — cumulative, claim-invariant
+- **Creators**: SOL allocated per sale via `creatorRewardDistributions` rows, proportional to votes received. `creatorEarned` = all rows summed — cumulative, claim-invariant
+- Total Earned = creatorEarned + voterEarned (never decreases after claiming)
 
 ### Partner Communities
 - Other meme coin communities can host their own isolated contests
