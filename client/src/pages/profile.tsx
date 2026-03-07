@@ -1091,30 +1091,37 @@ const Profile = memo(() => {
 
                 {/* Creator Section */}
                 <div className="rounded-xl bg-indigo-950/40 border border-indigo-800/30 p-3 space-y-2">
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <Palette className="h-3.5 w-3.5 text-indigo-400" />
-                    <span className="text-xs font-semibold text-indigo-300 uppercase tracking-wide">Creator</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="text-center">
-                      <div className={`text-xl font-bold ${stats.totalMemesCreated > 0 ? 'text-indigo-300' : 'text-muted-foreground'}`}>
-                        {stats.totalMemesCreated}
-                      </div>
-                      <div className="text-[10px] text-muted-foreground mt-0.5">Memes</div>
-                    </div>
-                    <div className="text-center">
-                      <div className={`text-xl font-bold ${memesByContest.length > 0 ? 'text-indigo-300' : 'text-muted-foreground'}`}>
-                        {memesByContest.length}
-                      </div>
-                      <div className="text-[10px] text-muted-foreground mt-0.5">Contests</div>
-                    </div>
-                    <div className="text-center">
-                      <div className={`text-xl font-bold ${stats.totalVotesReceived > 0 ? 'text-indigo-300' : 'text-muted-foreground'}`}>
-                        {stats.totalVotesReceived > 9999 ? `${(stats.totalVotesReceived / 1000).toFixed(1)}k` : stats.totalVotesReceived.toLocaleString()}
-                      </div>
-                      <div className="text-[10px] text-muted-foreground mt-0.5">SAMU Recv'd</div>
-                    </div>
-                  </div>
+                  {(() => {
+                    const fmt = (n: number) => n >= 1_000_000 ? `${(n/1_000_000).toFixed(1)}m` : n >= 10_000 ? `${(n/1_000).toFixed(1)}k` : n.toLocaleString();
+                    return (
+                      <>
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <Palette className="h-3.5 w-3.5 text-indigo-400" />
+                          <span className="text-xs font-semibold text-indigo-300 uppercase tracking-wide">Creator</span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="text-center">
+                            <div className={`text-xl font-bold ${memesByContest.length > 0 ? 'text-indigo-300' : 'text-muted-foreground'}`}>
+                              {memesByContest.length}
+                            </div>
+                            <div className="text-[10px] text-muted-foreground mt-0.5">Contests</div>
+                          </div>
+                          <div className="text-center">
+                            <div className={`text-xl font-bold ${stats.totalMemesCreated > 0 ? 'text-indigo-300' : 'text-muted-foreground'}`}>
+                              {fmt(stats.totalMemesCreated)}
+                            </div>
+                            <div className="text-[10px] text-muted-foreground mt-0.5">Memes</div>
+                          </div>
+                          <div className="text-center">
+                            <div className={`text-xl font-bold ${stats.totalVotesReceived > 0 ? 'text-indigo-300' : 'text-muted-foreground'}`}>
+                              {fmt(stats.totalVotesReceived)}
+                            </div>
+                            <div className="text-[10px] text-muted-foreground mt-0.5">SAMU Recv'd</div>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
                   {stats.memesToGoods > 0 && (
                     <div className="bg-green-900/30 border border-green-700/30 rounded-lg px-2.5 py-1.5 flex items-center gap-2">
                       <ShoppingBag className="h-3 w-3 text-green-400 flex-shrink-0" />
@@ -1162,7 +1169,7 @@ const Profile = memo(() => {
                     </div>
                     <div className="text-center">
                       <div className={`text-xl font-bold ${stats.totalSamuSpent > 0 ? 'text-blue-300' : 'text-muted-foreground'}`}>
-                        {stats.totalSamuSpent > 9999 ? `${(stats.totalSamuSpent / 1000).toFixed(1)}k` : stats.totalSamuSpent.toLocaleString()}
+                        {stats.totalSamuSpent >= 1_000_000 ? `${(stats.totalSamuSpent/1_000_000).toFixed(1)}m` : stats.totalSamuSpent >= 10_000 ? `${(stats.totalSamuSpent/1_000).toFixed(1)}k` : stats.totalSamuSpent.toLocaleString()}
                       </div>
                       <div className="text-[10px] text-muted-foreground mt-0.5">SAMU Spent</div>
                     </div>
@@ -1176,9 +1183,8 @@ const Profile = memo(() => {
                     <span className="text-xs font-semibold text-yellow-300 uppercase tracking-wide">Earnings</span>
                   </div>
                   {(() => {
-                    const shares = walletRevenue?.shares || [];
-                    const creatorEarned = shares.filter((s: any) => s.role === 'creator').reduce((sum: number, s: any) => sum + (s.amountSol || 0), 0);
-                    const voterEarned = shares.filter((s: any) => s.role === 'voter').reduce((sum: number, s: any) => sum + (s.amountSol || 0), 0);
+                    const creatorEarned = rewardSummary?.my?.creatorEarned ?? 0;
+                    const voterEarned = rewardSummary?.my?.voterEarned ?? 0;
                     const pendingEscrow = rewardSummary?.my?.escrow || 0;
                     const claimable = rewardSummary?.my?.claimable || 0;
                     return (

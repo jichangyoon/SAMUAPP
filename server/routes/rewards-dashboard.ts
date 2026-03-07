@@ -72,6 +72,7 @@ router.get("/summary", async (req, res) => {
     let userVotedContests = new Set<number>();
     let userVoteShareByContest = new Map<number, number>();
     let creatorDistByOrder = new Map<number, number>();
+    let walletEarned = { creatorEarned: 0, voterEarned: 0 };
 
     if (walletAddress) {
       for (const m of allMemes) {
@@ -113,6 +114,10 @@ router.get("/summary", async (req, res) => {
       for (const cd of creatorDists) {
         creatorDistByOrder.set(cd.orderId, (creatorDistByOrder.get(cd.orderId) || 0) + cd.solAmount);
       }
+
+      const voterClaims = await storage.getVoterClaimsByWallet(walletAddress);
+      walletEarned.creatorEarned = creatorDists.reduce((s, d) => s + d.solAmount, 0);
+      walletEarned.voterEarned = voterClaims.reduce((s, r) => s + r.totalClaimed, 0);
     }
 
     const ordersWithData = allOrders
@@ -194,6 +199,8 @@ router.get("/summary", async (req, res) => {
         escrow: myEscrowOrders.reduce((s, o) => s + o.myEstimatedRevenue, 0),
         claimableOrders: myClaimableOrders,
         escrowOrders: myEscrowOrders,
+        creatorEarned: walletEarned.creatorEarned,
+        voterEarned: walletEarned.voterEarned,
       },
       total: {
         claimable: totalClaimableOrders.reduce((s, o) => s + (o.distribution?.totalSolAmount || 0), 0),
