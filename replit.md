@@ -43,7 +43,7 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
   - **수익** (판매가 - 원가) → Escrow (잠금)
 - DB에 EscrowDeposit 기록: `locked` 상태로 저장
 - `distributeEscrowProfit` 함수: 수익을 45/40/15로 수학 계산 후 DB 기록
-  - Creator 45%: 콘테스트 내 득표 비율로 각 크리에이터에게 할당 → `creatorRewardDistributions` + `creatorRewardPool`
+  - Creator 45%: 콘테스트 내 득표 비율로 각 크리에이터에게 할당 → `creatorRewardDistributions`
   - Voters 40%: `voterRewardPool`에 적립 (DeFi Reward Per Share 방식)
   - Platform 15%: 플랫폼 보관
 - Escrow 상태: `locked` → `distributed`
@@ -180,15 +180,18 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 - 16362: 15"×3.75"
 
 **주요 서버 라우트:**
-- `server/routes/memes.ts`: 밈/투표
+- `server/routes/memes.ts`: 밈 CRUD (제출, 조회, 삭제)
+- `server/routes/votes.ts`: SPL transfer tx 빌드, verifyTransaction, 중복투표 방지 (`/api/memes` 마운트)
 - `server/routes/admin.ts`: 어드민
 - `server/routes/goods.ts`: 굿즈/에스크로 + `distributeEscrowProfit`
 - `server/routes/rewards-dashboard.ts`: 리워드 대시보드/맵/summary
 - `server/routes/revenue.ts`: 수익
 - `server/routes/actions.ts`: Solana Blinks
 - `server/routes/users.ts`: 유저 프로필 + stats
-- `server/routes/webhook.ts`: Printful 웹훅
+- `server/routes/webhook.ts`: Printful 웹훅 (`/api/webhooks` 마운트)
 - `server/routes/partners.ts`: 파트너 콘테스트
+- `server/routes/wallet.ts`: SAMU/SOL 잔액 조회, treasury 지갑 주소
+- `server/routes/uploads.ts`: 이미지/영상 파일 업로드
 
 **주요 유틸:**
 - `server/utils/geocode.ts`: Nominatim API 래퍼
@@ -208,7 +211,7 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 
 **Solana Blinks:**
 - `/api/actions/vote/:memeId`: GET(메타데이터), POST(TX 빌드), POST `/confirm`(검증)
-- Vote 옵션: 1, 5, 10, 커스텀(1-100) SAMU
+- Vote 옵션: 100, 1,000, 10,000 SAMU
 
 **Smart Contract (미배포):**
 - `contracts/programs/samu-rewards/src/lib.rs`

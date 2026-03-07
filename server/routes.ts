@@ -35,7 +35,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api/revenue", revenueRouter);
   app.use("/api/goods", goodsRouter);
   app.use("/api/rewards", rewardsDashboardRouter);
-  app.use("/api/webhook", webhookRouter);
+  app.use("/api/webhooks", webhookRouter);
 
   const httpServer = createServer(app);
   return httpServer;
