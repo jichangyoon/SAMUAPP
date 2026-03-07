@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { contestScheduler } from "./contest-scheduler";
+import { startDeliveryTimeoutScheduler } from "./delivery-timeout-scheduler";
 
 const app = express();
 
@@ -57,6 +58,9 @@ app.use((req, res, next) => {
   // Initialize contest scheduler
   await contestScheduler.initializeScheduling();
   contestScheduler.startMonitoring();
+
+  // Start delivery timeout scheduler (auto-distributes orders locked 30+ days)
+  startDeliveryTimeoutScheduler();
 
   // Serve static files from public directory in all environments
   app.use(express.static('public'));

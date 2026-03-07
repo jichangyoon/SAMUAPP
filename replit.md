@@ -56,6 +56,7 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 - `shipment_delivered` 수신 시 → `distributeEscrowProfit` 자동 실행 (45/40/15 분배)
 - DB `printfulStatus`, `trackingNumber`, `trackingUrl` 자동 업데이트
 - 웹훅 URL: `https://samu.ink/api/webhooks/printful`
+- **30일 타임아웃 스케줄러** (`server/delivery-timeout-scheduler.ts`): 결제 후 30일 경과 + 에스크로 `locked` 상태인 주문 자동 분배 (6시간 주기 체크, 서버 기동 시 즉시 1회 실행)
 
 ### ✅ 리워드 시스템 (DB 레벨 구현)
 
