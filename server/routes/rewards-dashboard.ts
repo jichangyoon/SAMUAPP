@@ -124,6 +124,20 @@ router.get("/summary", async (req, res) => {
       walletEarned.voterEarned = voterEarnedTotal;
     }
 
+    // Actual claimable: DB-backed (respects claim history)
+    let actualClaimable = 0;
+    if (walletAddress) {
+      const allPools = await storage.getAllVoterRewardPools();
+      const poolContestIds = new Set(allPools.map((p: any) => p.contestId));
+      for (const cid of userVotedContests) {
+        if (!poolContestIds.has(cid)) continue;
+        const { claimable } = await storage.getClaimableAmount(cid, walletAddress);
+        actualClaimable += claimable;
+      }
+      const unclaimedCreator = await storage.getUnclaimedCreatorDistributionsByWallet(walletAddress);
+      actualClaimable += unclaimedCreator.reduce((s: number, d: any) => s + d.solAmount, 0);
+    }
+
     const ordersWithData = allOrders
       .filter(o => o.shippingCountry)
       .map(o => {
@@ -199,7 +213,7 @@ router.get("/summary", async (req, res) => {
 
     res.json({
       my: {
-        claimable: myClaimableOrders.reduce((s, o) => s + o.myEstimatedRevenue, 0),
+        claimable: actualClaimable,
         escrow: myEscrowOrders.reduce((s, o) => s + o.myEstimatedRevenue, 0),
         claimableOrders: myClaimableOrders,
         escrowOrders: myEscrowOrders,

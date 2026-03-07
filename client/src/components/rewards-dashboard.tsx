@@ -298,10 +298,10 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
       const url = walletAddress
         ? `/api/rewards/summary?wallet=${walletAddress}`
         : "/api/rewards/summary";
-      const res = await fetch(url);
+      const res = await fetch(url, { cache: 'no-cache' });
       return res.json();
     },
-    staleTime: 30000,
+    staleTime: 0,
     refetchInterval: 60000,
   });
 
