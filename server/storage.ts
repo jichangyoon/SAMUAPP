@@ -1297,52 +1297,67 @@ export class DatabaseStorage implements IStorage {
     const secondMemeId = sortedMemes[1]?.id || null;
     const thirdMemeId = sortedMemes[2]?.id || null;
 
-    let archivedContest: ArchivedContest;
-    try {
-      const [inserted] = await this.db
-        .insert(archivedContests)
-        .values({
-          originalContestId: contestId,
-          title: contest.title,
-          description: contest.description,
-          totalMemes,
-          totalVotes,
-          totalParticipants: uniqueParticipants,
-          winnerMemeId,
-          secondMemeId,
-          thirdMemeId,
-          prizePool: contest.prizePool,
-          startTime: contest.startTime || contest.createdAt || new Date(),
-          endTime: new Date(),
-        })
-        .returning();
-      archivedContest = inserted;
-    } catch (insertError: any) {
-      if (insertError?.code === '23505') {
-        console.log(`Contest ${contestId} archive insert conflict (unique constraint), returning existing`);
-        const existing = await this.db
-          .select()
-          .from(archivedContests)
-          .where(eq(archivedContests.originalContestId, contestId))
-          .limit(1);
-        if (existing.length > 0) return existing[0];
+    // 세 DB 쓰기를 단일 트랜잭션으로 묶기: INSERT archivedContest + UPDATE contest 상태 + UPDATE memes.contestId
+    // 중간 실패 시 전체 롤백되어 데이터 불일치 방지
+    const archivedContest = await this.db.transaction(async (tx) => {
+      let result: ArchivedContest;
+
+      try {
+        const [inserted] = await tx
+          .insert(archivedContests)
+          .values({
+            originalContestId: contestId,
+            title: contest.title,
+            description: contest.description,
+            totalMemes,
+            totalVotes,
+            totalParticipants: uniqueParticipants,
+            winnerMemeId,
+            secondMemeId,
+            thirdMemeId,
+            prizePool: contest.prizePool,
+            startTime: contest.startTime || contest.createdAt || new Date(),
+            endTime: new Date(),
+          })
+          .returning();
+        result = inserted;
+      } catch (insertError: any) {
+        if (insertError?.code === '23505') {
+          console.log(`Contest ${contestId} archive insert conflict (unique constraint), fetching existing`);
+          const existing = await tx
+            .select()
+            .from(archivedContests)
+            .where(eq(archivedContests.originalContestId, contestId))
+            .limit(1);
+          if (existing.length > 0) {
+            result = existing[0];
+          } else {
+            throw insertError;
+          }
+        } else {
+          throw insertError;
+        }
       }
-      throw insertError;
-    }
 
-    // Update contest status to archived
-    await this.updateContestStatus(contestId, "archived");
+      // Update contest status to archived
+      await tx
+        .update(contests)
+        .set({ status: "archived" })
+        .where(eq(contests.id, contestId));
 
-    // Move current contest memes to archived contest (only if there are memes)
-    if (contestMemes.length > 0) {
-      await this.db
-        .update(memes)
-        .set({ contestId: contestId })
-        .where(or(
-          isNull(memes.contestId),
-          eq(memes.contestId, contestId)
-        ));
-    }
+      // Move current contest memes to archived contest (only if there are memes)
+      if (contestMemes.length > 0) {
+        await tx
+          .update(memes)
+          .set({ contestId: contestId })
+          .where(or(
+            isNull(memes.contestId),
+            eq(memes.contestId, contestId)
+          ));
+      }
+
+      return result;
+    });
 
     // Cancel any scheduled timers for this contest
     try {
