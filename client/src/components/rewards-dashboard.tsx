@@ -330,15 +330,15 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
     },
     onSuccess: (data) => {
       toast({
-        title: "클레임 완료!",
-        description: `${data.totalSol.toFixed(4)} SOL이 지갑으로 전송됐어요.`,
+        title: "Claimed!",
+        description: `${data.totalSol.toFixed(4)} SOL sent to your wallet.`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/rewards/summary", walletAddress] });
       setOpenDrawer(null);
     },
     onError: (err: any) => {
       toast({
-        title: "클레임 실패",
+        title: "Claim Failed",
         description: err.message,
         variant: "destructive",
       });
@@ -442,12 +442,12 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
                 {claimMutation.isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    전송 중...
+                    Sending...
                   </>
                 ) : (
                   <>
                     <Wallet className="h-4 w-4 mr-2" />
-                    {my.claimable.toFixed(4)} SOL 클레임
+                    Claim {my.claimable.toFixed(4)} SOL
                   </>
                 )}
               </Button>
