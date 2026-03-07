@@ -181,8 +181,6 @@ const Profile = memo(() => {
   });
 
   const [isClaiming, setIsClaiming] = useState(false);
-  const [hasClaimed, setHasClaimed] = useState(false);
-  const [lastClaimedSol, setLastClaimedSol] = useState(0);
 
   const handleClaimAll = useCallback(async () => {
     if (!walletAddress) return;
@@ -195,8 +193,6 @@ const Profile = memo(() => {
       });
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || 'Claim failed');
-      setHasClaimed(true);
-      setLastClaimedSol(result.totalSol);
       toast({
         title: "Claimed!",
         description: `${result.totalSol.toFixed(4)} SOL sent to your wallet.`,
@@ -1026,71 +1022,42 @@ const Profile = memo(() => {
                 {(() => {
                   const claimable = rewardSummary?.my?.claimable ?? 0;
                   const escrow = rewardSummary?.my?.escrow ?? 0;
-
-                  if (hasClaimed) {
-                    return (
-                      <>
-                        <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 text-center space-y-1">
-                          <p className="text-xs text-green-400">Claimed successfully</p>
-                          <p className="text-3xl font-bold text-green-400">{lastClaimedSol.toFixed(4)}</p>
-                          <p className="text-sm text-muted-foreground">SOL sent to your wallet</p>
-                        </div>
-                        <Button
-                          className="w-full font-bold text-base"
-                          disabled={true}
-                        >
-                          <Coins className="h-4 w-4 mr-2" />
-                          0.0000 SOL
-                        </Button>
-                      </>
-                    );
-                  }
-
-                  if (claimable > 0.000001) {
-                    return (
-                      <>
-                        <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 text-center space-y-1">
-                          <p className="text-xs text-muted-foreground">Ready to claim</p>
-                          <p className="text-3xl font-bold text-primary">{claimable.toFixed(4)}</p>
-                          <p className="text-sm text-muted-foreground">SOL</p>
-                        </div>
-                        <Button
-                          className="w-full font-bold text-base"
-                          onClick={handleClaimAll}
-                          disabled={isClaiming}
-                        >
-                          {isClaiming ? (
-                            <>
-                              <div className="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2" />
-                              Sending...
-                            </>
-                          ) : (
-                            <>
-                              <Coins className="h-4 w-4 mr-2" />
-                              Claim {claimable.toFixed(4)} SOL
-                            </>
-                          )}
-                        </Button>
-                      </>
-                    );
-                  }
-
-                  if (escrow > 0.000001) {
-                    return (
-                      <div className="text-center py-8">
-                        <Coins className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                        <p className="text-sm text-foreground font-medium">{escrow.toFixed(4)} SOL pending</p>
-                        <p className="text-xs text-muted-foreground mt-1">Waiting for delivery confirmation</p>
-                      </div>
-                    );
-                  }
+                  const canClaim = claimable > 0.000001;
 
                   return (
-                    <div className="text-center py-8">
-                      <Coins className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                      <p className="text-sm text-muted-foreground">No claimable rewards yet</p>
-                      <p className="text-xs text-muted-foreground mt-1">Create or vote on memes to earn rewards when goods are sold!</p>
-                    </div>
+                    <>
+                      <div className={`border rounded-xl p-4 text-center space-y-1 ${canClaim ? 'bg-primary/10 border-primary/30' : 'bg-muted/30 border-border'}`}>
+                        <p className="text-xs text-muted-foreground">Ready to claim</p>
+                        <p className={`text-3xl font-bold ${canClaim ? 'text-primary' : 'text-muted-foreground'}`}>
+                          {claimable.toFixed(4)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">SOL</p>
+                      </div>
+                      <Button
+                        className="w-full font-bold text-base"
+                        onClick={canClaim ? handleClaimAll : undefined}
+                        disabled={!canClaim || isClaiming}
+                      >
+                        {isClaiming ? (
+                          <>
+                            <div className="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2" />
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <Coins className="h-4 w-4 mr-2" />
+                            Claim {claimable.toFixed(4)} SOL
+                          </>
+                        )}
+                      </Button>
+                      {escrow > 0.000001 && (
+                        <div className="bg-accent/50 border border-border rounded-xl p-3 text-center">
+                          <p className="text-xs text-muted-foreground">Pending delivery</p>
+                          <p className="text-lg font-semibold text-foreground">{escrow.toFixed(4)} SOL</p>
+                          <p className="text-xs text-muted-foreground mt-1">Locked until delivery confirmed</p>
+                        </div>
+                      )}
+                    </>
                   );
                 })()}
                 <div className="text-xs text-muted-foreground bg-accent/50 p-3 rounded-lg space-y-1">

@@ -420,12 +420,12 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
             <DrawerDescription>{active?.desc}</DrawerDescription>
           </DrawerHeader>
 
-          {openDrawer === "my-claimable" && my.claimable > 0 && walletAddress && (
+          {openDrawer === "my-claimable" && walletAddress && (
             <div className="px-4 pb-3">
               <Button
                 className="w-full font-bold text-base"
                 onClick={() => claimMutation.mutate()}
-                disabled={claimMutation.isPending}
+                disabled={claimMutation.isPending || my.claimable <= 0.000001}
               >
                 {claimMutation.isPending ? (
                   <>
