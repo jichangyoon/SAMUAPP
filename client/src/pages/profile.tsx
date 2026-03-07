@@ -1185,8 +1185,7 @@ const Profile = memo(() => {
                   {(() => {
                     const creatorEarned = rewardSummary?.my?.creatorEarned ?? 0;
                     const voterEarned = rewardSummary?.my?.voterEarned ?? 0;
-                    const pendingEscrow = rewardSummary?.my?.escrow || 0;
-                    const claimable = rewardSummary?.my?.claimable || 0;
+                    const totalEarned = creatorEarned + voterEarned;
                     return (
                       <div className="grid grid-cols-2 gap-2">
                         <div className="bg-yellow-900/20 rounded-lg p-2 text-center">
@@ -1201,17 +1200,11 @@ const Profile = memo(() => {
                           </div>
                           <div className="text-[10px] text-muted-foreground">Voter SOL</div>
                         </div>
-                        <div className="bg-yellow-900/20 rounded-lg p-2 text-center">
-                          <div className={`text-sm font-bold ${pendingEscrow > 0 ? 'text-orange-300' : 'text-muted-foreground'}`}>
-                            {pendingEscrow.toFixed(4)}
+                        <div className="col-span-2 bg-yellow-900/30 rounded-lg p-2 text-center border border-yellow-700/30">
+                          <div className={`text-base font-bold ${totalEarned > 0 ? 'text-yellow-300' : 'text-muted-foreground'}`}>
+                            {totalEarned.toFixed(4)} SOL
                           </div>
-                          <div className="text-[10px] text-muted-foreground">Pending</div>
-                        </div>
-                        <div className="bg-yellow-900/20 rounded-lg p-2 text-center">
-                          <div className={`text-sm font-bold ${claimable > 0 ? 'text-green-400' : 'text-muted-foreground'}`}>
-                            {claimable.toFixed(4)}
-                          </div>
-                          <div className="text-[10px] text-muted-foreground">Claimable</div>
+                          <div className="text-[10px] text-muted-foreground">Total Earned</div>
                         </div>
                       </div>
                     );
