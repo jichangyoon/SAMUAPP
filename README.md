@@ -107,6 +107,7 @@ The standout feature: a world map that turns boring shipping logistics into a co
 - **Voters**: per-contest DeFi reward pool (`total_shares = 100`, "Reward Per Share" pattern). `voterEarned = claimable + totalClaimed` — cumulative, claim-invariant
 - **Creators**: SOL allocated per sale via `creatorRewardDistributions` rows, proportional to votes received. `creatorEarned` = all rows summed — cumulative, claim-invariant
 - Total Earned = creatorEarned + voterEarned (never decreases after claiming)
+- **On-chain payout**: Claim button triggers real Solana TX — escrow wallet signs and sends SOL directly to user wallet. Platform covers gas. User only clicks once. `voterClaimRecords` prevents double-claiming.
 
 ### Partner Communities
 - Other meme coin communities can host their own isolated contests
@@ -208,8 +209,11 @@ Located in `contracts/programs/samu-rewards/src/lib.rs`:
 
 ## Roadmap
 
+### Completed
+- **Claim SOL Payout (Creator + Voter)**: On-chain transfer from escrow wallet → user wallet. Server signs with escrow private key, platform covers gas. Double-claim prevention via DB.
+- **30-Day Delivery Timeout Scheduler**: Auto-distributes escrow profits for orders with no Printful webhook after 30 days. Runs every 6 hours (`server/delivery-timeout-scheduler.ts`).
+
 ### In Progress
-- **Claim SOL Payout (Creator + Voter)**: On-chain transfer from escrow wallet → user wallet on claim action (DB accounting complete, on-chain TX pending)
 - **Escrow Refund**: Auto-refund flow for failed/cancelled Printful orders
 
 ### Planned

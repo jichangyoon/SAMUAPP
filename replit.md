@@ -58,7 +58,7 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 - 웹훅 URL: `https://samu.ink/api/webhooks/printful`
 - **30일 타임아웃 스케줄러** (`server/delivery-timeout-scheduler.ts`): 결제 후 30일 경과 + 에스크로 `locked` 상태인 주문 자동 분배 (6시간 주기 체크, 서버 기동 시 즉시 1회 실행)
 
-### ✅ 리워드 시스템 (DB 레벨 구현)
+### ✅ 리워드 시스템 (완전 구현)
 
 **Creator 45%:**
 - `creatorRewardDistributions`: 판매마다 크리에이터별 row — `voteSharePercent` × creatorPool로 각자 금액 계산
@@ -71,6 +71,12 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 - 클레임 가능액: `reward_per_share × (내 SAMU / 전체 SAMU × 100)`
 - API: `/api/rewards/claim/:contestId` (클레임 버튼)
 
+**클레임 온체인 전송 (완전 구현):**
+- 클레임 버튼 클릭 → `sendSolFromEscrow` 호출 → Escrow wallet → 유저 wallet 실제 Solana TX
+- 서버(Escrow 프라이빗 키)가 서명 + 가스비 부담, 유저는 버튼 클릭만
+- `voterClaimRecords` DB 중복 클레임 방지
+- 크리에이터 + 투표자 동일 방식
+
 **공통:**
 - Total Earned = creatorEarned + voterEarned (누적값, 클레임 후에도 불변)
   - creatorEarned = 모든 `creator_reward_distributions.sol_amount` 합산
@@ -78,9 +84,6 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 - DB: `goodsRevenueDistributions`, `voterRewardPool`, `voterClaimRecords`, `creatorRewardDistributions`
 - API: `/api/rewards/dashboard`, `/api/rewards/voter-pool/:contestId`, `/api/rewards/claimable/:contestId/:wallet`, `/api/rewards/claim/:contestId`, `/api/rewards/summary`
 - Rewards Dashboard UI: 파이차트, 요약 카드, 분배 히스토리
-
-**⚠️ 미구현 (핵심 과제):**
-- ❌ **클레임 실제 SOL 전송**: 클레임 버튼 누르면 DB 잔액만 업데이트. 실제 Escrow wallet → 유저 wallet 온체인 TX 없음 (크리에이터 + 투표자 모두)
 
 ### ✅ SAMU Map (구현 완료)
 - `react-leaflet` + CartoDB 다크 타일
@@ -112,7 +115,7 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 
 **Rewards 탭 (구 Claims):**
 - 통합 리워드 요약: creatorEarned, voterEarned, claimable
-- 클레임 버튼 (DB 업데이트, 실제 TX 미구현)
+- 클레임 버튼 → 실제 Escrow → 유저 wallet 온체인 SOL 전송 (서버 서명, 플랫폼이 가스비 부담)
 
 **Activity 탭:**
 - **CREATOR 섹션**: 참여 콘테스트 수 / 제출 밈 수 / 받은 SAMU 총량 + Pipeline 뱃지 (굿즈 된 밈 수) + 베스트 밈
@@ -131,16 +134,15 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 ## 다음에 할 일 (우선순위 순)
 
 ### 🔴 높은 우선순위 (핵심 기능 완성)
-1. **클레임 실제 SOL 온체인 전송**: 클레임 시 Escrow wallet → 유저 wallet 실제 Solana TX 추가 (크리에이터 + 투표자 동일 방식)
-2. **Escrow Refund**: 주문 실패/취소 시 자동 환불 플로우
+1. **Escrow Refund**: 주문 실패/취소 시 자동 환불 플로우
 
 ### 🟡 중간 우선순위
-3. **SAMU Map 게임화**: 배송 진행 = 리워드 언락 진행도, SAMU 캐릭터 애니메이션
-4. **Phantom 직접 로그인**: Privy 이메일 외에 Phantom 지갑 직접 연결
+2. **SAMU Map 게임화**: 배송 진행 = 리워드 언락 진행도, SAMU 캐릭터 애니메이션
+3. **Phantom 직접 로그인**: Privy 이메일 외에 Phantom 지갑 직접 연결
 
 ### 🟢 낮은 우선순위
-5. **Creator/Voter 풀 스토리지 통일**: creator_reward_pool 추가해서 voter_reward_pool과 동일 패턴으로 리팩토링 (기능상 문제 없음, 코드 일관성 목적)
-6. **Smart Contract 이전**: Phase 2 — Rust/Anchor로 리워드 분배 온체인 자동화
+4. **Creator/Voter 풀 스토리지 통일**: creator_reward_pool 추가해서 voter_reward_pool과 동일 패턴으로 리팩토링 (기능상 문제 없음, 코드 일관성 목적)
+5. **Smart Contract 이전**: Phase 2 — Rust/Anchor로 리워드 분배 온체인 자동화
 
 ---
 
