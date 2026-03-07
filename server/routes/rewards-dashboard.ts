@@ -196,7 +196,7 @@ router.get("/summary", async (req, res) => {
         escrowOrders: myEscrowOrders,
       },
       total: {
-        claimable: totalClaimableOrders.reduce((s, o) => s + ((o.distribution?.creatorAmount || 0) + (o.distribution?.voterPoolAmount || 0)), 0),
+        claimable: totalClaimableOrders.reduce((s, o) => s + (o.distribution?.totalSolAmount || 0), 0),
         escrow: totalEscrowOrders.reduce((s, o) => s + o.escrowAmount, 0),
         claimableOrders: totalClaimableOrders,
         escrowOrders: totalEscrowOrders,

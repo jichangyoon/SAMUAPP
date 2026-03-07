@@ -233,18 +233,6 @@ function OrderRow({ order, showMyCut, onClick }: { order: any; showMyCut: boolea
             </span>
           </div>
         )}
-        {order.distribution && (
-          <>
-            <div className="text-muted-foreground">
-              Creators:{" "}
-              <span className="text-yellow-400 font-medium">{order.distribution.creatorAmount.toFixed(4)} SOL</span>
-            </div>
-            <div className="text-muted-foreground">
-              Voters:{" "}
-              <span className="text-orange-400 font-medium">{order.distribution.voterPoolAmount.toFixed(4)} SOL</span>
-            </div>
-          </>
-        )}
       </div>
     </div>
   );
