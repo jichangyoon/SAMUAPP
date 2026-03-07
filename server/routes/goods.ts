@@ -73,6 +73,7 @@ export async function distributeEscrowProfit(escrowDeposit: any) {
     }))
   );
 
+  await storage.getOrCreateVoterRewardPool(contestId, 100);
   await storage.updateVoterRewardPool(contestId, voterPoolAmount);
 
   await storage.updateEscrowStatus(escrowDeposit.id, "distributed", new Date());

@@ -115,9 +115,13 @@ router.get("/summary", async (req, res) => {
         creatorDistByOrder.set(cd.orderId, (creatorDistByOrder.get(cd.orderId) || 0) + cd.solAmount);
       }
 
-      const voterClaims = await storage.getVoterClaimsByWallet(walletAddress);
       walletEarned.creatorEarned = creatorDists.reduce((s, d) => s + d.solAmount, 0);
-      walletEarned.voterEarned = voterClaims.reduce((s, r) => s + r.totalClaimed, 0);
+      let voterEarnedTotal = 0;
+      for (const cid of userVotedContests) {
+        const { claimable, totalClaimed } = await storage.getClaimableAmount(cid, walletAddress);
+        voterEarnedTotal += claimable + totalClaimed;
+      }
+      walletEarned.voterEarned = voterEarnedTotal;
     }
 
     const ordersWithData = allOrders

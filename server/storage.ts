@@ -1680,7 +1680,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(goodsRevenueDistributions.createdAt));
   }
 
-  async getOrCreateVoterRewardPool(contestId: number, totalShares: number): Promise<VoterRewardPool> {
+  async getOrCreateVoterRewardPool(contestId: number, totalShares: number = 100): Promise<VoterRewardPool> {
     if (!this.db) throw new Error("Database not available");
     const [existing] = await this.db.select().from(voterRewardPool)
       .where(eq(voterRewardPool.contestId, contestId)).limit(1);
@@ -1690,7 +1690,7 @@ export class DatabaseStorage implements IStorage {
       rewardPerShare: 0,
       totalDeposited: 0,
       totalClaimed: 0,
-      totalShares: totalShares,
+      totalShares: 100,
     }).returning();
     return pool;
   }
@@ -1703,7 +1703,7 @@ export class DatabaseStorage implements IStorage {
       const [newPool] = await this.db.insert(voterRewardPool)
         .values({
           contestId,
-          totalShares: 0,
+          totalShares: 100,
           rewardPerShare: 0,
           totalDeposited: 0,
         })
@@ -1711,9 +1711,12 @@ export class DatabaseStorage implements IStorage {
       pool = newPool;
     }
     if (pool.totalShares <= 0) {
-      console.log(`No voters in contest ${contestId} yet. Depositing ${depositAmount} SOL to pool (will be distributed when voters join)`);
+      console.log(`Voter reward pool for contest ${contestId} had totalShares=0. Fixing to 100 and computing rewardPerShare.`);
+      const addedRewardPerShare = depositAmount / 100;
       const [updated] = await this.db.update(voterRewardPool)
         .set({
+          totalShares: 100,
+          rewardPerShare: pool.rewardPerShare + addedRewardPerShare,
           totalDeposited: pool.totalDeposited + depositAmount,
           updatedAt: new Date(),
         })
