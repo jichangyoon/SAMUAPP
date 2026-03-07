@@ -172,15 +172,17 @@ const Profile = memo(() => {
     queryKey: ['/api/rewards/summary', walletAddress],
     queryFn: async () => {
       if (!walletAddress) return null;
-      const res = await fetch(`/api/rewards/summary?wallet=${walletAddress}`);
+      const res = await fetch(`/api/rewards/summary?wallet=${walletAddress}`, { cache: 'no-cache' });
       if (!res.ok) throw new Error('Failed to fetch rewards');
       return res.json();
     },
     enabled: !!walletAddress,
-    staleTime: 30000,
+    staleTime: 0,
   });
 
   const [isClaiming, setIsClaiming] = useState(false);
+  const [hasClaimed, setHasClaimed] = useState(false);
+  const [lastClaimedSol, setLastClaimedSol] = useState(0);
 
   const handleClaimAll = useCallback(async () => {
     if (!walletAddress) return;
@@ -193,6 +195,8 @@ const Profile = memo(() => {
       });
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || 'Claim failed');
+      setHasClaimed(true);
+      setLastClaimedSol(result.totalSol);
       toast({
         title: "Claimed!",
         description: `${result.totalSol.toFixed(4)} SOL sent to your wallet.`,
@@ -1022,6 +1026,25 @@ const Profile = memo(() => {
                 {(() => {
                   const claimable = rewardSummary?.my?.claimable ?? 0;
                   const escrow = rewardSummary?.my?.escrow ?? 0;
+
+                  if (hasClaimed) {
+                    return (
+                      <>
+                        <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 text-center space-y-1">
+                          <p className="text-xs text-green-400">Claimed successfully</p>
+                          <p className="text-3xl font-bold text-green-400">{lastClaimedSol.toFixed(4)}</p>
+                          <p className="text-sm text-muted-foreground">SOL sent to your wallet</p>
+                        </div>
+                        <Button
+                          className="w-full font-bold text-base"
+                          disabled={true}
+                        >
+                          <Coins className="h-4 w-4 mr-2" />
+                          0.0000 SOL
+                        </Button>
+                      </>
+                    );
+                  }
 
                   if (claimable > 0.000001) {
                     return (
