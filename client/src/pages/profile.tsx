@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send, Trash2, MoreVertical, Image as ImageIcon, RefreshCw, Coins } from "lucide-react";
+import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send, Trash2, MoreVertical, Image as ImageIcon, RefreshCw, Coins, BarChart2, Palette, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
@@ -817,8 +817,8 @@ const Profile = memo(() => {
               <span>Claims</span>
             </TabsTrigger>
             <TabsTrigger value="stats" className="flex flex-col items-center gap-1 p-2 text-xs">
-              <Zap className="h-4 w-4" />
-              <span>Stats</span>
+              <BarChart2 className="h-4 w-4" />
+              <span>Activity</span>
             </TabsTrigger>
           </TabsList>
 
@@ -1080,59 +1080,126 @@ const Profile = memo(() => {
             <Card className="border-border bg-card h-full flex flex-col">
               <CardHeader className="flex-shrink-0">
                 <CardTitle className="text-lg text-foreground flex items-center gap-2">
-                  <Zap className="h-5 w-5" />
-                  Voting Stats
+                  <BarChart2 className="h-5 w-5 text-primary" />
+                  Activity
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex-1 overflow-y-auto space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="text-center bg-accent/30 rounded-lg p-3">
-                    <div className="text-lg font-bold text-green-400">{stats.currentSamuBalance.toLocaleString()}</div>
-                    <div className="text-xs text-muted-foreground">SAMU Balance</div>
-                  </div>
-                  <div className="text-center bg-accent/30 rounded-lg p-3">
-                    <div className="text-lg font-bold text-red-400">{stats.totalSamuSpent.toLocaleString()}</div>
-                    <div className="text-xs text-muted-foreground">Votes</div>
-                  </div>
-                </div>
 
-                <div className="text-xs text-muted-foreground bg-accent/50 p-3 rounded-lg space-y-1">
-                  <p>• Vote by spending SAMU tokens directly</p>
-                  <p>• Your votes determine your reward share</p>
-                </div>
-
-                {walletRevenue && (
-                  <div className="mt-4 space-y-3">
-                    <h3 className="text-sm font-semibold text-[hsl(50,85%,75%)] flex items-center gap-2">
-                      <Trophy className="h-4 w-4" />
-                      Ecosystem Rewards
-                    </h3>
-                    <div className="text-center bg-accent/30 rounded-lg p-4">
-                      <div className="text-2xl font-bold text-[hsl(50,85%,75%)]">
-                        {walletRevenue.totalEarnedSol?.toFixed(4) || '0.0000'} SOL
+                {/* Creator Section */}
+                <div className="rounded-xl bg-indigo-950/40 border border-indigo-800/30 p-3 space-y-2">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <Palette className="h-3.5 w-3.5 text-indigo-400" />
+                    <span className="text-xs font-semibold text-indigo-300 uppercase tracking-wide">Creator</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="text-center">
+                      <div className={`text-xl font-bold ${stats.totalMemesCreated > 0 ? 'text-indigo-300' : 'text-muted-foreground'}`}>
+                        {stats.totalMemesCreated}
                       </div>
-                      <div className="text-xs text-muted-foreground">Total Earned</div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">Memes</div>
                     </div>
-                    {walletRevenue.shares?.length > 0 && (
-                      <div className="space-y-2">
-                        {walletRevenue.shares.map((share: any, i: number) => (
-                          <div key={i} className="flex items-center justify-between bg-accent/20 rounded-lg p-3 text-sm">
-                            <div>
-                              <span className="text-muted-foreground">Contest #{share.contestId}</span>
-                              <Badge variant="outline" className="ml-2 text-xs">
-                                {share.role === 'voter' ? 'Voter' : share.role === 'creator' ? 'Creator' : share.role}
-                              </Badge>
-                            </div>
-                            <span className="font-semibold text-[hsl(50,85%,75%)]">{share.amountSol.toFixed(4)} SOL</span>
-                          </div>
-                        ))}
+                    <div className="text-center">
+                      <div className={`text-xl font-bold ${memesByContest.length > 0 ? 'text-indigo-300' : 'text-muted-foreground'}`}>
+                        {memesByContest.length}
                       </div>
-                    )}
-                    {(!walletRevenue.shares || walletRevenue.shares.length === 0) && (
-                      <p className="text-xs text-muted-foreground text-center">No rewards distributed yet</p>
-                    )}
+                      <div className="text-[10px] text-muted-foreground mt-0.5">Contests</div>
+                    </div>
+                    <div className="text-center">
+                      <div className={`text-xl font-bold ${stats.totalVotesReceived > 0 ? 'text-indigo-300' : 'text-muted-foreground'}`}>
+                        {stats.totalVotesReceived > 9999 ? `${(stats.totalVotesReceived / 1000).toFixed(1)}k` : stats.totalVotesReceived.toLocaleString()}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">SAMU Recv'd</div>
+                    </div>
                   </div>
-                )}
+                  {(() => {
+                    const bestContest = memesByContest.reduce((best: any, contest: any) => {
+                      const topMeme = contest.memes?.reduce((m: any, cur: any) =>
+                        (cur.votes || 0) > (m?.votes || 0) ? cur : m, null);
+                      if (!topMeme) return best;
+                      return (!best || topMeme.votes > best.votes) ? { ...topMeme, contestTitle: contest.contestTitle } : best;
+                    }, null);
+                    return bestContest ? (
+                      <div className="bg-indigo-900/30 rounded-lg px-2.5 py-1.5 flex items-center gap-2">
+                        <Trophy className="h-3 w-3 text-indigo-400 flex-shrink-0" />
+                        <span className="text-xs text-indigo-200 truncate flex-1">{bestContest.title}</span>
+                        <span className="text-[10px] text-indigo-400 flex-shrink-0">{Number(bestContest.votes).toLocaleString()} SAMU</span>
+                      </div>
+                    ) : null;
+                  })()}
+                </div>
+
+                {/* Voter Section */}
+                <div className="rounded-xl bg-blue-950/40 border border-blue-800/30 p-3 space-y-2">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <Vote className="h-3.5 w-3.5 text-blue-400" />
+                    <span className="text-xs font-semibold text-blue-300 uppercase tracking-wide">Voter</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="text-center">
+                      <div className={`text-xl font-bold ${voteHistoryByContest.length > 0 ? 'text-blue-300' : 'text-muted-foreground'}`}>
+                        {voteHistoryByContest.length}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">Contests</div>
+                    </div>
+                    <div className="text-center">
+                      <div className={`text-xl font-bold ${myVotes.length > 0 ? 'text-blue-300' : 'text-muted-foreground'}`}>
+                        {myVotes.length}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">Votes Cast</div>
+                    </div>
+                    <div className="text-center">
+                      <div className={`text-xl font-bold ${stats.totalSamuSpent > 0 ? 'text-blue-300' : 'text-muted-foreground'}`}>
+                        {stats.totalSamuSpent > 9999 ? `${(stats.totalSamuSpent / 1000).toFixed(1)}k` : stats.totalSamuSpent.toLocaleString()}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">SAMU Spent</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Earnings Section */}
+                <div className="rounded-xl bg-yellow-950/30 border border-yellow-800/30 p-3 space-y-2">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <TrendingUp className="h-3.5 w-3.5 text-yellow-400" />
+                    <span className="text-xs font-semibold text-yellow-300 uppercase tracking-wide">Earnings</span>
+                  </div>
+                  {(() => {
+                    const shares = walletRevenue?.shares || [];
+                    const creatorEarned = shares.filter((s: any) => s.role === 'creator').reduce((sum: number, s: any) => sum + (s.amountSol || 0), 0);
+                    const voterEarned = shares.filter((s: any) => s.role === 'voter').reduce((sum: number, s: any) => sum + (s.amountSol || 0), 0);
+                    const pendingEscrow = rewardSummary?.my?.escrow || 0;
+                    const claimable = rewardSummary?.my?.claimable || 0;
+                    return (
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="bg-yellow-900/20 rounded-lg p-2 text-center">
+                          <div className={`text-sm font-bold ${creatorEarned > 0 ? 'text-yellow-300' : 'text-muted-foreground'}`}>
+                            {creatorEarned.toFixed(4)}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground">Creator SOL</div>
+                        </div>
+                        <div className="bg-yellow-900/20 rounded-lg p-2 text-center">
+                          <div className={`text-sm font-bold ${voterEarned > 0 ? 'text-yellow-300' : 'text-muted-foreground'}`}>
+                            {voterEarned.toFixed(4)}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground">Voter SOL</div>
+                        </div>
+                        <div className="bg-yellow-900/20 rounded-lg p-2 text-center">
+                          <div className={`text-sm font-bold ${pendingEscrow > 0 ? 'text-orange-300' : 'text-muted-foreground'}`}>
+                            {pendingEscrow.toFixed(4)}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground">Pending</div>
+                        </div>
+                        <div className="bg-yellow-900/20 rounded-lg p-2 text-center">
+                          <div className={`text-sm font-bold ${claimable > 0 ? 'text-green-400' : 'text-muted-foreground'}`}>
+                            {claimable.toFixed(4)}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground">Claimable</div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+
               </CardContent>
             </Card>
           </TabsContent>
