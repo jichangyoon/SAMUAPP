@@ -63,7 +63,7 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 **Creator 45%:**
 - `creatorRewardDistributions`: 판매마다 크리에이터별 row — `voteSharePercent` × creatorPool로 각자 금액 계산
 - creatorEarned = `creator_reward_distributions.sol_amount` 합산 (누적, 클레임 후 불변)
-- DeFi 풀 미사용 (현재는 개별 row 방식. 리팩토링 예정)
+- DeFi 풀 미사용 (현재는 개별 row 방식)
 
 **Voter 40%:**
 - `voterRewardPool`: 콘테스트당 DeFi 풀 — `reward_per_share = 적립액 / 100`, `total_shares = 100`
@@ -128,26 +128,34 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 - 재시도: 2회, 지수 백오프
 - 상태 흐름: draft → active → ended → archiving → archived
 - 에러 복구: archiving 실패 시 ended로 복귀
+- **DB 원자성 보장**: archivedContest INSERT + contest 상태 UPDATE + memes contestId UPDATE → 단일 트랜잭션
 
 ---
 
-## 다음에 할 일 (우선순위 순)
+## 다음 단계: Phase 2 — Smart Contract 이전
 
-### 🔴 높은 우선순위 (핵심 기능 완성)
-1. **Escrow Refund**: 주문 실패/취소 시 자동 환불 플로우
+### 현재 구조의 한계 (Phase 1)
+- 리워드 계산, 분배, 에스크로 전송을 **서버가 중앙에서 처리**
+- 유저는 서버를 신뢰해야만 함 (Trustless 아님)
+- Escrow 프라이빗 키가 서버에 존재 → 이론적 탈취 가능성
 
-### 🟡 중간 우선순위
-2. **SAMU Map 게임화**: 배송 진행 = 리워드 언락 진행도, SAMU 캐릭터 애니메이션
-3. **Phantom 직접 로그인**: Privy 이메일 외에 Phantom 지갑 직접 연결
+### Phase 2 목표
+- 리워드 분배 로직을 **Solana 블록체인 위 Rust/Anchor 컨트랙트**로 이전
+- 누구나 계산 과정을 온체인에서 검증 가능 → **Trustless**
+- 서버는 수익/수령인 계산만, 실제 전송은 컨트랙트가 처리
 
-### ✅ 성능/안정성 개선 (완료)
-- `/api/rewards/summary` N+1 쿼리 → `getBatchClaimableAmounts()` 배치 쿼리로 교체 (N*2 → 2 쿼리)
-- `partner_memes`, `partner_votes` 테이블 인덱스 추가 (partner_id, meme_id, author_wallet, voter_wallet)
-- `PrivyProvider`를 `main.tsx`로 이동: 스플래시 화면 전환 시 리마운트 방지 → WalletConnect 이중 초기화 이슈 개선
+### Phase 2 작업 단계
+1. **컨트랙트 설계 확정**: 현재 뼈대 (`contracts/programs/samu-rewards/src/lib.rs`) 기반으로 distribute 로직 완성
+2. **Devnet 배포 & 테스트**: Solana Playground(beta.solpg.io)에서 배포 → 시뮬레이션
+3. **서버 연동**: `distributeEscrowProfit` 함수가 컨트랙트 호출하도록 교체
+4. **프론트 연동**: 클레임 버튼이 컨트랙트 TX 서명하도록 수정
+5. **Mainnet 배포**: 검증 완료 후 프로덕션 전환
 
-### 🟢 낮은 우선순위
-4. **Creator/Voter 풀 스토리지 통일**: creator_reward_pool 추가해서 voter_reward_pool과 동일 패턴으로 리팩토링 (기능상 문제 없음, 코드 일관성 목적)
-5. **Smart Contract 이전**: Phase 2 — Rust/Anchor로 리워드 분배 온체인 자동화
+### 보류 항목 (우선순위 낮음 또는 외부 조건 필요)
+- Escrow Refund: 주문 취소/실패 시 자동 환불 → 필요 시 별도 구현
+- SAMU Map 게임화: 엔터테인먼트 요소, 기능 완성 후 고려
+- Phantom 직접 로그인: Privy 유료 플랜 업그레이드 필요
+- Creator/Voter 풀 스토리지 통일: 코드 일관성 목적, 기능 문제 없음
 
 ---
 
@@ -167,6 +175,16 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 - voterEarned 계산 수정: `claimable + totalClaimed` 합산으로 클레임 후에도 불변
 - `127.0.0.1` Suspicious IP 오탐 수정: 로컬호스트(`127.0.0.1`, `::1`, `::ffff:127.0.0.1`) 제외 처리
 - `verifyTransaction` silent catch 수정: 서명자 키 파싱 실패 시 경고 로그 출력
+- **웹훅 시크릿 우회 버그 수정**: 시크릿 없을 때 `return true` → `return false`로 변경
+- **SQL injection 제거**: `sql.raw(memeIds.join(','))` → `inArray(votes.memeId, memeIds)`
+- **이중 클레임 방지**: `claimVoterReward` optimistic locking (WHERE on lastClaimedRewardPerShare) + DB 트랜잭션
+- **createVote / createPartnerVote 트랜잭션**: 투표 INSERT + 밈 카운트 UPDATE 원자적 처리
+- **updateUser 트랜잭션**: 유저 UPDATE + 밈 author 정보 UPDATE 원자적 처리
+- **endContestAndArchive 트랜잭션**: archivedContest INSERT + contest 상태 + memes contestId 세 쓰기 단일 트랜잭션
+- **getUserMemesByContest N+1 제거**: 콘테스트별 루프 쿼리 → inArray 배치 쿼리 (N*2 → 3 쿼리)
+- **getUserVoteHistoryByContest N+1 제거**: 루프 쿼리 + SUM 루프 → 배치 쿼리 + GROUP BY (N*3 → 4 쿼리)
+- **프론트엔드 setTimeout 메모리 누수**: useRef + useEffect cleanup으로 해결 (home.tsx, meme-card.tsx)
+- **Rewards 대시보드 에러 UI**: isError 상태 + 새로고침 버튼 추가
 
 ---
 
@@ -215,15 +233,26 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 
 **성능 최적화:**
 - `/api/rewards/map`: `getVotesByContestIds`로 타겟 쿼리 (전체 votes 테이블 스캔 제거)
+- `/api/rewards/summary`: `getBatchClaimableAmounts()` 배치 쿼리 (N*2 → 2 쿼리)
 - SamuMap: `React.lazy` lazy loading
-- 지도 자동새로고침: 60초 (30초에서 변경)
+- 지도 자동새로고침: 60초
 - TanStack Query: 동일 queryKey 요청 자동 중복 제거
+- `getUserMemesByContest` / `getUserVoteHistoryByContest`: inArray 배치 쿼리
+
+**DB 인덱스:**
+- `login_logs`: ipAddress, deviceId, (ip+loginTime) 복합
+- `orders`: printfulOrderId, createdAt
+- `archived_contests`: originalContestId
+- `memes`: createdAt
+- `partner_memes`: partnerId, authorWallet
+- `partner_votes`: partnerId, memeId, voterWallet
+- `voter_reward_pool`: contestId (unique)
 
 **Solana Blinks:**
 - `/api/actions/vote/:memeId`: GET(메타데이터), POST(TX 빌드), POST `/confirm`(검증)
 - Vote 옵션: 100, 1,000, 10,000 SAMU
 
-**Smart Contract (미배포):**
+**Smart Contract (Phase 2 — 미배포):**
 - `contracts/programs/samu-rewards/src/lib.rs`
 - Anchor 0.30.1 + anchor-spl
 - Solana Playground에서 빌드/배포 (Replit 내 빌드 불가)
@@ -233,4 +262,3 @@ Meme Incubator on Solana. 유저가 밈을 올리고 SAMU 토큰으로 투표하
 - 판매 발생 → `reward_per_share += deposit / 100`
 - 유저 수령액 = `reward_per_share × (내 SAMU / 전체 SAMU × 100)`
 - **Creator 45%는 DeFi 풀 미사용** — 판매마다 개별 row로 기록 (`creatorRewardDistributions`)
-- 향후 Creator도 동일한 DeFi 풀 패턴으로 통일 예정 (🟢 낮은 우선순위)

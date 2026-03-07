@@ -48,17 +48,11 @@ A personal stats page showing each user's full participation summary.
 - **Voter section**: Contests voted in, total votes cast, total SAMU spent
 - **Earnings section**: Creator SOL earned / Voter SOL earned / Total Earned (cumulative — does not decrease after claiming)
 
-### Global SAMU Map — Gamified Logistics
-The standout feature: a world map that turns boring shipping logistics into a community experience.
-- Interactive world map showing all orders as pulsing dots traveling across the globe
-- Fulfillment center → destination route visualization with animated dotted lines
-- SAMU character storytelling: "SAMU is traveling to Seoul!", "SAMU arrived in NYC!"
+### Global SAMU Map
+An interactive world map showing all orders as markers across the globe.
 - Color-coded markers: green (my revenue) vs red (other orders)
-- Click any dot to see order details, shipping status, tracking links, and revenue distribution breakdown
+- Click any marker to see order details, shipping status, tracking links, and revenue distribution breakdown
 - Per-order revenue split display (Creator 45% / Voters 40% / Platform 15%)
-- Personal revenue estimation per order ("My Estimated Revenue: +0.0042 SOL")
-- Stats dashboard: total orders, in-transit, delivered, countries reached
-- 60-second auto-refresh for near real-time updates
 - Printful fulfillment center mapping (Japan, US, Europe, Australia, Brazil, Mexico)
 - Geocoded order locations: accurate lat/lng from postal code via OpenStreetMap Nominatim API
 - Lazy-loaded bundle — map JS only loads when Rewards tab is visited
@@ -94,6 +88,7 @@ The standout feature: a world map that turns boring shipping logistics into a co
 - Contest status flow: draft → active → ended → archiving → archived
 - Error recovery: reverts to "ended" status for admin retry
 - Instagram-style silent video autoplay in grid view
+- **Atomic DB writes**: archivedContest INSERT + contest status UPDATE + memes contestId UPDATE in a single transaction
 
 ### Rewards Dashboard
 - Pie chart visualization of reward distribution (Creator/Voter/Platform)
@@ -199,29 +194,52 @@ The standout feature: a world map that turns boring shipping logistics into a co
 - **Treasury & Escrow Wallets**: Configured via environment variables (not exposed in repo)
 - **Blinks Endpoint**: `GET/POST /api/actions/vote/:memeId`
 
-## Smart Contract (Phase 2)
+## Smart Contract — Phase 2
 
 Located in `contracts/programs/samu-rewards/src/lib.rs`:
 - Framework: Anchor 0.30.1 + anchor-spl
 - Build/Deploy via Solana Playground (beta.solpg.io)
-- Features: initialize config, update share ratios, lock config, batch distribute rewards (up to 50), transfer admin
-- Hybrid model: server calculates revenue/recipients, smart contract executes on-chain distribution
+
+### Why Phase 2?
+The current (Phase 1) system is server-centralized: the server calculates rewards, holds the escrow private key, and signs all payout transactions. Users must trust the server.
+
+Phase 2 moves reward distribution on-chain, making the process **trustless and publicly verifiable**.
+
+### Architecture (Hybrid Model)
+- **Server**: Calculates revenue amounts and recipient list (off-chain, efficient)
+- **Smart Contract**: Executes the actual SOL transfers on-chain (trustless, auditable)
+- Users can independently verify every distribution on Solana Explorer
+
+### Phase 2 Roadmap
+1. **Finalize contract logic** — complete `distribute` instruction based on existing skeleton
+2. **Devnet deploy & test** — simulate full reward cycle end-to-end
+3. **Server integration** — replace `sendSolFromEscrow` with contract CPI calls
+4. **Frontend integration** — claim flow uses contract TX signing
+5. **Mainnet deploy** — after full verification
 
 ## Roadmap
 
-### Completed
-- **Claim SOL Payout (Creator + Voter)**: On-chain transfer from escrow wallet → user wallet. Server signs with escrow private key, platform covers gas. Double-claim prevention via DB.
-- **30-Day Delivery Timeout Scheduler**: Auto-distributes escrow profits for orders with no Printful webhook after 30 days. Runs every 6 hours (`server/delivery-timeout-scheduler.ts`).
+### Completed (Phase 1)
+- Full meme contest + voting system (SAMU SPL on-chain)
+- Goods shop with SOL payment + Printful integration
+- Escrow accounting (45/40/15 split, locked until delivery)
+- Claim SOL payout for creators and voters (on-chain, escrow-signed)
+- 30-day delivery timeout scheduler (auto-distribute unclaimed escrow)
+- Printful webhook v2 (auto-trigger on delivery)
+- Contest archive system (R2 + DB, atomic writes)
+- SAMU Map (global order visualization)
+- Solana Blinks (external voting)
+- Partner community contests
+- Security hardening: webhook auth, SQL injection fix, double-claim prevention, race condition fixes
+- Performance: batch queries, DB indexes, N+1 elimination
 
-### In Progress
-- **Escrow Refund**: Auto-refund flow for failed/cancelled Printful orders
-
-### Planned
-- **SAMU Map Gamification**: Delivery progress = reward unlock progress bar, SAMU character animations
-- **Phantom Direct Login**: Connect Phantom wallet alongside Privy email login
-
-### Phase 2
+### Phase 2 (Current Focus)
 - **Smart Contract Migration**: Move reward distribution fully on-chain via Rust/Anchor
+
+### Backlog (Low Priority / On Hold)
+- Escrow Refund: Auto-refund for failed/cancelled Printful orders
+- SAMU Map Gamification: Delivery progress animations, SAMU character storytelling
+- Phantom Direct Login: Requires Privy paid plan upgrade
 
 ## Inspiration
 
