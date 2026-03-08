@@ -24,17 +24,17 @@ export function UserInfoModal({ isOpen, onClose, walletAddress, username }: User
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const { toast } = useToast();
 
-  const { data: userProfile } = useQuery({
+  const { data: userProfile } = useQuery<{ avatarUrl?: string; displayName?: string } | null>({
     queryKey: [`/api/users/profile/${walletAddress}`],
     enabled: isOpen && !!walletAddress,
   });
 
-  const { data: userMemes = [] } = useQuery({
+  const { data: userMemes = [] } = useQuery<any[]>({
     queryKey: [`/api/users/${walletAddress}/memes`],
     enabled: isOpen && !!walletAddress,
   });
 
-  const { data: userVotes = [] } = useQuery({
+  const { data: userVotes = [] } = useQuery<any[]>({
     queryKey: [`/api/users/${walletAddress}/votes`],
     enabled: isOpen && !!walletAddress,
   });

@@ -174,7 +174,7 @@ const Profile = memo(() => {
   });
 
   // Fetch current active contest for status display
-  const { data: activeContest } = useQuery({
+  const { data: activeContest } = useQuery<{ startTime: string; endTime: string; status: string; title: string } | null>({
     queryKey: ["/api/admin/current-contest"],
     staleTime: 30 * 1000,
   });
