@@ -5,7 +5,7 @@ import { config } from "../config";
 import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { uploadToR2 } from "../r2-storage";
 import { geocodeAddress } from "../utils/geocode";
-import { getConnection, depositAndAllocate, isContractEnabled, getEscrowPoolPda } from "../utils/solana";
+import { getConnection, depositProfit, recordAllocation, isContractEnabled, getEscrowPoolPda } from "../utils/solana";
 
 const router = Router();
 
@@ -144,14 +144,25 @@ export async function distributeEscrowProfit(escrowDeposit: any) {
       }
 
       if (allocationList.length > 0) {
-        const contractTx = await depositAndAllocate(contestId, allocationList);
-        if (contractTx) {
-          console.log(`[contract] on-chain allocation recorded: ${contractTx}`);
+        const totalLamports = allocationList.reduce((s, a) => s + a.lamports, 0);
+        const creatorTotal = allocationList.filter(a => a.role === "Creator").reduce((s, a) => s + a.lamports, 0);
+        const voterTotal = allocationList.filter(a => a.role === "Voter").reduce((s, a) => s + a.lamports, 0);
+        const platformTotal = allocationList.filter(a => a.role === "Platform").reduce((s, a) => s + a.lamports, 0);
+
+        const depositTx = await depositProfit(contestId, totalLamports, creatorTotal, voterTotal, platformTotal);
+        if (depositTx) {
+          console.log(`[contract] depositProfit TX: ${depositTx}`);
+
+          // 수령인마다 순서대로 allocation_record 생성
+          for (const alloc of allocationList) {
+            await recordAllocation(contestId, alloc);
+          }
+          console.log(`[contract] recordAllocation done: ${allocationList.length} records`);
         }
       }
     } catch (contractErr: any) {
       // 컨트랙트 오류는 DB 분배를 취소하지 않음 (non-blocking)
-      console.error("[contract] depositAndAllocate failed (DB distribution already complete):", contractErr?.message);
+      console.error("[contract] on-chain deposit/record failed (DB distribution already complete):", contractErr?.message);
     }
   }
 

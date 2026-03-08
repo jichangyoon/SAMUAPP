@@ -4,7 +4,6 @@ use anchor_lang::system_program;
 declare_id!("11111111111111111111111111111111");
 
 const TOLERANCE_BPS: u64 = 10;
-const MAX_ALLOCATIONS_PER_TX: usize = 50;
 
 #[program]
 pub mod samu_rewards {
@@ -40,44 +39,26 @@ pub mod samu_rewards {
         Ok(())
     }
 
-    /// 서버(admin)가 호출. 굿즈 수익 SOL을 escrow_pool PDA로 예치하고
-    /// 각 수령인의 allocation_record를 생성/업데이트.
-    pub fn deposit_and_allocate(
-        ctx: Context<DepositAndAllocate>,
+    /// admin이 굿즈 수익 SOL을 escrow_pool PDA로 예치. 45/40/15 비율 검증 포함.
+    /// remaining_accounts 없음 — Signer lifetime 충돌 방지.
+    pub fn deposit_profit(
+        ctx: Context<DepositProfit>,
         contest_id: u64,
-        allocations: Vec<Allocation>,
+        total_lamports: u64,
+        creator_total: u64,
+        voter_total: u64,
+        platform_total: u64,
     ) -> Result<()> {
-        require!(!allocations.is_empty(), ErrorCode::NoAllocations);
+        require!(total_lamports > 0, ErrorCode::InvalidAmount);
         require!(
-            allocations.len() <= MAX_ALLOCATIONS_PER_TX,
-            ErrorCode::TooManyAllocations
+            creator_total
+                .checked_add(voter_total).unwrap()
+                .checked_add(platform_total).unwrap()
+                == total_lamports,
+            ErrorCode::ShareMismatch
         );
 
         let cfg = &ctx.accounts.program_config;
-
-        // 총 예치액 검증
-        let total_lamports: u64 = allocations
-            .iter()
-            .map(|a| a.lamports)
-            .sum();
-        require!(total_lamports > 0, ErrorCode::InvalidAmount);
-
-        // 45/40/15 비율 검증 (0.1% tolerance)
-        let creator_total: u64 = allocations
-            .iter()
-            .filter(|a| a.role == Role::Creator)
-            .map(|a| a.lamports)
-            .sum();
-        let voter_total: u64 = allocations
-            .iter()
-            .filter(|a| a.role == Role::Voter)
-            .map(|a| a.lamports)
-            .sum();
-        let platform_total: u64 = allocations
-            .iter()
-            .filter(|a| a.role == Role::Platform)
-            .map(|a| a.lamports)
-            .sum();
 
         let expected_creator = (total_lamports as u128)
             .checked_mul(cfg.creator_share as u128).unwrap()
@@ -106,7 +87,6 @@ pub mod samu_rewards {
             ErrorCode::ShareMismatch
         );
 
-        // escrow_pool PDA로 SOL 전송 (admin이 서명)
         let cpi_ctx = CpiContext::new(
             ctx.accounts.system_program.to_account_info(),
             system_program::Transfer {
@@ -116,93 +96,16 @@ pub mod samu_rewards {
         );
         system_program::transfer(cpi_ctx, total_lamports)?;
 
-        // escrow_pool 기록 업데이트
         let pool = &mut ctx.accounts.escrow_pool;
         pool.contest_id = contest_id;
         pool.total_deposited = pool.total_deposited.checked_add(total_lamports).unwrap();
-        pool.total_claimed = pool.total_claimed; // unchanged
-        pool.allocation_count = pool.allocation_count.checked_add(allocations.len() as u64).unwrap();
         pool.bump = ctx.bumps.escrow_pool;
 
-        // 각 allocation을 remaining_accounts의 PDA에 기록
-        require!(
-            ctx.remaining_accounts.len() == allocations.len(),
-            ErrorCode::AllocationCountMismatch
-        );
-
-        let admin_info = ctx.accounts.admin.to_account_info();
-        let system_program_info = ctx.accounts.system_program.to_account_info();
-
-        for (i, alloc) in allocations.iter().enumerate() {
-            let alloc_account_info = &ctx.remaining_accounts[i];
-
-            // allocation_record PDA 검증
-            let (expected_pda, bump) = Pubkey::find_program_address(
-                &[
-                    b"alloc",
-                    &contest_id.to_le_bytes(),
-                    alloc.wallet.as_ref(),
-                ],
-                ctx.program_id,
-            );
-            require!(
-                alloc_account_info.key() == expected_pda,
-                ErrorCode::AllocationPdaMismatch
-            );
-
-            // 계정이 이미 초기화된 경우 누적, 아닌 경우 초기화
-            if alloc_account_info.data_len() > 0 && alloc_account_info.lamports() > 0 {
-                let mut data = alloc_account_info.try_borrow_mut_data()?;
-                // AllocationRecord 역직렬화
-                let mut record = AllocationRecord::try_from_slice(&data[8..])?;
-                require!(!record.claimed, ErrorCode::AlreadyClaimed);
-                record.lamports = record.lamports.checked_add(alloc.lamports).unwrap();
-                let serialized = record.try_to_vec()?;
-                data[8..8 + serialized.len()].copy_from_slice(&serialized);
-            } else {
-                // 신규 계정 초기화
-                let space = 8 + AllocationRecord::INIT_SPACE;
-                let rent = Rent::get()?.minimum_balance(space);
-                let ix = anchor_lang::solana_program::system_instruction::create_account(
-                    &ctx.accounts.admin.key(),
-                    &alloc_account_info.key(),
-                    rent,
-                    space as u64,
-                    ctx.program_id,
-                );
-                anchor_lang::solana_program::program::invoke_signed(
-                    &ix,
-                    &[
-                        admin_info.clone(),
-                        alloc_account_info.clone(),
-                        system_program_info.clone(),
-                    ],
-                    &[&[
-                        b"alloc",
-                        &contest_id.to_le_bytes(),
-                        alloc.wallet.as_ref(),
-                        &[bump],
-                    ]],
-                )?;
-
-                let record = AllocationRecord {
-                    contest_id,
-                    wallet: alloc.wallet,
-                    role: alloc.role.clone(),
-                    lamports: alloc.lamports,
-                    claimed: false,
-                    bump,
-                };
-                let mut data = alloc_account_info.try_borrow_mut_data()?;
-                let discriminator = anchor_lang::solana_program::hash::hash(b"account:AllocationRecord");
-                data[..8].copy_from_slice(&discriminator.to_bytes()[..8]);
-                let serialized = record.try_to_vec()?;
-                data[8..8 + serialized.len()].copy_from_slice(&serialized);
-            }
-        }
-
         let cfg_mut = &mut ctx.accounts.program_config;
-        cfg_mut.total_deposited_lamports = cfg_mut.total_deposited_lamports.checked_add(total_lamports).unwrap();
+        cfg_mut.total_deposited_lamports = cfg_mut
+            .total_deposited_lamports
+            .checked_add(total_lamports)
+            .unwrap();
 
         emit!(FundsDeposited {
             contest_id,
@@ -210,7 +113,40 @@ pub mod samu_rewards {
             creator_total,
             voter_total,
             platform_total,
-            allocation_count: allocations.len() as u16,
+        });
+
+        Ok(())
+    }
+
+    /// admin이 수령인 1명의 allocation_record PDA를 생성/업데이트.
+    /// 수령인마다 별도 호출 — remaining_accounts 없음.
+    pub fn record_allocation(
+        ctx: Context<RecordAllocation>,
+        contest_id: u64,
+        recipient_wallet: Pubkey,
+        role: Role,
+        lamports: u64,
+    ) -> Result<()> {
+        require!(lamports > 0, ErrorCode::InvalidAmount);
+
+        let record = &mut ctx.accounts.allocation_record;
+        require!(!record.claimed, ErrorCode::AlreadyClaimed);
+
+        record.contest_id = contest_id;
+        record.wallet = recipient_wallet;
+        record.role = role;
+        record.lamports = record.lamports.checked_add(lamports).unwrap();
+        record.bump = ctx.bumps.allocation_record;
+
+        emit!(AllocationRecorded {
+            contest_id,
+            wallet: recipient_wallet,
+            role_index: match role {
+                Role::Creator => 0u8,
+                Role::Voter => 1u8,
+                Role::Platform => 2u8,
+            },
+            lamports,
         });
 
         Ok(())
@@ -230,7 +166,6 @@ pub mod samu_rewards {
         let lamports_to_send = record.lamports;
         let pool = &mut ctx.accounts.escrow_pool;
 
-        // escrow_pool에서 claimer로 SOL 전송 (PDA가 서명)
         let escrow_bump = pool.bump;
         let seeds = &[
             b"escrow".as_ref(),
@@ -266,9 +201,7 @@ pub mod samu_rewards {
         let cfg = &mut ctx.accounts.program_config;
         let old_admin = cfg.admin;
         cfg.admin = new_admin;
-
         emit!(AdminTransferred { old_admin, new_admin });
-
         Ok(())
     }
 }
@@ -290,13 +223,6 @@ pub enum Role {
     Platform,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
-pub struct Allocation {
-    pub wallet: Pubkey,
-    pub role: Role,
-    pub lamports: u64,
-}
-
 // ─── Accounts ─────────────────────────────────────────────────────────────────
 
 #[account]
@@ -316,7 +242,6 @@ pub struct EscrowPool {
     pub contest_id: u64,
     pub total_deposited: u64,
     pub total_claimed: u64,
-    pub allocation_count: u64,
     pub bump: u8,
 }
 
@@ -352,7 +277,7 @@ pub struct Initialize<'info> {
 
 #[derive(Accounts)]
 #[instruction(contest_id: u64)]
-pub struct DepositAndAllocate<'info> {
+pub struct DepositProfit<'info> {
     #[account(
         mut,
         seeds = [b"config"],
@@ -372,6 +297,32 @@ pub struct DepositAndAllocate<'info> {
         bump,
     )]
     pub escrow_pool: Account<'info, EscrowPool>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(contest_id: u64, recipient_wallet: Pubkey)]
+pub struct RecordAllocation<'info> {
+    #[account(
+        mut,
+        seeds = [b"config"],
+        bump = program_config.bump,
+        constraint = program_config.admin == admin.key() @ ErrorCode::Unauthorized,
+    )]
+    pub program_config: Account<'info, ProgramConfig>,
+
+    #[account(mut)]
+    pub admin: Signer<'info>,
+
+    #[account(
+        init_if_needed,
+        payer = admin,
+        space = 8 + AllocationRecord::INIT_SPACE,
+        seeds = [b"alloc", contest_id.to_le_bytes().as_ref(), recipient_wallet.as_ref()],
+        bump,
+    )]
+    pub allocation_record: Account<'info, AllocationRecord>,
 
     pub system_program: Program<'info, System>,
 }
@@ -430,7 +381,14 @@ pub struct FundsDeposited {
     pub creator_total: u64,
     pub voter_total: u64,
     pub platform_total: u64,
-    pub allocation_count: u16,
+}
+
+#[event]
+pub struct AllocationRecorded {
+    pub contest_id: u64,
+    pub wallet: Pubkey,
+    pub role_index: u8,
+    pub lamports: u64,
 }
 
 #[event]
@@ -456,16 +414,8 @@ pub enum ErrorCode {
     Unauthorized,
     #[msg("Amount must be greater than 0")]
     InvalidAmount,
-    #[msg("Must have at least one allocation")]
-    NoAllocations,
-    #[msg("Maximum 50 allocations per transaction")]
-    TooManyAllocations,
     #[msg("Per-role totals do not match configured share ratios")]
     ShareMismatch,
-    #[msg("Remaining accounts count does not match allocations")]
-    AllocationCountMismatch,
-    #[msg("Allocation PDA address does not match expected")]
-    AllocationPdaMismatch,
     #[msg("This reward has already been claimed")]
     AlreadyClaimed,
 }

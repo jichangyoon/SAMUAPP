@@ -128,17 +128,18 @@ export interface ContractAllocation {
 }
 
 /**
- * 서버(admin 키페어)가 deposit_and_allocate instruction을 직접 빌드/전송.
- * 컨트랙트 PDA로 SOL을 예치하고 각 수령인의 allocation_record를 생성.
- *
- * SAMU_REWARDS_PROGRAM_ID 미설정 시 graceful skip.
+ * admin이 굿즈 수익 SOL을 escrow_pool PDA로 예치.
+ * 비율 검증 포함. remaining_accounts 없음.
  */
-export async function depositAndAllocate(
+export async function depositProfit(
   contestId: number,
-  allocations: ContractAllocation[]
+  totalLamports: number,
+  creatorTotal: number,
+  voterTotal: number,
+  platformTotal: number,
 ): Promise<string | null> {
   if (!isContractEnabled()) {
-    console.log("[contract] SAMU_REWARDS_PROGRAM_ID not set — skipping on-chain deposit");
+    console.log("[contract] SAMU_REWARDS_PROGRAM_ID not set — skipping depositProfit");
     return null;
   }
 
@@ -154,49 +155,24 @@ export async function depositAndAllocate(
     const adminKeypair = Keypair.fromSecretKey(secretKey);
     const connection = getConnection();
 
-    const [configPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from("config")],
-      programId
-    );
+    const [configPda] = PublicKey.findProgramAddressSync([Buffer.from("config")], programId);
     const [escrowPoolPda] = getEscrowPoolPda(contestId, programId);
 
-    // allocation PDA 목록 (remaining_accounts)
-    const allocationPdas = allocations.map(({ wallet }) => {
-      const [pda] = getAllocationRecordPda(contestId, new PublicKey(wallet), programId);
-      return pda;
-    });
+    // sha256("global:deposit_profit")[0:8]
+    const discriminator = Buffer.from([128, 94, 241, 212, 35, 142, 213, 247]);
 
-    // deposit_and_allocate instruction 직접 빌드 (Anchor discriminator)
-    // sha256("global:deposit_and_allocate")[0:8]
-    const discriminator = Buffer.from([174, 77, 108, 69, 57, 114, 83, 133]);
-
-    // contest_id (u64 LE) + allocations 직렬화
     const contestIdBuf = Buffer.alloc(8);
     contestIdBuf.writeBigUInt64LE(BigInt(contestId));
+    const totalBuf = Buffer.alloc(8);
+    totalBuf.writeBigUInt64LE(BigInt(totalLamports));
+    const creatorBuf = Buffer.alloc(8);
+    creatorBuf.writeBigUInt64LE(BigInt(creatorTotal));
+    const voterBuf = Buffer.alloc(8);
+    voterBuf.writeBigUInt64LE(BigInt(voterTotal));
+    const platformBuf = Buffer.alloc(8);
+    platformBuf.writeBigUInt64LE(BigInt(platformTotal));
 
-    // Vec<Allocation> 직렬화: len (u32 LE) + each Allocation
-    const allocBufs: Buffer[] = [];
-    allocBufs.push(Buffer.alloc(4));
-    allocBufs[0].writeUInt32LE(allocations.length, 0);
-
-    for (const alloc of allocations) {
-      const walletBuf = new PublicKey(alloc.wallet).toBuffer();
-      // Role enum: Creator=0, Voter=1, Platform=2
-      const roleMap: Record<string, number> = { Creator: 0, Voter: 1, Platform: 2 };
-      const roleBuf = Buffer.alloc(1);
-      roleBuf.writeUInt8(roleMap[alloc.role], 0);
-      const lamportsBuf = Buffer.alloc(8);
-      lamportsBuf.writeBigUInt64LE(BigInt(alloc.lamports), 0);
-      allocBufs.push(Buffer.concat([walletBuf, roleBuf, lamportsBuf]));
-    }
-
-    const data = Buffer.concat([discriminator, contestIdBuf, ...allocBufs]);
-
-    const remainingAccounts = allocationPdas.map(pda => ({
-      pubkey: pda,
-      isSigner: false,
-      isWritable: true,
-    }));
+    const data = Buffer.concat([discriminator, contestIdBuf, totalBuf, creatorBuf, voterBuf, platformBuf]);
 
     const ix = new TransactionInstruction({
       programId,
@@ -205,18 +181,80 @@ export async function depositAndAllocate(
         { pubkey: adminKeypair.publicKey, isSigner: true, isWritable: true },
         { pubkey: escrowPoolPda, isSigner: false, isWritable: true },
         { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-        ...remainingAccounts,
       ],
       data,
     });
 
     const tx = new Transaction().add(ix);
     const signature = await sendAndConfirmTransaction(connection, tx, [adminKeypair]);
-
-    console.log(`[contract] deposit_and_allocate TX: ${signature} | contest=${contestId} | ${allocations.length} allocations`);
+    console.log(`[contract] depositProfit TX: ${signature} | contest=${contestId} | total=${totalLamports}`);
     return signature;
   } catch (err: any) {
-    console.error("[contract] deposit_and_allocate failed:", err?.message || err);
+    console.error("[contract] depositProfit failed:", err?.message || err);
+    return null;
+  }
+}
+
+/**
+ * admin이 수령인 1명의 allocation_record PDA를 생성/업데이트.
+ * 수령인마다 별도 호출.
+ */
+export async function recordAllocation(
+  contestId: number,
+  allocation: ContractAllocation,
+): Promise<string | null> {
+  if (!isContractEnabled()) return null;
+
+  const privateKeyStr = process.env.ESCROW_WALLET_PRIVATE_KEY;
+  if (!privateKeyStr) return null;
+
+  try {
+    const programId = new PublicKey(config.SAMU_REWARDS_PROGRAM_ID);
+    const secretKey = bs58.decode(privateKeyStr);
+    const adminKeypair = Keypair.fromSecretKey(secretKey);
+    const connection = getConnection();
+
+    const [configPda] = PublicKey.findProgramAddressSync([Buffer.from("config")], programId);
+    const recipientPubkey = new PublicKey(allocation.wallet);
+    const [allocationRecordPda] = getAllocationRecordPda(contestId, recipientPubkey, programId);
+
+    // sha256("global:record_allocation")[0:8]
+    const discriminator = Buffer.from([77, 89, 9, 55, 102, 64, 146, 78]);
+
+    const contestIdBuf = Buffer.alloc(8);
+    contestIdBuf.writeBigUInt64LE(BigInt(contestId));
+
+    // recipient_wallet: 32 bytes (Pubkey)
+    const walletBuf = recipientPubkey.toBuffer();
+
+    // role: 1 byte enum (Creator=0, Voter=1, Platform=2)
+    const roleMap: Record<string, number> = { Creator: 0, Voter: 1, Platform: 2 };
+    const roleBuf = Buffer.alloc(1);
+    roleBuf.writeUInt8(roleMap[allocation.role], 0);
+
+    // lamports: 8 bytes LE
+    const lamportsBuf = Buffer.alloc(8);
+    lamportsBuf.writeBigUInt64LE(BigInt(allocation.lamports), 0);
+
+    const data = Buffer.concat([discriminator, contestIdBuf, walletBuf, roleBuf, lamportsBuf]);
+
+    const ix = new TransactionInstruction({
+      programId,
+      keys: [
+        { pubkey: configPda, isSigner: false, isWritable: true },
+        { pubkey: adminKeypair.publicKey, isSigner: true, isWritable: true },
+        { pubkey: allocationRecordPda, isSigner: false, isWritable: true },
+        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+      ],
+      data,
+    });
+
+    const tx = new Transaction().add(ix);
+    const signature = await sendAndConfirmTransaction(connection, tx, [adminKeypair]);
+    console.log(`[contract] recordAllocation TX: ${signature} | contest=${contestId} | wallet=${allocation.wallet} | role=${allocation.role} | lamports=${allocation.lamports}`);
+    return signature;
+  } catch (err: any) {
+    console.error(`[contract] recordAllocation failed for ${allocation.wallet}:`, err?.message || err);
     return null;
   }
 }
