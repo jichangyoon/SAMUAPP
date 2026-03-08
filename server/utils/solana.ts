@@ -167,12 +167,8 @@ export async function depositAndAllocate(
     });
 
     // deposit_and_allocate instruction 직접 빌드 (Anchor discriminator)
-    const discriminator = Buffer.from([
-      // sha256("global:deposit_and_allocate")[0:8]
-      // Anchor 방식: sha256("global:<instruction_name>").slice(0,8)
-      // 사전 계산된 값 (lib.rs 메서드명과 정확히 일치해야 함)
-      0xd7, 0x85, 0x9f, 0x5d, 0x3b, 0x9d, 0x4e, 0x12,
-    ]);
+    // sha256("global:deposit_and_allocate")[0:8]
+    const discriminator = Buffer.from([174, 77, 108, 69, 57, 114, 83, 133]);
 
     // contest_id (u64 LE) + allocations 직렬화
     const contestIdBuf = Buffer.alloc(8);
@@ -258,10 +254,8 @@ export async function buildClaimTransaction(
     }
 
     // claim instruction discriminator
-    const discriminator = Buffer.from([
-      // sha256("global:claim")[0:8]
-      0x3e, 0xc6, 0xd6, 0xc1, 0xd5, 0x9f, 0x5f, 0x2a,
-    ]);
+    // sha256("global:claim")[0:8]
+    const discriminator = Buffer.from([62, 198, 214, 193, 213, 159, 108, 210]);
 
     const contestIdBuf = Buffer.alloc(8);
     contestIdBuf.writeBigUInt64LE(BigInt(contestId));
