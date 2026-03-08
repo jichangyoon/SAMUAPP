@@ -280,7 +280,7 @@ fn within_tolerance(actual: u64, expected: u64, tolerance: u64) -> bool {
 
 // ─── Data Structures ─────────────────────────────────────────────────────────
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq, InitSpace)]
 pub enum Role {
     Creator,
     Voter,
@@ -365,7 +365,7 @@ pub struct DepositAndAllocate<'info> {
         init_if_needed,
         payer = admin,
         space = 8 + EscrowPool::INIT_SPACE,
-        seeds = [b"escrow", &contest_id.to_le_bytes()],
+        seeds = [b"escrow", contest_id.to_le_bytes().as_ref()],
         bump,
     )]
     pub escrow_pool: Account<'info, EscrowPool>,
@@ -378,7 +378,7 @@ pub struct DepositAndAllocate<'info> {
 pub struct Claim<'info> {
     #[account(
         mut,
-        seeds = [b"alloc", &contest_id.to_le_bytes(), claimer.key().as_ref()],
+        seeds = [b"alloc", contest_id.to_le_bytes().as_ref(), claimer.key().as_ref()],
         bump = allocation_record.bump,
         constraint = allocation_record.wallet == claimer.key() @ ErrorCode::Unauthorized,
     )]
@@ -386,7 +386,7 @@ pub struct Claim<'info> {
 
     #[account(
         mut,
-        seeds = [b"escrow", &contest_id.to_le_bytes()],
+        seeds = [b"escrow", contest_id.to_le_bytes().as_ref()],
         bump = escrow_pool.bump,
     )]
     pub escrow_pool: Account<'info, EscrowPool>,
