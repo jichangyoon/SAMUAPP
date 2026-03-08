@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
+import { useSignTransaction } from "@privy-io/react-auth/solana";
+import { Transaction, Connection } from "@solana/web3.js";
 import { REWARD_COLORS, MiniDonut } from "@/lib/reward-utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +16,13 @@ import {
 } from "@/components/ui/drawer";
 import { Wallet, Lock, ChevronRight, ExternalLink, MapPin, TrendingUp, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+const SOL_CONNECTION = new Connection(
+  import.meta.env.VITE_HELIUS_API_KEY
+    ? `https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`
+    : "https://api.mainnet-beta.solana.com",
+  "confirmed"
+);
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   pending:      { label: "Pending",      color: "bg-yellow-500/20 text-yellow-400 border-yellow-400/30" },
@@ -294,11 +303,13 @@ function SummaryCard({
 
 export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) {
   const { authenticated } = usePrivy();
+  const { signTransaction } = useSignTransaction();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const [openDrawer, setOpenDrawer] = useState<"my-claimable" | "my-escrow" | "total-claimable" | "total-escrow" | null>(null);
   const [selectedDetailOrder, setSelectedDetailOrder] = useState<any | null>(null);
+  const [isClaiming, setIsClaiming] = useState(false);
 
   const { data: summary, isLoading, isError, refetch } = useQuery({
     queryKey: ["/api/rewards/summary", walletAddress],
@@ -315,33 +326,60 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
     retry: 2,
   });
 
-  const claimMutation = useMutation({
-    mutationFn: async () => {
-      const res = await fetch("/api/rewards/claim-all", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ walletAddress }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Claim failed");
-      return data;
-    },
-    onSuccess: (data) => {
-      toast({
-        title: "Claimed!",
-        description: `${data.totalSol.toFixed(4)} SOL sent to your wallet.`,
-      });
+  const handleClaim = useCallback(async () => {
+    if (!walletAddress || isClaiming) return;
+    setIsClaiming(true);
+    try {
+      // 컨트랙트 활성화 여부 확인
+      const prepareRes = await fetch(`/api/rewards/prepare-claim?wallet=${walletAddress}`);
+      const prepareData = await prepareRes.json();
+
+      if (prepareData.contractEnabled && prepareData.transactions?.length > 0) {
+        // Phase 2: 유저가 직접 서명 (가스비 유저 부담)
+        let totalClaimed = 0;
+        const sigs: string[] = [];
+
+        for (const item of prepareData.transactions) {
+          const tx = Transaction.from(Buffer.from(item.transaction, "base64"));
+          toast({ title: `Signing claim for contest #${item.contestId}...`, duration: 3000 });
+          const signedTx = await signTransaction({ transaction: tx, connection: SOL_CONNECTION });
+          const sig = await SOL_CONNECTION.sendRawTransaction(signedTx.serialize());
+          await SOL_CONNECTION.confirmTransaction(sig, "confirmed");
+          sigs.push(sig);
+          totalClaimed += item.solAmount;
+        }
+
+        toast({
+          title: "Claimed!",
+          description: `${totalClaimed.toFixed(4)} SOL received. ${sigs.length > 1 ? `${sigs.length} TXs` : `TX: ${sigs[0]?.slice(0, 8)}...`}`,
+        });
+      } else {
+        // Legacy: 서버가 escrow에서 전송
+        const res = await fetch("/api/rewards/claim-all", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ walletAddress }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Claim failed");
+        toast({
+          title: "Claimed!",
+          description: `${data.totalSol.toFixed(4)} SOL sent to your wallet.`,
+        });
+      }
+
       queryClient.invalidateQueries({ queryKey: ["/api/rewards/summary", walletAddress] });
       setOpenDrawer(null);
-    },
-    onError: (err: any) => {
+    } catch (err: any) {
       toast({
         title: "Claim Failed",
         description: err.message,
         variant: "destructive",
       });
-    },
-  });
+    } finally {
+      setIsClaiming(false);
+    }
+  }, [walletAddress, isClaiming, signTransaction, toast, queryClient]);
 
   if (isLoading) {
     return (
@@ -448,13 +486,13 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
             <div className="px-4 pb-3">
               <Button
                 className="w-full font-bold text-base"
-                onClick={() => claimMutation.mutate()}
-                disabled={claimMutation.isPending || my.claimable <= 0.000001}
+                onClick={handleClaim}
+                disabled={isClaiming || my.claimable <= 0.000001}
               >
-                {claimMutation.isPending ? (
+                {isClaiming ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Sending...
+                    Processing...
                   </>
                 ) : (
                   <>

@@ -1,188 +1,133 @@
-# SAMU Rewards Smart Contract - Deployment Guide
+# SAMU Rewards Smart Contract - 배포 가이드
 
-## Overview
+## 개요
 
-This is a Solana smart contract (Anchor program) for on-chain reward distribution.
-It automates the SAMU token reward distribution for the Meme Incubator platform.
+이 컨트랙트는 굿즈 판매 수익(SOL)을 온체인에서 투명하게 분배합니다.
 
-### Features
-- **Configurable reward shares**: Creator (30%), Voter (30%), NFT Holder (25%), Platform (15%)
-- **Admin-controlled share updates**: Ratios can be changed by admin without redeployment
-- **Permanent lock option**: Admin can lock ratios permanently when ready
-- **On-chain ratio enforcement**: Contract validates per-role totals match configured ratios (0.1% tolerance for rounding)
-- **Token account validation**: All recipient token accounts verified for correct SAMU mint and wallet ownership
-- **On-chain distribution records**: Every distribution is recorded on-chain for transparency
-- **Multiple distributions per contest**: Uses distribution_index to allow multiple revenue events per contest
-- **Batch distribution**: Up to 50 recipients per transaction
-- **Admin transfer**: Admin role can be transferred to a new wallet
+**핵심 로직:**
+1. 굿즈 결제 시 → 수익 SOL이 `escrow_pool` PDA로 들어옴 (구매자 TX)
+2. 배달 완료 후 → 서버(admin)가 `deposit_and_allocate` 호출 → 각 수령인 `allocation_record` 생성
+3. 수령인이 `claim` 호출 → 자기 지분을 직접 수령 (가스비 본인 부담, ~$0.001)
 
-### Share Percentages
-Shares use basis points (1/100th of a percent):
-- 3000 = 30%
-- 2500 = 25%
-- 1500 = 15%
-- Total must equal 10000 (100%)
+**비율:** Creator 45% / Voter 40% / Platform 15%
 
 ---
 
-## Deployment via Solana Playground
+## STEP 1: Solana Playground에서 배포
 
-### Step 1: Open Solana Playground
-Go to https://beta.solpg.io
+### 1-1. Solana Playground 열기
+https://beta.solpg.io 접속
 
-### Step 2: Create Project
-1. Click "Create a new project"
-2. Name it `samu-rewards`
-3. Select "Anchor" as the framework
+### 1-2. 새 프로젝트 생성
+1. "Create a new project" 클릭
+2. 이름: `samu-rewards`
+3. 프레임워크: **Anchor** 선택
 
-### Step 3: Copy Contract Code
-1. Copy the contents of `programs/samu-rewards/src/lib.rs`
-2. Paste it into the `lib.rs` file in Solana Playground
+### 1-3. 코드 붙여넣기
+`contracts/programs/samu-rewards/src/lib.rs` 파일 전체를 복사해서  
+Solana Playground의 `lib.rs`에 붙여넣기
 
-### Step 4: Update Cargo.toml
-Copy the contents of `programs/samu-rewards/Cargo.toml` to match the dependencies:
+### 1-4. Cargo.toml 의존성 확인
+Playground의 Cargo.toml에 아래 내용이 있는지 확인:
 ```toml
 [dependencies]
 anchor-lang = "0.30.1"
-anchor-spl = "0.30.1"
+```
+(anchor-spl은 이제 불필요 — SOL 네이티브 방식으로 변경됨)
+
+### 1-5. Build
+1. 왼쪽 Build 버튼(망치 아이콘) 클릭
+2. 컴파일 성공 대기
+3. 자동 생성된 **Program ID** 복사 (예: `AbCd...XyZ1`)
+
+### 1-6. Program ID 업데이트
+`lib.rs` 상단의 `declare_id!("11111111111111111111111111111111")`를  
+복사한 Program ID로 교체 후 **재빌드**
+
+### 1-7. Devnet 배포 (테스트)
+1. Settings → Endpoint → **Devnet** 선택
+2. SOL Airdrop 받기 (Playground 내 Airdrop 버튼)
+3. **Deploy** 클릭
+4. Program ID 저장
+
+---
+
+## STEP 2: 컨트랙트 초기화 (최초 1회)
+
+Playground에서 아래 instruction 호출:
+
+### `initialize`
+```json
+{
+  "creator_share": 4500,
+  "voter_share": 4000,
+  "platform_share": 1500
+}
+```
+> 합계가 10000(100%)이어야 함
+
+---
+
+## STEP 3: 웹앱 연동
+
+### 3-1. 환경변수 설정
+Replit Secrets에 추가:
+```
+SAMU_REWARDS_PROGRAM_ID = <배포된 Program ID>
 ```
 
-### Step 5: Build
-1. Click the "Build" button (hammer icon) in Solana Playground
-2. Wait for compilation to complete
-3. The program ID will be auto-generated — copy it
+이 값이 설정되면 자동으로 컨트랙트 모드로 전환됩니다.  
+미설정 시 기존 escrow 지갑 방식으로 동작 (하위 호환).
 
-### Step 6: Update Program ID
-1. Replace `declare_id!("11111111111111111111111111111111")` in lib.rs with your new program ID
-2. Rebuild
-
-### Step 7: Deploy
-1. Switch network to **Devnet** first for testing (Settings → Endpoint → Devnet)
-2. Airdrop SOL for deployment fees (if on devnet)
-3. Click "Deploy"
-4. Save the deployed program ID
+### 3-2. 서버 재시작
+Replit에서 "Start application" 워크플로우 재시작
 
 ---
 
-## Usage After Deployment
+## STEP 4: Mainnet 배포
 
-### 1. Initialize the Contract
-Call `initialize` with:
-- `creator_share`: 3000 (30%)
-- `voter_share`: 3000 (30%)
-- `nft_holder_share`: 2500 (25%)
-- `platform_share`: 1500 (15%)
-- Treasury wallet: `4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk`
-- SAMU mint address (validated as a real Mint account)
-
-### 2. Set Up Treasury Token Account
-Create a SAMU token account owned by the Config PDA:
-- The Config PDA (seeds: ["config"]) must be the owner of the treasury token account
-- This allows the smart contract to sign transfers from the treasury
-- Token account mint must match the configured SAMU mint
-
-### 3. Distribute Rewards
-When a contest ends and revenue is calculated:
-1. Server calculates net revenue (SOL received - Printful costs)
-2. Server converts to SAMU equivalent
-3. Server calls `distribute_rewards` with:
-   - `contest_id`: The archived contest ID
-   - `distribution_index`: 0 for first distribution, 1 for second, etc. (allows multiple per contest)
-   - `total_amount`: Total SAMU to distribute
-   - `recipients`: Array of { wallet, token_account, role, amount }
-4. Contract validates:
-   - Per-role totals match configured share ratios (within 0.1% tolerance for rounding)
-   - All recipient token accounts are valid SAMU token accounts
-   - Each token account is owned by the corresponding wallet
-   - Total distributed does not exceed total_amount
-
-### 4. Update Shares (Optional)
-Call `update_shares` with new basis point values (must total 10000)
-
-### 5. Lock Configuration (Optional)
-Call `lock_config` to permanently freeze the share ratios.
-**Warning: This is irreversible!**
-
-### 6. Transfer Admin (Optional)
-Call `transfer_admin` with the new admin's public key.
+1. Playground → Settings → **Mainnet-beta** 선택
+2. 실제 SOL로 배포 (약 0.003 SOL 소요)
+3. `initialize` 재호출
+4. `SAMU_REWARDS_PROGRAM_ID` 환경변수를 Mainnet Program ID로 업데이트
 
 ---
 
-## Integration with SAMU Web App
+## 계정 구조
 
-After deploying the smart contract, update the web app:
+### `program_config` PDA (seeds: `["config"]`)
+- admin: 관리자 지갑
+- creator_share: 4500 (45%)
+- voter_share: 4000 (40%)
+- platform_share: 1500 (15%)
 
-1. Add the program ID to environment variables:
-   ```
-   SAMU_REWARDS_PROGRAM_ID=<your-deployed-program-id>
-   ```
+### `escrow_pool` PDA (seeds: `["escrow", contest_id_LE8]`)
+- 콘테스트별 SOL 보관소
+- total_deposited: 총 입금액
+- total_claimed: 총 수령액
 
-2. Update the server-side distribution logic to call the smart contract
-   instead of (or in addition to) recording distributions in the database
-
-3. The web app can read on-chain distribution records for transparency
-
----
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────┐
-│              SAMU Web App (Server)           │
-│                                              │
-│  1. Contest ends                              │
-│  2. Calculate revenue (SOL - Printful costs)  │
-│  3. Determine recipients & amounts            │
-│                                              │
-│         ↓ calls smart contract ↓             │
-├─────────────────────────────────────────────┤
-│          Solana Smart Contract                │
-│                                              │
-│  • Enforces configured share ratios          │
-│  • Validates all token accounts (mint+owner) │
-│  • Transfers SAMU tokens to recipients       │
-│  • Records distribution on-chain             │
-│  • Emits events for indexing                 │
-├─────────────────────────────────────────────┤
-│              Solana Blockchain                │
-│                                              │
-│  • Immutable distribution records            │
-│  • Transparent token transfers               │
-│  • Verifiable by anyone                      │
-└─────────────────────────────────────────────┘
-```
+### `allocation_record` PDA (seeds: `["alloc", contest_id_LE8, wallet_pubkey]`)
+- 유저별 수령 가능액 기록
+- lamports: 수령 가능 lamports
+- claimed: 수령 여부 (true면 이미 수령)
 
 ---
 
-## Account Structure
+## Instructions
 
-### Config (PDA: seeds = ["config"])
-- admin: Admin wallet public key
-- treasury: Treasury wallet address
-- samu_mint: SAMU token mint address (validated as Mint on init)
-- creator/voter/nft_holder/platform_share: Basis points (must total 10000)
-- total_distributions: Counter
-- total_distributed_amount: Running total
-- is_locked: Whether config changes are frozen
-
-### DistributionRecord (PDA: seeds = ["distribution", contest_id, distribution_index])
-- contest_id: Which contest this distribution is for
-- distribution_index: Allows multiple distributions per contest (0, 1, 2...)
-- total_amount: Total SAMU distributed
-- Per-role totals: creator, voter, nft_holder, platform
-- recipient_count: Number of recipients
-- timestamp: When distribution occurred
-- admin: Who initiated the distribution
+| Instruction | 호출자 | 설명 |
+|---|---|---|
+| `initialize` | admin | 최초 1회 설정 |
+| `deposit_and_allocate` | admin (서버) | 수익 입금 + 수령인 기록 |
+| `claim` | 유저 (자기 서명) | 자기 몫 수령 |
+| `transfer_admin` | admin | admin 지갑 변경 |
 
 ---
 
-## Security Features
+## 보안 특징
 
-1. **On-chain ratio enforcement**: Per-role totals validated against configured basis-point ratios (0.1% tolerance for integer rounding)
-2. **Token account validation**: Every recipient token account checked for correct SAMU mint and wallet ownership
-3. **Treasury constraints**: Treasury token account must match configured SAMU mint and be owned by Config PDA
-4. **SAMU mint validation**: Mint verified as a real SPL Mint account during initialization
-5. **Admin-only operations**: All state-changing functions require admin signature
-6. **Permanent lock**: `lock_config` is irreversible — use with caution
-7. **Test on devnet**: Always test thoroughly before mainnet deployment
-8. **Audit**: Consider a security audit before mainnet launch
+1. **on-chain 비율 강제**: 45/40/15 비율이 컨트랙트에서 검증 (0.1% tolerance)
+2. **이중 수령 방지**: `claimed` 플래그 on-chain 기록
+3. **Admin 전용 예치**: `deposit_and_allocate`는 admin 서명 필수
+4. **자기 본인만 수령**: `claim`은 수령인 본인 서명 필수
+5. **Devnet 완전 테스트 후 Mainnet 배포 권장**

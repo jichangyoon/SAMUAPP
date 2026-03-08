@@ -40,4 +40,9 @@ export const config = {
     VOTERS: 0.40,
     PLATFORM: 0.15,
   },
+
+  // Phase 2: Smart Contract
+  // Solana Playground에서 배포 후 이 env var를 설정하면 컨트랙트 모드 활성화.
+  // 미설정 시 기존 escrow 지갑 방식으로 동작 (하위 호환).
+  SAMU_REWARDS_PROGRAM_ID: process.env.SAMU_REWARDS_PROGRAM_ID || "",
 } as const;

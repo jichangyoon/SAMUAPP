@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { storage } from "../storage";
 import { config } from "../config";
-import { sendSolFromEscrow } from "../utils/solana";
+import { sendSolFromEscrow, isContractEnabled, buildClaimTransaction, getOnChainClaimable } from "../utils/solana";
 
 const router = Router();
 
@@ -594,6 +594,80 @@ router.get("/map", async (req, res) => {
         delivered: mapOrders.filter(o => o.status === "delivered").length,
         countries: Array.from(new Set(mapOrders.map(o => o.country))).length,
       },
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Phase 2: 컨트랙트 클레임 TX 빌드 API
+ * 컨트랙트 활성화 여부 + 유저의 on-chain allocation 목록을 반환.
+ * 컨트랙트 비활성화 시 contractEnabled: false 반환.
+ */
+router.get("/prepare-claim", async (req, res) => {
+  try {
+    const walletAddress = req.query.wallet as string;
+    if (!walletAddress) return res.status(400).json({ error: "wallet query param required" });
+
+    const contractEnabled = isContractEnabled();
+
+    if (!contractEnabled) {
+      return res.json({ contractEnabled: false, transactions: [] });
+    }
+
+    // 유저가 투표한 콘테스트 목록 수집
+    const userVotes = await storage.getUserVotes(walletAddress);
+    const allMemes = await storage.getAllMemes();
+    const memeContestMap = new Map<number, number>();
+    for (const m of allMemes) {
+      if (m.contestId != null) memeContestMap.set(m.id, m.contestId);
+    }
+
+    const votedContestIds = new Set<number>();
+    for (const v of userVotes) {
+      const cid = memeContestMap.get(v.memeId);
+      if (cid != null) votedContestIds.add(cid);
+    }
+
+    // 크리에이터로 참여한 콘테스트도 포함 (getUserMemesByContest는 그룹 형태라 userVotes 조회로 충분)
+    const userMemeGroups = await storage.getUserMemesByContest(walletAddress);
+    for (const group of userMemeGroups) {
+      if (group.contestId != null) votedContestIds.add(group.contestId);
+    }
+
+    // 각 콘테스트의 on-chain allocation 조회 및 claim TX 빌드
+    const transactions: {
+      contestId: number;
+      lamports: number;
+      solAmount: number;
+      transaction: string;
+    }[] = [];
+
+    for (const contestId of votedContestIds) {
+      try {
+        const onchain = await getOnChainClaimable(contestId, walletAddress);
+        if (!onchain || onchain.claimed || onchain.lamports === 0) continue;
+
+        const txBase64 = await buildClaimTransaction(contestId, walletAddress);
+        if (!txBase64) continue;
+
+        transactions.push({
+          contestId,
+          lamports: onchain.lamports,
+          solAmount: onchain.lamports / 1_000_000_000,
+          transaction: txBase64,
+        });
+      } catch (e: any) {
+        console.warn(`[prepare-claim] contest ${contestId} skip:`, e?.message);
+      }
+    }
+
+    res.json({
+      contractEnabled: true,
+      programId: config.SAMU_REWARDS_PROGRAM_ID,
+      transactions,
+      totalSol: transactions.reduce((s, t) => s + t.solAmount, 0),
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message });

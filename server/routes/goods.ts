@@ -5,7 +5,7 @@ import { config } from "../config";
 import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { uploadToR2 } from "../r2-storage";
 import { geocodeAddress } from "../utils/geocode";
-import { getConnection } from "../utils/solana";
+import { getConnection, depositAndAllocate, isContractEnabled, getEscrowPoolPda } from "../utils/solana";
 
 const router = Router();
 
@@ -102,6 +102,58 @@ export async function distributeEscrowProfit(escrowDeposit: any) {
   console.log(`Escrow profit distributed for order ${escrowDeposit.orderId}: Total profit=${profitSol.toFixed(6)} SOL`);
   console.log(`  Creators (${creatorShares.length}): ${creatorShares.map(c => `${c.wallet.slice(0,8)}...(${c.votePercent.toFixed(1)}%)=${c.amount.toFixed(6)} SOL`).join(', ')}`);
   console.log(`  Voters pool: ${voterPoolAmount.toFixed(6)} SOL, Platform: ${platformAmount.toFixed(6)} SOL`);
+
+  // Phase 2: 컨트랙트가 활성화된 경우 on-chain allocation 기록
+  if (isContractEnabled()) {
+    try {
+      const allocationList: { wallet: string; role: "Creator" | "Voter" | "Platform"; lamports: number }[] = [];
+
+      // 크리에이터 할당
+      for (const cs of creatorShares) {
+        if (cs.amount > 0) {
+          allocationList.push({
+            wallet: cs.wallet,
+            role: "Creator",
+            lamports: Math.round(cs.amount * LAMPORTS_PER_SOL),
+          });
+        }
+      }
+
+      // 투표자 풀 할당 — 콘테스트별 투표자 SAMU 지분 기준 분배
+      if (voterPoolAmount > 0) {
+        const voterSummary = await storage.getContestVoteSummary(contestId);
+        const totalVoterSamu = voterSummary.reduce((s, v) => s + v.totalSamuAmount, 0);
+        if (totalVoterSamu > 0) {
+          for (const vb of voterSummary) {
+            const share = vb.totalSamuAmount / totalVoterSamu;
+            const lamports = Math.round(voterPoolAmount * share * LAMPORTS_PER_SOL);
+            if (lamports > 0) {
+              allocationList.push({ wallet: vb.voterWallet, role: "Voter", lamports });
+            }
+          }
+        }
+      }
+
+      // 플랫폼 할당
+      if (platformAmount > 0) {
+        allocationList.push({
+          wallet: config.TREASURY_WALLET,
+          role: "Platform",
+          lamports: Math.round(platformAmount * LAMPORTS_PER_SOL),
+        });
+      }
+
+      if (allocationList.length > 0) {
+        const contractTx = await depositAndAllocate(contestId, allocationList);
+        if (contractTx) {
+          console.log(`[contract] on-chain allocation recorded: ${contractTx}`);
+        }
+      }
+    } catch (contractErr: any) {
+      // 컨트랙트 오류는 DB 분배를 취소하지 않음 (non-blocking)
+      console.error("[contract] depositAndAllocate failed (DB distribution already complete):", contractErr?.message);
+    }
+  }
 
   return { creatorShares, voterPoolAmount, platformAmount };
 }
@@ -913,7 +965,18 @@ router.post("/:id/prepare-payment", async (req, res) => {
     const connection = getSolConnection();
     const buyerPubkey = new PublicKey(buyerWallet);
     const treasuryPubkey = new PublicKey(TREASURY_WALLET);
-    const escrowPubkey = new PublicKey(ESCROW_WALLET);
+
+    // Phase 2: 컨트랙트 활성화 + 콘테스트 연계 굿즈인 경우 → escrow_pool PDA로 전송
+    // 미활성화 또는 콘테스트 미연계인 경우 → 기존 ESCROW_WALLET으로 전송
+    let escrowRecipient: string = ESCROW_WALLET;
+    let escrowRole = "escrow_profit";
+    if (isContractEnabled() && item.contestId) {
+      const programId = new PublicKey(config.SAMU_REWARDS_PROGRAM_ID);
+      const [escrowPoolPda] = getEscrowPoolPda(item.contestId, programId);
+      escrowRecipient = escrowPoolPda.toBase58();
+      escrowRole = "escrow_pool_pda";
+    }
+    const escrowPubkey = new PublicKey(escrowRecipient);
 
     const totalLamports = Math.ceil(solAmount * LAMPORTS_PER_SOL);
     const costLamports = Math.ceil(costSol * LAMPORTS_PER_SOL);
@@ -931,7 +994,7 @@ router.post("/:id/prepare-payment", async (req, res) => {
       transaction.add(
         SystemProgram.transfer({ fromPubkey: buyerPubkey, toPubkey: escrowPubkey, lamports: profitLamports })
       );
-      splits.push({ recipient: ESCROW_WALLET, role: "escrow_profit", lamports: profitLamports, solAmount: profitLamports / LAMPORTS_PER_SOL });
+      splits.push({ recipient: escrowRecipient, role: escrowRole, lamports: profitLamports, solAmount: profitLamports / LAMPORTS_PER_SOL });
     }
 
     const { blockhash } = await connection.getLatestBlockhash();

@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, memo, useMemo, ChangeEvent } from "react";
 import { usePrivy } from "@privy-io/react-auth";
+import { useSignTransaction } from "@privy-io/react-auth/solana";
+import { Transaction, Connection } from "@solana/web3.js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,10 +21,19 @@ import { SendTokensSimple } from "@/components/send-tokens-simple";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
 import { MediaDisplay } from "@/components/media-display";
 import { useSamuBalance } from "@/hooks/use-samu-balance";
+
 import { getMediaType } from "@/utils/media-utils";
+
+const SOL_CONNECTION = new Connection(
+  import.meta.env.VITE_HELIUS_API_KEY
+    ? `https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`
+    : "https://api.mainnet-beta.solana.com",
+  "confirmed"
+);
 
 const Profile = memo(() => {
   const { user, authenticated } = usePrivy();
+  const { signTransaction } = useSignTransaction();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
@@ -186,17 +197,44 @@ const Profile = memo(() => {
     if (!walletAddress) return;
     setIsClaiming(true);
     try {
-      const res = await fetch('/api/rewards/claim-all', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ walletAddress }),
-      });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || 'Claim failed');
-      toast({
-        title: "Claimed!",
-        description: `${result.totalSol.toFixed(4)} SOL sent to your wallet.`,
-      });
+      // 컨트랙트 활성화 여부 확인
+      const prepareRes = await fetch(`/api/rewards/prepare-claim?wallet=${walletAddress}`);
+      const prepareData = await prepareRes.json();
+
+      if (prepareData.contractEnabled && prepareData.transactions?.length > 0) {
+        // Phase 2: 유저가 직접 서명 (가스비 유저 부담)
+        let totalClaimed = 0;
+        const sigs: string[] = [];
+
+        for (const item of prepareData.transactions) {
+          const tx = Transaction.from(Buffer.from(item.transaction, "base64"));
+          toast({ title: `Signing claim for contest #${item.contestId}...`, duration: 3000 });
+          const signedTx = await signTransaction({ transaction: tx, connection: SOL_CONNECTION });
+          const sig = await SOL_CONNECTION.sendRawTransaction(signedTx.serialize());
+          await SOL_CONNECTION.confirmTransaction(sig, "confirmed");
+          sigs.push(sig);
+          totalClaimed += item.solAmount;
+        }
+
+        toast({
+          title: "Claimed!",
+          description: `${totalClaimed.toFixed(4)} SOL received. ${sigs.length > 1 ? `${sigs.length} TXs` : `TX: ${sigs[0]?.slice(0, 8)}...`}`,
+        });
+      } else {
+        // Legacy: 서버가 escrow에서 전송
+        const res = await fetch('/api/rewards/claim-all', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ walletAddress }),
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Claim failed');
+        toast({
+          title: "Claimed!",
+          description: `${result.totalSol.toFixed(4)} SOL sent to your wallet.`,
+        });
+      }
+
       refetchRewards();
     } catch (error: any) {
       toast({
@@ -207,7 +245,7 @@ const Profile = memo(() => {
     } finally {
       setIsClaiming(false);
     }
-  }, [walletAddress, toast, refetchRewards]);
+  }, [walletAddress, toast, refetchRewards, signTransaction]);
 
   // Profile data now comes from database, not localStorage
 

@@ -1,138 +1,95 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Token, TokenAccount, Mint, Transfer};
+use anchor_lang::system_program;
 
 declare_id!("11111111111111111111111111111111");
 
-const TOLERANCE_BPS: u16 = 10;
+const TOLERANCE_BPS: u64 = 10;
+const MAX_ALLOCATIONS_PER_TX: usize = 50;
 
 #[program]
 pub mod samu_rewards {
     use super::*;
 
+    /// 최초 1회 초기화. admin 지갑 + 45/40/15 비율 설정.
     pub fn initialize(
         ctx: Context<Initialize>,
         creator_share: u16,
         voter_share: u16,
-        nft_holder_share: u16,
         platform_share: u16,
     ) -> Result<()> {
         require!(
-            creator_share + voter_share + nft_holder_share + platform_share == 10000,
+            (creator_share as u32) + (voter_share as u32) + (platform_share as u32) == 10000,
             ErrorCode::InvalidShareTotal
         );
 
-        let config = &mut ctx.accounts.config;
-        config.admin = ctx.accounts.admin.key();
-        config.treasury = ctx.accounts.treasury.key();
-        config.samu_mint = ctx.accounts.samu_mint.key();
-        config.creator_share = creator_share;
-        config.voter_share = voter_share;
-        config.nft_holder_share = nft_holder_share;
-        config.platform_share = platform_share;
-        config.total_distributions = 0;
-        config.total_distributed_amount = 0;
-        config.is_locked = false;
-        config.bump = ctx.bumps.config;
+        let cfg = &mut ctx.accounts.program_config;
+        cfg.admin = ctx.accounts.admin.key();
+        cfg.creator_share = creator_share;
+        cfg.voter_share = voter_share;
+        cfg.platform_share = platform_share;
+        cfg.total_deposited_lamports = 0;
+        cfg.bump = ctx.bumps.program_config;
 
         emit!(ConfigInitialized {
-            admin: config.admin,
-            treasury: config.treasury,
+            admin: cfg.admin,
             creator_share,
             voter_share,
-            nft_holder_share,
             platform_share,
         });
 
         Ok(())
     }
 
-    pub fn update_shares(
-        ctx: Context<AdminOnly>,
-        creator_share: u16,
-        voter_share: u16,
-        nft_holder_share: u16,
-        platform_share: u16,
+    /// 서버(admin)가 호출. 굿즈 수익 SOL을 escrow_pool PDA로 예치하고
+    /// 각 수령인의 allocation_record를 생성/업데이트.
+    pub fn deposit_and_allocate(
+        ctx: Context<DepositAndAllocate>,
+        contest_id: u64,
+        allocations: Vec<Allocation>,
     ) -> Result<()> {
-        let config = &mut ctx.accounts.config;
-
-        require!(!config.is_locked, ErrorCode::ConfigLocked);
+        require!(!allocations.is_empty(), ErrorCode::NoAllocations);
         require!(
-            creator_share + voter_share + nft_holder_share + platform_share == 10000,
-            ErrorCode::InvalidShareTotal
+            allocations.len() <= MAX_ALLOCATIONS_PER_TX,
+            ErrorCode::TooManyAllocations
         );
 
-        config.creator_share = creator_share;
-        config.voter_share = voter_share;
-        config.nft_holder_share = nft_holder_share;
-        config.platform_share = platform_share;
+        let cfg = &ctx.accounts.program_config;
 
-        emit!(SharesUpdated {
-            creator_share,
-            voter_share,
-            nft_holder_share,
-            platform_share,
-        });
+        // 총 예치액 검증
+        let total_lamports: u64 = allocations
+            .iter()
+            .map(|a| a.lamports)
+            .sum();
+        require!(total_lamports > 0, ErrorCode::InvalidAmount);
 
-        Ok(())
-    }
+        // 45/40/15 비율 검증 (0.1% tolerance)
+        let creator_total: u64 = allocations
+            .iter()
+            .filter(|a| a.role == Role::Creator)
+            .map(|a| a.lamports)
+            .sum();
+        let voter_total: u64 = allocations
+            .iter()
+            .filter(|a| a.role == Role::Voter)
+            .map(|a| a.lamports)
+            .sum();
+        let platform_total: u64 = allocations
+            .iter()
+            .filter(|a| a.role == Role::Platform)
+            .map(|a| a.lamports)
+            .sum();
 
-    pub fn lock_config(ctx: Context<AdminOnly>) -> Result<()> {
-        let config = &mut ctx.accounts.config;
-        require!(!config.is_locked, ErrorCode::ConfigLocked);
-        config.is_locked = true;
-
-        emit!(ConfigLocked {
-            admin: config.admin,
-        });
-
-        Ok(())
-    }
-
-    pub fn distribute_rewards(
-        ctx: Context<DistributeRewards>,
-        contest_id: u64,
-        distribution_index: u8,
-        total_amount: u64,
-        recipients: Vec<Recipient>,
-    ) -> Result<()> {
-        let config = &ctx.accounts.config;
-
-        require!(total_amount > 0, ErrorCode::InvalidAmount);
-        require!(!recipients.is_empty(), ErrorCode::NoRecipients);
-        require!(recipients.len() <= 50, ErrorCode::TooManyRecipients);
-
-        let mut creator_total: u64 = 0;
-        let mut voter_total: u64 = 0;
-        let mut nft_holder_total: u64 = 0;
-        let mut platform_total: u64 = 0;
-
-        for r in &recipients {
-            match r.role {
-                Role::Creator => creator_total += r.amount,
-                Role::Voter => voter_total += r.amount,
-                Role::NftHolder => nft_holder_total += r.amount,
-                Role::Platform => platform_total += r.amount,
-            }
-        }
-
-        let distributed_total = creator_total + voter_total + nft_holder_total + platform_total;
-        require!(distributed_total > 0, ErrorCode::InvalidAmount);
-        require!(distributed_total <= total_amount, ErrorCode::ExceedsTotal);
-
-        let expected_creator = (total_amount as u128)
-            .checked_mul(config.creator_share as u128).unwrap()
+        let expected_creator = (total_lamports as u128)
+            .checked_mul(cfg.creator_share as u128).unwrap()
             .checked_div(10000).unwrap() as u64;
-        let expected_voter = (total_amount as u128)
-            .checked_mul(config.voter_share as u128).unwrap()
+        let expected_voter = (total_lamports as u128)
+            .checked_mul(cfg.voter_share as u128).unwrap()
             .checked_div(10000).unwrap() as u64;
-        let expected_nft = (total_amount as u128)
-            .checked_mul(config.nft_holder_share as u128).unwrap()
-            .checked_div(10000).unwrap() as u64;
-        let expected_platform = (total_amount as u128)
-            .checked_mul(config.platform_share as u128).unwrap()
+        let expected_platform = (total_lamports as u128)
+            .checked_mul(cfg.platform_share as u128).unwrap()
             .checked_div(10000).unwrap() as u64;
 
-        let tolerance = (total_amount as u128)
+        let tolerance = (total_lamports as u128)
             .checked_mul(TOLERANCE_BPS as u128).unwrap()
             .checked_div(10000).unwrap() as u64;
 
@@ -145,102 +102,169 @@ pub mod samu_rewards {
             ErrorCode::ShareMismatch
         );
         require!(
-            within_tolerance(nft_holder_total, expected_nft, tolerance),
-            ErrorCode::ShareMismatch
-        );
-        require!(
             within_tolerance(platform_total, expected_platform, tolerance),
             ErrorCode::ShareMismatch
         );
 
-        let non_zero_recipients: Vec<&Recipient> = recipients.iter().filter(|r| r.amount > 0).collect();
+        // escrow_pool PDA로 SOL 전송 (admin이 서명)
+        let cpi_ctx = CpiContext::new(
+            ctx.accounts.system_program.to_account_info(),
+            system_program::Transfer {
+                from: ctx.accounts.admin.to_account_info(),
+                to: ctx.accounts.escrow_pool.to_account_info(),
+            },
+        );
+        system_program::transfer(cpi_ctx, total_lamports)?;
+
+        // escrow_pool 기록 업데이트
+        let pool = &mut ctx.accounts.escrow_pool;
+        pool.contest_id = contest_id;
+        pool.total_deposited = pool.total_deposited.checked_add(total_lamports).unwrap();
+        pool.total_claimed = pool.total_claimed; // unchanged
+        pool.allocation_count = pool.allocation_count.checked_add(allocations.len() as u64).unwrap();
+        pool.bump = ctx.bumps.escrow_pool;
+
+        // 각 allocation을 remaining_accounts의 PDA에 기록
         require!(
-            ctx.remaining_accounts.len() == non_zero_recipients.len(),
-            ErrorCode::RecipientCountMismatch
+            ctx.remaining_accounts.len() == allocations.len(),
+            ErrorCode::AllocationCountMismatch
         );
 
-        let record = &mut ctx.accounts.distribution_record;
-        record.contest_id = contest_id;
-        record.distribution_index = distribution_index;
-        record.total_amount = total_amount;
-        record.distributed_total = distributed_total;
-        record.creator_total = creator_total;
-        record.voter_total = voter_total;
-        record.nft_holder_total = nft_holder_total;
-        record.platform_total = platform_total;
-        record.recipient_count = non_zero_recipients.len() as u16;
-        record.timestamp = Clock::get()?.unix_timestamp;
-        record.admin = ctx.accounts.admin.key();
-        record.bump = ctx.bumps.distribution_record;
+        for (i, alloc) in allocations.iter().enumerate() {
+            let alloc_account_info = &ctx.remaining_accounts[i];
 
-        let config_bump = config.bump;
-        let seeds = &[b"config".as_ref(), &[config_bump]];
-        let signer_seeds = &[&seeds[..]];
-
-        let samu_mint = config.samu_mint;
-
-        for (i, recipient) in non_zero_recipients.iter().enumerate() {
-            let recipient_account_info = &ctx.remaining_accounts[i];
-
-            require!(
-                recipient_account_info.key() == recipient.token_account,
-                ErrorCode::RecipientMismatch
-            );
-
-            let recipient_token: Account<TokenAccount> =
-                Account::try_from(recipient_account_info)?;
-
-            require!(
-                recipient_token.mint == samu_mint,
-                ErrorCode::InvalidMint
+            // allocation_record PDA 검증
+            let (expected_pda, bump) = Pubkey::find_program_address(
+                &[
+                    b"alloc",
+                    &contest_id.to_le_bytes(),
+                    alloc.wallet.as_ref(),
+                ],
+                ctx.program_id,
             );
             require!(
-                recipient_token.owner == recipient.wallet,
-                ErrorCode::InvalidTokenOwner
+                alloc_account_info.key() == expected_pda,
+                ErrorCode::AllocationPdaMismatch
             );
 
-            let transfer_ctx = CpiContext::new_with_signer(
-                ctx.accounts.token_program.to_account_info(),
-                Transfer {
-                    from: ctx.accounts.treasury_token_account.to_account_info(),
-                    to: recipient_account_info.to_account_info(),
-                    authority: ctx.accounts.config.to_account_info(),
-                },
-                signer_seeds,
-            );
+            // 계정이 이미 초기화된 경우 누적, 아닌 경우 초기화
+            if alloc_account_info.data_len() > 0 && alloc_account_info.lamports() > 0 {
+                let mut data = alloc_account_info.try_borrow_mut_data()?;
+                // AllocationRecord 역직렬화
+                let mut record = AllocationRecord::try_from_slice(&data[8..])?;
+                require!(!record.claimed, ErrorCode::AlreadyClaimed);
+                record.lamports = record.lamports.checked_add(alloc.lamports).unwrap();
+                let serialized = record.try_to_vec()?;
+                data[8..8 + serialized.len()].copy_from_slice(&serialized);
+            } else {
+                // 신규 계정 초기화
+                let space = 8 + AllocationRecord::INIT_SPACE;
+                let rent = Rent::get()?.minimum_balance(space);
+                let ix = anchor_lang::solana_program::system_instruction::create_account(
+                    &ctx.accounts.admin.key(),
+                    &alloc_account_info.key(),
+                    rent,
+                    space as u64,
+                    ctx.program_id,
+                );
+                anchor_lang::solana_program::program::invoke_signed(
+                    &ix,
+                    &[
+                        ctx.accounts.admin.to_account_info(),
+                        alloc_account_info.clone(),
+                        ctx.accounts.system_program.to_account_info(),
+                    ],
+                    &[&[
+                        b"alloc",
+                        &contest_id.to_le_bytes(),
+                        alloc.wallet.as_ref(),
+                        &[bump],
+                    ]],
+                )?;
 
-            token::transfer(transfer_ctx, recipient.amount)?;
+                let record = AllocationRecord {
+                    contest_id,
+                    wallet: alloc.wallet,
+                    role: alloc.role.clone(),
+                    lamports: alloc.lamports,
+                    claimed: false,
+                    bump,
+                };
+                let mut data = alloc_account_info.try_borrow_mut_data()?;
+                let discriminator = anchor_lang::solana_program::hash::hash(b"account:AllocationRecord");
+                data[..8].copy_from_slice(&discriminator.to_bytes()[..8]);
+                let serialized = record.try_to_vec()?;
+                data[8..8 + serialized.len()].copy_from_slice(&serialized);
+            }
         }
 
-        let config_mut = &mut ctx.accounts.config;
-        config_mut.total_distributions += 1;
-        config_mut.total_distributed_amount += distributed_total;
+        let cfg_mut = &mut ctx.accounts.program_config;
+        cfg_mut.total_deposited_lamports = cfg_mut.total_deposited_lamports.checked_add(total_lamports).unwrap();
 
-        emit!(RewardsDistributed {
+        emit!(FundsDeposited {
             contest_id,
-            distribution_index,
-            total_amount,
-            distributed_total,
+            total_lamports,
             creator_total,
             voter_total,
-            nft_holder_total,
             platform_total,
-            recipient_count: non_zero_recipients.len() as u16,
-            timestamp: record.timestamp,
+            allocation_count: allocations.len() as u16,
         });
 
         Ok(())
     }
 
-    pub fn transfer_admin(ctx: Context<AdminOnly>, new_admin: Pubkey) -> Result<()> {
-        let config = &mut ctx.accounts.config;
-        let old_admin = config.admin;
-        config.admin = new_admin;
+    /// 유저가 직접 호출 (유저 지갑으로 서명, 가스비 유저 부담).
+    /// escrow_pool → 유저 지갑으로 SOL 전송.
+    pub fn claim(ctx: Context<Claim>, contest_id: u64) -> Result<()> {
+        let record = &mut ctx.accounts.allocation_record;
+        require!(!record.claimed, ErrorCode::AlreadyClaimed);
+        require!(record.lamports > 0, ErrorCode::InvalidAmount);
+        require!(
+            record.wallet == ctx.accounts.claimer.key(),
+            ErrorCode::Unauthorized
+        );
 
-        emit!(AdminTransferred {
-            old_admin,
-            new_admin,
+        let lamports_to_send = record.lamports;
+        let pool = &mut ctx.accounts.escrow_pool;
+
+        // escrow_pool에서 claimer로 SOL 전송 (PDA가 서명)
+        let escrow_bump = pool.bump;
+        let seeds = &[
+            b"escrow".as_ref(),
+            &contest_id.to_le_bytes(),
+            &[escrow_bump],
+        ];
+        let signer_seeds = &[&seeds[..]];
+
+        let cpi_ctx = CpiContext::new_with_signer(
+            ctx.accounts.system_program.to_account_info(),
+            system_program::Transfer {
+                from: pool.to_account_info(),
+                to: ctx.accounts.claimer.to_account_info(),
+            },
+            signer_seeds,
+        );
+        system_program::transfer(cpi_ctx, lamports_to_send)?;
+
+        pool.total_claimed = pool.total_claimed.checked_add(lamports_to_send).unwrap();
+        record.claimed = true;
+
+        emit!(RewardClaimed {
+            contest_id,
+            wallet: ctx.accounts.claimer.key(),
+            lamports: lamports_to_send,
         });
+
+        Ok(())
+    }
+
+    /// admin 지갑 변경 (긴급 상황용).
+    pub fn transfer_admin(ctx: Context<AdminOnly>, new_admin: Pubkey) -> Result<()> {
+        let cfg = &mut ctx.accounts.program_config;
+        let old_admin = cfg.admin;
+        cfg.admin = new_admin;
+
+        emit!(AdminTransferred { old_admin, new_admin });
 
         Ok(())
     }
@@ -254,52 +278,57 @@ fn within_tolerance(actual: u64, expected: u64, tolerance: u64) -> bool {
     }
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq)]
+// ─── Data Structures ─────────────────────────────────────────────────────────
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
 pub enum Role {
     Creator,
     Voter,
-    NftHolder,
     Platform,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
-pub struct Recipient {
+pub struct Allocation {
     pub wallet: Pubkey,
-    pub token_account: Pubkey,
     pub role: Role,
-    pub amount: u64,
+    pub lamports: u64,
 }
 
+// ─── Accounts ─────────────────────────────────────────────────────────────────
+
 #[account]
-pub struct Config {
+#[derive(InitSpace)]
+pub struct ProgramConfig {
     pub admin: Pubkey,
-    pub treasury: Pubkey,
-    pub samu_mint: Pubkey,
     pub creator_share: u16,
     pub voter_share: u16,
-    pub nft_holder_share: u16,
     pub platform_share: u16,
-    pub total_distributions: u64,
-    pub total_distributed_amount: u64,
-    pub is_locked: bool,
+    pub total_deposited_lamports: u64,
     pub bump: u8,
 }
 
 #[account]
-pub struct DistributionRecord {
+#[derive(InitSpace)]
+pub struct EscrowPool {
     pub contest_id: u64,
-    pub distribution_index: u8,
-    pub total_amount: u64,
-    pub distributed_total: u64,
-    pub creator_total: u64,
-    pub voter_total: u64,
-    pub nft_holder_total: u64,
-    pub platform_total: u64,
-    pub recipient_count: u16,
-    pub timestamp: i64,
-    pub admin: Pubkey,
+    pub total_deposited: u64,
+    pub total_claimed: u64,
+    pub allocation_count: u64,
     pub bump: u8,
 }
+
+#[account]
+#[derive(InitSpace)]
+pub struct AllocationRecord {
+    pub contest_id: u64,
+    pub wallet: Pubkey,
+    pub role: Role,
+    pub lamports: u64,
+    pub claimed: bool,
+    pub bump: u8,
+}
+
+// ─── Context Structs ──────────────────────────────────────────────────────────
 
 #[derive(Accounts)]
 pub struct Initialize<'info> {
@@ -309,16 +338,61 @@ pub struct Initialize<'info> {
     #[account(
         init,
         payer = admin,
-        space = 8 + std::mem::size_of::<Config>(),
+        space = 8 + ProgramConfig::INIT_SPACE,
         seeds = [b"config"],
         bump,
     )]
-    pub config: Account<'info, Config>,
+    pub program_config: Account<'info, ProgramConfig>,
 
-    /// CHECK: Treasury wallet address, validated by admin
-    pub treasury: UncheckedAccount<'info>,
+    pub system_program: Program<'info, System>,
+}
 
-    pub samu_mint: Account<'info, Mint>,
+#[derive(Accounts)]
+#[instruction(contest_id: u64)]
+pub struct DepositAndAllocate<'info> {
+    #[account(
+        mut,
+        seeds = [b"config"],
+        bump = program_config.bump,
+        constraint = program_config.admin == admin.key() @ ErrorCode::Unauthorized,
+    )]
+    pub program_config: Account<'info, ProgramConfig>,
+
+    #[account(mut)]
+    pub admin: Signer<'info>,
+
+    #[account(
+        init_if_needed,
+        payer = admin,
+        space = 8 + EscrowPool::INIT_SPACE,
+        seeds = [b"escrow", &contest_id.to_le_bytes()],
+        bump,
+    )]
+    pub escrow_pool: Account<'info, EscrowPool>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(contest_id: u64)]
+pub struct Claim<'info> {
+    #[account(
+        mut,
+        seeds = [b"alloc", &contest_id.to_le_bytes(), claimer.key().as_ref()],
+        bump = allocation_record.bump,
+        constraint = allocation_record.wallet == claimer.key() @ ErrorCode::Unauthorized,
+    )]
+    pub allocation_record: Account<'info, AllocationRecord>,
+
+    #[account(
+        mut,
+        seeds = [b"escrow", &contest_id.to_le_bytes()],
+        bump = escrow_pool.bump,
+    )]
+    pub escrow_pool: Account<'info, EscrowPool>,
+
+    #[account(mut)]
+    pub claimer: Signer<'info>,
 
     pub system_program: Program<'info, System>,
 }
@@ -328,83 +402,39 @@ pub struct AdminOnly<'info> {
     #[account(
         mut,
         seeds = [b"config"],
-        bump = config.bump,
-        constraint = config.admin == admin.key() @ ErrorCode::Unauthorized,
+        bump = program_config.bump,
+        constraint = program_config.admin == admin.key() @ ErrorCode::Unauthorized,
     )]
-    pub config: Account<'info, Config>,
+    pub program_config: Account<'info, ProgramConfig>,
 
     pub admin: Signer<'info>,
 }
 
-#[derive(Accounts)]
-#[instruction(contest_id: u64, distribution_index: u8)]
-pub struct DistributeRewards<'info> {
-    #[account(
-        mut,
-        seeds = [b"config"],
-        bump = config.bump,
-        constraint = config.admin == admin.key() @ ErrorCode::Unauthorized,
-    )]
-    pub config: Account<'info, Config>,
-
-    #[account(mut)]
-    pub admin: Signer<'info>,
-
-    #[account(
-        init,
-        payer = admin,
-        space = 8 + std::mem::size_of::<DistributionRecord>(),
-        seeds = [b"distribution", &contest_id.to_le_bytes(), &[distribution_index]],
-        bump,
-    )]
-    pub distribution_record: Account<'info, DistributionRecord>,
-
-    #[account(
-        mut,
-        constraint = treasury_token_account.mint == config.samu_mint @ ErrorCode::InvalidMint,
-        constraint = treasury_token_account.owner == config.key() @ ErrorCode::InvalidTreasury,
-    )]
-    pub treasury_token_account: Account<'info, TokenAccount>,
-
-    pub token_program: Program<'info, Token>,
-    pub system_program: Program<'info, System>,
-}
+// ─── Events ───────────────────────────────────────────────────────────────────
 
 #[event]
 pub struct ConfigInitialized {
     pub admin: Pubkey,
-    pub treasury: Pubkey,
     pub creator_share: u16,
     pub voter_share: u16,
-    pub nft_holder_share: u16,
     pub platform_share: u16,
 }
 
 #[event]
-pub struct SharesUpdated {
-    pub creator_share: u16,
-    pub voter_share: u16,
-    pub nft_holder_share: u16,
-    pub platform_share: u16,
-}
-
-#[event]
-pub struct ConfigLocked {
-    pub admin: Pubkey,
-}
-
-#[event]
-pub struct RewardsDistributed {
+pub struct FundsDeposited {
     pub contest_id: u64,
-    pub distribution_index: u8,
-    pub total_amount: u64,
-    pub distributed_total: u64,
+    pub total_lamports: u64,
     pub creator_total: u64,
     pub voter_total: u64,
-    pub nft_holder_total: u64,
     pub platform_total: u64,
-    pub recipient_count: u16,
-    pub timestamp: i64,
+    pub allocation_count: u16,
+}
+
+#[event]
+pub struct RewardClaimed {
+    pub contest_id: u64,
+    pub wallet: Pubkey,
+    pub lamports: u64,
 }
 
 #[event]
@@ -413,32 +443,26 @@ pub struct AdminTransferred {
     pub new_admin: Pubkey,
 }
 
+// ─── Errors ───────────────────────────────────────────────────────────────────
+
 #[error_code]
 pub enum ErrorCode {
-    #[msg("Share percentages must total 10000 (100%)")]
+    #[msg("Share percentages must total 10000 (100.00%)")]
     InvalidShareTotal,
     #[msg("Only admin can perform this action")]
     Unauthorized,
-    #[msg("Configuration is permanently locked")]
-    ConfigLocked,
-    #[msg("Distribution amount must be greater than 0")]
+    #[msg("Amount must be greater than 0")]
     InvalidAmount,
-    #[msg("Must have at least one recipient")]
-    NoRecipients,
-    #[msg("Maximum 50 recipients per distribution")]
-    TooManyRecipients,
-    #[msg("Distributed amounts exceed total")]
-    ExceedsTotal,
+    #[msg("Must have at least one allocation")]
+    NoAllocations,
+    #[msg("Maximum 50 allocations per transaction")]
+    TooManyAllocations,
     #[msg("Per-role totals do not match configured share ratios")]
     ShareMismatch,
-    #[msg("Remaining accounts count does not match non-zero recipients")]
-    RecipientCountMismatch,
-    #[msg("Recipient account does not match expected token account")]
-    RecipientMismatch,
-    #[msg("Token account mint does not match SAMU mint")]
-    InvalidMint,
-    #[msg("Token account owner does not match recipient wallet")]
-    InvalidTokenOwner,
-    #[msg("Invalid treasury token account")]
-    InvalidTreasury,
+    #[msg("Remaining accounts count does not match allocations")]
+    AllocationCountMismatch,
+    #[msg("Allocation PDA address does not match expected")]
+    AllocationPdaMismatch,
+    #[msg("This reward has already been claimed")]
+    AlreadyClaimed,
 }
