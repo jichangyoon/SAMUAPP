@@ -134,7 +134,7 @@ pub mod samu_rewards {
 
         record.contest_id = contest_id;
         record.wallet = recipient_wallet;
-        record.role = role;
+        record.role = role.clone();
         record.lamports = record.lamports.checked_add(lamports).unwrap();
         record.bump = ctx.bumps.allocation_record;
 
