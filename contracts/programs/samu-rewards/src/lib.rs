@@ -167,9 +167,10 @@ pub mod samu_rewards {
         let pool = &mut ctx.accounts.escrow_pool;
 
         let escrow_bump = pool.bump;
+        let contest_id_bytes = contest_id.to_le_bytes();
         let seeds = &[
             b"escrow".as_ref(),
-            &contest_id.to_le_bytes(),
+            contest_id_bytes.as_ref(),
             &[escrow_bump],
         ];
         let signer_seeds = &[&seeds[..]];
