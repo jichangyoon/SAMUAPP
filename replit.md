@@ -28,7 +28,7 @@ The platform operates on a pipeline: Meme Contest → Goods (Printful) → Ecosy
 - **Order Geocoding:** Uses OpenStreetMap Nominatim API to get precise latitude/longitude for orders based on postal code and country.
 - **My Profile:** Provides sections for "My Memes" (grouped by contest), "My Votes," "Rewards" (summary of earned and claimable SOL), and "Activity" (creator/voter stats and earnings).
 - **Archiving System:** Processes ended contests for archiving into Cloudflare R2 with parallel processing and retry mechanisms, ensuring DB atomicity for state transitions.
-- **Smart Contract Integration (Phase 2 - Devnet 배포 완료, Mainnet 대기 중):** Solana 프로그램 `samu-rewards`가 Anchor 프레임워크로 개발 완료되어 Devnet 배포에 성공했습니다. 인스트럭션: `initialize` (최초 설정), `deposit_profit` (SOL 예치 + 45/40/15 비율 검증), `record_allocation` (수령인별 PDA 생성), `claim` (유저가 직접 SOL 수령). 서버 코드(`server/utils/solana.ts`)에 완전 통합됨. `SAMU_REWARDS_PROGRAM_ID` env 설정 시 자동 활성화, 미설정 시 기존 DB 기반 분배로 폴백 (완전 하위 호환).
+- **Smart Contract Integration (Phase 2 - Devnet 테스트 중, Mainnet 대기 중):** Solana 프로그램 `samu-rewards`가 Anchor 프레임워크로 개발 완료되어 Devnet 배포 및 부분 검증 완료. Devnet 검증 결과: `initialize` ✅, `deposit_profit` ✅ (실제 SOL 이동 확인), `record_allocation` ✅, `claim` ⚠️ (Playground UI 한계로 직접 테스트 미완 — 코드 버그 수정 완료: signer seeds의 `contest_id_bytes` 로컬 바인딩 패턴 적용). 서버 코드(`server/utils/solana.ts`)에 완전 통합됨. `SAMU_REWARDS_PROGRAM_ID` env 설정 시 자동 활성화, 미설정 시 기존 DB 기반 분배로 폴백 (완전 하위 호환). **다음 단계:** Mainnet 배포 후 실제 앱에서 굿즈 구매 → 배송 완료 → claim 전체 흐름 end-to-end 검증 필요.
 
 **Technical Stack:**
 - **Frontend:** React 18, TypeScript, Vite, TanStack Query, Wouter, React Hook Form + Zod, Tailwind CSS, shadcn/ui, Vaul. Uses Poppins font and supports dark theme.

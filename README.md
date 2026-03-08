@@ -219,12 +219,22 @@ Phase 2 moves reward distribution on-chain, making the process **trustless and p
 | `record_allocation` | server (admin keypair) | 수령인 1명씩 allocation_record PDA 생성/업데이트 |
 | `claim` | user (본인 서명) | escrow_pool → 본인 지갑으로 SOL 수령 |
 
+### Devnet 테스트 결과
+
+| Instruction | 상태 | 비고 |
+|---|---|---|
+| `initialize` | ✅ 검증 완료 | 비율 설정 PDA 생성 확인 |
+| `deposit_profit` | ✅ 검증 완료 | 실제 SOL escrow PDA 이동 확인 |
+| `record_allocation` | ✅ 검증 완료 | 수령인별 allocation PDA 생성 확인 |
+| `claim` | ⚠️ 미검증 | Playground UI 한계 — 코드 수정 완료 (signer seeds 버그 픽스), 실제 앱 연동 시 검증 필요 |
+
 ### Phase 2 Roadmap
 1. ✅ **Contract logic 완성** — `deposit_profit` + `record_allocation` + `claim` 인스트럭션
-2. ✅ **Devnet 배포 성공** — Solana Playground에서 빌드 및 배포 검증 완료
+2. ✅ **Devnet 배포 성공** — Solana Playground에서 빌드/배포, 3개 인스트럭션 검증
 3. ✅ **Server integration** — `server/utils/solana.ts`에 완전 통합, `isContractEnabled()` 플래그로 폴백 지원
 4. ✅ **Frontend integration** — 클레임 흐름: 유저가 직접 서명 (contract mode) vs 서버 서명 (legacy mode)
 5. ⏳ **Mainnet deploy** — `SAMU_REWARDS_PROGRAM_ID` Replit Secret 등록 후 즉시 활성화
+6. ⏳ **End-to-end 검증** — Mainnet에서 굿즈 구매 → 배송 완료 → claim 전체 흐름 실검증
 
 ## Roadmap
 
@@ -242,12 +252,14 @@ Phase 2 moves reward distribution on-chain, making the process **trustless and p
 - Security hardening: webhook auth, SQL injection fix, double-claim prevention, race condition fixes
 - Performance: batch queries, DB indexes, N+1 elimination
 
-### Phase 2 (Devnet 완료 — Mainnet 대기 중)
+### Phase 2 (Devnet 부분 검증 완료 — Mainnet 대기 중)
 - ✅ **Smart Contract 개발 완료**: `samu-rewards` Anchor 프로그램 (deposit_profit / record_allocation / claim)
-- ✅ **Devnet 배포 성공**: Solana Playground에서 빌드 및 배포 검증
+- ✅ **Devnet 배포 성공**: Solana Playground에서 빌드/배포, initialize + deposit_profit + record_allocation 검증
+- ⚠️ **claim 코드 수정 완료**: signer seeds `contest_id_bytes` 로컬 바인딩 버그 픽스 — Playground UI 한계로 테스트 미완
 - ✅ **서버 통합 완료**: `isContractEnabled()` 플래그로 완전 하위 호환
 - ✅ **프론트엔드 통합 완료**: 컨트랙트 모드/레거시 모드 자동 분기
 - ⏳ **Mainnet 배포**: `SAMU_REWARDS_PROGRAM_ID` 시크릿 등록 시 즉시 활성화
+- ⏳ **End-to-end 검증**: Mainnet에서 굿즈 구매 → 배송 완료 → claim 전체 흐름 실검증
 
 ### Backlog (Low Priority / On Hold)
 - Escrow Refund: Auto-refund for failed/cancelled Printful orders
