@@ -210,12 +210,21 @@ Phase 2 moves reward distribution on-chain, making the process **trustless and p
 - **Smart Contract**: Executes the actual SOL transfers on-chain (trustless, auditable)
 - Users can independently verify every distribution on Solana Explorer
 
+### Instructions
+
+| Instruction | Caller | Description |
+|---|---|---|
+| `initialize` | admin (1회) | 45/40/15 비율 설정, ProgramConfig PDA 생성 |
+| `deposit_profit` | server (admin keypair) | 굿즈 수익 SOL → escrow_pool PDA 예치, 비율 검증 |
+| `record_allocation` | server (admin keypair) | 수령인 1명씩 allocation_record PDA 생성/업데이트 |
+| `claim` | user (본인 서명) | escrow_pool → 본인 지갑으로 SOL 수령 |
+
 ### Phase 2 Roadmap
-1. **Finalize contract logic** — complete `distribute` instruction based on existing skeleton
-2. **Devnet deploy & test** — simulate full reward cycle end-to-end
-3. **Server integration** — replace `sendSolFromEscrow` with contract CPI calls
-4. **Frontend integration** — claim flow uses contract TX signing
-5. **Mainnet deploy** — after full verification
+1. ✅ **Contract logic 완성** — `deposit_profit` + `record_allocation` + `claim` 인스트럭션
+2. ✅ **Devnet 배포 성공** — Solana Playground에서 빌드 및 배포 검증 완료
+3. ✅ **Server integration** — `server/utils/solana.ts`에 완전 통합, `isContractEnabled()` 플래그로 폴백 지원
+4. ✅ **Frontend integration** — 클레임 흐름: 유저가 직접 서명 (contract mode) vs 서버 서명 (legacy mode)
+5. ⏳ **Mainnet deploy** — `SAMU_REWARDS_PROGRAM_ID` Replit Secret 등록 후 즉시 활성화
 
 ## Roadmap
 
@@ -233,8 +242,12 @@ Phase 2 moves reward distribution on-chain, making the process **trustless and p
 - Security hardening: webhook auth, SQL injection fix, double-claim prevention, race condition fixes
 - Performance: batch queries, DB indexes, N+1 elimination
 
-### Phase 2 (Current Focus)
-- **Smart Contract Migration**: Move reward distribution fully on-chain via Rust/Anchor
+### Phase 2 (Devnet 완료 — Mainnet 대기 중)
+- ✅ **Smart Contract 개발 완료**: `samu-rewards` Anchor 프로그램 (deposit_profit / record_allocation / claim)
+- ✅ **Devnet 배포 성공**: Solana Playground에서 빌드 및 배포 검증
+- ✅ **서버 통합 완료**: `isContractEnabled()` 플래그로 완전 하위 호환
+- ✅ **프론트엔드 통합 완료**: 컨트랙트 모드/레거시 모드 자동 분기
+- ⏳ **Mainnet 배포**: `SAMU_REWARDS_PROGRAM_ID` 시크릿 등록 시 즉시 활성화
 
 ### Backlog (Low Priority / On Hold)
 - Escrow Refund: Auto-refund for failed/cancelled Printful orders
