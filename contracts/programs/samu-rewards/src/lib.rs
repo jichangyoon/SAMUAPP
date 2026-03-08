@@ -130,6 +130,9 @@ pub mod samu_rewards {
             ErrorCode::AllocationCountMismatch
         );
 
+        let admin_info = ctx.accounts.admin.to_account_info();
+        let system_program_info = ctx.accounts.system_program.to_account_info();
+
         for (i, alloc) in allocations.iter().enumerate() {
             let alloc_account_info = &ctx.remaining_accounts[i];
 
@@ -170,9 +173,9 @@ pub mod samu_rewards {
                 anchor_lang::solana_program::program::invoke_signed(
                     &ix,
                     &[
-                        ctx.accounts.admin.to_account_info(),
+                        admin_info.clone(),
                         alloc_account_info.clone(),
-                        ctx.accounts.system_program.to_account_info(),
+                        system_program_info.clone(),
                     ],
                     &[&[
                         b"alloc",
