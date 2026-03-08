@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::system_program;
 
-declare_id!("11111111111111111111111111111111");
+declare_id!("FbKgJNWn8tn2BTzGZ2qBWRh4zYSLbdPbQjBCzESdhPU7");
 
 const TOLERANCE_BPS: u64 = 10;
 
