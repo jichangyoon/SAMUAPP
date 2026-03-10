@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ImageCarousel } from "@/components/image-carousel";
 import { UserInfoModal } from "@/components/user-info-modal";
 import { NativeShare } from "@/utils/native-share";
+import { getMediaType } from "@/utils/media-utils";
 import type { Meme } from "@shared/schema";
 
 interface MemeDetailModalProps {
@@ -147,12 +148,23 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
               >
-                <img
-                  key={galleryIndex}
-                  src={galleryImages[galleryIndex]}
-                  alt={`${meme.title} ${galleryIndex + 1}`}
-                  className="max-h-[65dvh] max-w-full object-contain"
-                />
+                {getMediaType(galleryImages[galleryIndex]) === 'video' ? (
+                  <video
+                    key={galleryIndex}
+                    src={galleryImages[galleryIndex]}
+                    className="max-h-[65dvh] max-w-full object-contain"
+                    controls
+                    autoPlay
+                    playsInline
+                  />
+                ) : (
+                  <img
+                    key={galleryIndex}
+                    src={galleryImages[galleryIndex]}
+                    alt={`${meme.title} ${galleryIndex + 1}`}
+                    className="max-h-[65dvh] max-w-full object-contain"
+                  />
+                )}
                 {galleryIndex > 0 && (
                   <button
                     onClick={(e) => { e.stopPropagation(); goToPrev(); }}
