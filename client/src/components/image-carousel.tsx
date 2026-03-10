@@ -77,11 +77,11 @@ export function ImageCarousel({ images, alt, className = "", showControls = fals
         style={{ transform: `translateX(-${currentIndex * 100}%)` }}
       >
         {images.map((src, idx) => (
-          <div key={idx} className={`min-w-full flex-shrink-0 ${containMode ? '' : 'h-full'}`}>
+          <div key={idx} className="min-w-full flex-shrink-0 h-full">
             <MediaDisplay
               src={src}
               alt={`${alt} ${idx + 1}`}
-              className={containMode ? "w-full" : "w-full h-full"}
+              className="w-full h-full"
               showControls={instagramMode ? false : (showControls && idx === currentIndex)}
               onClick={onClick}
               muted={true}

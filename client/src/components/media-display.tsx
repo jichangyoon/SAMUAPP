@@ -305,7 +305,7 @@ export function MediaDisplay({
         ref={imgCallbackRef}
         src={src}
         alt={alt}
-        className={`${containMode ? 'object-contain w-full' : 'object-cover w-full h-full'} ${onClick ? 'cursor-pointer' : ''} transition-opacity duration-200 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+        className={`${containMode ? 'object-contain w-full h-full' : 'object-cover w-full h-full'} ${onClick ? 'cursor-pointer' : ''} transition-opacity duration-200 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
         onClick={onClick ? (e) => {
           e.preventDefault();
           e.stopPropagation();
