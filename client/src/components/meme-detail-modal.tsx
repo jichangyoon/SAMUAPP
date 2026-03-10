@@ -2,8 +2,8 @@ import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } f
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowUp, Share2, Twitter, Send, Calendar, Trophy, ChevronDown, ChevronUp, Users, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { ArrowUp, Share2, Twitter, Send, Calendar, Trophy, ChevronDown, ChevronUp, Users, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MediaDisplay } from "@/components/media-display";
 import { ImageCarousel } from "@/components/image-carousel";
@@ -70,6 +70,9 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
   const [showVoters, setShowVoters] = useState(false);
   const [selectedVoterWallet, setSelectedVoterWallet] = useState<string | null>(null);
   const [selectedVoterName, setSelectedVoterName] = useState<string>("");
+  const [galleryIndex, setGalleryIndex] = useState(0);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   const { data: votersData, isLoading: votersLoading, isError: votersError, refetch: refetchVoters } = useQuery<{ voters: Voter[]; totalVoters: number }>({
     queryKey: [`/api/memes/${meme.id}/voters`],
@@ -78,6 +81,26 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
   });
 
 
+
+  const galleryImages = [meme.imageUrl, ...(meme.additionalImages || [])];
+  const galleryTotal = galleryImages.length;
+
+  const goToPrev = () => setGalleryIndex(i => Math.max(0, i - 1));
+  const goToNext = () => setGalleryIndex(i => Math.min(galleryTotal - 1, i + 1));
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+  const handleTouchEnd = () => {
+    const diff = touchStartX.current - touchEndX.current;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) goToNext();
+      else goToPrev();
+    }
+  };
 
   const shareToTwitter = () => {
     // Use production URL for Blinks
@@ -107,13 +130,56 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {/* Meme Media */}
           <div className="w-full max-w-md mx-auto">
-            <ImageCarousel
-              images={[meme.imageUrl, ...(meme.additionalImages || [])]}
-              alt={meme.title}
-              className="w-full h-[65dvh] rounded-lg overflow-hidden"
-              instagramMode={true}
-              containMode={true}
-            />
+            {galleryTotal === 1 ? (
+              <ImageCarousel
+                images={galleryImages}
+                alt={meme.title}
+                className="w-full rounded-lg overflow-hidden"
+                instagramMode={true}
+                containMode={true}
+              />
+            ) : (
+              <div
+                className="relative bg-black rounded-lg overflow-hidden flex items-center justify-center"
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                <img
+                  key={galleryIndex}
+                  src={galleryImages[galleryIndex]}
+                  alt={`${meme.title} ${galleryIndex + 1}`}
+                  className="max-h-[65dvh] max-w-full object-contain"
+                />
+                {galleryIndex > 0 && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); goToPrev(); }}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 rounded-full p-1.5 text-white"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                )}
+                {galleryIndex < galleryTotal - 1 && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); goToNext(); }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 rounded-full p-1.5 text-white"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                )}
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                  {galleryImages.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={(e) => { e.stopPropagation(); setGalleryIndex(idx); }}
+                      className={`rounded-full transition-all duration-200 ${
+                        idx === galleryIndex ? 'w-2 h-2 bg-white' : 'w-1.5 h-1.5 bg-white/40'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Meme Details */}
