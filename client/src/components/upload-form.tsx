@@ -154,15 +154,13 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
     }
 
     setIsUploading(true);
-    setUploadProgress(0);
+    setUploadProgress(10);
+    const uploadedUrls: string[] = [];
     try {
-      const uploadedUrls: string[] = [];
-      for (let i = 0; i < selectedFiles.length; i++) {
-        setUploadProgress(Math.round(((i) / selectedFiles.length) * 100));
-        const url = await uploadFile(selectedFiles[i].file);
-        uploadedUrls.push(url);
-      }
-      setUploadProgress(100);
+      // 병렬 업로드 - 모든 파일을 동시에 업로드
+      const results = await Promise.all(selectedFiles.map(m => uploadFile(m.file)));
+      uploadedUrls.push(...results);
+      setUploadProgress(80);
 
       const memeData = {
         title: values.title,
@@ -182,6 +180,7 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       });
 
       if (!response.ok) throw new Error('Failed to submit meme');
+      setUploadProgress(100);
 
       const newMeme = await response.json();
 
@@ -203,9 +202,17 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       selectedFiles.forEach(f => URL.revokeObjectURL(f.preview));
       setSelectedFiles([]);
       onSuccess();
-      onClose?.();
     } catch (error: any) {
-      queryClient.refetchQueries({ queryKey: ['/api/memes'], type: 'active' });
+      // R2에 이미 업로드된 파일 정리 (고아 파일 방지)
+      if (uploadedUrls.length > 0) {
+        uploadedUrls.forEach(url => {
+          fetch('/api/uploads/delete', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileUrl: url }),
+          }).catch(() => {});
+        });
+      }
       toast({ title: "Upload Failed", description: error.message || "Failed to submit meme. Please try again.", variant: "destructive" });
     } finally {
       setIsUploading(false);
