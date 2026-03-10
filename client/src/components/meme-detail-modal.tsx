@@ -6,6 +6,7 @@ import { ArrowUp, Share2, Twitter, Send, Calendar, Trophy, ChevronDown, ChevronU
 import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ImageCarousel } from "@/components/image-carousel";
+import { MediaDisplay } from "@/components/media-display";
 import { UserInfoModal } from "@/components/user-info-modal";
 import { NativeShare } from "@/utils/native-share";
 import { getMediaType } from "@/utils/media-utils";
@@ -149,13 +150,14 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
                 onTouchEnd={handleTouchEnd}
               >
                 {getMediaType(galleryImages[galleryIndex]) === 'video' ? (
-                  <video
+                  <MediaDisplay
                     key={galleryIndex}
                     src={galleryImages[galleryIndex]}
-                    className="max-h-[65dvh] max-w-full object-contain"
-                    controls
-                    autoPlay
-                    playsInline
+                    alt={`${meme.title} ${galleryIndex + 1}`}
+                    className="max-h-[65dvh] max-w-full"
+                    instagramMode={true}
+                    containMode={true}
+                    autoPlayOnVisible={true}
                   />
                 ) : (
                   <img
