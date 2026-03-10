@@ -3,9 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowUp, Share2, Twitter, Send, Calendar, Trophy, ChevronDown, ChevronUp, Users, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { MediaDisplay } from "@/components/media-display";
 import { ImageCarousel } from "@/components/image-carousel";
 import { UserInfoModal } from "@/components/user-info-modal";
 import { NativeShare } from "@/utils/native-share";
@@ -74,13 +73,16 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
+  useEffect(() => {
+    setGalleryIndex(0);
+    setShowVoters(false);
+  }, [meme.id]);
+
   const { data: votersData, isLoading: votersLoading, isError: votersError, refetch: refetchVoters } = useQuery<{ voters: Voter[]; totalVoters: number }>({
     queryKey: [`/api/memes/${meme.id}/voters`],
     enabled: isOpen && showVoters,
     staleTime: 30000,
   });
-
-
 
   const galleryImages = [meme.imageUrl, ...(meme.additionalImages || [])];
   const galleryTotal = galleryImages.length;
