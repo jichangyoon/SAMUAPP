@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { MediaDisplay } from "@/components/media-display";
+import { getMediaType } from "@/utils/media-utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface ImageCarouselProps {
@@ -17,7 +18,6 @@ export function ImageCarousel({ images, alt, className = "", showControls = fals
   const [currentIndex, setCurrentIndex] = useState(0);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   if (!images || images.length === 0) {
     return <div className={`bg-accent flex items-center justify-center ${className}`}><span className="text-muted-foreground text-sm">No image</span></div>;
@@ -40,9 +40,9 @@ export function ImageCarousel({ images, alt, className = "", showControls = fals
     );
   }
 
-  const goTo = useCallback((index: number) => {
+  const goTo = (index: number) => {
     setCurrentIndex(Math.max(0, Math.min(images.length - 1, index)));
-  }, [images.length]);
+  };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -54,45 +54,41 @@ export function ImageCarousel({ images, alt, className = "", showControls = fals
 
   const handleTouchEnd = () => {
     const diff = touchStartX.current - touchEndX.current;
-    const threshold = 50;
-    if (Math.abs(diff) > threshold) {
-      if (diff > 0 && currentIndex < images.length - 1) {
-        goTo(currentIndex + 1);
-      } else if (diff < 0 && currentIndex > 0) {
-        goTo(currentIndex - 1);
-      }
+    if (Math.abs(diff) > 50) {
+      if (diff > 0 && currentIndex < images.length - 1) goTo(currentIndex + 1);
+      else if (diff < 0 && currentIndex > 0) goTo(currentIndex - 1);
     }
   };
 
+  const currentSrc = images[currentIndex];
+  const isVideo = getMediaType(currentSrc) === 'video';
+
   return (
     <div
-      className={`relative overflow-hidden touch-pan-y ${className}`}
-      ref={containerRef}
+      className={`relative bg-black overflow-hidden flex items-center justify-center ${className}`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onClick={onClick}
     >
-      <div
-        className="flex transition-transform duration-300 ease-out h-full"
-        style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-      >
-        {images.map((src, idx) => (
-          <div key={idx} className={`min-w-full flex-shrink-0 ${containMode ? '' : 'h-full'}`}>
-            <MediaDisplay
-              src={src}
-              alt={`${alt} ${idx + 1}`}
-              className={containMode ? "w-full" : "w-full h-full"}
-              showControls={instagramMode ? false : (showControls && idx === currentIndex)}
-              onClick={onClick}
-              muted={true}
-              loop={true}
-              autoPlayOnVisible={autoPlayVideo && idx === currentIndex}
-              containMode={containMode}
-              instagramMode={instagramMode && idx === currentIndex}
-            />
-          </div>
-        ))}
-      </div>
+      {isVideo ? (
+        <video
+          key={currentIndex}
+          src={currentSrc}
+          className="w-full h-full object-contain"
+          muted
+          loop
+          playsInline
+          autoPlay={autoPlayVideo}
+        />
+      ) : (
+        <img
+          key={currentIndex}
+          src={currentSrc}
+          alt={`${alt} ${currentIndex + 1}`}
+          className="w-full h-full object-contain"
+        />
+      )}
 
       {currentIndex > 0 && (
         <button
