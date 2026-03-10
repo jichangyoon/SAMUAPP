@@ -65,13 +65,16 @@ export function ImageCarousel({ images, alt, className = "", showControls = fals
   };
 
   return (
-    <div className={`relative overflow-hidden ${className}`} ref={containerRef}>
+    <div
+      className={`relative overflow-hidden touch-pan-y ${className}`}
+      ref={containerRef}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       <div
         className="flex transition-transform duration-300 ease-out h-full"
         style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
       >
         {images.map((src, idx) => (
           <div key={idx} className={`min-w-full flex-shrink-0 ${containMode ? '' : 'h-full'}`}>
