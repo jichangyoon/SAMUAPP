@@ -15,8 +15,12 @@ import { Upload, X, Images } from "lucide-react";
 import { getMediaType } from "@/utils/media-utils";
 
 const MAX_FILES = 5;
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;   // 5MB
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024;  // 50MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/mov', 'video/avi', 'video/webm'];
+
+const getMaxFileSize = (file: File) => file.type.startsWith('video/') ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
+const getMaxFileSizeLabel = (file: File) => file.type.startsWith('video/') ? '50MB' : '5MB';
 
 const uploadSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title too long"),
@@ -90,8 +94,8 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
         toast({ title: "Invalid file type", description: `${file.name} is not supported`, variant: "destructive" });
         return false;
       }
-      if (file.size > MAX_FILE_SIZE) {
-        toast({ title: "File too large", description: `${file.name} exceeds 5MB`, variant: "destructive" });
+      if (file.size > getMaxFileSize(file)) {
+        toast({ title: "File too large", description: `${file.name} exceeds ${getMaxFileSizeLabel(file)}`, variant: "destructive" });
         return false;
       }
       return true;
@@ -281,7 +285,7 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
                   <>
                     <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
                     <p className="text-muted-foreground text-sm mb-2">
-                      Upload images or videos (max {MAX_FILES}, 5MB each)<br />
+                      Upload images (max 5MB) or videos (max 50MB), up to {MAX_FILES} files<br />
                       Drag & drop or click to browse
                     </p>
                     <label htmlFor="file-upload" className="cursor-pointer">
