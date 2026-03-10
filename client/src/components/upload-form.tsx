@@ -194,7 +194,7 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
         queryClient.setQueryData(['/api/memes', { sortBy: 'votes' }], addMemeToCache);
       }
 
-      queryClient.invalidateQueries({ queryKey: ['/api/memes'], exact: false });
+      queryClient.refetchQueries({ queryKey: ['/api/memes'], type: 'active' });
       queryClient.invalidateQueries({ queryKey: ['user-stats'] });
       window.dispatchEvent(new CustomEvent('memeUploaded'));
 
@@ -205,7 +205,7 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       onSuccess();
       onClose?.();
     } catch (error: any) {
-      queryClient.invalidateQueries({ queryKey: ['/api/memes'], exact: false });
+      queryClient.refetchQueries({ queryKey: ['/api/memes'], type: 'active' });
       toast({ title: "Upload Failed", description: error.message || "Failed to submit meme. Please try again.", variant: "destructive" });
     } finally {
       setIsUploading(false);

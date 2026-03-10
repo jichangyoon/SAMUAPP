@@ -377,7 +377,7 @@ export default function Home() {
   // Listen for new meme uploads and refresh data
   useEffect(() => {
     const handleMemeUpload = () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+      queryClient.refetchQueries({ queryKey: ['/api/memes'], type: 'active' });
     };
 
     window.addEventListener('memeUploaded', handleMemeUpload);
@@ -1175,7 +1175,7 @@ export default function Home() {
                 onClose={() => setShowUploadForm(false)}
                 onSuccess={() => {
                   setShowUploadForm(false);
-                  queryClient.invalidateQueries({ queryKey: ['/api/memes'] });
+                  queryClient.refetchQueries({ queryKey: ['/api/memes'], type: 'active' });
                 }}
               />
             </Suspense>
