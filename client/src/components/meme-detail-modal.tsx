@@ -86,6 +86,7 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
               className="w-full h-full rounded-lg overflow-hidden"
               instagramMode={true}
               containMode={true}
+              autoPlayVideo={true}
             />
           </div>
 
