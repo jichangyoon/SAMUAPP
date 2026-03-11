@@ -103,7 +103,7 @@ function InstagramVideoPlayer({ src, className = "", containMode = false }: { sr
       <video
         ref={videoRef}
         src={src}
-        className={`w-full ${containMode ? 'object-contain' : 'h-full object-cover'} cursor-pointer transition-opacity duration-200 ${videoReady ? 'opacity-100' : 'opacity-0'}`}
+        className={`w-full h-full ${containMode ? 'object-contain' : 'object-cover'} cursor-pointer transition-opacity duration-200 ${videoReady ? 'opacity-100' : 'opacity-0'}`}
         autoPlay
         muted
         loop
