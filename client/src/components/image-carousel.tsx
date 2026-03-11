@@ -20,7 +20,9 @@ export function ImageCarousel({ images, alt, className = "", showControls = fals
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
   const touchEndX = useRef(0);
+  const dragDirectionLocked = useRef<'horizontal' | 'vertical' | null>(null);
 
   if (!images || images.length === 0) {
     return <div className={`bg-accent flex items-center justify-center ${className}`}><span className="text-muted-foreground text-sm">No image</span></div>;
@@ -50,20 +52,34 @@ export function ImageCarousel({ images, alt, className = "", showControls = fals
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
     touchEndX.current = e.touches[0].clientX;
-    setIsDragging(true);
+    dragDirectionLocked.current = null;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.touches[0].clientX;
-    setDragOffset(e.touches[0].clientX - touchStartX.current);
+    const dx = e.touches[0].clientX - touchStartX.current;
+    const dy = e.touches[0].clientY - touchStartY.current;
+    if (dragDirectionLocked.current === null) {
+      if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
+        dragDirectionLocked.current = Math.abs(dx) > Math.abs(dy) ? 'horizontal' : 'vertical';
+      }
+      return;
+    }
+    if (dragDirectionLocked.current === 'horizontal') {
+      touchEndX.current = e.touches[0].clientX;
+      setDragOffset(dx);
+      setIsDragging(true);
+    }
   };
 
   const handleTouchEnd = () => {
     const diff = touchStartX.current - touchEndX.current;
+    const wasHorizontal = dragDirectionLocked.current === 'horizontal';
     setIsDragging(false);
     setDragOffset(0);
-    if (Math.abs(diff) > 50) {
+    dragDirectionLocked.current = null;
+    if (wasHorizontal && Math.abs(diff) > 50) {
       if (diff > 0 && currentIndex < images.length - 1) goTo(currentIndex + 1);
       else if (diff < 0 && currentIndex > 0) goTo(currentIndex - 1);
     }
@@ -71,7 +87,7 @@ export function ImageCarousel({ images, alt, className = "", showControls = fals
 
   return (
     <div
-      className={`relative bg-black overflow-hidden ${className}`}
+      className={`relative bg-black overflow-hidden touch-pan-y ${className}`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
