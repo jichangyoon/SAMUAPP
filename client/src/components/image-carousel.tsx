@@ -75,15 +75,20 @@ export function ImageCarousel({ images, alt, className = "", showControls = fals
       onTouchEnd={handleTouchEnd}
       onClick={onClick}
     >
+      {/* 슬라이딩 트랙: 컨테이너와 같은 크기, translateX로 이동 */}
       <div
-        className="flex h-full"
+        className="relative w-full h-full"
         style={{
           transform: `translateX(calc(-${currentIndex * 100}% + ${dragOffset}px))`,
           transition: isDragging ? 'none' : 'transform 0.3s ease-out',
         }}
       >
         {images.map((src, idx) => (
-          <div key={idx} className="min-w-full shrink-0 h-full flex items-center justify-center bg-black">
+          <div
+            key={idx}
+            className="absolute top-0 w-full h-full bg-black"
+            style={{ left: `${idx * 100}%` }}
+          >
             {getMediaType(src) === 'video' ? (
               instagramMode ? (
                 <MediaDisplay
