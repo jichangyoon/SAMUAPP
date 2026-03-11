@@ -2,8 +2,8 @@ import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } f
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowUp, Share2, Twitter, Send, Calendar, Trophy, ChevronDown, ChevronUp, Users, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { ArrowUp, Share2, Twitter, Send, Calendar, Trophy, ChevronDown, ChevronUp, Users, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ImageCarousel } from "@/components/image-carousel";
 import { MediaDisplay } from "@/components/media-display";
@@ -71,16 +71,8 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
   const [showVoters, setShowVoters] = useState(false);
   const [selectedVoterWallet, setSelectedVoterWallet] = useState<string | null>(null);
   const [selectedVoterName, setSelectedVoterName] = useState<string>("");
-  const [galleryIndex, setGalleryIndex] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
-  const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
-
   useEffect(() => {
-    setGalleryIndex(0);
     setShowVoters(false);
-    setDragOffset(0);
   }, [meme.id]);
 
   const { data: votersData, isLoading: votersLoading, isError: votersError, refetch: refetchVoters } = useQuery<{ voters: Voter[]; totalVoters: number }>({
@@ -91,28 +83,6 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
 
   const galleryImages = [meme.imageUrl, ...(meme.additionalImages || [])];
   const galleryTotal = galleryImages.length;
-
-  const goToPrev = () => setGalleryIndex(i => Math.max(0, i - 1));
-  const goToNext = () => setGalleryIndex(i => Math.min(galleryTotal - 1, i + 1));
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchEndX.current = e.touches[0].clientX;
-    setIsDragging(true);
-  };
-  const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.touches[0].clientX;
-    setDragOffset(e.touches[0].clientX - touchStartX.current);
-  };
-  const handleTouchEnd = () => {
-    const diff = touchStartX.current - touchEndX.current;
-    setIsDragging(false);
-    setDragOffset(0);
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) goToNext();
-      else goToPrev();
-    }
-  };
 
   const shareToTwitter = () => {
     // Use production URL for Blinks
@@ -151,73 +121,27 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
                 containMode={true}
               />
             ) : (
-              <div
-                className="relative bg-black rounded-lg overflow-hidden"
-                style={{ height: '65dvh' }}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-              >
-                {/* 슬라이딩 flex strip */}
-                <div
-                  className="flex h-full"
-                  style={{
-                    transform: `translateX(calc(-${galleryIndex * 100}% + ${dragOffset}px))`,
-                    transition: isDragging ? 'none' : 'transform 0.3s ease-out',
-                  }}
-                >
-                  {galleryImages.map((src, idx) => (
-                    <div
-                      key={idx}
-                      className="min-w-full shrink-0 h-full flex items-center justify-center bg-black"
-                    >
-                      {getMediaType(src) === 'video' ? (
-                        <MediaDisplay
-                          src={src}
-                          alt={`${meme.title} ${idx + 1}`}
-                          className="w-full h-full"
-                          instagramMode={true}
-                          containMode={true}
-                          autoPlayOnVisible={idx === galleryIndex}
-                        />
-                      ) : (
-                        <img
-                          src={src}
-                          alt={`${meme.title} ${idx + 1}`}
-                          className="w-full h-full object-contain"
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {galleryIndex > 0 && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); goToPrev(); }}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 rounded-full p-1.5 text-white z-10"
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </button>
-                )}
-                {galleryIndex < galleryTotal - 1 && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); goToNext(); }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 rounded-full p-1.5 text-white z-10"
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </button>
-                )}
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
-                  {galleryImages.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={(e) => { e.stopPropagation(); setGalleryIndex(idx); }}
-                      className={`rounded-full transition-all duration-200 ${
-                        idx === galleryIndex ? 'w-2 h-2 bg-white' : 'w-1.5 h-1.5 bg-white/40'
-                      }`}
-                    />
-                  ))}
-                </div>
+              <div className="flex overflow-x-auto gap-2 pb-1 -mx-4 px-4" style={{ scrollbarWidth: 'none' }}>
+                {galleryImages.map((src, idx) => (
+                  <div key={idx} className="shrink-0 h-[65dvh] rounded-lg overflow-hidden bg-black">
+                    {getMediaType(src) === 'video' ? (
+                      <MediaDisplay
+                        src={src}
+                        alt={`${meme.title} ${idx + 1}`}
+                        className="h-full w-auto"
+                        instagramMode={true}
+                        containMode={true}
+                        autoPlayOnVisible={true}
+                      />
+                    ) : (
+                      <img
+                        src={src}
+                        alt={`${meme.title} ${idx + 1}`}
+                        className="h-full w-auto object-contain"
+                      />
+                    )}
+                  </div>
+                ))}
               </div>
             )}
           </div>
