@@ -17,7 +17,7 @@ interface MediaDisplayProps {
   instagramMode?: boolean;
 }
 
-function InstagramVideoPlayer({ src, className = "", containMode = false }: { src: string; className?: string; containMode?: boolean }) {
+function InstagramVideoPlayer({ src, className = "", containMode = false, autoPlay = true }: { src: string; className?: string; containMode?: boolean; autoPlay?: boolean }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const progressRef = useRef<HTMLDivElement | null>(null);
   const [progress, setProgress] = useState(0);
@@ -104,7 +104,7 @@ function InstagramVideoPlayer({ src, className = "", containMode = false }: { sr
         ref={videoRef}
         src={src}
         className={`w-full h-full ${containMode ? 'object-contain' : 'object-cover'} cursor-pointer transition-opacity duration-200 ${videoReady ? 'opacity-100' : 'opacity-0'}`}
-        autoPlay
+        autoPlay={autoPlay}
         muted
         loop
         playsInline
@@ -230,7 +230,7 @@ export function MediaDisplay({
   
   if (mediaType === 'video') {
     if (instagramMode) {
-      return <InstagramVideoPlayer src={src} className={className} containMode={containMode} />;
+      return <InstagramVideoPlayer src={src} className={className} containMode={containMode} autoPlay={autoPlayOnVisible !== false} />;
     }
 
     return (
@@ -305,7 +305,7 @@ export function MediaDisplay({
         ref={imgCallbackRef}
         src={src}
         alt={alt}
-        className={`${containMode ? 'object-contain w-full' : 'object-cover w-full h-full'} ${onClick ? 'cursor-pointer' : ''} transition-opacity duration-200 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+        className={`w-full h-full ${containMode ? 'object-contain' : 'object-cover'} ${onClick ? 'cursor-pointer' : ''} transition-opacity duration-200 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
         onClick={onClick ? (e) => {
           e.preventDefault();
           e.stopPropagation();

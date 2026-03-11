@@ -18,41 +18,12 @@ interface MemeDetailModalProps {
   canVote?: boolean;
 }
 
-// 특정 유저들에게 다른 역할 부여
-const getUserRole = (walletAddress: string, username: string) => {
-  // 지갑 주소 기반 역할 설정
-  const specialRoles: { [key: string]: string } = {
-    // Dev 역할 - 개발자들
-    'xfSWSv7y3SqELDe8Xs5neNCmjULpc6hwhvz5ohSrXa8': 'Dev',
-    
-    // Admin 역할
-    // 'admin_wallet_address': 'Admin',
-    
-    // Moderator 역할 - 운영진들  
-    // 'mod_wallet_address_1': 'Moderator',
-    // 'mod_wallet_address_2': 'Moderator',
-  };
+const SPECIAL_ROLES: { [key: string]: string } = {
+  'xfSWSv7y3SqELDe8Xs5neNCmjULpc6hwhvz5ohSrXa8': 'Dev',
+};
 
-  // 유저명 기반 역할 설정
-  const specialUsernames: { [key: string]: string } = {
-    // 예시: 특정 유저명에 역할 부여
-    // 'admin_user': 'Admin',
-    // 'dev_user': 'Dev', 
-    // 'mod_user': 'Moderator',
-  };
-
-  // 지갑 주소 우선 확인
-  if (specialRoles[walletAddress]) {
-    return specialRoles[walletAddress];
-  }
-
-  // 유저명 확인
-  if (specialUsernames[username]) {
-    return specialUsernames[username];
-  }
-
-  // 기본값
-  return 'Creator';
+const getUserRole = (walletAddress: string) => {
+  return SPECIAL_ROLES[walletAddress] ?? 'Creator';
 };
 
 interface Voter {
@@ -139,7 +110,7 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
                   >
                     {meme.authorUsername}
                   </button>
-                  <div className="text-sm text-gray-400">{getUserRole(meme.authorWallet, meme.authorUsername)}</div>
+                  <div className="text-sm text-gray-400">{getUserRole(meme.authorWallet)}</div>
                 </div>
               </div>
               <button
