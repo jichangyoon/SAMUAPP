@@ -266,6 +266,41 @@ Phase 2 moves reward distribution on-chain, making the process **trustless and p
 - SAMU Map Gamification: Delivery progress animations, SAMU character storytelling
 - Phantom Direct Login: Requires Privy paid plan upgrade
 
+---
+
+## Long-term Vision
+
+SAMU is built as a multi-phase protocol — starting as a meme contest app and evolving into a fully decentralized IP creation and licensing platform on Solana.
+
+```
+Phase 1 → Meme Incubator App          (✅ Complete)
+Phase 2 → On-chain Escrow             (⚙️  In Progress)
+Phase 3 → IP Equity NFT               (📐 Designed)
+Phase 4 → Community Factory Program   (🔭 Planned)
+Phase 5 → License NFT Marketplace     (🔭 Planned)
+Phase 6 → Solana SVM Appchain         (🔭 Planned)
+```
+
+### Phase 1 — Meme Incubator App ✅
+React/Vite + Express + PostgreSQL + Printful + Privy embedded wallet. Meme contest → SPL token voting → winning goods production → server-side escrow reward distribution. Voting is already substantively on-chain (SPL token transfers).
+
+### Phase 2 — On-chain Escrow (Anchor) ⚙️
+Replace the server-held escrow with a PDA-controlled Anchor smart contract. Instructions: `initialize`, `deposit_profit`, `record_allocation`, `claim`. Devnet verification complete. Mainnet deployment is the key remaining milestone. First full end-to-end cycle (contest → goods sale → SOL distribution) not yet completed.
+
+### Phase 3 — Dynamic IP Equity NFT
+Metaplex Core-based. Express community contribution as an NFT-represented IP equity stake, linked to a revenue PDA. Each meme that wins a contest mints an IP NFT — the NFT holder receives a proportional cut of future licensing and merchandise revenue. High implementation complexity.
+
+### Phase 4 — Community Factory Program
+A permissionless on-chain program that allows anyone to launch a new meme community with its own contest, token, and reward pool — without admin approval. Transforms SAMU from an app into a protocol. Each community gets isolated contest spaces, independent voting, and its own SPL token integration.
+
+### Phase 5 — License NFT Marketplace
+IP licenses are tokenized as NFTs and traded on an open marketplace. Brands, creators, and developers can acquire usage rights to SAMU-originated IP for merchandise, games, media, and more. Revenue flows in USDC back to IP NFT holders.
+
+### Phase 6 — Solana SVM Appchain
+A dedicated application-specific chain built on Sonic SVM or MagicBlock stack. Enables custom transaction fee logic, native meme IP state management, and seamless composability with the broader Solana ecosystem — at scale.
+
+---
+
 ## Inspiration
 
 - **Pudgy Penguins** — IP → Physical goods pipeline

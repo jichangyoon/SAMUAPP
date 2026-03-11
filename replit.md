@@ -43,6 +43,19 @@ The platform operates on a pipeline: Meme Contest → Goods (Printful) → Ecosy
 
 **Performance Optimization:** Includes targeted database queries, batch queries, lazy loading for map components, and TanStack Query's automatic deduplication.
 
+## Long-term Roadmap
+
+| Phase | 이름 | 상태 | 핵심 내용 |
+|---|---|---|---|
+| Phase 1 | Meme Incubator App | ✅ 완성 | 현재 시스템 전체 (React + Express + Printful + Privy) |
+| Phase 2 | On-chain Escrow (Anchor) | ⚙️ 진행 중 | 서버 에스크로 → PDA 컨트롤 스마트 컨트랙트 교체. Devnet 완료, Mainnet 배포 대기 |
+| Phase 3 | Dynamic IP Equity NFT | 📐 설계됨 | Metaplex Core 기반. 우승 밈 → IP NFT 발행 → 수익 PDA 연결 → NFT 홀더 수익 분배 |
+| Phase 4 | Community Factory Program | 🔭 계획됨 | 퍼미션리스 커뮤니티 런칭 온체인 프로그램. SAMU를 앱 → 플랫폼으로 전환 |
+| Phase 5 | License NFT Marketplace | 🔭 계획됨 | IP 라이선스 NFT 거래, USDC 플로우, 브랜드/크리에이터 라이선스 구매 |
+| Phase 6 | Solana SVM Appchain | 🔭 계획됨 | Sonic SVM / MagicBlock 기반 전용 앱체인 |
+
+> 새 기능 설계 시 이 로드맵을 참조하여 아키텍처 결정이 장기 방향과 충돌하지 않도록 할 것.
+
 ## External Dependencies
 - **Solana Blockchain:** Core infrastructure for SPL token transfers and smart contracts.
 - **Privy:** Authentication service for user login (Solana-only, email, embedded, and external wallets).
