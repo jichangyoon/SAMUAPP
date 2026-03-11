@@ -563,15 +563,9 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                     <p className="text-sm font-semibold text-foreground truncate">
                       {selectedOrder.goodsTitle}
                     </p>
-                    <div
-                      className="flex items-center gap-1 cursor-pointer group mt-0.5"
-                      onClick={() => setSheetExpanded(true)}
-                    >
-                      <p className={`text-xs text-muted-foreground truncate flex-1 ${!['delivered', 'completed', 'canceled', 'failed', 'returned'].includes(selectedOrder.status) ? 'animate-pulse' : ''}`}>
-                        {getStatusEmoji(selectedOrder.status)} {getSamuMessage(selectedOrder.status, selectedOrder.city, selectedOrder.country)}
-                      </p>
-                      <ChevronDown className="h-3 w-3 text-muted-foreground/40 group-hover:text-muted-foreground flex-shrink-0 transition-colors" />
-                    </div>
+                    <p className={`text-xs text-muted-foreground truncate mt-0.5 ${!['delivered', 'completed', 'canceled', 'failed', 'returned'].includes(selectedOrder.status) ? 'animate-pulse' : ''}`}>
+                      {getStatusEmoji(selectedOrder.status)} {getSamuMessage(selectedOrder.status, selectedOrder.city, selectedOrder.country)}
+                    </p>
                     {selectedOrder.productType && (
                       <Badge variant="outline" className="text-[9px] mt-1 px-1.5 py-0">{selectedOrder.productType}</Badge>
                     )}
