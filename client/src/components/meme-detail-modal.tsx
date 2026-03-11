@@ -72,12 +72,15 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
   const [selectedVoterWallet, setSelectedVoterWallet] = useState<string | null>(null);
   const [selectedVoterName, setSelectedVoterName] = useState<string>("");
   const [galleryIndex, setGalleryIndex] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
   useEffect(() => {
     setGalleryIndex(0);
     setShowVoters(false);
+    setDragOffset(0);
   }, [meme.id]);
 
   const { data: votersData, isLoading: votersLoading, isError: votersError, refetch: refetchVoters } = useQuery<{ voters: Voter[]; totalVoters: number }>({
@@ -95,12 +98,16 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
     touchEndX.current = e.touches[0].clientX;
+    setIsDragging(true);
   };
   const handleTouchMove = (e: React.TouchEvent) => {
     touchEndX.current = e.touches[0].clientX;
+    setDragOffset(e.touches[0].clientX - touchStartX.current);
   };
   const handleTouchEnd = () => {
     const diff = touchStartX.current - touchEndX.current;
+    setIsDragging(false);
+    setDragOffset(0);
     if (Math.abs(diff) > 50) {
       if (diff > 0) goToNext();
       else goToPrev();
@@ -145,33 +152,49 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
               />
             ) : (
               <div
-                className="relative bg-black rounded-lg overflow-hidden flex items-center justify-center"
+                className="relative bg-black rounded-lg overflow-hidden"
+                style={{ height: '65dvh' }}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
               >
-                {getMediaType(galleryImages[galleryIndex]) === 'video' ? (
-                  <MediaDisplay
-                    key={galleryIndex}
-                    src={galleryImages[galleryIndex]}
-                    alt={`${meme.title} ${galleryIndex + 1}`}
-                    className="max-h-[65dvh] max-w-full"
-                    instagramMode={true}
-                    containMode={true}
-                    autoPlayOnVisible={true}
-                  />
-                ) : (
-                  <img
-                    key={galleryIndex}
-                    src={galleryImages[galleryIndex]}
-                    alt={`${meme.title} ${galleryIndex + 1}`}
-                    className="max-h-[65dvh] max-w-full object-contain"
-                  />
-                )}
+                {/* 슬라이딩 flex strip */}
+                <div
+                  className="flex h-full"
+                  style={{
+                    transform: `translateX(calc(-${galleryIndex * 100}% + ${dragOffset}px))`,
+                    transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+                  }}
+                >
+                  {galleryImages.map((src, idx) => (
+                    <div
+                      key={idx}
+                      className="min-w-full shrink-0 h-full flex items-center justify-center bg-black"
+                    >
+                      {getMediaType(src) === 'video' ? (
+                        <MediaDisplay
+                          src={src}
+                          alt={`${meme.title} ${idx + 1}`}
+                          className="w-full h-full"
+                          instagramMode={true}
+                          containMode={true}
+                          autoPlayOnVisible={idx === galleryIndex}
+                        />
+                      ) : (
+                        <img
+                          src={src}
+                          alt={`${meme.title} ${idx + 1}`}
+                          className="w-full h-full object-contain"
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+
                 {galleryIndex > 0 && (
                   <button
                     onClick={(e) => { e.stopPropagation(); goToPrev(); }}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 rounded-full p-1.5 text-white"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 rounded-full p-1.5 text-white z-10"
                   >
                     <ChevronLeft className="h-5 w-5" />
                   </button>
@@ -179,7 +202,7 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
                 {galleryIndex < galleryTotal - 1 && (
                   <button
                     onClick={(e) => { e.stopPropagation(); goToNext(); }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 rounded-full p-1.5 text-white"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 rounded-full p-1.5 text-white z-10"
                   >
                     <ChevronRight className="h-5 w-5" />
                   </button>
