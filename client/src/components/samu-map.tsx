@@ -513,7 +513,15 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
           </Card>
           <Card className="border-border/30">
             <CardContent className="p-3 text-center">
-              <div className="text-lg font-bold text-blue-400">{mapData.stats.shipped}</div>
+              <div className="flex items-center justify-center gap-1.5">
+                <div className="text-lg font-bold text-blue-400">{mapData.stats.shipped}</div>
+                {mapData.stats.shipped > 0 && (
+                  <span className="relative flex h-2 w-2 mb-1">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-400" />
+                  </span>
+                )}
+              </div>
               <div className="text-[10px] text-muted-foreground">In Transit</div>
             </CardContent>
           </Card>
@@ -561,9 +569,15 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                     <p className="text-sm font-semibold text-foreground truncate">
                       {selectedOrder.goodsTitle}
                     </p>
-                    <p className="text-xs text-muted-foreground truncate mt-0.5">
-                      {getStatusEmoji(selectedOrder.status)} {getSamuMessage(selectedOrder.status, selectedOrder.city, selectedOrder.country)}
-                    </p>
+                    <div
+                      className="flex items-center gap-1 cursor-pointer group mt-0.5"
+                      onClick={() => setSheetExpanded(true)}
+                    >
+                      <p className={`text-xs text-muted-foreground truncate flex-1 ${!['delivered', 'completed', 'canceled', 'failed', 'returned'].includes(selectedOrder.status) ? 'animate-pulse' : ''}`}>
+                        {getStatusEmoji(selectedOrder.status)} {getSamuMessage(selectedOrder.status, selectedOrder.city, selectedOrder.country)}
+                      </p>
+                      <ChevronDown className="h-3 w-3 text-muted-foreground/40 group-hover:text-muted-foreground flex-shrink-0 transition-colors" />
+                    </div>
                     {selectedOrder.productType && (
                       <Badge variant="outline" className="text-[9px] mt-1 px-1.5 py-0">{selectedOrder.productType}</Badge>
                     )}
@@ -658,10 +672,15 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                       {steps.map((step, idx) => (
                         <div key={step.key} className="flex items-center flex-1">
                           <div className={`flex flex-col items-center flex-1 ${idx <= currentStep ? 'text-primary' : 'text-muted-foreground/50'}`}>
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${idx <= currentStep ? 'bg-primary/20 text-primary' : 'bg-accent text-muted-foreground/50'}`}>
-                              {idx < currentStep ? '✓' : step.icon}
+                            <div className="relative">
+                              {idx === currentStep && idx < steps.length - 1 && (
+                                <span className="absolute inset-0 rounded-full animate-ping bg-primary/40" />
+                              )}
+                              <div className={`relative w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${idx <= currentStep ? 'bg-primary/20 text-primary' : 'bg-accent text-muted-foreground/50'}`}>
+                                {idx < currentStep ? '✓' : step.icon}
+                              </div>
                             </div>
-                            <span className="text-[10px] mt-1 text-center leading-tight">{step.label}</span>
+                            <span className={`text-[10px] mt-1 text-center leading-tight ${idx === currentStep && idx < steps.length - 1 ? 'animate-pulse font-semibold' : ''}`}>{step.label}</span>
                           </div>
                           {idx < steps.length - 1 && (
                             <div className={`h-0.5 w-full mt-[-12px] ${idx < currentStep ? 'bg-primary' : 'bg-accent'}`} />
