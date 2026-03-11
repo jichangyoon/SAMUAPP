@@ -6,10 +6,8 @@ import { ArrowUp, Share2, Twitter, Send, Calendar, Trophy, ChevronDown, ChevronU
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ImageCarousel } from "@/components/image-carousel";
-import { MediaDisplay } from "@/components/media-display";
 import { UserInfoModal } from "@/components/user-info-modal";
 import { NativeShare } from "@/utils/native-share";
-import { getMediaType } from "@/utils/media-utils";
 import type { Meme } from "@shared/schema";
 
 interface MemeDetailModalProps {
@@ -82,7 +80,6 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
   });
 
   const galleryImages = [meme.imageUrl, ...(meme.additionalImages || [])];
-  const galleryTotal = galleryImages.length;
 
   const shareToTwitter = () => {
     // Use production URL for Blinks
@@ -111,39 +108,14 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
 
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {/* Meme Media */}
-          <div className="w-full max-w-md mx-auto">
-            {galleryTotal === 1 ? (
-              <ImageCarousel
-                images={galleryImages}
-                alt={meme.title}
-                className="w-full rounded-lg overflow-hidden"
-                instagramMode={true}
-                containMode={true}
-              />
-            ) : (
-              <div className="flex overflow-x-auto gap-2 pb-1 -mx-4 px-4" style={{ scrollbarWidth: 'none' }}>
-                {galleryImages.map((src, idx) => (
-                  <div key={idx} className="shrink-0 h-[65dvh] rounded-lg overflow-hidden bg-black">
-                    {getMediaType(src) === 'video' ? (
-                      <MediaDisplay
-                        src={src}
-                        alt={`${meme.title} ${idx + 1}`}
-                        className="h-full w-auto"
-                        instagramMode={true}
-                        containMode={true}
-                        autoPlayOnVisible={true}
-                      />
-                    ) : (
-                      <img
-                        src={src}
-                        alt={`${meme.title} ${idx + 1}`}
-                        className="h-full w-auto object-contain"
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+          <div className="w-full max-w-md mx-auto" style={{ height: '65dvh' }}>
+            <ImageCarousel
+              images={galleryImages}
+              alt={meme.title}
+              className="w-full h-full rounded-lg overflow-hidden"
+              instagramMode={true}
+              containMode={true}
+            />
           </div>
 
           {/* Meme Details */}

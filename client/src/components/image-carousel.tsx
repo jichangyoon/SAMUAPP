@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef } from "react";
 import { MediaDisplay } from "@/components/media-display";
 import { getMediaType } from "@/utils/media-utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -16,6 +16,8 @@ interface ImageCarouselProps {
 
 export function ImageCarousel({ images, alt, className = "", showControls = false, onClick, autoPlayVideo = false, containMode = false, instagramMode = false }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
@@ -47,54 +49,76 @@ export function ImageCarousel({ images, alt, className = "", showControls = fals
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
     touchEndX.current = e.touches[0].clientX;
+    setIsDragging(true);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     touchEndX.current = e.touches[0].clientX;
+    setDragOffset(e.touches[0].clientX - touchStartX.current);
   };
 
   const handleTouchEnd = () => {
     const diff = touchStartX.current - touchEndX.current;
+    setIsDragging(false);
+    setDragOffset(0);
     if (Math.abs(diff) > 50) {
       if (diff > 0 && currentIndex < images.length - 1) goTo(currentIndex + 1);
       else if (diff < 0 && currentIndex > 0) goTo(currentIndex - 1);
     }
   };
 
-  const currentSrc = images[currentIndex];
-  const isVideo = getMediaType(currentSrc) === 'video';
-
   return (
     <div
-      className={`relative bg-black overflow-hidden flex items-center justify-center ${className}`}
+      className={`relative bg-black overflow-hidden ${className}`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onClick={onClick}
     >
-      {isVideo ? (
-        <video
-          key={currentIndex}
-          src={currentSrc}
-          className="w-full h-full object-contain"
-          muted
-          loop
-          playsInline
-          autoPlay={autoPlayVideo}
-        />
-      ) : (
-        <img
-          key={currentIndex}
-          src={currentSrc}
-          alt={`${alt} ${currentIndex + 1}`}
-          className="w-full h-full object-contain"
-        />
-      )}
+      <div
+        className="flex h-full"
+        style={{
+          transform: `translateX(calc(-${currentIndex * 100}% + ${dragOffset}px))`,
+          transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+        }}
+      >
+        {images.map((src, idx) => (
+          <div key={idx} className="min-w-full shrink-0 h-full flex items-center justify-center bg-black">
+            {getMediaType(src) === 'video' ? (
+              instagramMode ? (
+                <MediaDisplay
+                  src={src}
+                  alt={`${alt} ${idx + 1}`}
+                  className="w-full h-full"
+                  instagramMode={true}
+                  containMode={containMode}
+                  autoPlayOnVisible={idx === currentIndex}
+                />
+              ) : (
+                <video
+                  src={src}
+                  className="w-full h-full object-contain"
+                  muted
+                  loop
+                  playsInline
+                  autoPlay={autoPlayVideo && idx === currentIndex}
+                />
+              )
+            ) : (
+              <img
+                src={src}
+                alt={`${alt} ${idx + 1}`}
+                className="w-full h-full object-contain"
+              />
+            )}
+          </div>
+        ))}
+      </div>
 
       {currentIndex > 0 && (
         <button
           onClick={(e) => { e.stopPropagation(); goTo(currentIndex - 1); }}
-          className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 rounded-full p-1 text-white hover:bg-black/70 transition-colors"
+          className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 rounded-full p-1 text-white hover:bg-black/70 transition-colors z-10"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
@@ -102,13 +126,13 @@ export function ImageCarousel({ images, alt, className = "", showControls = fals
       {currentIndex < images.length - 1 && (
         <button
           onClick={(e) => { e.stopPropagation(); goTo(currentIndex + 1); }}
-          className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 rounded-full p-1 text-white hover:bg-black/70 transition-colors"
+          className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 rounded-full p-1 text-white hover:bg-black/70 transition-colors z-10"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
       )}
 
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
         {images.map((_, idx) => (
           <button
             key={idx}
