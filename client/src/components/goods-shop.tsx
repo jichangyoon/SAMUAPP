@@ -444,15 +444,9 @@ export function GoodsShop() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <div className="relative flex items-center">
-                      {!['delivered', 'completed', 'canceled', 'failed', 'returned'].includes(order.printfulStatus || order.status) && (
-                        <span className="absolute -left-3 flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
-                        </span>
-                      )}
-                      <Badge className={getStatusBadge(order.printfulStatus || order.status)}>{getStatusLabel(order.printfulStatus || order.status)}</Badge>
-                    </div>
+                    <Badge className={`${getStatusBadge(order.printfulStatus || order.status)} ${!['delivered', 'completed', 'canceled', 'failed', 'returned'].includes(order.printfulStatus || order.status) ? 'animate-pulse' : ''}`}>
+                      {getStatusLabel(order.printfulStatus || order.status)}
+                    </Badge>
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </div>
                 </div>
@@ -503,13 +497,8 @@ export function GoodsShop() {
                       {steps.map((step, idx) => (
                         <div key={step.key} className="flex items-center flex-1">
                           <div className={`flex flex-col items-center flex-1 ${idx <= currentStep ? 'text-primary' : 'text-muted-foreground/50'}`}>
-                            <div className="relative">
-                              {idx === currentStep && idx < steps.length - 1 && (
-                                <span className="absolute inset-0 rounded-full animate-ping bg-primary/40" />
-                              )}
-                              <div className={`relative w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${idx <= currentStep ? 'bg-primary/20 text-primary' : 'bg-accent text-muted-foreground/50'}`}>
-                                {idx < currentStep ? '✓' : step.icon}
-                              </div>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${idx <= currentStep ? 'bg-primary/20 text-primary' : 'bg-accent text-muted-foreground/50'} ${idx === currentStep && idx < steps.length - 1 ? 'ring-2 ring-primary ring-offset-1 ring-offset-background animate-pulse' : ''}`}>
+                              {idx < currentStep ? '✓' : step.icon}
                             </div>
                             <span className={`text-[10px] mt-1 text-center leading-tight ${idx === currentStep && idx < steps.length - 1 ? 'animate-pulse font-semibold' : ''}`}>{step.label}</span>
                           </div>

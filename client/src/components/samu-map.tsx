@@ -513,14 +513,8 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
           </Card>
           <Card className="border-border/30">
             <CardContent className="p-3 text-center">
-              <div className="flex items-center justify-center gap-1.5">
-                <div className="text-lg font-bold text-blue-400">{mapData.stats.shipped}</div>
-                {mapData.stats.shipped > 0 && (
-                  <span className="relative flex h-2 w-2 mb-1">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-400" />
-                  </span>
-                )}
+              <div className={`text-lg font-bold text-blue-400 ${mapData.stats.shipped > 0 ? 'animate-pulse' : ''}`}>
+                {mapData.stats.shipped}
               </div>
               <div className="text-[10px] text-muted-foreground">In Transit</div>
             </CardContent>
@@ -672,13 +666,8 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
                       {steps.map((step, idx) => (
                         <div key={step.key} className="flex items-center flex-1">
                           <div className={`flex flex-col items-center flex-1 ${idx <= currentStep ? 'text-primary' : 'text-muted-foreground/50'}`}>
-                            <div className="relative">
-                              {idx === currentStep && idx < steps.length - 1 && (
-                                <span className="absolute inset-0 rounded-full animate-ping bg-primary/40" />
-                              )}
-                              <div className={`relative w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${idx <= currentStep ? 'bg-primary/20 text-primary' : 'bg-accent text-muted-foreground/50'}`}>
-                                {idx < currentStep ? '✓' : step.icon}
-                              </div>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${idx <= currentStep ? 'bg-primary/20 text-primary' : 'bg-accent text-muted-foreground/50'} ${idx === currentStep && idx < steps.length - 1 ? 'ring-2 ring-primary ring-offset-1 ring-offset-background animate-pulse' : ''}`}>
+                              {idx < currentStep ? '✓' : step.icon}
                             </div>
                             <span className={`text-[10px] mt-1 text-center leading-tight ${idx === currentStep && idx < steps.length - 1 ? 'animate-pulse font-semibold' : ''}`}>{step.label}</span>
                           </div>
