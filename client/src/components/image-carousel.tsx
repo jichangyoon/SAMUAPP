@@ -12,9 +12,10 @@ interface ImageCarouselProps {
   autoPlayVideo?: boolean;
   containMode?: boolean;
   instagramMode?: boolean;
+  naturalSizing?: boolean;
 }
 
-export function ImageCarousel({ images, alt, className = "", showControls = false, onClick, autoPlayVideo = false, containMode = false, instagramMode = false }: ImageCarouselProps) {
+export function ImageCarousel({ images, alt, className = "", showControls = false, onClick, autoPlayVideo = false, containMode = false, instagramMode = false, naturalSizing = false }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
@@ -38,6 +39,7 @@ export function ImageCarousel({ images, alt, className = "", showControls = fals
         autoPlayOnVisible={autoPlayVideo}
         containMode={containMode}
         instagramMode={instagramMode}
+        naturalSizing={naturalSizing}
       />
     );
   }

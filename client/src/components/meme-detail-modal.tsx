@@ -84,7 +84,7 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
             return (
               <div
                 className="w-full max-w-md mx-auto"
-                style={isSingle ? { maxHeight: '65dvh' } : { height: '65dvh' }}
+                style={isSingle ? undefined : { height: '65dvh' }}
               >
                 <ImageCarousel
                   images={galleryImages}
@@ -93,6 +93,7 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
                   instagramMode={true}
                   containMode={true}
                   autoPlayVideo={true}
+                  naturalSizing={isSingle}
                 />
               </div>
             );

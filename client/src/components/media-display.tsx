@@ -15,6 +15,7 @@ interface MediaDisplayProps {
   autoPlayOnVisible?: boolean;
   containMode?: boolean;
   instagramMode?: boolean;
+  naturalSizing?: boolean;
 }
 
 function InstagramVideoPlayer({ src, className = "", containMode = false, autoPlay = true }: { src: string; className?: string; containMode?: boolean; autoPlay?: boolean }) {
@@ -165,7 +166,8 @@ export function MediaDisplay({
   preload = "metadata",
   autoPlayOnVisible = false,
   containMode = false,
-  instagramMode = false
+  instagramMode = false,
+  naturalSizing = false
 }: MediaDisplayProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -318,7 +320,7 @@ export function MediaDisplay({
         ref={imgCallbackRef}
         src={src}
         alt={alt}
-        className={`w-full h-full ${containMode ? 'object-contain' : 'object-cover'} ${onClick ? 'cursor-pointer' : ''} transition-opacity duration-200 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+        className={`${naturalSizing ? 'max-h-[65dvh] h-auto max-w-full w-auto mx-auto block object-contain' : `w-full h-full ${containMode ? 'object-contain' : 'object-cover'}`} ${onClick ? 'cursor-pointer' : ''} transition-opacity duration-200 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
         onClick={onClick ? (e) => {
           e.preventDefault();
           e.stopPropagation();
