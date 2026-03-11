@@ -38,6 +38,16 @@ function InstagramVideoPlayer({ src, className = "", containMode = false, autoPl
     return () => video.removeEventListener("timeupdate", onTimeUpdate);
   }, [isDragging]);
 
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (autoPlay) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  }, [autoPlay]);
+
   const seekTo = useCallback((clientX: number) => {
     const bar = progressRef.current;
     const video = videoRef.current;
@@ -112,7 +122,10 @@ function InstagramVideoPlayer({ src, className = "", containMode = false, autoPl
         controlsList="nodownload"
         disablePictureInPicture
         onClick={togglePlay}
-        onLoadedMetadata={() => setVideoReady(true)}
+        onLoadedMetadata={() => {
+          setVideoReady(true);
+          if (autoPlay) videoRef.current?.play().catch(() => {});
+        }}
         onError={() => setHasError(true)}
       />
       <button
