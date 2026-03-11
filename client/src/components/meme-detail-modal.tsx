@@ -79,16 +79,24 @@ export function MemeDetailModal({ isOpen, onClose, meme, onVote, canVote = false
 
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {/* Meme Media */}
-          <div className="w-full max-w-md mx-auto" style={{ height: '65dvh' }}>
-            <ImageCarousel
-              images={galleryImages}
-              alt={meme.title}
-              className="w-full h-full rounded-lg overflow-hidden"
-              instagramMode={true}
-              containMode={true}
-              autoPlayVideo={true}
-            />
-          </div>
+          {(() => {
+            const isSingle = galleryImages.length === 1;
+            return (
+              <div
+                className="w-full max-w-md mx-auto"
+                style={isSingle ? { maxHeight: '65dvh' } : { height: '65dvh' }}
+              >
+                <ImageCarousel
+                  images={galleryImages}
+                  alt={meme.title}
+                  className={`w-full rounded-lg overflow-hidden${isSingle ? '' : ' h-full'}`}
+                  instagramMode={true}
+                  containMode={true}
+                  autoPlayVideo={true}
+                />
+              </div>
+            );
+          })()}
 
           {/* Meme Details */}
           <div className="space-y-4">
