@@ -73,7 +73,7 @@ export default function GoodsStorySection({ goodsId }: { goodsId: number }) {
         {meme && (
           <div className="flex items-center gap-3 mb-3">
             <div className="w-12 h-12 rounded-lg overflow-hidden bg-accent flex-shrink-0">
-              <img src={meme.imageUrl} alt={meme.title} className="w-full h-full object-cover" />
+              <img src={/\.(mp4|webm|mov)$/i.test(meme.imageUrl) ? (story.goods?.imageUrl || meme.imageUrl) : meme.imageUrl} alt={meme.title} className="w-full h-full object-cover" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold text-foreground truncate">{meme.title}</div>
