@@ -37,6 +37,7 @@ export function Admin() {
   const [isCapturing, setIsCapturing] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
   const captureVideoRef = useRef<HTMLVideoElement>(null);
+  const autoCaptureTriggered = useRef(false);
   const [expandedArchiveId, setExpandedArchiveId] = useState<number | null>(null);
 
   const { data: goodsList = [] } = useQuery({
@@ -197,7 +198,8 @@ export function Admin() {
   }, [captureVideoFrame, toast]);
 
   useEffect(() => {
-    if (videoReady && videoSourceUrl && !goodsForm.imageUrl && !isCapturing) {
+    if (videoReady && videoSourceUrl && !autoCaptureTriggered.current) {
+      autoCaptureTriggered.current = true;
       handleCaptureAndSetThumbnail();
     }
   }, [videoReady, videoSourceUrl]);
@@ -214,6 +216,7 @@ export function Admin() {
     });
     setVideoSourceUrl(memeIsVideo ? meme.imageUrl : null);
     setVideoReady(false);
+    autoCaptureTriggered.current = false;
     setShowGoodsCreate(true);
     setTimeout(() => {
       document.getElementById('goods-create-section')?.scrollIntoView({ behavior: 'smooth' });
