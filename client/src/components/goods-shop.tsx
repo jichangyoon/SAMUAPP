@@ -225,7 +225,8 @@ function PrintfulDetailSection({ orderId, wallet }: { orderId: number; wallet: s
     printfulId: number;
     status: string;
     createdAt: string;
-    items: { name: string; quantity: number; price: string | null; currency: string; thumbnailUrl: string | null }[];
+    externalId: string | null;
+    items: { name: string; quantity: number; size: string | null; price: string | null; currency: string; thumbnailUrl: string | null }[];
     costs: { subtotal: string; shipping: string; tax: string; total: string; currency: string } | null;
     recipient: { name: string; city: string; country: string } | null;
   }>({
@@ -292,6 +293,7 @@ function PrintfulDetailSection({ orderId, wallet }: { orderId: number; wallet: s
             <div className="flex-1 min-w-0">
               <div className="text-foreground font-medium truncate">{item.name}</div>
               <div className="text-xs text-muted-foreground">
+                {item.size && <span>{item.size} · </span>}
                 Qty: {item.quantity}
                 {item.price && <span> · ${item.price}</span>}
               </div>

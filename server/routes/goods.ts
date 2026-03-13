@@ -400,20 +400,26 @@ router.get("/orders/:orderId/printful-detail", async (req, res) => {
     const goodsImageUrl = goods?.imageUrl || null;
 
     const orderItems = pf.items || pf.order_items || [];
-    const items = orderItems.map((item: any) => ({
-      name: item.name || "Sticker",
-      quantity: item.quantity || 1,
-      price: item.retail_price || item.price || null,
-      currency: item.retail_currency || item.currency || "USD",
-      thumbnailUrl: item.files?.find((f: any) => f.type === "preview")?.preview_url
-        || item.files?.find((f: any) => f.type === "default")?.thumbnail_url
-        || goodsImageUrl,
-    }));
+    const items = orderItems.map((item: any) => {
+      const nameParts = (item.name || "").split(" / ");
+      const size = nameParts.length >= 3 ? nameParts[nameParts.length - 1] : null;
+      return {
+        name: item.name || "Sticker",
+        quantity: item.quantity || 1,
+        size,
+        price: item.retail_price || item.price || null,
+        currency: item.retail_currency || item.currency || "USD",
+        thumbnailUrl: item.files?.find((f: any) => f.type === "preview")?.preview_url
+          || item.files?.find((f: any) => f.type === "default")?.thumbnail_url
+          || goodsImageUrl,
+      };
+    });
 
     const costs = pf.retail_costs || pf.costs || null;
 
     res.json({
       printfulId: pf.id,
+      externalId: pf.external_id || null,
       status: pf.status,
       createdAt: pf.created_at || pf.created,
       items,
