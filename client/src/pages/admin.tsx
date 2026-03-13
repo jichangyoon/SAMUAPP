@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -195,6 +195,12 @@ export function Admin() {
       toast({ title: "Thumbnail captured!" });
     }
   }, [captureVideoFrame, toast]);
+
+  useEffect(() => {
+    if (videoReady && videoSourceUrl && !goodsForm.imageUrl && !isCapturing) {
+      handleCaptureAndSetThumbnail();
+    }
+  }, [videoReady, videoSourceUrl]);
 
   const handleMakeGoods = (meme: any, contestId: number) => {
     const memeIsVideo = isVideoUrl(meme.imageUrl);
@@ -676,7 +682,7 @@ export function Admin() {
                         muted
                         crossOrigin="anonymous"
                         preload="auto"
-                        onLoadedMetadata={() => setVideoReady(true)}
+                        onLoadedData={() => setVideoReady(true)}
                       />
                       <div className="flex gap-2 items-center">
                         <Button
