@@ -134,6 +134,54 @@ router.get("/health", async (req, res) => {
   }
 });
 
+router.post("/thumbnail", async (req, res) => {
+  try {
+    const adminEmail = (req.body?.adminEmail || req.headers['x-admin-email'] || '').toLowerCase();
+    const { config } = await import('../config');
+    if (!adminEmail || !config.ADMIN_EMAILS.includes(adminEmail)) {
+      return res.status(401).json({ error: "Admin access required" });
+    }
+
+    const { base64 } = req.body;
+
+    if (!base64 || typeof base64 !== 'string') {
+      return res.status(400).json({ error: "base64 image data is required" });
+    }
+
+    const buffer = Buffer.from(base64, "base64");
+
+    if (buffer.length < 100) {
+      return res.status(400).json({ error: "Image data too small or empty" });
+    }
+    if (buffer.length > 10 * 1024 * 1024) {
+      return res.status(400).json({ error: "Thumbnail too large (max 10MB)" });
+    }
+
+    const isPng = buffer[0] === 0x89 && buffer[1] === 0x50;
+    const isJpeg = buffer[0] === 0xFF && buffer[1] === 0xD8;
+    if (!isPng && !isJpeg) {
+      return res.status(400).json({ error: "Invalid image format (PNG or JPEG required)" });
+    }
+
+    const ext = isPng ? "png" : "jpg";
+    const uploadResult = await uploadToR2(buffer, `thumbnail.${ext}`, "thumbnails");
+
+    if (!uploadResult.success) {
+      console.error("R2 thumbnail upload failed:", uploadResult.error);
+      return res.status(500).json({ error: "Thumbnail upload failed" });
+    }
+
+    res.json({
+      success: true,
+      imageUrl: uploadResult.url,
+      key: uploadResult.key,
+    });
+  } catch (error: any) {
+    console.error("Thumbnail upload error:", error);
+    res.status(500).json({ error: "Thumbnail upload failed" });
+  }
+});
+
 // Delete file from R2 by key
 router.delete('/delete-r2', async (req, res) => {
   try {

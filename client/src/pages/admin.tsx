@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,10 @@ export function Admin() {
     title: '', description: '', imageUrl: '', contestId: 0, memeId: 0,
     retailPrice: 29.99,
   });
+  const [videoSourceUrl, setVideoSourceUrl] = useState<string | null>(null);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
+  const captureVideoRef = useRef<HTMLVideoElement>(null);
   const [expandedArchiveId, setExpandedArchiveId] = useState<number | null>(null);
 
   const { data: goodsList = [] } = useQuery({
@@ -48,6 +52,7 @@ export function Admin() {
       toast({ title: "Goods product created!" });
       setShowGoodsCreate(false);
       setGoodsForm({ title: '', description: '', imageUrl: '', contestId: 0, memeId: 0, retailPrice: 29.99 });
+      setVideoSourceUrl(null);
       queryClient.invalidateQueries({ queryKey: ['/api/goods'] });
     },
     onError: (e: any) => {
@@ -83,6 +88,7 @@ export function Admin() {
       toast({ title: "Printful product created and synced!" });
       setShowGoodsCreate(false);
       setGoodsForm({ title: '', description: '', imageUrl: '', contestId: 0, memeId: 0, retailPrice: 29.99 });
+      setVideoSourceUrl(null);
       queryClient.invalidateQueries({ queryKey: ['/api/goods'] });
     },
     onError: (e: any) => {
@@ -137,15 +143,71 @@ export function Admin() {
 
   const archivedTopMemes = (archivedMemesData?.memes || []).slice(0, 5);
 
+  const isVideoUrl = (url: string) =>
+    /\.(mp4|mov|avi|webm)(\?|$)/i.test(url);
+
+  const captureVideoFrame = useCallback(async (): Promise<string | null> => {
+    const video = captureVideoRef.current;
+    if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
+      toast({ title: "Video not ready yet. Wait for it to load.", variant: "destructive" });
+      return null;
+    }
+
+    let base64: string;
+    try {
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return null;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      base64 = canvas.toDataURL("image/png").split(",")[1];
+    } catch (err) {
+      toast({ title: "Cannot capture frame (CORS restriction). Try downloading and re-uploading as image.", variant: "destructive" });
+      return null;
+    }
+
+    setIsCapturing(true);
+    try {
+      const res = await fetch("/api/uploads/thumbnail", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ base64, adminEmail }),
+      });
+      const data = await res.json();
+      if (data.success && data.imageUrl) {
+        return data.imageUrl;
+      }
+      toast({ title: data.error || "Thumbnail upload failed", variant: "destructive" });
+      return null;
+    } catch {
+      toast({ title: "Thumbnail upload failed", variant: "destructive" });
+      return null;
+    } finally {
+      setIsCapturing(false);
+    }
+  }, [toast, adminEmail]);
+
+  const handleCaptureAndSetThumbnail = useCallback(async () => {
+    const url = await captureVideoFrame();
+    if (url) {
+      setGoodsForm((f) => ({ ...f, imageUrl: url }));
+      toast({ title: "Thumbnail captured!" });
+    }
+  }, [captureVideoFrame, toast]);
+
   const handleMakeGoods = (meme: any, contestId: number) => {
+    const memeIsVideo = isVideoUrl(meme.imageUrl);
     setGoodsForm({
       title: `${meme.title} Sticker`,
       description: `Kiss-Cut Sticker featuring "${meme.title}" by ${meme.authorUsername}`,
-      imageUrl: meme.imageUrl,
+      imageUrl: memeIsVideo ? "" : meme.imageUrl,
       contestId: contestId,
       memeId: meme.id,
       retailPrice: 29.99,
     });
+    setVideoSourceUrl(memeIsVideo ? meme.imageUrl : null);
+    setVideoReady(false);
     setShowGoodsCreate(true);
     setTimeout(() => {
       document.getElementById('goods-create-section')?.scrollIntoView({ behavior: 'smooth' });
@@ -603,6 +665,40 @@ export function Admin() {
                     value={goodsForm.description}
                     onChange={(e) => setGoodsForm(f => ({ ...f, description: e.target.value }))}
                   />
+                  {videoSourceUrl && (
+                    <div className="space-y-2 p-3 border border-yellow-500/30 rounded-lg bg-yellow-500/5">
+                      <p className="text-xs text-yellow-500 font-medium">Video meme detected — capture a frame for the sticker print file</p>
+                      <video
+                        ref={captureVideoRef}
+                        src={videoSourceUrl}
+                        className="w-full max-h-48 rounded bg-black object-contain"
+                        controls
+                        muted
+                        crossOrigin="anonymous"
+                        preload="auto"
+                        onLoadedMetadata={() => setVideoReady(true)}
+                      />
+                      <div className="flex gap-2 items-center">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={handleCaptureAndSetThumbnail}
+                          disabled={isCapturing || !videoReady}
+                          className="border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10"
+                        >
+                          {isCapturing ? (
+                            <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Uploading...</>
+                          ) : goodsForm.imageUrl ? (
+                            <><Image className="h-3 w-3 mr-1" /> Re-capture Frame</>
+                          ) : (
+                            <><Image className="h-3 w-3 mr-1" /> Capture Current Frame</>
+                          )}
+                        </Button>
+                        {!videoReady && <span className="text-xs text-muted-foreground">Loading video...</span>}
+                      </div>
+                    </div>
+                  )}
                   <Input
                     placeholder="Meme image URL (from R2 storage)"
                     value={goodsForm.imageUrl}
