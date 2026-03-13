@@ -220,6 +220,94 @@ function getCountryInfo(code: string) {
   return COUNTRIES.find(c => c.code === code) || fallback;
 }
 
+function PrintfulDetailSection({ orderId, wallet }: { orderId: number; wallet: string }) {
+  const { data, isLoading, error } = useQuery<{
+    printfulId: number;
+    status: string;
+    createdAt: string;
+    items: { name: string; quantity: number; price: string | null; currency: string; thumbnailUrl: string | null }[];
+    costs: { subtotal: string; shipping: string; tax: string; total: string; currency: string } | null;
+    recipient: { name: string; city: string; country: string } | null;
+  }>({
+    queryKey: ['/api/goods/orders', orderId, 'printful-detail', wallet],
+    queryFn: async () => {
+      const res = await fetch(`/api/goods/orders/${orderId}/printful-detail?wallet=${wallet}`);
+      if (!res.ok) throw new Error('Failed to load');
+      return res.json();
+    },
+    enabled: !!orderId && !!wallet,
+    staleTime: 60000,
+  });
+
+  const statusMap: Record<string, { label: string; color: string }> = {
+    draft: { label: "Draft", color: "bg-gray-500/20 text-gray-400" },
+    pending: { label: "Pending", color: "bg-yellow-500/20 text-yellow-400" },
+    inprocess: { label: "In Production", color: "bg-blue-500/20 text-blue-400" },
+    fulfilled: { label: "Fulfilled", color: "bg-green-500/20 text-green-400" },
+    canceled: { label: "Canceled", color: "bg-red-500/20 text-red-400" },
+    failed: { label: "Failed", color: "bg-red-500/20 text-red-400" },
+    onhold: { label: "On Hold", color: "bg-orange-500/20 text-orange-400" },
+    partial: { label: "Partially Fulfilled", color: "bg-cyan-500/20 text-cyan-400" },
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        <div className="text-sm font-semibold text-foreground">Printful Order</div>
+        <div className="bg-accent/30 rounded-lg p-3 space-y-2 animate-pulse">
+          <div className="h-4 bg-accent/50 rounded w-3/4" />
+          <div className="flex gap-3">
+            <div className="w-12 h-12 bg-accent/50 rounded" />
+            <div className="flex-1 space-y-1.5">
+              <div className="h-3 bg-accent/50 rounded w-1/2" />
+              <div className="h-3 bg-accent/50 rounded w-1/3" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !data) return null;
+
+  const s = statusMap[data.status] || { label: data.status, color: "bg-accent text-foreground" };
+
+  return (
+    <div className="space-y-2">
+      <div className="text-sm font-semibold text-foreground">Printful Order</div>
+      <div className="bg-accent/30 rounded-lg p-3 space-y-3 text-sm">
+        <div className="flex items-center justify-between">
+          <span className="text-muted-foreground">Printful #{data.printfulId}</span>
+          <Badge className={`text-xs ${s.color}`}>{s.label}</Badge>
+        </div>
+        {data.items.map((item, idx) => (
+          <div key={idx} className="flex items-center gap-3">
+            {item.thumbnailUrl && (
+              <img
+                src={item.thumbnailUrl}
+                alt={item.name}
+                className="w-12 h-12 rounded object-cover bg-gray-800 flex-shrink-0"
+              />
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="text-foreground font-medium truncate">{item.name}</div>
+              <div className="text-xs text-muted-foreground">
+                Qty: {item.quantity}
+                {item.price && <span> · ${item.price}</span>}
+              </div>
+            </div>
+          </div>
+        ))}
+        {data.recipient && (
+          <div className="text-xs text-muted-foreground pt-1 border-t border-border">
+            Ship to: {data.recipient.name}, {data.recipient.city}, {data.recipient.country}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function GoodsShop() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [orderStep, setOrderStep] = useState<OrderStep>('browse');
@@ -511,6 +599,11 @@ export function GoodsShop() {
                   );
                 })()}
               </div>
+
+              {/* Printful Order Details */}
+              {selectedOrder.printfulOrderId && (
+                <PrintfulDetailSection orderId={selectedOrder.id} wallet={walletAddress} />
+              )}
 
               {/* Payment Info */}
               <div className="space-y-2">

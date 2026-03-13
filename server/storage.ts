@@ -81,6 +81,7 @@ export interface IStorage {
   updateGoods(id: number, data: Partial<InsertGoods>): Promise<Goods>;
   getOrders(walletAddress: string): Promise<Order[]>;
   getAllOrders(): Promise<Order[]>;
+  getOrderById(id: number): Promise<Order | undefined>;
   getOrderByTxSignature(txSignature: string): Promise<Order | undefined>;
   getOrderByPrintfulId(printfulOrderId: number): Promise<Order | undefined>;
   createOrder(data: InsertOrder): Promise<Order>;
@@ -437,6 +438,7 @@ export class MemStorage implements IStorage {
   async updateGoods(_id: number, _data: Partial<InsertGoods>): Promise<Goods> { throw new Error("Not implemented"); }
   async getOrders(_walletAddress: string): Promise<Order[]> { return []; }
   async getAllOrders(): Promise<Order[]> { return []; }
+  async getOrderById(_id: number): Promise<Order | undefined> { return undefined; }
   async getOrderByTxSignature(_txSignature: string): Promise<Order | undefined> { return undefined; }
   async getOrderByPrintfulId(_printfulOrderId: number): Promise<Order | undefined> { return undefined; }
   async createOrder(_data: InsertOrder): Promise<Order> { throw new Error("Not implemented"); }
@@ -1677,6 +1679,16 @@ export class DatabaseStorage implements IStorage {
       .from(orders)
       .where(eq(orders.buyerWallet, walletAddress))
       .orderBy(desc(orders.createdAt));
+  }
+
+  async getOrderById(id: number): Promise<Order | undefined> {
+    if (!this.db) throw new Error("Database not available");
+    const [order] = await this.db
+      .select()
+      .from(orders)
+      .where(eq(orders.id, id))
+      .limit(1);
+    return order;
   }
 
   async getOrderByTxSignature(txSignature: string): Promise<Order | undefined> {

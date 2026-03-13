@@ -368,6 +368,68 @@ router.get("/orders/:wallet", async (req, res) => {
   }
 });
 
+router.get("/orders/:orderId/printful-detail", async (req, res) => {
+  try {
+    if (!/^\d+$/.test(req.params.orderId)) {
+      return res.status(400).json({ error: "Invalid order ID" });
+    }
+    const orderId = parseInt(req.params.orderId, 10);
+
+    const order = await storage.getOrderById(orderId);
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    const wallet = req.query.wallet as string;
+    if (!wallet || order.buyerWallet !== wallet) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    if (!order.printfulOrderId) {
+      return res.status(404).json({ error: "No Printful order linked" });
+    }
+
+    if (!PRINTFUL_API_KEY) {
+      return res.status(503).json({ error: "Printful API not configured" });
+    }
+
+    const data = await printfulRequest("GET", `/orders/${order.printfulOrderId}`);
+    const pf = data.result || data.data || data;
+
+    const goods = await storage.getGoodsById(order.goodsId);
+    const goodsImageUrl = goods?.imageUrl || null;
+
+    const orderItems = pf.items || pf.order_items || [];
+    const items = orderItems.map((item: any) => ({
+      name: item.name || "Sticker",
+      quantity: item.quantity || 1,
+      price: item.retail_price || item.price || null,
+      currency: item.retail_currency || item.currency || "USD",
+      thumbnailUrl: item.files?.find((f: any) => f.type === "preview")?.preview_url
+        || item.files?.find((f: any) => f.type === "default")?.thumbnail_url
+        || goodsImageUrl,
+    }));
+
+    const costs = pf.retail_costs || pf.costs || null;
+
+    res.json({
+      printfulId: pf.id,
+      status: pf.status,
+      createdAt: pf.created_at || pf.created,
+      items,
+      costs,
+      recipient: pf.recipient ? {
+        name: pf.recipient.name,
+        city: pf.recipient.city,
+        country: pf.recipient.country_name || pf.recipient.country_code,
+      } : null,
+    });
+  } catch (error: any) {
+    console.error("Error fetching Printful detail:", error);
+    res.status(500).json({ error: error.message || "Failed to fetch Printful order details" });
+  }
+});
+
 router.get("/:id", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
