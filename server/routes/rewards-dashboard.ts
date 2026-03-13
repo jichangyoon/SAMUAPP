@@ -134,9 +134,9 @@ router.get("/summary", async (req, res) => {
       const batchForClaimable = contestIdsArr.length > 0
         ? await storage.getBatchClaimableAmounts(contestIdsArr, walletAddress)
         : new Map<number, { claimable: number; totalClaimed: number }>();
-      for (const [cid, { claimable }] of batchForClaimable.entries()) {
+      for (const [cid, { claimable, totalClaimed }] of batchForClaimable.entries()) {
         actualClaimable += claimable;
-        if (claimable <= 0.000001) claimedContestIds.add(cid);
+        if (claimable <= 0.000001 && totalClaimed > 0.000001) claimedContestIds.add(cid);
       }
       const unclaimedCreator = await storage.getUnclaimedCreatorDistributionsByWallet(walletAddress);
       actualClaimable += unclaimedCreator.reduce((s: number, d: any) => s + d.solAmount, 0);
