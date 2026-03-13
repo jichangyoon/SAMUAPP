@@ -1,7 +1,33 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { MediaDisplay } from "@/components/media-display";
 import { getMediaType } from "@/utils/media-utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+
+function CarouselVideoSlide({ src, autoPlay }: { src: string; autoPlay: boolean }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (autoPlay) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  }, [autoPlay]);
+
+  return (
+    <video
+      ref={videoRef}
+      src={src}
+      className="w-full h-full object-contain"
+      muted
+      loop
+      playsInline
+      autoPlay={autoPlay}
+    />
+  );
+}
 
 interface ImageCarouselProps {
   images: string[];
@@ -118,14 +144,7 @@ export function ImageCarousel({ images, alt, className = "", showControls = fals
                   autoPlayOnVisible={idx === currentIndex}
                 />
               ) : (
-                <video
-                  src={src}
-                  className="w-full h-full object-contain"
-                  muted
-                  loop
-                  playsInline
-                  autoPlay={autoPlayVideo && idx === currentIndex}
-                />
+                <CarouselVideoSlide src={src} autoPlay={autoPlayVideo && idx === currentIndex} />
               )
             ) : (
               <img
