@@ -275,7 +275,7 @@ SAMU is built as a multi-phase protocol — starting as a meme contest app and e
 ```
 Phase 1 → Meme Incubator App          (✅ Complete)
 Phase 2 → On-chain Escrow             (⚙️  In Progress)
-Phase 3 → IP Equity NFT               (📐 Designed)
+Phase 3 → IP Equity cNFT              (📐 Design Finalized)
 Phase 4 → Community Factory Program   (🔭 Planned)
 Phase 5 → License NFT Marketplace     (🔭 Planned)
 Phase 6 → Solana SVM Appchain         (🔭 Planned)
@@ -287,8 +287,8 @@ React/Vite + Express + PostgreSQL + Printful + Privy embedded wallet. Meme conte
 ### Phase 2 — On-chain Escrow (Anchor) ⚙️
 Replace the server-held escrow with a PDA-controlled Anchor smart contract. Instructions: `initialize`, `deposit_profit`, `record_allocation`, `claim`. Devnet verification complete. Mainnet deployment is the key remaining milestone. First full end-to-end cycle (contest → goods sale → SOL distribution) not yet completed.
 
-### Phase 3 — Dynamic IP Equity NFT
-Metaplex Core-based. Express community contribution as an NFT-represented IP equity stake, linked to a revenue PDA. Each meme that wins a contest mints an IP NFT — the NFT holder receives a proportional cut of future licensing and merchandise revenue. High implementation complexity.
+### Phase 3 — Dynamic IP Equity cNFT (📐 Design Finalized)
+Compressed NFT (cNFT) based, using Metaplex Bubblegum program. When a contest ends, all participating creators and voters receive cNFTs representing their IP equity stake — creators get shares proportional to votes received, voters get shares proportional to SAMU spent. cNFTs are fully transferable; when traded, revenue attribution transfers to the new holder (foundation for Phase 5 marketplace). Goods revenue distribution queries current cNFT holders via Helius DAS API (off-chain indexer required due to state compression). Deployed as a separate Solana program (independent Program ID from Phase 2), with CPI capability between contracts.
 
 ### Phase 4 — Community Factory Program
 A permissionless on-chain program that allows anyone to launch a new meme community with its own contest, token, and reward pool — without admin approval. Transforms SAMU from an app into a protocol. Each community gets isolated contest spaces, independent voting, and its own SPL token integration.
