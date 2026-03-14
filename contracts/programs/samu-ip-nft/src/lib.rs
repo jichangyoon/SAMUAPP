@@ -1,25 +1,27 @@
 use anchor_lang::prelude::*;
+use anchor_lang::solana_program;
 use anchor_lang::solana_program::{
     instruction::{AccountMeta, Instruction},
     program::invoke_signed,
 };
+use mpl_bubblegum::types::{
+    Creator as BubblegumCreator, MetadataArgs, TokenProgramVersion as BgTokenProgramVersion,
+    TokenStandard as BgTokenStandard,
+};
 
 declare_id!("11111111111111111111111111111111");
 
-/// Metaplex Bubblegum Program ID (mainnet/devnet 동일)
 pub const BUBBLEGUM_PROGRAM_ID: Pubkey =
     solana_program::pubkey!("BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY");
 
-/// SPL Account Compression Program ID
 pub const COMPRESSION_PROGRAM_ID: Pubkey =
     solana_program::pubkey!("cmtDvXumGCrqC1Age74AVPhSRVXJMd8PJS91L8KbNCK");
 
-/// SPL Noop Program ID (Bubblegum 로깅에 사용)
 pub const NOOP_PROGRAM_ID: Pubkey =
     solana_program::pubkey!("noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV");
 
-/// Bubblegum Anchor instruction discriminators
-/// 계산법: sha256("global:<instruction_name>")[0..8]
+/// Bubblegum Anchor instruction discriminators.
+/// sha256("global:<instruction_name>")[0..8]
 const CREATE_TREE_CONFIG_DISC: [u8; 8] = [170, 141, 85, 101, 116, 175, 115, 173];
 const MINT_V1_DISC: [u8; 8] = [145, 98, 192, 118, 184, 147, 118, 104];
 
@@ -172,21 +174,19 @@ pub mod samu_ip_nft {
             &[authority_bump],
         ];
 
-        let symbol = String::from("SAMU-IP");
-
-        let metadata_args = MetadataArgsV1 {
+        let metadata_args = MetadataArgs {
             name: name.clone(),
-            symbol: symbol.clone(),
+            symbol: String::from("SAMU-IP"),
             uri: uri.clone(),
             seller_fee_basis_points: 0,
             primary_sale_happened: false,
             is_mutable: false,
             edition_nonce: None,
-            token_standard: Some(TokenStandard::NonFungible),
+            token_standard: Some(BgTokenStandard::NonFungible),
             collection: None,
             uses: None,
-            token_program_version: TokenProgramVersion::Original,
-            creators: vec![CreatorArg {
+            token_program_version: BgTokenProgramVersion::Original,
+            creators: vec![BubblegumCreator {
                 address: ctx.accounts.admin.key(),
                 verified: false,
                 share: 100,
@@ -283,65 +283,6 @@ pub mod samu_ip_nft {
 pub enum Role {
     Creator,
     Voter,
-}
-
-/// Bubblegum MetadataArgs v1 — Borsh 직렬화 호환 구조체.
-/// mpl-bubblegum 크레이트 의존성 없이 CPI 호출을 위해 직접 정의.
-#[derive(AnchorSerialize, AnchorDeserialize)]
-pub struct MetadataArgsV1 {
-    pub name: String,
-    pub symbol: String,
-    pub uri: String,
-    pub seller_fee_basis_points: u16,
-    pub primary_sale_happened: bool,
-    pub is_mutable: bool,
-    pub edition_nonce: Option<u8>,
-    pub token_standard: Option<TokenStandard>,
-    pub collection: Option<CollectionArg>,
-    pub uses: Option<UsesArg>,
-    pub token_program_version: TokenProgramVersion,
-    pub creators: Vec<CreatorArg>,
-}
-
-#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
-pub enum TokenStandard {
-    NonFungible,
-    FungibleAsset,
-    Fungible,
-    NonFungibleEdition,
-}
-
-#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
-pub enum TokenProgramVersion {
-    Original,
-    Token2022,
-}
-
-#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
-pub struct CollectionArg {
-    pub verified: bool,
-    pub key: Pubkey,
-}
-
-#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
-pub struct UsesArg {
-    pub use_method: UseMethod,
-    pub remaining: u64,
-    pub total: u64,
-}
-
-#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
-pub enum UseMethod {
-    Burn,
-    Multiple,
-    Single,
-}
-
-#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
-pub struct CreatorArg {
-    pub address: Pubkey,
-    pub verified: bool,
-    pub share: u8,
 }
 
 // ─── Account Structures ──────────────────────────────────────────────────────
