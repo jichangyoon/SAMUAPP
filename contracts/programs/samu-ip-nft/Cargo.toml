@@ -18,3 +18,5 @@ default = []
 [dependencies]
 anchor-lang = "0.30.1"
 anchor-spl = "0.30.1"
+spl-account-compression = { version = "0.3", features = ["no-entrypoint"] }
+spl-noop = { version = "0.2", features = ["no-entrypoint"] }

@@ -82,8 +82,6 @@ pub mod samu_ip_nft {
             &[authority_bump],
         ];
 
-        let tree_config_key = find_tree_config_pda(&ctx.accounts.merkle_tree.key());
-
         let mut data = CREATE_TREE_CONFIG_DISC.to_vec();
         data.extend_from_slice(&max_depth.to_le_bytes());
         data.extend_from_slice(&max_buffer_size.to_le_bytes());
@@ -94,7 +92,7 @@ pub mod samu_ip_nft {
         let create_tree_ix = Instruction {
             program_id: BUBBLEGUM_PROGRAM_ID,
             accounts: vec![
-                AccountMeta::new(tree_config_key, false),
+                AccountMeta::new(ctx.accounts.bubblegum_tree_config.key(), false),
                 AccountMeta::new(ctx.accounts.merkle_tree.key(), false),
                 AccountMeta::new(ctx.accounts.admin.key(), true),
                 AccountMeta::new_readonly(ctx.accounts.contest_authority.key(), true),
@@ -279,16 +277,6 @@ pub mod samu_ip_nft {
     }
 }
 
-// ─── Bubblegum Tree Config PDA 계산 ──────────────────────────────────────────
-
-fn find_tree_config_pda(merkle_tree: &Pubkey) -> Pubkey {
-    let (pda, _bump) = Pubkey::find_program_address(
-        &[merkle_tree.as_ref()],
-        &BUBBLEGUM_PROGRAM_ID,
-    );
-    pda
-}
-
 // ─── Data Structures ─────────────────────────────────────────────────────────
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq, InitSpace)]
@@ -439,7 +427,12 @@ pub struct InitializeContestTree<'info> {
 
     /// CHECK: Bubblegum tree_config PDA (Bubblegum 프로그램이 생성/관리).
     /// seeds: [merkle_tree.key()] under BUBBLEGUM_PROGRAM_ID
-    #[account(mut)]
+    #[account(
+        mut,
+        seeds = [merkle_tree.key().as_ref()],
+        seeds::program = BUBBLEGUM_PROGRAM_ID,
+        bump,
+    )]
     pub bubblegum_tree_config: UncheckedAccount<'info>,
 
     /// CHECK: Bubblegum Program
@@ -488,12 +481,21 @@ pub struct MintParticipantNft<'info> {
     /// CHECK: cNFT 수령인 지갑
     pub recipient: UncheckedAccount<'info>,
 
-    /// CHECK: Bubblegum tree_config PDA
-    #[account(mut)]
+    /// CHECK: Bubblegum tree_config PDA.
+    /// seeds: [merkle_tree.key()] under BUBBLEGUM_PROGRAM_ID에서 파생됨.
+    #[account(
+        mut,
+        seeds = [merkle_tree.key().as_ref()],
+        seeds::program = BUBBLEGUM_PROGRAM_ID,
+        bump,
+    )]
     pub bubblegum_tree_config: UncheckedAccount<'info>,
 
-    /// CHECK: Merkle Tree 계정
-    #[account(mut)]
+    /// CHECK: Merkle Tree 계정. contest_tree.merkle_tree와 일치해야 함.
+    #[account(
+        mut,
+        constraint = merkle_tree.key() == contest_tree.merkle_tree @ ErrorCode::TreeMismatch,
+    )]
     pub merkle_tree: UncheckedAccount<'info>,
 
     /// CHECK: Bubblegum Program
@@ -595,4 +597,6 @@ pub enum ErrorCode {
     InvalidEquityShare,
     #[msg("Total equity for this contest would exceed 10000 bps (100%)")]
     EquityOverflow,
+    #[msg("Provided merkle_tree does not match the contest's registered tree")]
+    TreeMismatch,
 }
