@@ -6,8 +6,9 @@
 
 **핵심 로직:**
 1. 굿즈 결제 시 → 수익 SOL이 `escrow_pool` PDA로 들어옴 (구매자 TX)
-2. 배달 완료 후 → 서버(admin)가 `deposit_and_allocate` 호출 → 각 수령인 `allocation_record` 생성
-3. 수령인이 `claim` 호출 → 자기 지분을 직접 수령 (가스비 본인 부담, ~$0.001)
+2. 배달 완료 후 → 서버(admin)가 `deposit_profit` 호출 → escrow_pool에 SOL 예치 + 비율 검증
+3. 서버(admin)가 `record_allocation` 호출 → 각 수령인별 `allocation_record` 생성 (수령인 1명당 1회 호출)
+4. 수령인이 `claim` 호출 → 자기 지분을 직접 수령 (가스비 본인 부담, ~$0.001)
 
 **비율:** Creator 45% / Voter 40% / Platform 15%
 
@@ -117,10 +118,11 @@ Replit에서 "Start application" 워크플로우 재시작
 
 | Instruction | 호출자 | 설명 |
 |---|---|---|
-| `initialize` | admin | 최초 1회 설정 |
-| `deposit_and_allocate` | admin (서버) | 수익 입금 + 수령인 기록 |
-| `claim` | 유저 (자기 서명) | 자기 몫 수령 |
-| `transfer_admin` | admin | admin 지갑 변경 |
+| `initialize` | admin | 최초 1회 설정 (45/40/15 비율 등록) |
+| `deposit_profit` | admin (서버) | 수익 SOL을 escrow_pool PDA에 예치 + 비율 검증 |
+| `record_allocation` | admin (서버) | 수령인 1명당 allocation_record PDA 생성 (N번 호출) |
+| `claim` | 유저 (자기 서명) | 자기 몫 수령 (escrow_pool → 유저 지갑) |
+| `transfer_admin` | admin | admin 지갑 변경 (긴급 상황용) |
 
 ---
 

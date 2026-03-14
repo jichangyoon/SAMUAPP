@@ -13,7 +13,7 @@ import { config } from "../config";
 import bs58 from "bs58";
 
 export function getConnection(): Connection {
-  const HELIUS_API_KEY = process.env.VITE_HELIUS_API_KEY;
+  const HELIUS_API_KEY = process.env.HELIUS_API_KEY;
   const rpcUrl = HELIUS_API_KEY 
     ? `https://rpc.helius.xyz/?api-key=${HELIUS_API_KEY}`
     : 'https://api.mainnet-beta.solana.com';
@@ -21,7 +21,7 @@ export function getConnection(): Connection {
 }
 
 export async function getSamuBalance(walletAddress: string): Promise<number> {
-  const HELIUS_API_KEY = process.env.VITE_HELIUS_API_KEY;
+  const HELIUS_API_KEY = process.env.HELIUS_API_KEY;
   const SAMU_TOKEN_MINT_STR = config.SAMU_TOKEN_MINT;
   
   const RPC_ENDPOINTS = [
