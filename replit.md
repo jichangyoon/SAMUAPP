@@ -49,12 +49,37 @@ The platform operates on a pipeline: Meme Contest → Goods (Printful) → Ecosy
 |---|---|---|---|
 | Phase 1 | Meme Incubator App | ✅ 완성 | 현재 시스템 전체 (React + Express + Printful + Privy) |
 | Phase 2 | On-chain Escrow (Anchor) | ⚙️ 진행 중 | 서버 에스크로 → PDA 컨트롤 스마트 컨트랙트 교체. Devnet 완료, Mainnet 배포 대기 |
-| Phase 3 | Dynamic IP Equity NFT | 📐 설계됨 | Metaplex Core 기반. 우승 밈 → IP NFT 발행 → 수익 PDA 연결 → NFT 홀더 수익 분배 |
+| Phase 3 | Dynamic IP Equity cNFT | 📐 설계 확정 | cNFT(Compressed NFT) 기반. 콘테스트 종료 시 Creator + Voter 전원에게 cNFT 발행. 양도 가능. Helius DAS API로 홀더 조회 후 수익 분배 |
 | Phase 4 | Community Factory Program | 🔭 계획됨 | 퍼미션리스 커뮤니티 런칭 온체인 프로그램. SAMU를 앱 → 플랫폼으로 전환 |
 | Phase 5 | License NFT Marketplace | 🔭 계획됨 | IP 라이선스 NFT 거래, USDC 플로우, 브랜드/크리에이터 라이선스 구매 |
 | Phase 6 | Solana SVM Appchain | 🔭 계획됨 | Sonic SVM / MagicBlock 기반 전용 앱체인 |
 
 > 새 기능 설계 시 이 로드맵을 참조하여 아키텍처 결정이 장기 방향과 충돌하지 않도록 할 것.
+
+### Phase 3 상세 설계 (2026-03-13 확정)
+
+**모델 전환:**
+현재(Phase 1/2): 콘테스트 종료 → DB에 크리에이터/투표자 지분 기록 → 굿즈 수익 발생 시 DB 기준으로 SOL 분배
+Phase 3: 콘테스트 종료 → 참여자 전원에게 cNFT 발행 → 굿즈 수익 발생 시 cNFT 보유자 기준으로 SOL 분배
+
+**핵심 설계 결정:**
+- **cNFT (Compressed NFT)** 사용: Metaplex Bubblegum 프로그램 기반. 발행 비용이 거의 0이므로 투표자 수백 명에게도 부담 없이 발행 가능.
+- **발행 대상:** 콘테스트 종료 시 참여한 Creator + Voter 전원
+  - Creator cNFT: 득표 비율에 따른 지분(%) 메타데이터 포함
+  - Voter cNFT: 투표 기여도에 따른 지분(%) 메타데이터 포함
+- **양도 가능 (Transferable):** cNFT 2차 거래 시 수익 귀속이 새 홀더로 이전됨. Phase 5 License NFT Marketplace의 기반.
+- **수익 분배 방식:** 굿즈 수익 발생 시 Helius DAS API (인덱서)로 현재 cNFT 홀더 조회 → 서버가 현재 홀더에게 SOL 분배. Phase 2와 동일한 서버 기반 분배 패턴 유지.
+- **컨트랙트 독립:** Phase 2 (`samu-rewards`)와 별도 Program ID로 배포. 웹앱은 env 변수 2개로 두 컨트랙트와 연동. Phase 2 검증 내용 유지됨.
+- **CPI 가능:** Phase 3 컨트랙트에서 Phase 2 컨트랙트를 Cross-Program Invocation으로 호출 가능 (예: NFT 홀더 claim → Phase 2 SOL 전송).
+
+**구현 시 필요한 것:**
+1. Bubblegum 프로그램으로 Merkle Tree 생성 + cNFT 민팅 (콘테스트 종료 트리거)
+2. Helius DAS API 연동 (현재 cNFT 홀더 조회)
+3. 분배 로직을 DB 기록 기준 → cNFT 홀더 기준으로 전환
+
+**기술적 주의사항:**
+- cNFT는 상태 압축(Concurrent Merkle Tree)을 사용하므로 온체인에서 직접 소유권 조회 불가 → 반드시 off-chain 인덱서(Helius DAS API) 필요
+- Merkle Tree 관리 (크기, 깊이, 캐노피) 설계 필요
 
 ## External Dependencies
 - **Solana Blockchain:** Core infrastructure for SPL token transfers and smart contracts.
@@ -65,3 +90,5 @@ The platform operates on a pipeline: Meme Contest → Goods (Printful) → Ecosy
 - **OpenStreetMap Nominatim API:** Used for geocoding order locations.
 - **CoinGecko API:** For cryptocurrency pricing data.
 - **Anchor:** Solana framework used for smart contract development.
+- **Metaplex Bubblegum:** Solana program for minting compressed NFTs (cNFTs) via state compression. Phase 3 핵심 의존성.
+- **Helius DAS API:** Digital Asset Standard API for querying cNFT ownership off-chain. Phase 3 수익 분배 시 현재 홀더 조회에 사용.
