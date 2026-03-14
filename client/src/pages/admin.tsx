@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Play, Square, Archive, Plus, Clock, Trophy, ArrowLeft, Shield, Eye, Ban, Shirt, Package, Image, Loader2, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
+import { Play, Square, Archive, Plus, Clock, Trophy, ArrowLeft, Shield, Eye, Ban, Shirt, Package, Image, Loader2, ChevronDown, ChevronUp, Sparkles, RefreshCw } from "lucide-react";
 import type { Contest, ArchivedContest } from "@shared/schema";
 import { useLocation } from "wouter";
 import { IPTrackingPanel } from "@/components/ip-tracking-panel";
@@ -113,6 +113,20 @@ export function Admin() {
     onError: (e: any) => {
       toast({ title: "Printful 연동 실패", description: e.message, variant: "destructive" });
       setSyncingPrintfulId(null);
+    },
+  });
+
+  const syncAllOrdersMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/admin/sync-printful-orders", { adminEmail });
+      return res.json();
+    },
+    onSuccess: (data: any) => {
+      toast({ title: `Printful 주문 동기화 완료`, description: `${data.synced || 0}건 업데이트됨` });
+      queryClient.invalidateQueries({ queryKey: ['/api/goods'] });
+    },
+    onError: (e: any) => {
+      toast({ title: "동기화 실패", description: e.message, variant: "destructive" });
     },
   });
 
@@ -369,6 +383,18 @@ export function Admin() {
           >
             <Shield className="h-4 w-4" />
             IP Tracking
+          </Button>
+          <Button
+            onClick={() => syncAllOrdersMutation.mutate()}
+            variant="outline"
+            className="flex items-center gap-2"
+            disabled={syncAllOrdersMutation.isPending}
+          >
+            {syncAllOrdersMutation.isPending ? (
+              <><Loader2 className="h-4 w-4 animate-spin" /> Syncing...</>
+            ) : (
+              <><RefreshCw className="h-4 w-4" /> Sync Orders</>
+            )}
           </Button>
         </div>
 
