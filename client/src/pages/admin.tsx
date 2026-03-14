@@ -393,7 +393,7 @@ export function Admin() {
             {syncAllOrdersMutation.isPending ? (
               <><Loader2 className="h-4 w-4 animate-spin" /> Syncing...</>
             ) : (
-              <><RefreshCw className="h-4 w-4" /> Sync Orders</>
+              <><RefreshCw className="h-4 w-4" /> Sync Printful Orders</>
             )}
           </Button>
         </div>
