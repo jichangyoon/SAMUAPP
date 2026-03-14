@@ -1,7 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::{
     instruction::{AccountMeta, Instruction},
-    program::invoke,
     program::invoke_signed,
 };
 
@@ -68,6 +67,7 @@ pub mod samu_ip_nft {
         contest_tree.max_depth = max_depth;
         contest_tree.max_buffer_size = max_buffer_size;
         contest_tree.total_minted = 0;
+        contest_tree.total_equity_bps = 0;
         contest_tree.finalized = false;
         contest_tree.bump = ctx.bumps.contest_tree;
 
@@ -115,6 +115,7 @@ pub mod samu_ip_nft {
                 ctx.accounts.log_wrapper.to_account_info(),
                 ctx.accounts.compression_program.to_account_info(),
                 ctx.accounts.system_program.to_account_info(),
+                ctx.accounts.bubblegum_program.to_account_info(),
             ],
             &[authority_seeds],
         )?;
@@ -152,14 +153,18 @@ pub mod samu_ip_nft {
         ctx: Context<MintParticipantNft>,
         contest_id: u64,
         name: String,
-        symbol: String,
         uri: String,
         role: Role,
         equity_share_bps: u16,
     ) -> Result<()> {
         let contest_tree = &mut ctx.accounts.contest_tree;
         require!(!contest_tree.finalized, ErrorCode::AlreadyFinalized);
-        require!(equity_share_bps <= 10000, ErrorCode::InvalidEquityShare);
+        require!(equity_share_bps > 0 && equity_share_bps <= 10000, ErrorCode::InvalidEquityShare);
+
+        let new_total = contest_tree.total_equity_bps
+            .checked_add(equity_share_bps as u32)
+            .ok_or(ErrorCode::EquityOverflow)?;
+        require!(new_total <= 10000, ErrorCode::EquityOverflow);
 
         let authority_bump = ctx.bumps.contest_authority;
         let contest_id_bytes = contest_id.to_le_bytes();
@@ -169,8 +174,8 @@ pub mod samu_ip_nft {
             &[authority_bump],
         ];
 
-        // Bubblegum mint_v1 instruction data 구성
-        // MetadataArgs Borsh 직렬화
+        let symbol = String::from("SAMU-IP");
+
         let metadata_args = MetadataArgsV1 {
             name: name.clone(),
             symbol: symbol.clone(),
@@ -221,17 +226,20 @@ pub mod samu_ip_nft {
                 ctx.accounts.log_wrapper.to_account_info(),
                 ctx.accounts.compression_program.to_account_info(),
                 ctx.accounts.system_program.to_account_info(),
+                ctx.accounts.bubblegum_program.to_account_info(),
             ],
             &[authority_seeds],
         )?;
 
         contest_tree.total_minted = contest_tree.total_minted.checked_add(1).unwrap();
+        contest_tree.total_equity_bps = new_total;
 
         emit!(ParticipantNftMinted {
             contest_id,
             recipient: ctx.accounts.recipient.key(),
             role: role.clone(),
             equity_share_bps,
+            total_equity_bps: new_total,
             nft_index: contest_tree.total_minted - 1,
             name,
             uri,
@@ -368,6 +376,7 @@ pub struct ContestTree {
     pub max_depth: u32,
     pub max_buffer_size: u32,
     pub total_minted: u32,
+    pub total_equity_bps: u32,
     pub finalized: bool,
     pub bump: u8,
 }
@@ -556,6 +565,7 @@ pub struct ParticipantNftMinted {
     pub recipient: Pubkey,
     pub role: Role,
     pub equity_share_bps: u16,
+    pub total_equity_bps: u32,
     pub nft_index: u32,
     pub name: String,
     pub uri: String,
@@ -581,6 +591,8 @@ pub enum ErrorCode {
     Unauthorized,
     #[msg("This contest is already finalized, no more minting allowed")]
     AlreadyFinalized,
-    #[msg("equity_share_bps must be 0-10000 (0.00% - 100.00%)")]
+    #[msg("equity_share_bps must be 1-10000 (0.01% - 100.00%)")]
     InvalidEquityShare,
+    #[msg("Total equity for this contest would exceed 10000 bps (100%)")]
+    EquityOverflow,
 }

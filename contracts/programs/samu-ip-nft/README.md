@@ -74,10 +74,11 @@ Phase 3 스마트 컨트랙트 `samu-ip-nft`는 콘테스트 참가자에게 **I
 |---|---|---|
 | contest_id | u64 | 콘테스트 ID |
 | name | String | cNFT 이름 (예: "SAMU Contest #1 Creator") |
-| symbol | String | "SAMU-IP" |
 | uri | String | Off-chain 메타데이터 JSON URL |
 | role | Role | Creator 또는 Voter |
-| equity_share_bps | u16 | 수익 지분 (0-10000) |
+| equity_share_bps | u16 | 수익 지분 (1-10000). 콘테스트 합계 10000 초과 시 에러 |
+
+> symbol은 "SAMU-IP"로 고정 (instruction 인자 아님)
 
 ### `finalize_contest`
 콘테스트 mint 완료 처리.
@@ -101,7 +102,7 @@ admin 지갑 변경 (긴급 상황용).
 
 ### `contest_tree`
 - Seeds: `["contest-tree", contest_id_LE8]`
-- merkle_tree, contest_id, max_depth, max_buffer_size, total_minted, finalized, bump
+- merkle_tree, contest_id, max_depth, max_buffer_size, total_minted, total_equity_bps, finalized, bump
 
 ### `contest_authority`
 - Seeds: `["authority", contest_id_LE8]`
