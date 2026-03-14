@@ -49,7 +49,7 @@ The platform operates on a pipeline: Meme Contest → Goods (Printful) → Ecosy
 |---|---|---|---|
 | Phase 1 | Meme Incubator App | ✅ 완성 | 현재 시스템 전체 (React + Express + Printful + Privy) |
 | Phase 2 | On-chain Escrow (Anchor) | ⚙️ 진행 중 | 서버 에스크로 → PDA 컨트롤 스마트 컨트랙트 교체. Devnet 완료, Mainnet 배포 대기 |
-| Phase 3 | Dynamic IP Equity cNFT | 📐 설계 확정 | cNFT(Compressed NFT) 기반. 콘테스트 종료 시 Creator + Voter 전원에게 cNFT 발행. 양도 가능. Helius DAS API로 홀더 조회 후 수익 분배 |
+| Phase 3 | Dynamic IP Equity cNFT | ⚙️ 컨트랙트 작성 완료 | cNFT(Compressed NFT) 기반. `samu-ip-nft` Anchor 프로그램 작성 완료. Devnet 배포 대기 |
 | Phase 4 | Community Factory Program | 🔭 계획됨 | 퍼미션리스 커뮤니티 런칭 온체인 프로그램. SAMU를 앱 → 플랫폼으로 전환 |
 | Phase 5 | License NFT Marketplace | 🔭 계획됨 | IP 라이선스 NFT 거래, USDC 플로우, 브랜드/크리에이터 라이선스 구매 |
 | Phase 6 | Solana SVM Appchain | 🔭 계획됨 | Sonic SVM / MagicBlock 기반 전용 앱체인 |
