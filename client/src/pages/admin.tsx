@@ -122,7 +122,9 @@ export function Admin() {
       return res.json();
     },
     onSuccess: (data: any) => {
-      toast({ title: `Printful 주문 동기화 완료`, description: `${data.synced || 0}건 업데이트됨` });
+      const parts = [`${data.synced || 0}건 업데이트됨`];
+      if (data.distributed > 0) parts.push(`${data.distributed}건 수익분배 완료`);
+      toast({ title: `Printful 주문 동기화 완료`, description: parts.join(', ') });
       queryClient.invalidateQueries({ queryKey: ['/api/goods'] });
     },
     onError: (e: any) => {

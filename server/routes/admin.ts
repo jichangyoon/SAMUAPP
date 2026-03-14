@@ -3,6 +3,7 @@ import { insertContestSchema } from "@shared/schema";
 import { storage } from "../storage";
 import { contestScheduler } from "../contest-scheduler";
 import { config } from "../config";
+import { distributeEscrowProfit } from "./goods";
 
 const router = Router();
 
@@ -305,6 +306,7 @@ router.post("/sync-printful-orders", requireAdmin, async (req, res) => {
     const STORE_ID = "17717241";
     const orders = await storage.getAllOrders();
     const results: any[] = [];
+    let distributedCount = 0;
 
     for (const order of orders) {
       if (!order.printfulOrderId) continue;
@@ -346,6 +348,19 @@ router.post("/sync-printful-orders", requireAdmin, async (req, res) => {
           await storage.updateOrder(order.id, updates);
           results.push({ orderId: order.id, printfulOrderId: order.printfulOrderId, updates });
           console.log(`[Admin Sync] Order ${order.id} updated:`, updates);
+
+          if (updates.status === "delivered") {
+            try {
+              const escrow = await storage.getEscrowDepositByOrderId(order.id);
+              if (escrow && escrow.status === "locked") {
+                await distributeEscrowProfit(escrow);
+                distributedCount++;
+                console.log(`[Admin Sync] Order ${order.id} profit distributed`);
+              }
+            } catch (distErr: any) {
+              console.error(`[Admin Sync] Profit distribution failed for order ${order.id}:`, distErr.message);
+            }
+          }
         } else {
           results.push({ orderId: order.id, printfulOrderId: order.printfulOrderId, updates: "no changes" });
         }
@@ -354,7 +369,12 @@ router.post("/sync-printful-orders", requireAdmin, async (req, res) => {
       }
     }
 
-    return res.json({ ok: true, synced: results.filter(r => typeof r.updates === "object" && r.updates !== "no changes").length, results });
+    return res.json({
+      ok: true,
+      synced: results.filter(r => typeof r.updates === "object" && r.updates !== "no changes").length,
+      distributed: distributedCount,
+      results,
+    });
   } catch (error: any) {
     console.error("[Admin] Sync error:", error.message);
     res.status(500).json({ error: error.message });
