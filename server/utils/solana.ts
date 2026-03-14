@@ -1,3 +1,4 @@
+import { logger } from "./logger";
 import {
   Connection,
   Keypair,
@@ -139,13 +140,13 @@ export async function depositProfit(
   platformTotal: number,
 ): Promise<string | null> {
   if (!isContractEnabled()) {
-    console.log("[contract] SAMU_REWARDS_PROGRAM_ID not set — skipping depositProfit");
+    logger.info("[contract] SAMU_REWARDS_PROGRAM_ID not set — skipping depositProfit");
     return null;
   }
 
   const privateKeyStr = process.env.ESCROW_WALLET_PRIVATE_KEY;
   if (!privateKeyStr) {
-    console.warn("[contract] ESCROW_WALLET_PRIVATE_KEY not configured — skipping");
+    logger.warn("[contract] ESCROW_WALLET_PRIVATE_KEY not configured — skipping");
     return null;
   }
 
@@ -187,10 +188,10 @@ export async function depositProfit(
 
     const tx = new Transaction().add(ix);
     const signature = await sendAndConfirmTransaction(connection, tx, [adminKeypair]);
-    console.log(`[contract] depositProfit TX: ${signature} | contest=${contestId} | total=${totalLamports}`);
+    logger.info(`[contract] depositProfit TX: ${signature} | contest=${contestId} | total=${totalLamports}`);
     return signature;
   } catch (err: any) {
-    console.error("[contract] depositProfit failed:", err?.message || err);
+    logger.error("[contract] depositProfit failed:", err?.message || err);
     return null;
   }
 }
@@ -251,10 +252,10 @@ export async function recordAllocation(
 
     const tx = new Transaction().add(ix);
     const signature = await sendAndConfirmTransaction(connection, tx, [adminKeypair]);
-    console.log(`[contract] recordAllocation TX: ${signature} | contest=${contestId} | wallet=${allocation.wallet} | role=${allocation.role} | lamports=${allocation.lamports}`);
+    logger.info(`[contract] recordAllocation TX: ${signature} | contest=${contestId} | wallet=${allocation.wallet} | role=${allocation.role} | lamports=${allocation.lamports}`);
     return signature;
   } catch (err: any) {
-    console.error(`[contract] recordAllocation failed for ${allocation.wallet}:`, err?.message || err);
+    logger.error(`[contract] recordAllocation failed for ${allocation.wallet}:`, err?.message || err);
     return null;
   }
 }
@@ -280,14 +281,14 @@ export async function buildClaimTransaction(
     // allocation_record 계정 존재 + claimed 여부 확인
     const accountInfo = await connection.getAccountInfo(allocationRecordPda);
     if (!accountInfo || accountInfo.data.length === 0) {
-      console.log(`[contract] No allocation_record for contest=${contestId} wallet=${claimerWallet}`);
+      logger.info(`[contract] No allocation_record for contest=${contestId} wallet=${claimerWallet}`);
       return null;
     }
 
     // claimed 플래그 체크 (discriminator 8바이트 + contest_id 8 + wallet 32 + role 1 + lamports 8 + claimed 1)
     const claimedOffset = 8 + 8 + 32 + 1 + 8;
     if (accountInfo.data[claimedOffset] === 1) {
-      console.log(`[contract] Already claimed: contest=${contestId} wallet=${claimerWallet}`);
+      logger.info(`[contract] Already claimed: contest=${contestId} wallet=${claimerWallet}`);
       return null;
     }
 
@@ -319,7 +320,7 @@ export async function buildClaimTransaction(
     const serialized = tx.serialize({ requireAllSignatures: false, verifySignatures: false });
     return serialized.toString("base64");
   } catch (err: any) {
-    console.error("[contract] buildClaimTransaction failed:", err?.message || err);
+    logger.error("[contract] buildClaimTransaction failed:", err?.message || err);
     return null;
   }
 }

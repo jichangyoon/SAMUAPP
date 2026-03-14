@@ -2,6 +2,7 @@ import { Router } from "express";
 import { storage } from "../storage";
 import { insertRevenueSchema } from "@shared/schema";
 import { config } from "../config";
+import { logger } from "../utils/logger";
 
 const router = Router();
 
@@ -36,7 +37,7 @@ router.post("/", async (req, res) => {
     const revenue = await storage.createRevenue(revenueData);
     res.json(revenue);
   } catch (error: any) {
-    console.error("Error creating revenue:", error);
+    logger.error("Error creating revenue:", error);
     res.status(500).json({ message: error.message || "Failed to create revenue" });
   }
 });
@@ -129,7 +130,7 @@ router.post("/:id/distribute", async (req, res) => {
 
     res.json({ revenue: await storage.getRevenueById(revenueId), shares: createdShares });
   } catch (error: any) {
-    console.error("Error distributing revenue:", error);
+    logger.error("Error distributing revenue:", error);
     res.status(500).json({ message: error.message || "Failed to distribute revenue" });
   }
 });
@@ -160,7 +161,7 @@ router.get("/contest/:contestId", async (req, res) => {
       shareConfig: config.REVENUE_SHARES,
     });
   } catch (error: any) {
-    console.error("Error fetching contest revenue:", error);
+    logger.error("Error fetching contest revenue:", error);
     res.status(500).json({ message: error.message || "Failed to fetch revenue data" });
   }
 });
@@ -196,7 +197,7 @@ router.get("/contest/:contestId/my-share/:wallet", async (req, res) => {
       shareConfig: config.REVENUE_SHARES,
     });
   } catch (error: any) {
-    console.error("Error fetching my share:", error);
+    logger.error("Error fetching my share:", error);
     res.status(500).json({ message: error.message || "Failed to fetch share data" });
   }
 });
@@ -213,7 +214,7 @@ router.get("/wallet/:wallet", async (req, res) => {
       totalEarnedSol,
     });
   } catch (error: any) {
-    console.error("Error fetching wallet revenue:", error);
+    logger.error("Error fetching wallet revenue:", error);
     res.status(500).json({ message: error.message || "Failed to fetch wallet revenue" });
   }
 });

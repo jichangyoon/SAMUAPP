@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { storage } from "../storage";
 import { insertUserSchema } from "@shared/schema";
+import { logger } from "../utils/logger";
 
 const router = Router();
 
@@ -33,11 +34,11 @@ const trackLogin = async (ipAddress: string, walletAddress: string, deviceId?: s
     // 3개 이상의 다른 지갑으로 로그인한 경우 의심스러운 활동으로 간주 (로컬호스트 제외)
     const isLoopback = ipAddress === '127.0.0.1' || ipAddress === '::1' || ipAddress === '::ffff:127.0.0.1';
     if (!isLoopback && todayWalletsByIp.length >= 3) {
-      console.warn(`Suspicious IP detected: ${ipAddress} with ${todayWalletsByIp.length} different wallets today`);
+      logger.warn(`Suspicious IP detected: ${ipAddress} with ${todayWalletsByIp.length} different wallets today`);
     }
     
     if (deviceId && todayWalletsByDevice.length >= 3) {
-      console.warn(`Suspicious device detected: ${deviceId} with ${todayWalletsByDevice.length} different wallets today`);
+      logger.warn(`Suspicious device detected: ${deviceId} with ${todayWalletsByDevice.length} different wallets today`);
     }
 
     return { 
@@ -46,7 +47,7 @@ const trackLogin = async (ipAddress: string, walletAddress: string, deviceId?: s
       deviceWalletCount: todayWalletsByDevice.length
     };
   } catch (error) {
-    console.error("Error tracking login:", error);
+    logger.error("Error tracking login:", error);
     return { blocked: false, ipWalletCount: 0, deviceWalletCount: 0 };
   }
 };
@@ -90,7 +91,7 @@ router.get("/profile/:walletAddress", async (req, res) => {
     
     res.json(user);
   } catch (error) {
-    console.error("Error fetching user profile:", error);
+    logger.error("Error fetching user profile:", error);
     res.status(500).json({ message: "Failed to fetch user profile" });
   }
 });
@@ -119,7 +120,7 @@ router.put("/profile/:walletAddress", async (req, res) => {
     const user = await storage.updateUser(walletAddress, updateData);
     res.json(user);
   } catch (error) {
-    console.error("Error updating user profile:", error);
+    logger.error("Error updating user profile:", error);
     res.status(400).json({ message: "Failed to update user profile", error: (error as Error).message });
   }
 });
@@ -131,7 +132,7 @@ router.get("/:walletAddress/memes", async (req, res) => {
     const memes = await storage.getUserMemes(walletAddress);
     res.json(memes);
   } catch (error) {
-    console.error("Error fetching user memes:", error);
+    logger.error("Error fetching user memes:", error);
     res.status(500).json({ message: "Failed to fetch user memes" });
   }
 });
@@ -143,7 +144,7 @@ router.get("/:walletAddress/memes-by-contest", async (req, res) => {
     const data = await storage.getUserMemesByContest(walletAddress);
     res.json(data);
   } catch (error) {
-    console.error("Error fetching user memes by contest:", error);
+    logger.error("Error fetching user memes by contest:", error);
     res.status(500).json({ message: "Failed to fetch user memes by contest" });
   }
 });
@@ -155,7 +156,7 @@ router.get("/:walletAddress/votes", async (req, res) => {
     const votes = await storage.getUserVotes(walletAddress);
     res.json(votes);
   } catch (error) {
-    console.error("Error fetching user votes:", error);
+    logger.error("Error fetching user votes:", error);
     res.status(500).json({ message: "Failed to fetch user votes" });
   }
 });
@@ -197,7 +198,7 @@ router.get("/:walletAddress/stats", async (req, res) => {
     
     res.json(stats);
   } catch (error) {
-    console.error("Error fetching user stats:", error);
+    logger.error("Error fetching user stats:", error);
     res.status(500).json({ message: "Failed to fetch user stats" });
   }
 });
@@ -229,7 +230,7 @@ router.get("/check-name/:displayName", async (req, res) => {
       suggestions
     });
   } catch (error) {
-    console.error("Error checking display name:", error);
+    logger.error("Error checking display name:", error);
     res.status(500).json({ message: "Failed to check display name availability" });
   }
 });

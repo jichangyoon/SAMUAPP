@@ -6,6 +6,7 @@ import { Connection, PublicKey, Transaction } from "@solana/web3.js";
 import { createTransferInstruction, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, getAccount } from "@solana/spl-token";
 import { getConnection } from "../utils/solana";
 import { config } from "../config";
+import { logger } from "../utils/logger";
 
 const router = Router();
 
@@ -94,7 +95,7 @@ export async function verifyTransaction(
           return { valid: false, error: "Transaction signer does not match voter wallet" };
         }
       } catch (signerErr) {
-        console.warn('Could not parse transaction signer key, skipping signer check:', signerErr);
+        logger.warn('Could not parse transaction signer key, skipping signer check:', signerErr);
       }
 
       return { valid: true };
@@ -103,7 +104,7 @@ export async function verifyTransaction(
         await new Promise(resolve => setTimeout(resolve, 2000));
         continue;
       }
-      console.error('Transaction verification error:', error);
+      logger.error('Transaction verification error:', error);
       return { valid: false, error: "Could not verify transaction" };
     }
   }
@@ -173,7 +174,7 @@ router.post("/prepare-transaction", async (req, res) => {
       treasuryWallet: TREASURY_WALLET
     });
   } catch (error: any) {
-    console.error('Error preparing vote transaction:', error);
+    logger.error('Error preparing vote transaction:', error);
     res.status(500).json({ message: error.message || "Failed to prepare transaction" });
   }
 });
@@ -215,7 +216,7 @@ router.post("/:id/vote", async (req, res) => {
     
     res.json({ vote, meme: updatedMeme });
   } catch (error) {
-    console.error('Error voting:', error);
+    logger.error('Error voting:', error);
     res.status(400).json({ message: "Failed to vote" });
   }
 });
@@ -226,7 +227,7 @@ router.get("/history/:wallet", async (req, res) => {
     const voteHistory = await storage.getUserVoteHistoryByContest(walletAddress);
     res.json(voteHistory);
   } catch (error) {
-    console.error('Error fetching vote history:', error);
+    logger.error('Error fetching vote history:', error);
     res.status(500).json({ message: "Failed to fetch vote history" });
   }
 });
@@ -238,7 +239,7 @@ router.get("/contest/:contestId/my-votes/:wallet", async (req, res) => {
     const myVotes = await storage.getUserVotesForContest(walletAddress, contestId);
     res.json(myVotes);
   } catch (error) {
-    console.error('Error fetching contest votes:', error);
+    logger.error('Error fetching contest votes:', error);
     res.status(500).json({ message: "Failed to fetch contest votes" });
   }
 });
@@ -284,7 +285,7 @@ router.get("/:id/voters", async (req, res) => {
 
     res.json({ voters, totalVoters: voters.length });
   } catch (error) {
-    console.error('Error fetching meme voters:', error);
+    logger.error('Error fetching meme voters:', error);
     res.status(500).json({ message: "Failed to fetch voters" });
   }
 });
@@ -387,7 +388,7 @@ router.get("/contest/:contestId/reward-breakdown", async (req, res) => {
       totalSamuSpent,
     });
   } catch (error) {
-    console.error("Error fetching reward breakdown:", error);
+    logger.error("Error fetching reward breakdown:", error);
     res.status(500).json({ message: "Failed to fetch reward breakdown" });
   }
 });

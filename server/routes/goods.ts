@@ -6,6 +6,7 @@ import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } f
 import { uploadToR2 } from "../r2-storage";
 import { geocodeAddress } from "../utils/geocode";
 import { getConnection, depositProfit, recordAllocation, isContractEnabled, getEscrowPoolPda } from "../utils/solana";
+import { logger } from "../utils/logger";
 
 const router = Router();
 
@@ -23,7 +24,7 @@ export async function distributeEscrowProfit(escrowDeposit: any) {
   // 멱등성 체크: 이미 배포된 주문이면 중단 (중복 배포 방지)
   const existing = await storage.getGoodsRevenueDistributionByOrderId(escrowDeposit.orderId);
   if (existing) {
-    console.warn(`[distributeEscrowProfit] Order ${escrowDeposit.orderId} already has a distribution (id=${existing.id}), skipping.`);
+    logger.warn(`[distributeEscrowProfit] Order ${escrowDeposit.orderId} already has a distribution (id=${existing.id}), skipping.`);
     return;
   }
 
@@ -89,19 +90,19 @@ export async function distributeEscrowProfit(escrowDeposit: any) {
     await storage.updateEscrowStatus(escrowDeposit.id, "distributed", new Date());
   } catch (err) {
     // 부분 실패 시 distribution 헤더 롤백 시도
-    console.error(`[distributeEscrowProfit] Failed after creating distribution ${dist.id}, attempting rollback:`, err);
+    logger.error(`[distributeEscrowProfit] Failed after creating distribution ${dist.id}, attempting rollback:`, err);
     try {
       await storage.deleteGoodsRevenueDistribution(dist.id);
-      console.warn(`[distributeEscrowProfit] Rolled back distribution ${dist.id} for order ${escrowDeposit.orderId}`);
+      logger.warn(`[distributeEscrowProfit] Rolled back distribution ${dist.id} for order ${escrowDeposit.orderId}`);
     } catch (rollbackErr) {
-      console.error(`[distributeEscrowProfit] Rollback also failed for distribution ${dist.id}:`, rollbackErr);
+      logger.error(`[distributeEscrowProfit] Rollback also failed for distribution ${dist.id}:`, rollbackErr);
     }
     throw err; // 에러를 상위로 전파
   }
 
-  console.log(`Escrow profit distributed for order ${escrowDeposit.orderId}: Total profit=${profitSol.toFixed(6)} SOL`);
-  console.log(`  Creators (${creatorShares.length}): ${creatorShares.map(c => `${c.wallet.slice(0,8)}...(${c.votePercent.toFixed(1)}%)=${c.amount.toFixed(6)} SOL`).join(', ')}`);
-  console.log(`  Voters pool: ${voterPoolAmount.toFixed(6)} SOL, Platform: ${platformAmount.toFixed(6)} SOL`);
+  logger.info(`Escrow profit distributed for order ${escrowDeposit.orderId}: Total profit=${profitSol.toFixed(6)} SOL`);
+  logger.info(`  Creators (${creatorShares.length}): ${creatorShares.map(c => `${c.wallet.slice(0,8)}...(${c.votePercent.toFixed(1)}%)=${c.amount.toFixed(6)} SOL`).join(', ')}`);
+  logger.info(`  Voters pool: ${voterPoolAmount.toFixed(6)} SOL, Platform: ${platformAmount.toFixed(6)} SOL`);
 
   // Phase 2: 컨트랙트가 활성화된 경우 on-chain allocation 기록
   if (isContractEnabled()) {
@@ -151,18 +152,18 @@ export async function distributeEscrowProfit(escrowDeposit: any) {
 
         const depositTx = await depositProfit(contestId, totalLamports, creatorTotal, voterTotal, platformTotal);
         if (depositTx) {
-          console.log(`[contract] depositProfit TX: ${depositTx}`);
+          logger.info(`[contract] depositProfit TX: ${depositTx}`);
 
           // 수령인마다 순서대로 allocation_record 생성
           for (const alloc of allocationList) {
             await recordAllocation(contestId, alloc);
           }
-          console.log(`[contract] recordAllocation done: ${allocationList.length} records`);
+          logger.info(`[contract] recordAllocation done: ${allocationList.length} records`);
         }
       }
     } catch (contractErr: any) {
       // 컨트랙트 오류는 DB 분배를 취소하지 않음 (non-blocking)
-      console.error("[contract] on-chain deposit/record failed (DB distribution already complete):", contractErr?.message);
+      logger.error("[contract] on-chain deposit/record failed (DB distribution already complete):", contractErr?.message);
     }
   }
 
@@ -246,7 +247,7 @@ async function getPrintfulCatalogPrice(variantId: number): Promise<number | null
       return parseFloat(variant.price);
     }
   } catch (err: any) {
-    console.error("Printful catalog price fetch failed:", err.message);
+    logger.error("Printful catalog price fetch failed:", err.message);
   }
   return null;
 }
@@ -281,16 +282,16 @@ async function getPrintfulProductCost(item: any, shippingAddress?: any): Promise
 
     const data = await printfulRequest("POST", "/orders/estimate-costs", estimatePayload);
     const costs = data.result?.costs;
-    console.log("[Printful estimate-costs] Full costs response:", JSON.stringify(costs));
+    logger.debug("[Printful estimate-costs] Full costs response:", JSON.stringify(costs));
     if (costs) {
       const productCost = parseFloat(costs.subtotal) || (item.basePrice || item.retailPrice * 0.6);
       const shippingCost = parseFloat(costs.shipping) || 4.99;
       const totalCost = parseFloat(costs.total) || (productCost + shippingCost);
-      console.log(`[Printful estimate-costs] productCost=${productCost}, shippingCost=${shippingCost}, totalCost(from API)=${totalCost}, manual total=${productCost + shippingCost}`);
+      logger.info(`[Printful estimate-costs] productCost=${productCost}, shippingCost=${shippingCost}, totalCost(from API)=${totalCost}, manual total=${productCost + shippingCost}`);
       return { productCost, shippingCost, totalCost };
     }
   } catch (err: any) {
-    console.error("Printful cost estimate failed, using fallback:", err.message);
+    logger.error("Printful cost estimate failed, using fallback:", err.message);
   }
 
   const fallbackCost = (item.basePrice || item.retailPrice * 0.6);
@@ -327,7 +328,7 @@ router.get("/", async (_req, res) => {
     const allGoods = await storage.getGoods();
     res.json(allGoods);
   } catch (error) {
-    console.error("Error fetching goods:", error);
+    logger.error("Error fetching goods:", error);
     res.status(500).json({ error: "Failed to fetch goods" });
   }
 });
@@ -341,7 +342,7 @@ router.get("/printful/variants", async (_req, res) => {
       availableSizes: Object.keys(STICKER_VARIANT_MAP),
     });
   } catch (error: any) {
-    console.error("Error fetching Printful variants:", error);
+    logger.error("Error fetching Printful variants:", error);
     res.status(500).json({ error: error.message || "Failed to fetch variants" });
   }
 });
@@ -363,7 +364,7 @@ router.get("/orders/:wallet", async (req, res) => {
     });
     res.json(enriched);
   } catch (error) {
-    console.error("Error fetching orders:", error);
+    logger.error("Error fetching orders:", error);
     res.status(500).json({ error: "Failed to fetch orders" });
   }
 });
@@ -431,7 +432,7 @@ router.get("/orders/:orderId/printful-detail", async (req, res) => {
       } : null,
     });
   } catch (error: any) {
-    console.error("Error fetching Printful detail:", error);
+    logger.error("Error fetching Printful detail:", error);
     res.status(500).json({ error: error.message || "Failed to fetch Printful order details" });
   }
 });
@@ -448,7 +449,7 @@ router.get("/:id", async (req, res) => {
     }
     res.json(item);
   } catch (error) {
-    console.error("Error fetching goods item:", error);
+    logger.error("Error fetching goods item:", error);
     res.status(500).json({ error: "Failed to fetch goods item" });
   }
 });
@@ -525,7 +526,7 @@ router.get("/:id/story", async (req, res) => {
       shareRatios: config.REVENUE_SHARES,
     });
   } catch (error: any) {
-    console.error("Error fetching goods story:", error);
+    logger.error("Error fetching goods story:", error);
     res.status(500).json({ error: error.message || "Failed to fetch goods story" });
   }
 });
@@ -567,7 +568,7 @@ router.post("/admin/create-simple", requireAdmin, async (req, res) => {
     const item = await storage.createGoods(goodsData);
     res.json(item);
   } catch (error: any) {
-    console.error("Error creating goods (simple):", error);
+    logger.error("Error creating goods (simple):", error);
     res.status(400).json({ error: error.message || "Failed to create goods" });
   }
 });
@@ -625,7 +626,7 @@ router.post("/admin/create", requireAdmin, async (req, res) => {
           printfulVariantId = variants[0].id;
         }
       } catch (detailErr: any) {
-        console.error("Failed to fetch product variants:", detailErr.message);
+        logger.error("Failed to fetch product variants:", detailErr.message);
       }
     }
 
@@ -659,7 +660,7 @@ router.post("/admin/create", requireAdmin, async (req, res) => {
     const item = await storage.createGoods(goodsData);
     res.json({ goods: item, printfulProductId, printfulVariantId });
   } catch (error: any) {
-    console.error("Error creating goods with Printful:", error);
+    logger.error("Error creating goods with Printful:", error);
     res.status(500).json({ error: error.message || "Failed to create goods with Printful" });
   }
 });
@@ -724,7 +725,7 @@ router.post("/admin/sync-printful/:id", requireAdmin, async (req, res) => {
           printfulVariantId = variants[0].id;
         }
       } catch (detailErr: any) {
-        console.error("Failed to fetch product variants:", detailErr.message);
+        logger.error("Failed to fetch product variants:", detailErr.message);
       }
     }
 
@@ -735,7 +736,7 @@ router.post("/admin/sync-printful/:id", requireAdmin, async (req, res) => {
 
     res.json({ goods: updatedItem, printfulProductId, printfulVariantId });
   } catch (error: any) {
-    console.error("Error syncing goods to Printful:", error);
+    logger.error("Error syncing goods to Printful:", error);
     res.status(500).json({ error: error.message || "Failed to sync to Printful" });
   }
 });
@@ -815,7 +816,7 @@ router.post("/admin/generate-mockup/:id", requireAdmin, async (req, res) => {
           return res.status(500).json({ error: "Mockup generation failed", details: taskResult.result });
         }
       } catch (pollError: any) {
-        console.error("Mockup poll error:", pollError.message);
+        logger.error("Mockup poll error:", pollError.message);
       }
       attempts++;
     }
@@ -834,11 +835,11 @@ router.post("/admin/generate-mockup/:id", requireAdmin, async (req, res) => {
         if (result.success && result.url) {
           permanentUrls.push(result.url);
         } else {
-          console.error(`Failed to upload mockup ${i} to R2:`, result.error);
+          logger.error(`Failed to upload mockup ${i} to R2:`, result.error);
           permanentUrls.push(mockupUrls[i]);
         }
       } catch (dlError: any) {
-        console.error(`Failed to download/upload mockup ${i}:`, dlError.message);
+        logger.error(`Failed to download/upload mockup ${i}:`, dlError.message);
         permanentUrls.push(mockupUrls[i]);
       }
     }
@@ -849,7 +850,7 @@ router.post("/admin/generate-mockup/:id", requireAdmin, async (req, res) => {
 
     res.json({ mockupUrls: permanentUrls, goods: updatedItem });
   } catch (error: any) {
-    console.error("Error generating mockup:", error);
+    logger.error("Error generating mockup:", error);
     res.status(500).json({ error: error.message || "Failed to generate mockup" });
   }
 });
@@ -1002,7 +1003,7 @@ router.post("/:id/estimate-shipping", async (req, res) => {
       res.json({ shipping_rates: allRates });
     }
   } catch (error: any) {
-    console.error("Error estimating shipping:", error);
+    logger.error("Error estimating shipping:", error);
     res.status(500).json({ error: error.message || "Failed to estimate shipping" });
   }
 });
@@ -1039,7 +1040,7 @@ router.post("/:id/prepare-payment", async (req, res) => {
     const costSol = parseFloat((costUSD / solPriceUSD).toFixed(6));
     const profitSol = parseFloat((profitUSD / solPriceUSD).toFixed(6));
 
-    console.log(`[prepare-payment] retailPrice=$${item.retailPrice}, shippingCost=$${serverShippingCost}, totalUSD=$${totalUSD}, costUSD=$${costUSD}, profitUSD=$${profitUSD}, solPrice=$${solPriceUSD}, costSol=${costSol}, profitSol=${profitSol}, totalSol=${solAmount}`);
+    logger.info(`[prepare-payment] retailPrice=$${item.retailPrice}, shippingCost=$${serverShippingCost}, totalUSD=$${totalUSD}, costUSD=$${costUSD}, profitUSD=$${profitUSD}, solPrice=$${solPriceUSD}, costSol=${costSol}, profitSol=${profitSol}, totalSol=${solAmount}`);
 
     const connection = getSolConnection();
     const buyerPubkey = new PublicKey(buyerWallet);
@@ -1108,7 +1109,7 @@ router.post("/:id/prepare-payment", async (req, res) => {
       },
     });
   } catch (error: any) {
-    console.error("Error preparing payment:", error);
+    logger.error("Error preparing payment:", error);
     res.status(500).json({ error: error.message || "Failed to prepare payment" });
   }
 });
@@ -1219,7 +1220,7 @@ router.post("/:id/order", async (req, res) => {
       req.body.verifiedCostAmount = verifiedCostAmount;
       req.body.verifiedEscrowAmount = verifiedEscrowAmount;
     } catch (verifyErr: any) {
-      console.error("Transaction verification error:", verifyErr);
+      logger.error("Transaction verification error:", verifyErr);
       return res.status(400).json({ error: "Could not verify SOL payment transaction" });
     }
 
@@ -1260,9 +1261,9 @@ router.post("/:id/order", async (req, res) => {
         const orderResult = await printfulRequest("POST", "/orders?confirm=true", orderPayload);
         printfulOrderId = orderResult.result?.id || null;
         printfulStatus = orderResult.result?.status || null;
-        console.log("Printful order created:", { printfulOrderId, printfulStatus });
+        logger.info("Printful order created:", { printfulOrderId, printfulStatus });
       } catch (printfulError: any) {
-        console.error("Printful order creation failed:", printfulError);
+        logger.error("Printful order creation failed:", printfulError);
         printfulStatus = "printful_error";
       }
     }
@@ -1316,15 +1317,15 @@ router.post("/:id/order", async (req, res) => {
           status: "locked",
         });
 
-        console.log(`Escrow deposit created for order ${order.id}: cost=${costAmount.toFixed(6)} SOL → Treasury, profit=${escrowAmount.toFixed(6)} SOL → Escrow (locked until delivery)`);
+        logger.info(`Escrow deposit created for order ${order.id}: cost=${costAmount.toFixed(6)} SOL → Treasury, profit=${escrowAmount.toFixed(6)} SOL → Escrow (locked until delivery)`);
       } catch (distError: any) {
-        console.error("Escrow deposit creation failed (order still created):", distError.message);
+        logger.error("Escrow deposit creation failed (order still created):", distError.message);
       }
     }
 
     res.json({ order, printfulOrderId });
   } catch (error: any) {
-    console.error("Error placing order:", error);
+    logger.error("Error placing order:", error);
     res.status(500).json({ error: error.message || "Failed to place order" });
   }
 });
@@ -1348,7 +1349,7 @@ router.post("/admin/distribute-escrow/:orderId", requireAdmin, async (req, res) 
     const result = await distributeEscrowProfit(escrow);
     res.json({ success: true, distribution: result, escrowId: escrow.id });
   } catch (error: any) {
-    console.error("Error distributing escrow:", error);
+    logger.error("Error distributing escrow:", error);
     res.status(500).json({ error: error.message || "Failed to distribute escrow" });
   }
 });
@@ -1361,7 +1362,7 @@ router.get("/admin/escrow-deposits", requireAdmin, async (req, res) => {
       : await storage.getLockedEscrowDeposits();
     res.json(deposits);
   } catch (error: any) {
-    console.error("Error fetching escrow deposits:", error);
+    logger.error("Error fetching escrow deposits:", error);
     res.status(500).json({ error: error.message || "Failed to fetch escrow deposits" });
   }
 });
@@ -1399,7 +1400,7 @@ router.get("/escrow/contest/:contestId", async (req, res) => {
       shareRatios: SHARE_RATIOS,
     });
   } catch (error: any) {
-    console.error("Error fetching escrow info:", error);
+    logger.error("Error fetching escrow info:", error);
     res.status(500).json({ error: error.message || "Failed to fetch escrow info" });
   }
 });

@@ -4,6 +4,7 @@ import { Pool, neonConfig } from '@neondatabase/serverless';
 import ws from 'ws';
 import { config } from './config';
 import * as schema from '@shared/schema';
+import { logger } from "./utils/logger";
 
 neonConfig.webSocketConstructor = ws;
 
@@ -11,7 +12,7 @@ let db: ReturnType<typeof drizzle> | null = null;
 
 export function getDatabase() {
   if (!config.DATABASE_URL) {
-    console.warn('DATABASE_URL not found, using memory storage');
+    logger.warn('DATABASE_URL not found, using memory storage');
     return null;
   }
 

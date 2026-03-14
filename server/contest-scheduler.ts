@@ -1,4 +1,5 @@
 import { storage } from "./storage";
+import { logger } from "./utils/logger";
 
 class ContestScheduler {
   private intervals: Map<number, NodeJS.Timeout> = new Map();
@@ -10,7 +11,7 @@ class ContestScheduler {
       await this.checkContestEndTimes();
     }, 60000); // 1 minute
 
-    console.log("Contest scheduler started - checking for auto-end contests every minute");
+    logger.info("Contest scheduler started - checking for auto-end contests every minute");
   }
 
   // Check if any active contests should be automatically ended
@@ -23,13 +24,13 @@ class ContestScheduler {
         if (contest.endTime && new Date() >= new Date(contest.endTime)) {
           this.cancelScheduled(contest.id);
           const endTimeKST = new Date(contest.endTime).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
-          console.log(`Auto-ending contest ${contest.id}: ${contest.title} (ended at ${endTimeKST} KST)`);
+          logger.info(`Auto-ending contest ${contest.id}: ${contest.title} (ended at ${endTimeKST} KST)`);
           await storage.endContestAndArchive(contest.id);
-          console.log(`Contest ${contest.id} has been automatically archived`);
+          logger.info(`Contest ${contest.id} has been automatically archived`);
         }
       }
     } catch (error) {
-      console.error("Error checking contest end times:", error);
+      logger.error("Error checking contest end times:", error);
     }
   }
 
@@ -38,7 +39,7 @@ class ContestScheduler {
     const delay = startTime.getTime() - Date.now();
     
     if (delay <= 0) {
-      console.log(`Contest ${contestId} start time has passed, not scheduling`);
+      logger.info(`Contest ${contestId} start time has passed, not scheduling`);
       return;
     }
 
@@ -52,11 +53,11 @@ class ContestScheduler {
         // Time to start the contest
         (async () => {
           try {
-            console.log(`Auto-starting contest ${contestId}`);
+            logger.info(`Auto-starting contest ${contestId}`);
             await storage.updateContestStatus(contestId, "active");
             this.intervals.delete(contestId);
           } catch (error) {
-            console.error(`Error auto-starting contest ${contestId}:`, error);
+            logger.error(`Error auto-starting contest ${contestId}:`, error);
           }
         })();
         return;
@@ -68,7 +69,7 @@ class ContestScheduler {
     };
 
     scheduleNext();
-    console.log(`Scheduled contest ${contestId} to start at ${startTime.toISOString()}`);
+    logger.info(`Scheduled contest ${contestId} to start at ${startTime.toISOString()}`);
   }
 
   // Schedule a specific contest to end at a given time
@@ -76,7 +77,7 @@ class ContestScheduler {
     const delay = endTime.getTime() - Date.now();
     
     if (delay <= 0) {
-      console.log(`Contest ${contestId} end time has passed, not scheduling`);
+      logger.info(`Contest ${contestId} end time has passed, not scheduling`);
       return;
     }
 
@@ -90,11 +91,11 @@ class ContestScheduler {
         // Time to end the contest
         (async () => {
           try {
-            console.log(`Auto-ending contest ${contestId}`);
+            logger.info(`Auto-ending contest ${contestId}`);
             await storage.endContestAndArchive(contestId);
             this.intervals.delete(contestId);
           } catch (error) {
-            console.error(`Error auto-ending contest ${contestId}:`, error);
+            logger.error(`Error auto-ending contest ${contestId}:`, error);
           }
         })();
         return;
@@ -106,7 +107,7 @@ class ContestScheduler {
     };
 
     scheduleNext();
-    console.log(`Scheduled contest ${contestId} to end at ${endTime.toISOString()}`);
+    logger.info(`Scheduled contest ${contestId} to end at ${endTime.toISOString()}`);
   }
 
   // Cancel scheduled actions for a contest
@@ -115,7 +116,7 @@ class ContestScheduler {
     if (timeout) {
       clearTimeout(timeout);
       this.intervals.delete(contestId);
-      console.log(`Cancelled scheduled actions for contest ${contestId}`);
+      logger.info(`Cancelled scheduled actions for contest ${contestId}`);
     }
   }
 
@@ -134,9 +135,9 @@ class ContestScheduler {
         }
       }
       
-      console.log(`Initialized scheduling for ${contests.length} contests`);
+      logger.info(`Initialized scheduling for ${contests.length} contests`);
     } catch (error) {
-      console.error("Error initializing contest scheduling:", error);
+      logger.error("Error initializing contest scheduling:", error);
     }
   }
 }

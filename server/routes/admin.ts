@@ -4,6 +4,7 @@ import { storage } from "../storage";
 import { contestScheduler } from "../contest-scheduler";
 import { config } from "../config";
 import { distributeEscrowProfit } from "./goods";
+import { logger } from "../utils/logger";
 
 const router = Router();
 
@@ -28,7 +29,7 @@ router.post("/check-admin", async (req, res) => {
     const isAdmin = config.ADMIN_EMAILS.includes(email.toLowerCase());
     res.json({ isAdmin });
   } catch (error) {
-    console.error("Error checking admin status:", error);
+    logger.error("Error checking admin status:", error);
     res.status(500).json({ error: "Failed to check admin status" });
   }
 });
@@ -44,7 +45,7 @@ router.get("/contests", async (req, res) => {
     const contests = allContests.filter(contest => contest.status !== 'archived');
     res.json(contests);
   } catch (error) {
-    console.error("Error fetching contests:", error);
+    logger.error("Error fetching contests:", error);
     res.status(500).json({ error: "Failed to fetch contests" });
   }
 });
@@ -58,7 +59,7 @@ router.get("/archived-contests", async (req, res) => {
     const archivedContests = await storage.getArchivedContests();
     res.json(archivedContests);
   } catch (error) {
-    console.error("Error fetching archived contests:", error);
+    logger.error("Error fetching archived contests:", error);
     res.status(500).json({ error: "Failed to fetch archived contests" });
   }
 });
@@ -75,7 +76,7 @@ router.post("/contests", requireAdmin, async (req, res) => {
     const contest = await storage.createContest(contestData);
     res.json(contest);
   } catch (error) {
-    console.error("Error creating contest:", error);
+    logger.error("Error creating contest:", error);
     res.status(400).json({ error: "Failed to create contest" });
   }
 });
@@ -111,7 +112,7 @@ router.post("/contests/:id/start", requireAdmin, async (req, res) => {
     
     res.json(updatedContest);
   } catch (error) {
-    console.error("Error starting contest:", error);
+    logger.error("Error starting contest:", error);
     res.status(500).json({ error: "Failed to start contest" });
   }
 });
@@ -127,7 +128,7 @@ router.post("/contests/:id/end", requireAdmin, async (req, res) => {
     const archivedContest = await storage.endContestAndArchive(contestId);
     res.json(archivedContest);
   } catch (error) {
-    console.error("Error ending contest:", error);
+    logger.error("Error ending contest:", error);
     res.status(500).json({ error: "Failed to end contest: " + (error instanceof Error ? error.message : String(error)) });
   }
 });
@@ -152,7 +153,7 @@ router.get("/current-contest", async (req, res) => {
       });
     res.json(nonArchived[0] || null);
   } catch (error) {
-    console.error("Error fetching current contest:", error);
+    logger.error("Error fetching current contest:", error);
     res.status(500).json({ error: "Failed to fetch current contest" });
   }
 });
@@ -164,7 +165,7 @@ router.get("/suspicious-ips", async (req, res) => {
     const suspiciousIps = await storage.getSuspiciousIps();
     res.json(suspiciousIps);
   } catch (error) {
-    console.error("Error fetching suspicious IPs:", error);
+    logger.error("Error fetching suspicious IPs:", error);
     res.status(500).json({ error: "Failed to fetch suspicious IPs" });
   }
 });
@@ -175,7 +176,7 @@ router.get("/suspicious-devices", async (req, res) => {
     const suspiciousDevices = await storage.getSuspiciousDevices();
     res.json(suspiciousDevices);
   } catch (error) {
-    console.error("Error fetching suspicious devices:", error);
+    logger.error("Error fetching suspicious devices:", error);
     res.status(500).json({ error: "Failed to fetch suspicious devices" });
   }
 });
@@ -187,7 +188,7 @@ router.get("/recent-logins", async (req, res) => {
     const recentLogins = await storage.getRecentLogins(limit);
     res.json(recentLogins);
   } catch (error) {
-    console.error("Error fetching recent logins:", error);
+    logger.error("Error fetching recent logins:", error);
     res.status(500).json({ error: "Failed to fetch recent logins" });
   }
 });
@@ -198,7 +199,7 @@ router.get("/blocked-ips", async (req, res) => {
     const blockedIps = await storage.getBlockedIps();
     res.json(blockedIps);
   } catch (error) {
-    console.error("Error fetching blocked IPs:", error);
+    logger.error("Error fetching blocked IPs:", error);
     res.status(500).json({ error: "Failed to fetch blocked IPs" });
   }
 });
@@ -220,7 +221,7 @@ router.post("/block-ip", requireAdmin, async (req, res) => {
     
     res.json({ message: "IP blocked successfully", blockedIp });
   } catch (error) {
-    console.error("Error blocking IP:", error);
+    logger.error("Error blocking IP:", error);
     res.status(500).json({ error: "Failed to block IP" });
   }
 });
@@ -237,7 +238,7 @@ router.post("/unblock-ip", requireAdmin, async (req, res) => {
     await storage.unblockIp(ipAddress);
     res.json({ message: "IP unblocked successfully" });
   } catch (error) {
-    console.error("Error unblocking IP:", error);
+    logger.error("Error unblocking IP:", error);
     res.status(500).json({ error: "Failed to unblock IP" });
   }
 });
@@ -257,7 +258,7 @@ router.get("/ip-status/:ipAddress", async (req, res) => {
       isBlocked
     });
   } catch (error) {
-    console.error("Error fetching IP status:", error);
+    logger.error("Error fetching IP status:", error);
     res.status(500).json({ error: "Failed to fetch IP status" });
   }
 });
@@ -289,14 +290,14 @@ router.post("/register-printful-webhook", requireAdmin, async (req, res) => {
     const v2Data = await v2Response.json() as any;
 
     if (v2Response.ok) {
-      console.log("[Admin] Printful webhook registered via v2:", JSON.stringify(v2Data));
+      logger.debug("[Admin] Printful webhook registered via v2:", JSON.stringify(v2Data));
       return res.json({ ok: true, result: v2Data });
     }
 
-    console.error("[Admin] v2 registration failed:", JSON.stringify(v2Data));
+    logger.error("[Admin] v2 registration failed:", JSON.stringify(v2Data));
     return res.status(500).json({ ok: false, error: v2Data });
   } catch (error: any) {
-    console.error("[Admin] Webhook registration error:", error.message);
+    logger.error("[Admin] Webhook registration error:", error.message);
     res.status(500).json({ error: error.message });
   }
 });
@@ -347,7 +348,7 @@ router.post("/sync-printful-orders", requireAdmin, async (req, res) => {
         if (Object.keys(updates).length > 0) {
           await storage.updateOrder(order.id, updates);
           results.push({ orderId: order.id, printfulOrderId: order.printfulOrderId, updates });
-          console.log(`[Admin Sync] Order ${order.id} updated:`, updates);
+          logger.info(`[Admin Sync] Order ${order.id} updated:`, updates);
 
           if (updates.status === "delivered") {
             try {
@@ -355,10 +356,10 @@ router.post("/sync-printful-orders", requireAdmin, async (req, res) => {
               if (escrow && escrow.status === "locked") {
                 await distributeEscrowProfit(escrow);
                 distributedCount++;
-                console.log(`[Admin Sync] Order ${order.id} profit distributed`);
+                logger.info(`[Admin Sync] Order ${order.id} profit distributed`);
               }
             } catch (distErr: any) {
-              console.error(`[Admin Sync] Profit distribution failed for order ${order.id}:`, distErr.message);
+              logger.error(`[Admin Sync] Profit distribution failed for order ${order.id}:`, distErr.message);
             }
           }
         } else {
@@ -376,7 +377,7 @@ router.post("/sync-printful-orders", requireAdmin, async (req, res) => {
       results,
     });
   } catch (error: any) {
-    console.error("[Admin] Sync error:", error.message);
+    logger.error("[Admin] Sync error:", error.message);
     res.status(500).json({ error: error.message });
   }
 });

@@ -2,6 +2,7 @@
 import { Router } from "express";
 import { storage } from "../storage";
 import { insertMemeSchema } from "@shared/schema";
+import { logger } from "../utils/logger";
 
 const router = Router();
 
@@ -77,7 +78,7 @@ router.get("/all", async (req, res) => {
       total: allMemes.length
     });
   } catch (error) {
-    console.error("Error fetching all memes:", error);
+    logger.error("Error fetching all memes:", error);
     res.status(500).json({ message: "Failed to fetch all memes" });
   }
 });
@@ -105,7 +106,7 @@ router.post("/", async (req, res) => {
     const meme = await storage.createMeme(memeData);
     res.status(201).json(meme);
   } catch (error) {
-    console.error('Error creating meme:', error);
+    logger.error('Error creating meme:', error);
     res.status(400).json({ message: "Failed to create meme" });
   }
 });
@@ -122,7 +123,7 @@ router.get("/:id", async (req, res) => {
     }
     res.json(meme);
   } catch (error) {
-    console.error('Error fetching meme:', error);
+    logger.error('Error fetching meme:', error);
     res.status(500).json({ message: "Failed to fetch meme" });
   }
 });
@@ -157,7 +158,7 @@ router.delete("/:id", async (req, res) => {
             await deleteFromR2(r2Key);
           }
         } catch (error) {
-          console.warn('Failed to delete R2 file:', imageUrl, error);
+          logger.warn('Failed to delete R2 file:', imageUrl, error);
         }
       }
     }
@@ -165,7 +166,7 @@ router.delete("/:id", async (req, res) => {
     await storage.deleteMeme(memeId);
     res.json({ message: "Meme deleted successfully" });
   } catch (error) {
-    console.error('Error deleting meme:', error);
+    logger.error('Error deleting meme:', error);
     res.status(500).json({ message: "Failed to delete meme" });
   }
 });

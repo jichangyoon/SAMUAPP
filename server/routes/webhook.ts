@@ -2,13 +2,14 @@ import { Router } from "express";
 import { storage } from "../storage";
 import crypto from "crypto";
 import { distributeEscrowProfit } from "./goods";
+import { logger } from "../utils/logger";
 
 const router = Router();
 
 function verifyPrintfulWebhook(req: any): boolean {
   const webhookSecret = process.env.PRINTFUL_WEBHOOK_SECRET;
   if (!webhookSecret) {
-    console.warn("[Printful Webhook] PRINTFUL_WEBHOOK_SECRET not set — rejecting request for security");
+    logger.warn("[Printful Webhook] PRINTFUL_WEBHOOK_SECRET not set — rejecting request for security");
     return false;
   }
   const signature = req.headers["x-printful-signature"] || req.headers["x-pf-signature"];
@@ -25,19 +26,19 @@ async function triggerEscrowDistribution(orderId: number, eventType: string) {
     const escrow = await storage.getEscrowDepositByOrderId(orderId);
     if (escrow && escrow.status === "locked") {
       await distributeEscrowProfit(escrow);
-      console.log(`[Printful Webhook] Escrow profit distributed on ${eventType} for order ${orderId}`);
+      logger.info(`[Printful Webhook] Escrow profit distributed on ${eventType} for order ${orderId}`);
     } else {
-      console.log(`[Printful Webhook] No locked escrow for order ${orderId}, skipping distribution`);
+      logger.info(`[Printful Webhook] No locked escrow for order ${orderId}, skipping distribution`);
     }
   } catch (distErr: any) {
-    console.error(`[Printful Webhook] Escrow distribution failed for order ${orderId}:`, distErr.message);
+    logger.error(`[Printful Webhook] Escrow distribution failed for order ${orderId}:`, distErr.message);
   }
 }
 
 router.post("/printful", async (req, res) => {
   try {
     if (!verifyPrintfulWebhook(req)) {
-      console.warn("[Printful Webhook] Invalid signature, rejecting request");
+      logger.warn("[Printful Webhook] Invalid signature, rejecting request");
       return res.status(401).json({ error: "Unauthorized" });
     }
 
@@ -47,19 +48,19 @@ router.post("/printful", async (req, res) => {
       return res.status(400).json({ error: "Invalid webhook payload" });
     }
 
-    console.log(`[Printful Webhook] Event: ${type}`, JSON.stringify(data).substring(0, 500));
+    logger.debug(`[Printful Webhook] Event: ${type}`, JSON.stringify(data).substring(0, 500));
 
     // v2 payload: shipment events have order_id, order events have id
     const printfulOrderId = data.order_id || (type.startsWith("order_") ? data.id : null);
 
     if (!printfulOrderId) {
-      console.log("[Printful Webhook] No order ID in payload, skipping");
+      logger.info("[Printful Webhook] No order ID in payload, skipping");
       return res.status(200).json({ ok: true });
     }
 
     const order = await storage.getOrderByPrintfulId(Number(printfulOrderId));
     if (!order) {
-      console.log(`[Printful Webhook] Order not found for Printful ID: ${printfulOrderId}`);
+      logger.info(`[Printful Webhook] Order not found for Printful ID: ${printfulOrderId}`);
       return res.status(200).json({ ok: true });
     }
 
@@ -70,62 +71,62 @@ router.post("/printful", async (req, res) => {
         updates.printfulStatus = "shipped";
         if (data.tracking_number) updates.trackingNumber = data.tracking_number;
         if (data.tracking_url || data.carrier_url) updates.trackingUrl = data.tracking_url || data.carrier_url;
-        console.log(`[Printful Webhook] Order ${order.id} shipped. Tracking: ${updates.trackingNumber || "N/A"}`);
+        logger.info(`[Printful Webhook] Order ${order.id} shipped. Tracking: ${updates.trackingNumber || "N/A"}`);
         break;
 
       case "shipment_delivered":
         updates.printfulStatus = "delivered";
         updates.status = "delivered";
-        console.log(`[Printful Webhook] Order ${order.id} delivered!`);
+        logger.info(`[Printful Webhook] Order ${order.id} delivered!`);
         await triggerEscrowDistribution(order.id, "shipment_delivered");
         break;
 
       case "shipment_returned":
         updates.printfulStatus = "returned";
         updates.status = "returned";
-        console.log(`[Printful Webhook] Order ${order.id} returned`);
+        logger.info(`[Printful Webhook] Order ${order.id} returned`);
         break;
 
       case "shipment_canceled":
         updates.printfulStatus = "canceled";
-        console.log(`[Printful Webhook] Order ${order.id} shipment canceled`);
+        logger.info(`[Printful Webhook] Order ${order.id} shipment canceled`);
         break;
 
       case "order_created":
         updates.printfulStatus = "pending";
-        console.log(`[Printful Webhook] Order ${order.id} created in Printful`);
+        logger.info(`[Printful Webhook] Order ${order.id} created in Printful`);
         break;
 
       case "order_updated":
         if (data.status) updates.printfulStatus = data.status;
-        console.log(`[Printful Webhook] Order ${order.id} updated: ${data.status || "unknown"}`);
+        logger.info(`[Printful Webhook] Order ${order.id} updated: ${data.status || "unknown"}`);
         break;
 
       case "order_failed":
         updates.printfulStatus = "failed";
         updates.status = "failed";
-        console.log(`[Printful Webhook] Order ${order.id} failed`);
+        logger.info(`[Printful Webhook] Order ${order.id} failed`);
         break;
 
       case "order_canceled":
         updates.printfulStatus = "canceled";
         updates.status = "canceled";
-        console.log(`[Printful Webhook] Order ${order.id} canceled`);
+        logger.info(`[Printful Webhook] Order ${order.id} canceled`);
         break;
 
       default:
-        console.log(`[Printful Webhook] Unhandled event type: ${type}`);
+        logger.info(`[Printful Webhook] Unhandled event type: ${type}`);
         return res.status(200).json({ ok: true });
     }
 
     if (Object.keys(updates).length > 0) {
       await storage.updateOrder(order.id, updates);
-      console.log(`[Printful Webhook] Order ${order.id} updated:`, updates);
+      logger.info(`[Printful Webhook] Order ${order.id} updated:`, updates);
     }
 
     return res.status(200).json({ ok: true });
   } catch (error: any) {
-    console.error("[Printful Webhook] Error:", error.message);
+    logger.error("[Printful Webhook] Error:", error.message);
     return res.status(200).json({ ok: true });
   }
 });

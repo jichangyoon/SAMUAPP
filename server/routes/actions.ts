@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { logger } from "../utils/logger";
 import { 
   ActionGetResponse, 
   ActionPostRequest, 
@@ -120,7 +121,7 @@ router.get("/vote/:memeId", async (req, res) => {
 
     res.set(corsHeaders).json(response);
   } catch (error) {
-    console.error("Error in GET /api/actions/vote/:memeId:", error);
+    logger.error("Error in GET /api/actions/vote/:memeId:", error);
     res.set(corsHeaders).status(500).json({ error: "Internal server error" });
   }
 });
@@ -175,7 +176,7 @@ router.post("/vote/:memeId", async (req, res) => {
         avatarUrl: null,
         samuBalance: Math.floor(samuBalance),
       });
-      console.log(`[Blinks] Auto-created user for wallet ${shortWallet} with ${samuBalance} SAMU`);
+      logger.info(`[Blinks] Auto-created user for wallet ${shortWallet} with ${samuBalance} SAMU`);
     }
 
     const connection = getConnection();
@@ -252,7 +253,7 @@ router.post("/vote/:memeId", async (req, res) => {
 
     res.set(corsHeaders).json(response);
   } catch (error) {
-    console.error("Error in POST /api/actions/vote/:memeId:", error);
+    logger.error("Error in POST /api/actions/vote/:memeId:", error);
     res.set(corsHeaders).status(500).json({ error: "Failed to process vote" });
   }
 });
@@ -364,7 +365,7 @@ router.post("/vote/:memeId/confirm", async (req, res) => {
 
     res.set(corsHeaders).json(response);
   } catch (error) {
-    console.error("Error in POST /api/actions/vote/:memeId/confirm:", error);
+    logger.error("Error in POST /api/actions/vote/:memeId/confirm:", error);
     res.set(corsHeaders).status(500).json({ error: "Failed to confirm vote" });
   }
 });
@@ -392,7 +393,7 @@ router.get("/memes", async (req, res) => {
 
     res.set(corsHeaders).json(response);
   } catch (error) {
-    console.error("Error in GET /api/actions/memes:", error);
+    logger.error("Error in GET /api/actions/memes:", error);
     res.set(corsHeaders).status(500).json({ error: "Internal server error" });
   }
 });

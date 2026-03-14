@@ -1,6 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 import { uploadToR2, deleteFromR2, extractKeyFromUrl } from "../r2-storage";
+import { logger } from "../utils/logger";
 
 const router = Router();
 
@@ -55,7 +56,7 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     );
 
     if (!uploadResult.success) {
-      console.error('R2 upload failed:', uploadResult.error);
+      logger.error('R2 upload failed:', uploadResult.error);
       return res.status(500).json({ 
         error: "Upload failed", 
         details: uploadResult.error 
@@ -72,7 +73,7 @@ router.post("/upload", upload.single("file"), async (req, res) => {
 
     res.json(response);
   } catch (error: any) {
-    console.error("Upload error:", error);
+    logger.error("Upload error:", error);
     res.status(500).json({ error: "Upload failed", details: error?.message || 'Unknown error' });
   }
 });
@@ -101,7 +102,7 @@ router.delete("/delete", async (req, res) => {
     
     res.json({ success: true, message: "File deleted successfully" });
   } catch (error) {
-    console.error("Delete error:", error);
+    logger.error("Delete error:", error);
     res.status(500).json({ error: "Delete failed" });
   }
 });
@@ -129,7 +130,7 @@ router.get("/health", async (req, res) => {
       configured: true
     });
   } catch (error) {
-    console.error("R2 health check error:", error);
+    logger.error("R2 health check error:", error);
     res.status(500).json({ error: "R2 health check failed" });
   }
 });
@@ -167,7 +168,7 @@ router.post("/thumbnail", async (req, res) => {
     const uploadResult = await uploadToR2(buffer, `thumbnail.${ext}`, "thumbnails");
 
     if (!uploadResult.success) {
-      console.error("R2 thumbnail upload failed:", uploadResult.error);
+      logger.error("R2 thumbnail upload failed:", uploadResult.error);
       return res.status(500).json({ error: "Thumbnail upload failed" });
     }
 
@@ -177,7 +178,7 @@ router.post("/thumbnail", async (req, res) => {
       key: uploadResult.key,
     });
   } catch (error: any) {
-    console.error("Thumbnail upload error:", error);
+    logger.error("Thumbnail upload error:", error);
     res.status(500).json({ error: "Thumbnail upload failed" });
   }
 });
@@ -199,7 +200,7 @@ router.delete('/delete-r2', async (req, res) => {
       res.status(500).json({ error: 'Failed to delete file' });
     }
   } catch (error) {
-    console.error('Delete R2 file error:', error);
+    logger.error('Delete R2 file error:', error);
     res.status(500).json({ error: 'Failed to delete file' });
   }
 });
@@ -238,7 +239,7 @@ router.post('/profile', upload.single('image'), async (req, res) => {
     );
 
     if (!uploadResult.success) {
-      console.error('R2 profile upload failed:', uploadResult.error);
+      logger.error('R2 profile upload failed:', uploadResult.error);
       return res.status(500).json({
         success: false,
         error: 'Failed to upload profile image to cloud storage'
@@ -266,7 +267,7 @@ router.post('/profile', upload.single('image'), async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Profile upload error:', error);
+    logger.error('Profile upload error:', error);
     res.status(500).json({
       success: false,
       error: 'Internal server error during profile upload'

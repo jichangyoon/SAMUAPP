@@ -1,6 +1,7 @@
 import { S3Client, PutObjectCommand, DeleteObjectCommand, CopyObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
 import crypto from 'crypto';
 import path from 'path';
+import { logger } from "./utils/logger";
 
 // Cloudflare R2 클라이언트 설정
 const r2Client = new S3Client({
@@ -72,7 +73,7 @@ export async function uploadToR2(
       key: key,
     };
   } catch (error) {
-    console.error('R2 업로드 실패:', error);
+    logger.error('R2 업로드 실패:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -100,7 +101,7 @@ export async function deleteFromR2(
       key: key
     };
   } catch (error) {
-    console.error('R2 삭제 실패:', error);
+    logger.error('R2 삭제 실패:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -152,7 +153,7 @@ export function extractKeyFromUrl(url: string): string | null {
     const path = urlObj.pathname;
     return path.startsWith('/') ? path.slice(1) : path;
   } catch (error) {
-    console.error('Error extracting key from URL:', error);
+    logger.error('Error extracting key from URL:', error);
     return null;
   }
 }
@@ -187,7 +188,7 @@ async function moveToArchiveOnce(
         }));
         const publicUrl = process.env.R2_PUBLIC_URL || `https://${bucketName}.r2.dev`;
         const newUrl = `${publicUrl}/${archiveKey}`;
-        console.log(`[Archive] Source missing but already archived: ${newUrl}`);
+        logger.info(`[Archive] Source missing but already archived: ${newUrl}`);
         return { success: true, url: newUrl, key: archiveKey };
       } catch {
         return { success: false, error: `Source file not found: ${sourceKey}` };
@@ -214,7 +215,7 @@ async function moveToArchiveOnce(
       Key: sourceKey
     }));
   } catch (deleteError) {
-    console.warn(`[Archive] Original delete failed for ${sourceKey} (copy exists at ${archiveKey})`);
+    logger.warn(`[Archive] Original delete failed for ${sourceKey} (copy exists at ${archiveKey})`);
   }
 
   const publicUrl = process.env.R2_PUBLIC_URL || `https://${bucketName}.r2.dev`;
@@ -239,7 +240,7 @@ export async function moveToArchive(
       const result = await moveToArchiveOnce(sourceKey, contestId);
       if (result.success) {
         if (attempt > 0) {
-          console.log(`[Archive] Success on retry ${attempt}: ${result.url}`);
+          logger.info(`[Archive] Success on retry ${attempt}: ${result.url}`);
         }
         return result;
       }
@@ -253,11 +254,11 @@ export async function moveToArchive(
 
     if (attempt < MAX_RETRIES) {
       const delay = Math.pow(2, attempt) * 500;
-      console.log(`[Archive] Retry ${attempt + 1}/${MAX_RETRIES} for ${sourceKey} in ${delay}ms...`);
+      logger.info(`[Archive] Retry ${attempt + 1}/${MAX_RETRIES} for ${sourceKey} in ${delay}ms...`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
 
-  console.error(`[Archive] Failed after ${MAX_RETRIES + 1} attempts for ${sourceKey}: ${lastError}`);
+  logger.error(`[Archive] Failed after ${MAX_RETRIES + 1} attempts for ${sourceKey}: ${lastError}`);
   return { success: false, error: lastError };
 }

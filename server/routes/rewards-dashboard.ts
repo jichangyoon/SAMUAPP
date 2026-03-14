@@ -2,6 +2,7 @@ import { Router } from "express";
 import { storage } from "../storage";
 import { config } from "../config";
 import { sendSolFromEscrow, isContractEnabled, buildClaimTransaction, getOnChainClaimable } from "../utils/solana";
+import { logger } from "../utils/logger";
 
 const router = Router();
 
@@ -659,7 +660,7 @@ router.get("/prepare-claim", async (req, res) => {
           transaction: txBase64,
         });
       } catch (e: any) {
-        console.warn(`[prepare-claim] contest ${contestId} skip:`, e?.message);
+        logger.warn(`[prepare-claim] contest ${contestId} skip:`, e?.message);
       }
     }
 

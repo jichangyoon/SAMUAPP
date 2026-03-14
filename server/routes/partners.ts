@@ -2,6 +2,7 @@ import { Router } from "express";
 import { storage } from "../storage";
 import { insertMemeSchema, insertVoteSchema } from "../../shared/schema";
 import { z } from "zod";
+import { logger } from "../utils/logger";
 
 const router = Router();
 
@@ -12,7 +13,7 @@ router.get("/:partnerId/memes", async (req, res) => {
     const memes = await storage.getPartnerMemes(partnerId);
     res.json(memes);
   } catch (error) {
-    console.error("Error fetching partner memes:", error);
+    logger.error("Error fetching partner memes:", error);
     res.status(500).json({ error: "Failed to fetch partner memes" });
   }
 });
@@ -39,7 +40,7 @@ router.post("/:partnerId/memes", async (req, res) => {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: "Invalid meme data", details: error.errors });
     } else {
-      console.error("Error creating partner meme:", error);
+      logger.error("Error creating partner meme:", error);
       res.status(500).json({ error: "Failed to create partner meme" });
     }
   }
@@ -71,7 +72,7 @@ router.post("/:partnerId/memes/:id/vote", async (req, res) => {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: "Invalid vote data", details: error.errors });
     } else {
-      console.error("Error creating partner vote:", error);
+      logger.error("Error creating partner vote:", error);
       res.status(500).json({ error: "Failed to create partner vote" });
     }
   }
@@ -90,7 +91,7 @@ router.get("/:partnerId/memes/:id/vote-status/:wallet", async (req, res) => {
     const hasVoted = await storage.hasUserVotedPartner(partnerId, memeId, wallet);
     res.json({ hasVoted });
   } catch (error) {
-    console.error("Error checking partner vote status:", error);
+    logger.error("Error checking partner vote status:", error);
     res.status(500).json({ error: "Failed to check vote status" });
   }
 });

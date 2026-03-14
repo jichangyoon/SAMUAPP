@@ -1,6 +1,7 @@
 import { memes, votes, partnerMemes, partnerVotes, users, contests, archivedContests, loginLogs, blockedIps, revenues, revenueShares, goods, orders, goodsRevenueDistributions, voterRewardPool, voterClaimRecords, escrowDeposits, creatorRewardDistributions, type Meme, type InsertMeme, type Vote, type InsertVote, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest, type LoginLog, type InsertLoginLog, type BlockedIp, type InsertBlockedIp, type Revenue, type InsertRevenue, type RevenueShare, type InsertRevenueShare, type Goods, type InsertGoods, type Order, type InsertOrder, type GoodsRevenueDistribution, type InsertGoodsRevenueDistribution, type VoterRewardPool, type InsertVoterRewardPool, type VoterClaimRecord, type InsertVoterClaimRecord, type EscrowDeposit, type InsertEscrowDeposit, type CreatorRewardDistribution, type InsertCreatorRewardDistribution } from "@shared/schema";
 import { getDatabase } from "./db";
 import { eq, and, desc, isNull, or, sql, inArray } from "drizzle-orm";
+import { logger } from "./utils/logger";
 
 export interface IStorage {
   // User operations
@@ -1166,29 +1167,29 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (contest.status === "archived") {
-      console.log(`Contest ${contestId} is already archived, skipping`);
+      logger.info(`Contest ${contestId} is already archived, skipping`);
       const existing = await this.db
         .select()
         .from(archivedContests)
         .where(eq(archivedContests.originalContestId, contestId))
         .limit(1);
       if (existing.length > 0) return existing[0];
-      console.log(`Contest ${contestId} marked archived but no archive record, proceeding with archival`);
+      logger.info(`Contest ${contestId} marked archived but no archive record, proceeding with archival`);
     } else if (contest.status === "archiving") {
-      console.log(`Contest ${contestId} is already being archived by another process, skipping`);
+      logger.info(`Contest ${contestId} is already being archived by another process, skipping`);
       const existing = await this.db
         .select()
         .from(archivedContests)
         .where(eq(archivedContests.originalContestId, contestId))
         .limit(1);
       if (existing.length > 0) return existing[0];
-      console.log(`Contest ${contestId} marked archiving but no archive record, proceeding with archival`);
+      logger.info(`Contest ${contestId} marked archiving but no archive record, proceeding with archival`);
     } else {
       await this.db
         .update(contests)
         .set({ status: "archiving" })
         .where(eq(contests.id, contestId));
-      console.log(`Contest ${contestId} status set to archiving`);
+      logger.info(`Contest ${contestId} status set to archiving`);
     }
 
     try {
@@ -1277,14 +1278,14 @@ export class DatabaseStorage implements IStorage {
         await Promise.all(batch.map(meme => processMeme(meme).catch(err => {
           archiveFail++;
           failedFiles.push(`meme-${meme.id}-unexpected: ${err?.message || err}`);
-          console.error(`[Archive] Unexpected error for meme ${meme.id}:`, err);
+          logger.error(`[Archive] Unexpected error for meme ${meme.id}:`, err);
         })));
-        console.log(`[Archive] Progress: ${Math.min(i + BATCH_SIZE, contestMemes.length)}/${contestMemes.length} memes processed`);
+        logger.info(`[Archive] Progress: ${Math.min(i + BATCH_SIZE, contestMemes.length)}/${contestMemes.length} memes processed`);
       }
 
-      console.log(`[Archive] Contest ${contestId} file migration complete: ${archiveSuccess} succeeded, ${archiveFail} failed out of ${archiveSuccess + archiveFail} total files`);
+      logger.info(`[Archive] Contest ${contestId} file migration complete: ${archiveSuccess} succeeded, ${archiveFail} failed out of ${archiveSuccess + archiveFail} total files`);
       if (failedFiles.length > 0) {
-        console.error(`[Archive] Failed files for contest ${contestId}:`, failedFiles);
+        logger.error(`[Archive] Failed files for contest ${contestId}:`, failedFiles);
       }
     }
 
@@ -1325,7 +1326,7 @@ export class DatabaseStorage implements IStorage {
         result = inserted;
       } catch (insertError: any) {
         if (insertError?.code === '23505') {
-          console.log(`Contest ${contestId} archive insert conflict (unique constraint), fetching existing`);
+          logger.info(`Contest ${contestId} archive insert conflict (unique constraint), fetching existing`);
           const existing = await tx
             .select()
             .from(archivedContests)
@@ -1365,20 +1366,20 @@ export class DatabaseStorage implements IStorage {
     try {
       const { contestScheduler } = await import('./contest-scheduler');
       contestScheduler.cancelScheduled(contestId);
-      console.log(`Cancelled scheduled actions for contest ${contestId}`);
+      logger.info(`Cancelled scheduled actions for contest ${contestId}`);
     } catch (error) {
-      console.error("Failed to cancel scheduled actions:", error);
+      logger.error("Failed to cancel scheduled actions:", error);
     }
 
-    console.log(`Contest ${contestId} archived with ${totalMemes} files moved to archives/contest-${contestId}/`);
+    logger.info(`Contest ${contestId} archived with ${totalMemes} files moved to archives/contest-${contestId}/`);
 
     return archivedContest;
     } catch (archiveError) {
-      console.error(`[Archive] Critical failure for contest ${contestId}, reverting to ended:`, archiveError);
+      logger.error(`[Archive] Critical failure for contest ${contestId}, reverting to ended:`, archiveError);
       try {
         await this.updateContestStatus(contestId, "ended");
       } catch (revertError) {
-        console.error(`[Archive] Failed to revert contest ${contestId} status:`, revertError);
+        logger.error(`[Archive] Failed to revert contest ${contestId} status:`, revertError);
       }
       throw archiveError;
     }
@@ -1784,7 +1785,7 @@ export class DatabaseStorage implements IStorage {
     if (!this.db) throw new Error("Database not available");
     let pool = await this.getVoterRewardPool(contestId);
     if (!pool) {
-      console.log(`Voter reward pool not found for contest ${contestId}, creating one automatically`);
+      logger.info(`Voter reward pool not found for contest ${contestId}, creating one automatically`);
       const [newPool] = await this.db.insert(voterRewardPool)
         .values({
           contestId,
@@ -1796,7 +1797,7 @@ export class DatabaseStorage implements IStorage {
       pool = newPool;
     }
     if (pool.totalShares <= 0) {
-      console.log(`Voter reward pool for contest ${contestId} had totalShares=0. Fixing to 100 and computing rewardPerShare.`);
+      logger.info(`Voter reward pool for contest ${contestId} had totalShares=0. Fixing to 100 and computing rewardPerShare.`);
       const addedRewardPerShare = depositAmount / 100;
       const [updated] = await this.db.update(voterRewardPool)
         .set({
