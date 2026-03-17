@@ -186,6 +186,10 @@ router.get("/:walletAddress/stats", async (req, res) => {
       allGoods.filter(g => g.memeId != null && memeIds.has(g.memeId)).map(g => g.memeId)
     );
     
+    const goodsMemeList = memes
+      .filter(m => goodsMemeIds.has(m.id))
+      .map(m => ({ id: m.id, title: m.title, votes: m.votes }));
+
     const stats = {
       totalMemes: memes.length,
       totalMemesVotes,
@@ -193,7 +197,8 @@ router.get("/:walletAddress/stats", async (req, res) => {
       totalSamuSpent,
       samuBalance: user.samuBalance,
       memberSince: user.createdAt,
-      memesToGoods: goodsMemeIds.size
+      memesToGoods: goodsMemeIds.size,
+      goodsMemeList,
     };
     
     res.json(stats);

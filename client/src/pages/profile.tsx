@@ -1151,12 +1151,21 @@ const Profile = memo(() => {
                     );
                   })()}
                   {stats.memesToGoods > 0 && (
-                    <div className="bg-green-900/30 border border-green-700/30 rounded-lg px-2.5 py-1.5 flex items-center gap-2">
-                      <ShoppingBag className="h-3 w-3 text-green-400 flex-shrink-0" />
-                      <span className="text-xs text-green-200 flex-1">
-                        {stats.memesToGoods} meme{stats.memesToGoods > 1 ? 's' : ''} became goods
-                      </span>
-                      <span className="text-[10px] bg-green-700/50 text-green-300 px-1.5 py-0.5 rounded-full">Pipeline</span>
+                    <div className="space-y-1">
+                      <div className="bg-green-900/30 border border-green-700/30 rounded-lg px-2.5 py-1.5 flex items-center gap-2">
+                        <ShoppingBag className="h-3 w-3 text-green-400 flex-shrink-0" />
+                        <span className="text-xs text-green-200 flex-1">
+                          {stats.memesToGoods} meme{stats.memesToGoods > 1 ? 's' : ''} became goods
+                        </span>
+                        <span className="text-[10px] bg-green-700/50 text-green-300 px-1.5 py-0.5 rounded-full">Pipeline</span>
+                      </div>
+                      {(userStats?.goodsMemeList || []).map((meme: { id: number; title: string; votes: number }) => (
+                        <div key={meme.id} className="bg-green-950/30 rounded-lg px-2.5 py-1.5 flex items-center gap-2 pl-5">
+                          <ShoppingBag className="h-2.5 w-2.5 text-green-600 flex-shrink-0" />
+                          <span className="text-xs text-green-300 truncate flex-1">{meme.title}</span>
+                          <span className="text-[10px] text-green-500 flex-shrink-0">{Number(meme.votes).toLocaleString()} SAMU</span>
+                        </div>
+                      ))}
                     </div>
                   )}
                   {(() => {
