@@ -1168,21 +1168,6 @@ const Profile = memo(() => {
                       ))}
                     </div>
                   )}
-                  {(() => {
-                    const bestContest = memesByContest.reduce((best: any, contest: any) => {
-                      const topMeme = contest.memes?.reduce((m: any, cur: any) =>
-                        (cur.votes || 0) > (m?.votes || 0) ? cur : m, null);
-                      if (!topMeme) return best;
-                      return (!best || topMeme.votes > best.votes) ? { ...topMeme, contestTitle: contest.contestTitle } : best;
-                    }, null);
-                    return bestContest ? (
-                      <div className="bg-indigo-900/30 rounded-lg px-2.5 py-1.5 flex items-center gap-2">
-                        <Trophy className="h-3 w-3 text-indigo-400 flex-shrink-0" />
-                        <span className="text-xs text-indigo-200 truncate flex-1">{bestContest.title}</span>
-                        <span className="text-[10px] text-indigo-400 flex-shrink-0">{Number(bestContest.votes).toLocaleString()} SAMU</span>
-                      </div>
-                    ) : null;
-                  })()}
                 </div>
 
                 {/* Voter Section */}
