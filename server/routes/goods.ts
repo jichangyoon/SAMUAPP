@@ -5,7 +5,7 @@ import { config } from "../config";
 import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { uploadToR2 } from "../r2-storage";
 import { geocodeAddress } from "../utils/geocode";
-import { getConnection, depositProfit, recordAllocation, isContractEnabled, getEscrowPoolPda } from "../utils/solana";
+import { getConnection, initializePool, depositProfit, recordAllocation, isContractEnabled, getEscrowPoolPda } from "../utils/solana";
 import { logger } from "../utils/logger";
 
 const router = Router();
@@ -150,11 +150,15 @@ export async function distributeEscrowProfit(escrowDeposit: any) {
         const voterTotal = allocationList.filter(a => a.role === "Voter").reduce((s, a) => s + a.lamports, 0);
         const platformTotal = allocationList.filter(a => a.role === "Platform").reduce((s, a) => s + a.lamports, 0);
 
+        // 1. PDA를 Anchor 계정으로 초기화 (결제 시 SOL이 이미 PDA에 직접 입금됨)
+        await initializePool(contestId);
+
+        // 2. 배분 금액 기록
         const depositTx = await depositProfit(contestId, totalLamports, creatorTotal, voterTotal, platformTotal);
         if (depositTx) {
           logger.info(`[contract] depositProfit TX: ${depositTx}`);
 
-          // 수령인마다 순서대로 allocation_record 생성
+          // 3. 수령인마다 순서대로 allocation_record 생성
           for (const alloc of allocationList) {
             await recordAllocation(contestId, alloc);
           }

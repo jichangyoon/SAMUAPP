@@ -39,8 +39,20 @@ pub mod samu_rewards {
         Ok(())
     }
 
-    /// admin이 굿즈 수익 SOL을 escrow_pool PDA로 예치. 45/40/15 비율 검증 포함.
-    /// remaining_accounts 없음 — Signer lifetime 충돌 방지.
+    /// 콘테스트 escrow_pool PDA를 초기화.
+    /// 굿즈 결제 시 SOL이 PDA로 직접 입금되므로, 배송 완료 시 이 함수를 먼저 호출해
+    /// PDA를 Anchor 계정으로 초기화한 뒤 deposit_profit을 호출해야 함.
+    pub fn initialize_pool(ctx: Context<InitializePool>, contest_id: u64) -> Result<()> {
+        let pool = &mut ctx.accounts.escrow_pool;
+        if pool.bump == 0 {
+            pool.contest_id = contest_id;
+            pool.bump = ctx.bumps.escrow_pool;
+        }
+        Ok(())
+    }
+
+    /// admin이 굿즈 수익 SOL 배분 기록. SOL은 이미 결제 시 PDA에 직접 입금됨.
+    /// initialize_pool 호출 후 사용해야 함.
     pub fn deposit_profit(
         ctx: Context<DepositProfit>,
         contest_id: u64,
@@ -94,9 +106,7 @@ pub mod samu_rewards {
         require!(available >= total_lamports, ErrorCode::InsufficientFunds);
 
         let pool = &mut ctx.accounts.escrow_pool;
-        pool.contest_id = contest_id;
         pool.total_deposited = pool.total_deposited.checked_add(total_lamports).unwrap();
-        pool.bump = ctx.bumps.escrow_pool;
 
         let cfg_mut = &mut ctx.accounts.program_config;
         cfg_mut.total_deposited_lamports = cfg_mut
@@ -275,9 +285,8 @@ pub struct Initialize<'info> {
 
 #[derive(Accounts)]
 #[instruction(contest_id: u64)]
-pub struct DepositProfit<'info> {
+pub struct InitializePool<'info> {
     #[account(
-        mut,
         seeds = [b"config"],
         bump = program_config.bump,
         constraint = program_config.admin == admin.key() @ ErrorCode::Unauthorized,
@@ -293,6 +302,30 @@ pub struct DepositProfit<'info> {
         space = 8 + EscrowPool::INIT_SPACE,
         seeds = [b"escrow", contest_id.to_le_bytes().as_ref()],
         bump,
+    )]
+    pub escrow_pool: Account<'info, EscrowPool>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(contest_id: u64)]
+pub struct DepositProfit<'info> {
+    #[account(
+        mut,
+        seeds = [b"config"],
+        bump = program_config.bump,
+        constraint = program_config.admin == admin.key() @ ErrorCode::Unauthorized,
+    )]
+    pub program_config: Account<'info, ProgramConfig>,
+
+    #[account(mut)]
+    pub admin: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [b"escrow", contest_id.to_le_bytes().as_ref()],
+        bump = escrow_pool.bump,
     )]
     pub escrow_pool: Account<'info, EscrowPool>,
 

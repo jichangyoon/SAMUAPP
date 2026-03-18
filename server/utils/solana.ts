@@ -129,8 +129,62 @@ export interface ContractAllocation {
 }
 
 /**
- * admin이 굿즈 수익 SOL을 escrow_pool PDA로 예치.
- * 비율 검증 포함. remaining_accounts 없음.
+ * 배송 완료 시 escrow_pool PDA를 Anchor 계정으로 초기화.
+ * 결제 시 SOL이 PDA에 직접 입금되므로, deposit_profit 호출 전에 먼저 이 함수를 호출해야 함.
+ */
+export async function initializePool(contestId: number): Promise<string | null> {
+  if (!isContractEnabled()) {
+    logger.info("[contract] SAMU_REWARDS_PROGRAM_ID not set — skipping initializePool");
+    return null;
+  }
+
+  const privateKeyStr = process.env.ESCROW_WALLET_PRIVATE_KEY;
+  if (!privateKeyStr) {
+    logger.warn("[contract] ESCROW_WALLET_PRIVATE_KEY not configured — skipping");
+    return null;
+  }
+
+  try {
+    const programId = new PublicKey(config.SAMU_REWARDS_PROGRAM_ID);
+    const secretKey = bs58.decode(privateKeyStr);
+    const adminKeypair = Keypair.fromSecretKey(secretKey);
+    const connection = getConnection();
+
+    const [configPda] = PublicKey.findProgramAddressSync([Buffer.from("config")], programId);
+    const [escrowPoolPda] = getEscrowPoolPda(contestId, programId);
+
+    // sha256("global:initialize_pool")[0:8]
+    const discriminator = Buffer.from([95, 180, 10, 172, 84, 174, 232, 40]);
+
+    const contestIdBuf = Buffer.alloc(8);
+    contestIdBuf.writeBigUInt64LE(BigInt(contestId));
+
+    const data = Buffer.concat([discriminator, contestIdBuf]);
+
+    const ix = new TransactionInstruction({
+      programId,
+      keys: [
+        { pubkey: configPda, isSigner: false, isWritable: false },
+        { pubkey: adminKeypair.publicKey, isSigner: true, isWritable: true },
+        { pubkey: escrowPoolPda, isSigner: false, isWritable: true },
+        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+      ],
+      data,
+    });
+
+    const tx = new Transaction().add(ix);
+    const signature = await sendAndConfirmTransaction(connection, tx, [adminKeypair]);
+    logger.info(`[contract] initializePool TX: ${signature} | contest=${contestId}`);
+    return signature;
+  } catch (err: any) {
+    logger.error("[contract] initializePool failed:", err?.message || err);
+    return null;
+  }
+}
+
+/**
+ * admin이 굿즈 수익 SOL 배분 기록. SOL은 이미 결제 시 PDA에 직접 입금됨.
+ * initializePool 호출 후 사용해야 함.
  */
 export async function depositProfit(
   contestId: number,

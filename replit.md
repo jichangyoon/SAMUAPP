@@ -17,7 +17,7 @@ The platform operates on a pipeline: Meme Contest → Goods (Printful) → Ecosy
 - **Voting System:** Implemented with on-chain SAMU SPL token transfers to a treasury wallet (`4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk`). Supports in-app voting and Solana Blinks, with transaction verification to prevent duplicate votes.
 - **Escrow, Order & Accounting:** SOL payments for merchandise are split into two parts via multi-instruction Solana transactions:
     - **Cost Price:** Transferred immediately to the Treasury.
-    - **Profit:** Locked in an Escrow wallet (`ojzHLw6QxUqprnEjk4gfQM3QXS1RKHWdTLXzZS543cg`).
+    - **Profit:** 컨트랙트 모드 ON 시 escrow_pool PDA로 직접 입금 (투명한 온체인 보관). 컨트랙트 모드 OFF 시 Escrow 지갑(`ojzHLw6QxUqprnEjk4gfQM3QXS1RKHWdTLXzZS543cg`)으로 입금.
     Profits are distributed as 45% to Creators, 40% to Voters, and 15% to the Platform.
 - **Printful Webhook:** Integrates with Printful v2 webhooks to automate order status updates and trigger profit distribution upon `shipment_delivered`. A 30-day timeout scheduler ensures distribution for delayed orders.
 - **Reward System:**
@@ -28,7 +28,7 @@ The platform operates on a pipeline: Meme Contest → Goods (Printful) → Ecosy
 - **Order Geocoding:** Uses OpenStreetMap Nominatim API to get precise latitude/longitude for orders based on postal code and country.
 - **My Profile:** Provides sections for "My Memes" (grouped by contest), "My Votes," "Rewards" (summary of earned and claimable SOL), and "Activity" (creator/voter stats and earnings).
 - **Archiving System:** Processes ended contests for archiving into Cloudflare R2 with parallel processing and retry mechanisms, ensuring DB atomicity for state transitions.
-- **Smart Contract Integration (Phase 2 - Devnet 앱 연동 테스트 예정):** Solana 프로그램 `samu-rewards`가 Anchor 프레임워크로 개발 완료되어 Devnet 배포 및 부분 검증 완료. Devnet 검증 결과: `initialize` ✅, `deposit_profit` ✅ (실제 SOL 이동 확인), `record_allocation` ✅, `claim` ⚠️ (Playground UI 한계로 직접 테스트 미완 — 코드 버그 수정 완료: signer seeds의 `contest_id_bytes` 로컬 바인딩 패턴 적용). 서버 코드(`server/utils/solana.ts`)에 완전 통합됨. `SAMU_REWARDS_PROGRAM_ID` env 설정 시 자동 활성화, 미설정 시 기존 DB 기반 분배로 폴백 (완전 하위 호환). **Mainnet 배포 시도:** Solana Playground에서 시도했으나 finalize 단계에서 반복 실패 (프로그램 바이너리 크기로 인해 6~7 SOL 필요 — 추후 SOL 확보 후 재시도). **현재 전략:** 앱을 devnet으로 전환하여 실제 앱에서 굿즈 구매 → 배송 완료 → claim 전체 흐름 end-to-end 검증 후, 해커톤 제출 직전에 mainnet 배포 진행.
+- **Smart Contract Integration (Phase 2 - Mainnet 배포 완료):** Solana 프로그램 `samu-rewards` Anchor 프레임워크. **Mainnet Program ID:** `SAMU_REWARDS_PROGRAM_ID` env에 설정됨 (Replit Secrets). `initialize` ✅, `transferAdmin` ✅ (에스크로 지갑이 admin). **컨트랙트 구조:** `initialize_pool` (배송 완료 시 escrow_pool PDA 초기화) + `deposit_profit` (SOL 배분 금액 기록, SOL 이동 없음) + `record_allocation` + `claim`. 결제 시 수익금이 escrow_pool PDA로 직접 입금되는 투명한 구조. **컨트랙트 수정/재배포 방법:** Playground 터미널에서 `solana program close <ID>` → SOL 회수 → lib.rs 수정 후 Build → Deploy → `declare_id!` 및 `SAMU_REWARDS_PROGRAM_ID` 업데이트 → `initialize` + `transferAdmin` 재실행. 서버 코드(`server/utils/solana.ts`)에 완전 통합됨. `SAMU_REWARDS_PROGRAM_ID` env 설정 시 자동 활성화, 미설정 시 기존 DB 기반 분배로 폴백 (완전 하위 호환).
 
 **Technical Stack:**
 - **Frontend:** React 18, TypeScript, Vite, TanStack Query, Wouter, React Hook Form + Zod, Tailwind CSS, shadcn/ui, Vaul. Uses Poppins font and supports dark theme.
@@ -48,7 +48,7 @@ The platform operates on a pipeline: Meme Contest → Goods (Printful) → Ecosy
 | Phase | 이름 | 상태 | 핵심 내용 |
 |---|---|---|---|
 | Phase 1 | Meme Incubator App | ✅ 완성 | 현재 시스템 전체 (React + Express + Printful + Privy) |
-| Phase 2 | On-chain Escrow (Anchor) | ⚙️ 진행 중 | 서버 에스크로 → PDA 컨트롤 스마트 컨트랙트 교체. Devnet 부분 검증 완료. Mainnet 배포 보류 (6~7 SOL 필요). 앱 devnet 연동 테스트 진행 예정. |
+| Phase 2 | On-chain Escrow (Anchor) | ✅ Mainnet 배포 완료 | 결제 수익 → escrow_pool PDA 직접 입금 (투명). 배송 완료 시 initialize_pool → deposit_profit → record_allocation. Playground에서 close → 재배포로 SOL 순환 가능. |
 | Phase 3 | Dynamic IP Equity cNFT | ⚙️ 컨트랙트 작성 완료 | cNFT(Compressed NFT) 기반. `samu-ip-nft` Anchor 프로그램 작성 완료. Devnet에서 DB 테스트 데이터로 전체 흐름 검증 예정. |
 | Phase 4 | Community Factory Program | 🔭 계획됨 | 퍼미션리스 커뮤니티 런칭 온체인 프로그램. SAMU를 앱 → 플랫폼으로 전환 |
 | Phase 5 | License NFT Marketplace | 🔭 계획됨 | IP 라이선스 NFT 거래, USDC 플로우, 브랜드/크리에이터 라이선스 구매 |
