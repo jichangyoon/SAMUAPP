@@ -87,14 +87,11 @@ pub mod samu_rewards {
             ErrorCode::ShareMismatch
         );
 
-        let cpi_ctx = CpiContext::new(
-            ctx.accounts.system_program.to_account_info(),
-            system_program::Transfer {
-                from: ctx.accounts.admin.to_account_info(),
-                to: ctx.accounts.escrow_pool.to_account_info(),
-            },
-        );
-        system_program::transfer(cpi_ctx, total_lamports)?;
+        let pool_lamports = ctx.accounts.escrow_pool.to_account_info().lamports();
+        let rent = Rent::get()?;
+        let rent_exempt = rent.minimum_balance(8 + EscrowPool::INIT_SPACE);
+        let available = pool_lamports.saturating_sub(rent_exempt);
+        require!(available >= total_lamports, ErrorCode::InsufficientFunds);
 
         let pool = &mut ctx.accounts.escrow_pool;
         pool.contest_id = contest_id;
@@ -419,4 +416,6 @@ pub enum ErrorCode {
     ShareMismatch,
     #[msg("This reward has already been claimed")]
     AlreadyClaimed,
+    #[msg("PDA does not have enough lamports to cover this deposit")]
+    InsufficientFunds,
 }
