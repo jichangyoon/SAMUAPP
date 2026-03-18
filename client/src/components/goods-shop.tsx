@@ -392,16 +392,55 @@ export function GoodsShop() {
 
       orderDataRef.current.txSignature = sig;
       setTxSignature(sig);
-      if (!selectedItem) setSelectedItem(orderDataRef.current.item);
-      toast({ title: "Payment confirmed!", description: `TX: ${sig.slice(0, 8)}...` });
-      setOrderStep('confirm');
+      toast({ title: "Payment confirmed! Placing your order...", description: `TX: ${sig.slice(0, 8)}...` });
+
+      const snap = orderDataRef.current;
+      const res = await apiRequest("POST", `/api/goods/${snap.item.id}/order`, {
+        size: snap.size,
+        color: snap.color,
+        buyerWallet: walletAddress,
+        buyerEmail: snap.shippingForm.email,
+        txSignature: sig,
+        solAmount: snap.paymentInfo.solAmount,
+        shippingCostUSD: snap.paymentInfo.shippingCostUSD,
+        shippingName: snap.shippingForm.name,
+        shippingAddress1: snap.shippingForm.address1,
+        shippingAddress2: snap.shippingForm.address2,
+        shippingCity: snap.shippingForm.city,
+        shippingState: snap.shippingForm.state,
+        shippingCountry: snap.shippingForm.country,
+        shippingZip: snap.shippingForm.zip,
+        shippingPhone: `${snap.shippingForm.phoneDialCode} ${snap.shippingForm.phone}`.trim(),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to place order');
+      }
+
+      toast({ title: "Order placed! Your sticker is being prepared." });
+      setSelectedItem(null);
+      setOrderStep('browse');
+      setSelectedSize('');
+      setSelectedColor('');
+      setShippingForm({ name: '', email: '', address1: '', address2: '', city: '', state: '', country: 'KR', zip: '', phone: '', phoneDialCode: '+82' });
+      setShippingEstimate(null);
+      setPaymentInfo(null);
+      setTxSignature('');
+      orderDataRef.current = null;
+      queryClient.invalidateQueries({ queryKey: ['/api/goods/orders', walletAddress] });
     } catch (err: any) {
-      console.error("SOL payment error:", err);
-      toast({ title: "Payment failed", description: err.message, variant: "destructive" });
+      console.error("Payment/order error:", err);
+      if (orderDataRef.current?.txSignature) {
+        setOrderStep('confirm');
+        toast({ title: "Order placement failed", description: err.message + " — click Confirm to retry", variant: "destructive" });
+      } else {
+        toast({ title: "Payment failed", description: err.message, variant: "destructive" });
+      }
     } finally {
       setIsPaying(false);
     }
-  }, [selectedItem, walletAddress, paymentInfo, selectedSize, selectedColor, shippingForm, signTransaction, solConnection]);
+  }, [selectedItem, walletAddress, paymentInfo, selectedSize, selectedColor, shippingForm, signTransaction, solConnection, queryClient]);
 
   const placeOrderMutation = useMutation({
     mutationFn: async () => {

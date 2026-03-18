@@ -1194,6 +1194,13 @@ router.post("/:id/order", async (req, res) => {
 
       const treasuryPubkey = new PublicKey(TREASURY_WALLET);
       const escrowPubkey = new PublicKey(ESCROW_WALLET);
+
+      let escrowPoolPda: PublicKey | null = null;
+      if (isContractEnabled() && item.contestId) {
+        const programId = new PublicKey(config.SAMU_REWARDS_PROGRAM_ID);
+        [escrowPoolPda] = getEscrowPoolPda(item.contestId, programId);
+      }
+
       let totalReceived = 0;
 
       for (let i = 0; i < accountKeys.length; i++) {
@@ -1203,7 +1210,10 @@ router.post("/:id/order", async (req, res) => {
         if (accountKeys[i].equals(treasuryPubkey)) {
           totalReceived += received;
           verifiedCostAmount = received / LAMPORTS_PER_SOL;
-        } else if (accountKeys[i].equals(escrowPubkey)) {
+        } else if (
+          accountKeys[i].equals(escrowPubkey) ||
+          (escrowPoolPda && accountKeys[i].equals(escrowPoolPda))
+        ) {
           totalReceived += received;
           verifiedEscrowAmount = received / LAMPORTS_PER_SOL;
         }
