@@ -241,14 +241,18 @@ function PrintfulDetailSection({ orderId, wallet }: { orderId: number; wallet: s
   });
 
   const statusMap: Record<string, { label: string; color: string }> = {
-    draft: { label: "Draft", color: "bg-gray-500/20 text-gray-400" },
-    pending: { label: "Pending", color: "bg-yellow-500/20 text-yellow-400" },
-    inprocess: { label: "In Production", color: "bg-blue-500/20 text-blue-400" },
-    fulfilled: { label: "Fulfilled", color: "bg-green-500/20 text-green-400" },
-    canceled: { label: "Canceled", color: "bg-red-500/20 text-red-400" },
-    failed: { label: "Failed", color: "bg-red-500/20 text-red-400" },
-    onhold: { label: "On Hold", color: "bg-orange-500/20 text-orange-400" },
-    partial: { label: "Partially Fulfilled", color: "bg-cyan-500/20 text-cyan-400" },
+    draft:        { label: "Confirmed",    color: "bg-blue-500/20 text-blue-400" },
+    pending:      { label: "Confirmed",    color: "bg-blue-500/20 text-blue-400" },
+    confirmed:    { label: "Confirmed",    color: "bg-blue-500/20 text-blue-400" },
+    inprocess:    { label: "In Production",color: "bg-orange-500/20 text-orange-400" },
+    in_production:{ label: "In Production",color: "bg-orange-500/20 text-orange-400" },
+    fulfilled:    { label: "Shipped",      color: "bg-purple-500/20 text-purple-400" },
+    shipped:      { label: "Shipped",      color: "bg-purple-500/20 text-purple-400" },
+    in_transit:   { label: "Shipped",      color: "bg-purple-500/20 text-purple-400" },
+    delivered:    { label: "Delivered",    color: "bg-green-500/20 text-green-400" },
+    canceled:     { label: "Canceled",     color: "bg-red-500/20 text-red-400" },
+    failed:       { label: "Failed",       color: "bg-red-500/20 text-red-400" },
+    onhold:       { label: "On Hold",      color: "bg-orange-500/20 text-orange-400" },
   };
 
   if (isLoading) {
@@ -508,13 +512,13 @@ export function GoodsShop() {
     switch (status) {
       case "draft":
       case "pending":
-      case "confirmed": return 'bg-yellow-500/20 text-yellow-400';
+      case "confirmed": return 'bg-blue-500/20 text-blue-400';
       case "in_production":
       case "inprocess": return 'bg-orange-500/20 text-orange-400';
       case "fulfilled":
-      case "shipped": return 'bg-blue-500/20 text-blue-400';
+      case "shipped":
       case "in_transit": return 'bg-purple-500/20 text-purple-400';
-      case "delivered": return 'bg-green-500/20 text-green-300';
+      case "delivered": return 'bg-green-500/20 text-green-400';
       case "returned": return 'bg-orange-500/20 text-orange-400';
       case "failed":
       case "canceled":
