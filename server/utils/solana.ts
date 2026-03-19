@@ -213,6 +213,22 @@ export async function depositProfit(
     const [configPda] = PublicKey.findProgramAddressSync([Buffer.from("config")], programId);
     const [escrowPoolPda] = getEscrowPoolPda(contestId, programId);
 
+    // EscrowPool 계정 렌트 차감 후 실제 배분 가능 금액 계산
+    // EscrowPool INIT_SPACE: contest_id(8) + total_deposited(8) + total_claimed(8) + bump(1) = 25, + discriminator(8) = 33 bytes
+    const ESCROW_POOL_ACCOUNT_SIZE = 33;
+    const escrowBalance = await connection.getBalance(escrowPoolPda);
+    const rentExempt = await connection.getMinimumBalanceForRentExemption(ESCROW_POOL_ACCOUNT_SIZE);
+    const available = escrowBalance - rentExempt;
+
+    if (available < totalLamports) {
+      logger.warn(`[contract] depositProfit: adjusting totalLamports from ${totalLamports} to ${available} (rent=${rentExempt})`);
+      const ratio = available / totalLamports;
+      creatorTotal = Math.floor(creatorTotal * ratio);
+      voterTotal = Math.floor(voterTotal * ratio);
+      platformTotal = available - creatorTotal - voterTotal;
+      totalLamports = available;
+    }
+
     // sha256("global:deposit_profit")[0:8]
     const discriminator = Buffer.from([128, 94, 241, 212, 35, 142, 213, 247]);
 
