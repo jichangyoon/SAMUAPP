@@ -125,8 +125,9 @@ pub mod samu_rewards {
         Ok(())
     }
 
-    /// admin이 수령인 1명의 allocation_record PDA를 생성/업데이트.
-    /// 수령인마다 별도 호출 — remaining_accounts 없음.
+    /// 유저가 claim할 때 admin 서명으로 수령인의 allocation_record PDA를 생성.
+    /// claimer(유저)가 payer → 계정 생성 비용 및 가스비 유저 부담.
+    /// admin은 서명으로 금액 권한만 보증. 중복 호출 방지.
     pub fn record_allocation(
         ctx: Context<RecordAllocation>,
         contest_id: u64,
@@ -137,12 +138,15 @@ pub mod samu_rewards {
         require!(lamports > 0, ErrorCode::InvalidAmount);
 
         let record = &mut ctx.accounts.allocation_record;
+
+        // 이미 기록된 경우 중복 방지
+        require!(record.lamports == 0, ErrorCode::AlreadyRecorded);
         require!(!record.claimed, ErrorCode::AlreadyClaimed);
 
         record.contest_id = contest_id;
         record.wallet = recipient_wallet;
         record.role = role.clone();
-        record.lamports = record.lamports.checked_add(lamports).unwrap();
+        record.lamports = lamports;
         record.bump = ctx.bumps.allocation_record;
 
         emit!(AllocationRecorded {
@@ -332,6 +336,8 @@ pub struct DepositProfit<'info> {
     pub system_program: Program<'info, System>,
 }
 
+/// record_allocation: admin이 금액 권한 보증(서명), claimer(유저)가 계정 생성 비용 부담.
+/// 클레임 시 유저가 이 명령어와 claim을 하나의 트랜잭션으로 제출 → 가스비 유저 부담.
 #[derive(Accounts)]
 #[instruction(contest_id: u64, recipient_wallet: Pubkey)]
 pub struct RecordAllocation<'info> {
@@ -343,12 +349,16 @@ pub struct RecordAllocation<'info> {
     )]
     pub program_config: Account<'info, ProgramConfig>,
 
-    #[account(mut)]
+    /// admin: 금액 권한 보증용 서명. payer가 아님.
     pub admin: Signer<'info>,
+
+    /// claimer(유저): allocation_record 계정 생성 비용 및 가스비 부담.
+    #[account(mut)]
+    pub claimer: Signer<'info>,
 
     #[account(
         init_if_needed,
-        payer = admin,
+        payer = claimer,
         space = 8 + AllocationRecord::INIT_SPACE,
         seeds = [b"alloc", contest_id.to_le_bytes().as_ref(), recipient_wallet.as_ref()],
         bump,
@@ -451,4 +461,6 @@ pub enum ErrorCode {
     AlreadyClaimed,
     #[msg("PDA does not have enough lamports to cover this deposit")]
     InsufficientFunds,
+    #[msg("Allocation has already been recorded for this user and contest")]
+    AlreadyRecorded,
 }

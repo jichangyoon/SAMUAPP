@@ -5,7 +5,7 @@ import { config } from "../config";
 import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { uploadToR2 } from "../r2-storage";
 import { geocodeAddress } from "../utils/geocode";
-import { getConnection, initializePool, depositProfit, recordAllocation, isContractEnabled, getEscrowPoolPda } from "../utils/solana";
+import { getConnection, initializePool, depositProfit, isContractEnabled, getEscrowPoolPda } from "../utils/solana";
 import { logger } from "../utils/logger";
 
 const router = Router();
@@ -158,11 +158,8 @@ export async function distributeEscrowProfit(escrowDeposit: any) {
         if (depositTx) {
           logger.info(`[contract] depositProfit TX: ${depositTx}`);
 
-          // 3. 수령인마다 순서대로 allocation_record 생성
-          for (const alloc of allocationList) {
-            await recordAllocation(contestId, alloc);
-          }
-          logger.info(`[contract] recordAllocation done: ${allocationList.length} records`);
+            // record_allocation은 유저가 claim 시 직접 처리 (가스비 유저 부담)
+          logger.info(`[contract] depositProfit complete. allocation_record는 claim 시 유저가 직접 생성.`);
         }
       }
     } catch (contractErr: any) {

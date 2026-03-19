@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { storage } from "../storage";
 import { config } from "../config";
-import { sendSolFromEscrow, isContractEnabled, buildClaimTransaction, getOnChainClaimable } from "../utils/solana";
+import { sendSolFromEscrow, isContractEnabled, buildClaimTransaction, buildRecordAndClaimTransaction, getOnChainClaimable } from "../utils/solana";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { logger } from "../utils/logger";
 
 const router = Router();
@@ -617,7 +618,7 @@ router.get("/prepare-claim", async (req, res) => {
       return res.json({ contractEnabled: false, transactions: [] });
     }
 
-    // 유저가 투표한 콘테스트 목록 수집
+    // 유저가 참여한 콘테스트 목록 수집 (투표 + 크리에이터)
     const userVotes = await storage.getUserVotes(walletAddress);
     const allMemes = await storage.getAllMemes();
     const memeContestMap = new Map<number, number>();
@@ -625,40 +626,84 @@ router.get("/prepare-claim", async (req, res) => {
       if (m.contestId != null) memeContestMap.set(m.id, m.contestId);
     }
 
-    const votedContestIds = new Set<number>();
+    const participatedContestIds = new Set<number>();
     for (const v of userVotes) {
       const cid = memeContestMap.get(v.memeId);
-      if (cid != null) votedContestIds.add(cid);
+      if (cid != null) participatedContestIds.add(cid);
     }
-
-    // 크리에이터로 참여한 콘테스트도 포함 (getUserMemesByContest는 그룹 형태라 userVotes 조회로 충분)
     const userMemeGroups = await storage.getUserMemesByContest(walletAddress);
     for (const group of userMemeGroups) {
-      if (group.contestId != null) votedContestIds.add(group.contestId);
+      if (group.contestId != null) participatedContestIds.add(group.contestId);
     }
 
-    // 각 콘테스트의 on-chain allocation 조회 및 claim TX 빌드
+    // DB에서 미청구 크리에이터 분배 조회 (전체, 아래서 contestId 기준 필터링)
+    const unclaimedCreatorDists = await storage.getUnclaimedCreatorDistributionsByWallet(walletAddress);
+    const creatorByContest = new Map<number, number>();
+    for (const d of unclaimedCreatorDists) {
+      if (d.contestId != null) {
+        creatorByContest.set(d.contestId, (creatorByContest.get(d.contestId) ?? 0) + d.solAmount);
+      }
+    }
+
     const transactions: {
       contestId: number;
       lamports: number;
       solAmount: number;
+      role: "Creator" | "Voter";
       transaction: string;
     }[] = [];
 
-    for (const contestId of votedContestIds) {
+    for (const contestId of participatedContestIds) {
       try {
+        // ── 온체인 record가 이미 존재하는 경우 (backwards compat) ──
         const onchain = await getOnChainClaimable(contestId, walletAddress);
-        if (!onchain || onchain.claimed || onchain.lamports === 0) continue;
+        if (onchain && !onchain.claimed && onchain.lamports > 0) {
+          const txBase64 = await buildClaimTransaction(contestId, walletAddress);
+          if (txBase64) {
+            transactions.push({
+              contestId,
+              lamports: onchain.lamports,
+              solAmount: onchain.lamports / LAMPORTS_PER_SOL,
+              role: "Voter",
+              transaction: txBase64,
+            });
+          }
+          continue;
+        }
 
-        const txBase64 = await buildClaimTransaction(contestId, walletAddress);
-        if (!txBase64) continue;
+        // ── 온체인 record 없는 경우: DB에서 금액 조회 → record+claim 합산 TX ──
 
-        transactions.push({
-          contestId,
-          lamports: onchain.lamports,
-          solAmount: onchain.lamports / 1_000_000_000,
-          transaction: txBase64,
-        });
+        // 크리에이터 보상
+        const creatorSol = creatorByContest.get(contestId) ?? 0;
+        if (creatorSol > 0.000001) {
+          const creatorLamports = Math.round(creatorSol * LAMPORTS_PER_SOL);
+          const txBase64 = await buildRecordAndClaimTransaction(contestId, walletAddress, creatorLamports, "Creator");
+          if (txBase64) {
+            transactions.push({
+              contestId,
+              lamports: creatorLamports,
+              solAmount: creatorSol,
+              role: "Creator",
+              transaction: txBase64,
+            });
+          }
+        }
+
+        // 투표자 보상
+        const { claimable: voterSol } = await storage.getClaimableAmount(contestId, walletAddress);
+        if (voterSol > 0.000001) {
+          const voterLamports = Math.round(voterSol * LAMPORTS_PER_SOL);
+          const txBase64 = await buildRecordAndClaimTransaction(contestId, walletAddress, voterLamports, "Voter");
+          if (txBase64) {
+            transactions.push({
+              contestId,
+              lamports: voterLamports,
+              solAmount: voterSol,
+              role: "Voter",
+              transaction: txBase64,
+            });
+          }
+        }
       } catch (e: any) {
         logger.warn(`[prepare-claim] contest ${contestId} skip:`, e?.message);
       }
