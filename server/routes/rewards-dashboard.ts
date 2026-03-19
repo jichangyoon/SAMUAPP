@@ -74,6 +74,7 @@ router.get("/summary", async (req, res) => {
     let userVotedContests = new Set<number>();
     let userVoteShareByContest = new Map<number, number>();
     let creatorDistByOrder = new Map<number, number>();
+    let claimedOrderIds = new Set<number>();
     let walletEarned = { creatorEarned: 0, voterEarned: 0 };
 
     if (walletAddress) {
@@ -115,6 +116,19 @@ router.get("/summary", async (req, res) => {
       const creatorDists = await storage.getCreatorRewardDistributionsByWallet(walletAddress);
       for (const cd of creatorDists) {
         creatorDistByOrder.set(cd.orderId, (creatorDistByOrder.get(cd.orderId) || 0) + cd.solAmount);
+      }
+
+      // 주문 단위 claim 추적: 해당 주문의 크리에이터 배분이 모두 claimed이면 claimedOrderIds에 추가
+      // contest-level이 아닌 order-level로 체크하여 같은 콘테스트 새 주문으로 인한 리셋 방지
+      const orderCreatorDistMap = new Map<number, { all: number; claimed: number }>();
+      for (const cd of creatorDists) {
+        if (!orderCreatorDistMap.has(cd.orderId)) orderCreatorDistMap.set(cd.orderId, { all: 0, claimed: 0 });
+        const entry = orderCreatorDistMap.get(cd.orderId)!;
+        entry.all++;
+        if (cd.claimedAt) entry.claimed++;
+      }
+      for (const [oid, { all, claimed }] of orderCreatorDistMap.entries()) {
+        if (all > 0 && all === claimed) claimedOrderIds.add(oid);
       }
 
       walletEarned.creatorEarned = creatorDists.reduce((s, d) => s + d.solAmount, 0);
@@ -194,7 +208,12 @@ router.get("/summary", async (req, res) => {
           }
         }
 
-        const isClaimed = contestId != null && claimedContestIds.has(contestId) && escrow?.status !== "locked";
+        // 주문 단위 claim 체크: 같은 콘테스트에 새 주문이 생겨도 기존 claimed 상태 유지
+        const hasCreatorCutForOrder = (creatorDistByOrder.get(o.id) || 0) > 0;
+        const isClaimed = (
+          claimedOrderIds.has(o.id) ||  // 이 주문의 크리에이터 배분이 모두 claimed
+          (!hasCreatorCutForOrder && contestId != null && claimedContestIds.has(contestId))  // 투표자만인 경우 폴백
+        ) && escrow?.status !== "locked";
 
         return {
           id: o.id,
