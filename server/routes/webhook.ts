@@ -14,11 +14,20 @@ function verifyPrintfulWebhook(req: any): boolean {
   }
   const signature = req.headers["x-printful-signature"] || req.headers["x-pf-signature"];
   if (!signature) {
+    logger.warn("[Printful Webhook] No signature header found");
     return false;
   }
-  const body = typeof req.body === "string" ? req.body : JSON.stringify(req.body);
-  const expected = crypto.createHmac("sha256", webhookSecret).update(body).digest("hex");
-  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+  const rawBody: Buffer | undefined = req.rawBody;
+  if (!rawBody) {
+    logger.warn("[Printful Webhook] Raw body not available");
+    return false;
+  }
+  const expected = crypto.createHmac("sha256", webhookSecret).update(rawBody).digest("hex");
+  try {
+    return crypto.timingSafeEqual(Buffer.from(signature as string), Buffer.from(expected));
+  } catch {
+    return false;
+  }
 }
 
 async function triggerEscrowDistribution(orderId: number, eventType: string) {
