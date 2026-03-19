@@ -1,5 +1,4 @@
 use anchor_lang::prelude::*;
-use anchor_lang::system_program;
 
 declare_id!("GYfzt1mzWNMurBEej4557YbKmceTWwW3L6attC7pAmWS");
 
@@ -175,27 +174,13 @@ pub mod samu_rewards {
         );
 
         let lamports_to_send = record.lamports;
+
+        // system_program::transfer은 데이터가 있는 계정(PDA)에서 사용 불가.
+        // 직접 lamport 조작으로 escrow_pool PDA → claimer 전송.
+        **ctx.accounts.escrow_pool.to_account_info().try_borrow_mut_lamports()? -= lamports_to_send;
+        **ctx.accounts.claimer.to_account_info().try_borrow_mut_lamports()? += lamports_to_send;
+
         let pool = &mut ctx.accounts.escrow_pool;
-
-        let escrow_bump = pool.bump;
-        let contest_id_bytes = contest_id.to_le_bytes();
-        let seeds = &[
-            b"escrow".as_ref(),
-            contest_id_bytes.as_ref(),
-            &[escrow_bump],
-        ];
-        let signer_seeds = &[&seeds[..]];
-
-        let cpi_ctx = CpiContext::new_with_signer(
-            ctx.accounts.system_program.to_account_info(),
-            system_program::Transfer {
-                from: pool.to_account_info(),
-                to: ctx.accounts.claimer.to_account_info(),
-            },
-            signer_seeds,
-        );
-        system_program::transfer(cpi_ctx, lamports_to_send)?;
-
         pool.total_claimed = pool.total_claimed.checked_add(lamports_to_send).unwrap();
         record.claimed = true;
 
