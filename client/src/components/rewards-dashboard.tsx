@@ -25,15 +25,16 @@ const SOL_CONNECTION = new Connection(
 );
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
-  pending:      { label: "Pending",      color: "bg-yellow-500/20 text-yellow-400 border-yellow-400/30" },
+  pending:      { label: "주문 접수",     color: "bg-yellow-500/20 text-yellow-400 border-yellow-400/30" },
   draft:        { label: "Draft",        color: "bg-gray-500/20 text-gray-400 border-gray-400/30" },
-  confirmed:    { label: "Confirmed",    color: "bg-blue-500/20 text-blue-400 border-blue-400/30" },
-  in_production:{ label: "In Production",color: "bg-orange-500/20 text-orange-400 border-orange-400/30" },
-  shipped:      { label: "Shipped",      color: "bg-purple-500/20 text-purple-400 border-purple-400/30" },
-  in_transit:   { label: "In Transit",   color: "bg-purple-500/20 text-purple-400 border-purple-400/30" },
-  delivered:    { label: "Delivered ✓",  color: "bg-green-500/20 text-green-400 border-green-400/30" },
-  canceled:     { label: "Canceled",     color: "bg-red-500/20 text-red-400 border-red-400/30" },
-  failed:       { label: "Failed",       color: "bg-red-500/20 text-red-400 border-red-400/30" },
+  confirmed:    { label: "주문 접수",     color: "bg-yellow-500/20 text-yellow-400 border-yellow-400/30" },
+  inprocess:    { label: "제작 중",       color: "bg-orange-500/20 text-orange-400 border-orange-400/30" },
+  in_production:{ label: "제작 중",       color: "bg-orange-500/20 text-orange-400 border-orange-400/30" },
+  shipped:      { label: "배송 중",       color: "bg-purple-500/20 text-purple-400 border-purple-400/30" },
+  in_transit:   { label: "배송 중",       color: "bg-purple-500/20 text-purple-400 border-purple-400/30" },
+  delivered:    { label: "배송 완료 ✓",   color: "bg-green-500/20 text-green-400 border-green-400/30" },
+  canceled:     { label: "취소됨",        color: "bg-red-500/20 text-red-400 border-red-400/30" },
+  failed:       { label: "실패",          color: "bg-red-500/20 text-red-400 border-red-400/30" },
 };
 
 

@@ -194,7 +194,7 @@ router.get("/summary", async (req, res) => {
           }
         }
 
-        const isClaimed = contestId != null && claimedContestIds.has(contestId);
+        const isClaimed = contestId != null && claimedContestIds.has(contestId) && escrow?.status !== "locked";
 
         return {
           id: o.id,
