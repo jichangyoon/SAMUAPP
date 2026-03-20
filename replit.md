@@ -45,6 +45,12 @@ The SAMU Meme Contest Application is a Solana-based platform that transforms mem
 - **Phase 5: License NFT Marketplace:** IP license NFT trading platform.
 - **Phase 6: Solana SVM Appchain:** Dedicated appchain based on Sonic SVM / MagicBlock.
 
+## 상세 기술 문서
+
+상세 내용 (컨트랙트 구조, 배포 전략, Phase 3 설계, Known Issues 등)은 체크포인트에 덮어씌워지지 않는 별도 파일에서 관리:
+
+**→ `.local/NOTES.md` 참조**
+
 ## External Dependencies
 - **Solana Blockchain:** Core infrastructure for SPL token transfers and smart contracts.
 - **Privy:** Authentication service for user login.
