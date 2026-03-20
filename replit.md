@@ -52,6 +52,8 @@ The platform operates on a pipeline: Meme Contest → Goods (Printful) → Ecosy
 - **Independence:** Phase 3 contract (`samu-ip-nft`) is separate from Phase 2, allowing for cross-program invocation.
 - **Implementation:** Requires Merkle Tree generation for cNFT minting, Helius DAS API integration, and shifting distribution logic from DB records to cNFT holders.
 
+**상세 기술 문서:** `.local/NOTES.md` 참조 (배포 전략, 컨트랙트 구조, Known Issues, 로드맵 등)
+
 ## External Dependencies
 - **Solana Blockchain:** Core infrastructure for SPL tokens and smart contracts.
 - **Privy:** User authentication.
