@@ -31,7 +31,7 @@ Brands and developers license IP from cNFT holders on an open marketplace (Phase
 
 ---
 
-## What's Working Today (Phase 1 ✅)
+## What's Live Today (Phase 1 ✅ + Phase 2 ✅)
 
 | Feature | Status |
 |---|---|
@@ -40,8 +40,9 @@ Brands and developers license IP from cNFT holders on an open marketplace (Phase
 | Solana Blinks (vote from X/Twitter, Discord) | ✅ Live |
 | Printful merchandise fulfillment (Kiss-Cut Stickers) | ✅ Live |
 | SOL goods payment with real-time CoinGecko pricing | ✅ Live |
-| On-chain payment splitting at purchase | ✅ Live |
-| Creator & Voter SOL reward claiming | ✅ Live |
+| On-chain escrow — goods revenue → PDA, enforced by contract | ✅ Live |
+| Creator & Voter SOL reward claiming (on-chain, single TX) | ✅ Live |
+| 45/40/15 split enforced on-chain (contract rejects mismatches) | ✅ Live |
 | Global SAMU Map (orders visualized worldwide) | ✅ Live |
 | Contest archive with full stats & reward history | ✅ Live |
 | Privy embedded wallet + external wallet support | ✅ Live |
@@ -62,20 +63,20 @@ Brands and developers license IP from cNFT holders on an open marketplace (Phase
 | Phase | Name | Status | What it unlocks |
 |---|---|---|---|
 | 1 | Meme Incubator App | ✅ Complete | Contest → Goods → SOL Rewards |
-| 2 | On-chain Escrow (Anchor) | ⚙️ Devnet verified | SOL rewards enforced by smart contract, not server |
+| 2 | On-chain Escrow (Anchor) | ✅ Mainnet Live | SOL rewards enforced by smart contract, not server |
 | 3 | IP Equity cNFT | 📐 Contract written | Every participant gets a transferable IP stake |
 | 4 | Community Factory | 🔭 Planned | Anyone can launch their own meme community permissionlessly |
 | 5 | License NFT Marketplace | 🔭 Planned | Brands buy IP rights from cNFT holders in USDC |
 | 6 | Solana SVM Appchain | 🔭 Planned | Dedicated appchain for meme IP at scale |
 
-### Phase 2 — On-chain Escrow (Anchor) ⚙️
+### Phase 2 — On-chain Escrow (Anchor) ✅ Mainnet Live
 
 A custom Anchor program (`samu-rewards`) replaces server-held escrow with PDA-controlled accounts. The 45/40/15 split is enforced **on-chain** — the contract rejects any deposit that doesn't match configured ratios (within 0.1% tolerance).
 
-- `initialize` ✅ Devnet verified
-- `deposit_profit` ✅ Devnet verified (real SOL movement confirmed)
-- `record_allocation` ✅ Devnet verified
-- `claim` — code complete, Mainnet end-to-end pending
+- `initialize` ✅ Mainnet deployed
+- `deposit_profit` ✅ Mainnet verified (SOL flows directly to escrow PDA at purchase)
+- `record_allocation` ✅ Mainnet verified (admin pre-signs, user covers gas)
+- `claim` ✅ Mainnet E2E verified (2026-03-20, single TX, SOL confirmed received)
 
 ### Phase 3 — IP Equity cNFT 📐
 
@@ -92,8 +93,8 @@ These cNFTs are **fully transferable**. When a holder sells their cNFT, revenue 
 
 | Program | Framework | Status | Program ID |
 |---|---|---|---|
-| `samu-rewards` | Anchor 0.30 | Devnet deployed ✅ | `FbKgJNWn8tn2BTzGZ2qBWRh4zYSLbdPbQjBCzESdhPU7` |
-| `samu-ip-nft` | Anchor 0.30 + Bubblegum | Written, Devnet pending | TBD on deploy |
+| `samu-rewards` | Anchor 0.30 | ✅ Mainnet Live | `GYfzt1mzWNMurBEej4557YbKmceTWwW3L6attC7pAmWS` |
+| `samu-ip-nft` | Anchor 0.30 + Bubblegum | 📐 Written, Devnet pending | TBD on deploy |
 
 ---
 
