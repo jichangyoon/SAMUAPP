@@ -344,6 +344,7 @@ pub struct Claim<'info> {
         seeds = [b"alloc", contest_id.to_le_bytes().as_ref(), claimer.key().as_ref()],
         bump = allocation_record.bump,
         constraint = allocation_record.wallet == claimer.key() @ ErrorCode::Unauthorized,
+        close = claimer,
     )]
     pub allocation_record: Account<'info, AllocationRecord>,
 
