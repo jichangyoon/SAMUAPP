@@ -668,7 +668,9 @@ router.get("/prepare-claim", async (req, res) => {
       contestId: number;
       lamports: number;
       solAmount: number;
-      role: "Creator" | "Voter";
+      creatorLamports: number;
+      voterLamports: number;
+      creatorDistributionIds: number[];
       transaction: string;
     }[] = [];
 
@@ -683,45 +685,41 @@ router.get("/prepare-claim", async (req, res) => {
               contestId,
               lamports: onchain.lamports,
               solAmount: onchain.lamports / LAMPORTS_PER_SOL,
-              role: "Voter",
+              creatorLamports: 0,
+              voterLamports: onchain.lamports,
+              creatorDistributionIds: [],
               transaction: txBase64,
             });
           }
           continue;
         }
 
-        // ── 온체인 record 없는 경우: DB에서 금액 조회 → record+claim 합산 TX ──
-
-        // 크리에이터 보상
+        // ── 온체인 record 없는 경우: Creator + Voter 합산해서 단일 TX ──
         const creatorSol = creatorByContest.get(contestId) ?? 0;
-        if (creatorSol > 0.000001) {
-          const creatorLamports = Math.round(creatorSol * LAMPORTS_PER_SOL);
-          const txBase64 = await buildRecordAndClaimTransaction(contestId, walletAddress, creatorLamports, "Creator");
-          if (txBase64) {
-            transactions.push({
-              contestId,
-              lamports: creatorLamports,
-              solAmount: creatorSol,
-              role: "Creator",
-              transaction: txBase64,
-            });
-          }
-        }
-
-        // 투표자 보상
         const { claimable: voterSol } = await storage.getClaimableAmount(contestId, walletAddress);
-        if (voterSol > 0.000001) {
-          const voterLamports = Math.round(voterSol * LAMPORTS_PER_SOL);
-          const txBase64 = await buildRecordAndClaimTransaction(contestId, walletAddress, voterLamports, "Voter");
-          if (txBase64) {
-            transactions.push({
-              contestId,
-              lamports: voterLamports,
-              solAmount: voterSol,
-              role: "Voter",
-              transaction: txBase64,
-            });
-          }
+
+        const totalSol = creatorSol + voterSol;
+        if (totalSol <= 0.000001) continue;
+
+        const creatorLamports = Math.round(creatorSol * LAMPORTS_PER_SOL);
+        const voterLamports = Math.round(voterSol * LAMPORTS_PER_SOL);
+        const totalLamports = creatorLamports + voterLamports;
+
+        // 이 contest의 미청구 크리에이터 분배 ID 수집 (confirm-claim 시 사용)
+        const contestCreatorDists = unclaimedCreatorDists.filter(d => d.contestId === contestId);
+        const creatorDistributionIds = contestCreatorDists.map(d => d.id);
+
+        const txBase64 = await buildRecordAndClaimTransaction(contestId, walletAddress, totalLamports);
+        if (txBase64) {
+          transactions.push({
+            contestId,
+            lamports: totalLamports,
+            solAmount: totalSol,
+            creatorLamports,
+            voterLamports,
+            creatorDistributionIds,
+            transaction: txBase64,
+          });
         }
       } catch (e: any) {
         logger.warn(`[prepare-claim] contest ${contestId} skip:`, e?.message);
@@ -734,6 +732,61 @@ router.get("/prepare-claim", async (req, res) => {
       transactions,
       totalSol: transactions.reduce((s, t) => s + t.solAmount, 0),
     });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Phase 2: 컨트랙트 클레임 TX 브로드캐스트 완료 후 DB 동기화
+ * 프론트에서 TX 성공 후 호출 → Creator 분배 claimed 처리 + Voter 보상 claimed 처리
+ */
+router.post("/confirm-claim", async (req, res) => {
+  try {
+    const { walletAddress, items } = req.body as {
+      walletAddress: string;
+      items: {
+        contestId: number;
+        txSignature: string;
+        creatorDistributionIds: number[];
+        voterLamports: number;
+      }[];
+    };
+
+    if (!walletAddress || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: "walletAddress and items[] required" });
+    }
+
+    const results: { contestId: number; creatorClaimed: boolean; voterClaimed: boolean }[] = [];
+
+    for (const item of items) {
+      const { contestId, txSignature, creatorDistributionIds, voterLamports } = item;
+      let creatorClaimed = false;
+      let voterClaimed = false;
+
+      try {
+        if (creatorDistributionIds.length > 0) {
+          await storage.markCreatorDistributionsClaimed(creatorDistributionIds, txSignature);
+          creatorClaimed = true;
+        }
+      } catch (e: any) {
+        logger.warn(`[confirm-claim] creator DB update failed contest=${contestId}:`, e?.message);
+      }
+
+      try {
+        if (voterLamports > 0) {
+          await storage.claimVoterReward(contestId, walletAddress);
+          voterClaimed = true;
+        }
+      } catch (e: any) {
+        logger.warn(`[confirm-claim] voter DB update failed contest=${contestId}:`, e?.message);
+      }
+
+      results.push({ contestId, creatorClaimed, voterClaimed });
+      logger.info(`[confirm-claim] contest=${contestId} wallet=${walletAddress} tx=${txSignature} creator=${creatorClaimed} voter=${voterClaimed}`);
+    }
+
+    res.json({ success: true, results });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

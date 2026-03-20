@@ -124,7 +124,6 @@ export function getAllocationRecordPda(
 
 export interface ContractAllocation {
   wallet: string;
-  role: "Creator" | "Voter" | "Platform";
   lamports: number;
 }
 
@@ -283,7 +282,6 @@ function buildRecordAllocationInstruction(
   allocationRecordPda: PublicKey,
   contestId: number,
   recipientWallet: PublicKey,
-  role: "Creator" | "Voter" | "Platform",
   lamports: number,
 ): TransactionInstruction {
   // sha256("global:record_allocation")[0:8]
@@ -292,13 +290,11 @@ function buildRecordAllocationInstruction(
   const contestIdBuf = Buffer.alloc(8);
   contestIdBuf.writeBigUInt64LE(BigInt(contestId));
   const walletBuf = recipientWallet.toBuffer();
-  const roleMap: Record<string, number> = { Creator: 0, Voter: 1, Platform: 2 };
-  const roleBuf = Buffer.alloc(1);
-  roleBuf.writeUInt8(roleMap[role], 0);
   const lamportsBuf = Buffer.alloc(8);
   lamportsBuf.writeBigUInt64LE(BigInt(lamports), 0);
 
-  const data = Buffer.concat([discriminator, contestIdBuf, walletBuf, roleBuf, lamportsBuf]);
+  // role 파라미터 제거: disc(8) + contest_id(8) + wallet(32) + lamports(8)
+  const data = Buffer.concat([discriminator, contestIdBuf, walletBuf, lamportsBuf]);
 
   return new TransactionInstruction({
     programId,
@@ -328,7 +324,6 @@ export async function buildRecordAndClaimTransaction(
   contestId: number,
   claimerWallet: string,
   lamports: number,
-  role: "Creator" | "Voter" | "Platform",
 ): Promise<string | null> {
   if (!isContractEnabled()) return null;
 
@@ -349,10 +344,14 @@ export async function buildRecordAndClaimTransaction(
     const [allocationRecordPda] = getAllocationRecordPda(contestId, claimerPubkey, programId);
     const [escrowPoolPda] = getEscrowPoolPda(contestId, programId);
 
-    // 이미 on-chain record 존재하면 claim-only로 처리
+    // 이미 on-chain record 존재하면 claimed 여부 확인
+    // 하위호환: 구 포맷(role 포함, 59바이트) vs 신 포맷(58바이트)
     const accountInfo = await connection.getAccountInfo(allocationRecordPda);
     if (accountInfo && accountInfo.data.length > 0) {
-      const claimedOffset = 8 + 8 + 32 + 1 + 8;
+      const isOldFormat = accountInfo.data.length === 59;
+      const claimedOffset = isOldFormat
+        ? 8 + 8 + 32 + 1 + 8  // 구 포맷: disc+contest_id+wallet+role+lamports
+        : 8 + 8 + 32 + 8;     // 신 포맷: disc+contest_id+wallet+lamports
       if (accountInfo.data[claimedOffset] === 1) {
         logger.info(`[contract] Already claimed: contest=${contestId} wallet=${claimerWallet}`);
         return null;
@@ -370,7 +369,6 @@ export async function buildRecordAndClaimTransaction(
       allocationRecordPda,
       contestId,
       claimerPubkey,
-      role,
       lamports,
     );
 
@@ -405,7 +403,7 @@ export async function buildRecordAndClaimTransaction(
 
     // 직렬화 (유저 서명 아직 없음 → requireAllSignatures: false)
     const serialized = tx.serialize({ requireAllSignatures: false, verifySignatures: false });
-    logger.info(`[contract] buildRecordAndClaimTransaction built | contest=${contestId} | wallet=${claimerWallet} | lamports=${lamports} | role=${role}`);
+    logger.info(`[contract] buildRecordAndClaimTransaction built | contest=${contestId} | wallet=${claimerWallet} | lamports=${lamports}`);
     return serialized.toString("base64");
   } catch (err: any) {
     logger.error("[contract] buildRecordAndClaimTransaction failed:", err?.message || err);
@@ -439,8 +437,9 @@ export async function buildClaimTransaction(
       return null;
     }
 
-    // claimed 플래그 체크 (discriminator 8 + contest_id 8 + wallet 32 + role 1 + lamports 8)
-    const claimedOffset = 8 + 8 + 32 + 1 + 8;
+    // claimed 플래그 체크 (하위호환: 구 포맷 59바이트 vs 신 포맷 58바이트)
+    const isOldFmt = accountInfo.data.length === 59;
+    const claimedOffset = isOldFmt ? 8 + 8 + 32 + 1 + 8 : 8 + 8 + 32 + 8;
     if (accountInfo.data[claimedOffset] === 1) {
       logger.info(`[contract] Already claimed: contest=${contestId} wallet=${claimerWallet}`);
       return null;
@@ -496,10 +495,12 @@ export async function getOnChainClaimable(
     if (!accountInfo || accountInfo.data.length === 0) return null;
 
     const data = accountInfo.data;
-    // layout: 8(disc) + 8(contest_id) + 32(wallet) + 1(role) + 8(lamports) + 1(claimed) + 1(bump)
-    const lamportsBuf = data.slice(8 + 8 + 32 + 1, 8 + 8 + 32 + 1 + 8);
+    // 하위호환: 구 포맷(59바이트, role 포함) vs 신 포맷(58바이트, role 없음)
+    const isOld = data.length === 59;
+    const lamportsStart = isOld ? 8 + 8 + 32 + 1 : 8 + 8 + 32;
+    const lamportsBuf = data.slice(lamportsStart, lamportsStart + 8);
     const lamports = Number(lamportsBuf.readBigUInt64LE());
-    const claimed = data[8 + 8 + 32 + 1 + 8] === 1;
+    const claimed = data[lamportsStart + 8] === 1;
 
     return { lamports, claimed };
   } catch {

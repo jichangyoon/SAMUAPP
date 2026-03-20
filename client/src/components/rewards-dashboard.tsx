@@ -331,14 +331,18 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
     if (!walletAddress || isClaiming) return;
     setIsClaiming(true);
     try {
-      // 컨트랙트 활성화 여부 확인
       const prepareRes = await fetch(`/api/rewards/prepare-claim?wallet=${walletAddress}`);
       const prepareData = await prepareRes.json();
 
-      if (prepareData.contractEnabled && prepareData.transactions?.length > 0) {
+      if (prepareData.contractEnabled) {
+        if (!prepareData.transactions?.length) {
+          toast({ title: "Nothing to claim", description: "No claimable rewards found." });
+          return;
+        }
+
         // Phase 2: 유저가 직접 서명 (가스비 유저 부담)
         let totalClaimed = 0;
-        const sigs: string[] = [];
+        const confirmItems: { contestId: number; txSignature: string; creatorDistributionIds: number[]; voterLamports: number }[] = [];
 
         for (const item of prepareData.transactions) {
           const tx = Transaction.from(Buffer.from(item.transaction, "base64"));
@@ -346,16 +350,28 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
           const signedTx = await signTransaction({ transaction: tx, connection: SOL_CONNECTION });
           const sig = await SOL_CONNECTION.sendRawTransaction(signedTx.serialize());
           await SOL_CONNECTION.confirmTransaction(sig, "confirmed");
-          sigs.push(sig);
           totalClaimed += item.solAmount;
+          confirmItems.push({
+            contestId: item.contestId,
+            txSignature: sig,
+            creatorDistributionIds: item.creatorDistributionIds ?? [],
+            voterLamports: item.voterLamports ?? 0,
+          });
         }
+
+        // TX 성공 후 DB 동기화
+        await fetch("/api/rewards/confirm-claim", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ walletAddress, items: confirmItems }),
+        });
 
         toast({
           title: "Claimed!",
-          description: `${totalClaimed.toFixed(4)} SOL received. ${sigs.length > 1 ? `${sigs.length} TXs` : `TX: ${sigs[0]?.slice(0, 8)}...`}`,
+          description: `${totalClaimed.toFixed(4)} SOL received. ${confirmItems.length > 1 ? `${confirmItems.length} TXs` : `TX: ${confirmItems[0]?.txSignature?.slice(0, 8)}...`}`,
         });
       } else {
-        // Legacy: 서버가 escrow에서 전송
+        // Legacy: 컨트랙트 비활성화 시 서버가 escrow에서 전송
         const res = await fetch("/api/rewards/claim-all", {
           method: "POST",
           headers: { "Content-Type": "application/json" },

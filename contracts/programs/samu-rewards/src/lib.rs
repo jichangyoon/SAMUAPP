@@ -131,7 +131,6 @@ pub mod samu_rewards {
         ctx: Context<RecordAllocation>,
         contest_id: u64,
         recipient_wallet: Pubkey,
-        role: Role,
         lamports: u64,
     ) -> Result<()> {
         require!(lamports > 0, ErrorCode::InvalidAmount);
@@ -144,18 +143,12 @@ pub mod samu_rewards {
 
         record.contest_id = contest_id;
         record.wallet = recipient_wallet;
-        record.role = role.clone();
         record.lamports = lamports;
         record.bump = ctx.bumps.allocation_record;
 
         emit!(AllocationRecorded {
             contest_id,
             wallet: recipient_wallet,
-            role_index: match role {
-                Role::Creator => 0u8,
-                Role::Voter => 1u8,
-                Role::Platform => 2u8,
-            },
             lamports,
         });
 
@@ -211,15 +204,6 @@ fn within_tolerance(actual: u64, expected: u64, tolerance: u64) -> bool {
     }
 }
 
-// ─── Data Structures ─────────────────────────────────────────────────────────
-
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq, InitSpace)]
-pub enum Role {
-    Creator,
-    Voter,
-    Platform,
-}
-
 // ─── Accounts ─────────────────────────────────────────────────────────────────
 
 #[account]
@@ -247,7 +231,6 @@ pub struct EscrowPool {
 pub struct AllocationRecord {
     pub contest_id: u64,
     pub wallet: Pubkey,
-    pub role: Role,
     pub lamports: u64,
     pub claimed: bool,
     pub bump: u8,
@@ -413,7 +396,6 @@ pub struct FundsDeposited {
 pub struct AllocationRecorded {
     pub contest_id: u64,
     pub wallet: Pubkey,
-    pub role_index: u8,
     pub lamports: u64,
 }
 
