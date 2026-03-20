@@ -18,8 +18,8 @@ The platform operates on a pipeline: Meme Contest → Goods (Printful) → Ecosy
 - **Escrow, Order & Accounting:** SOL payments for merchandise are split into cost price (to Treasury) and profit (to `escrow_pool` PDA in contract mode, or Escrow wallet otherwise). Profits are distributed as 45% to Creators, 40% to Voters, and 15% to the Platform.
 - **Printful Webhook:** Integrates with Printful v2 webhooks for automated order status updates and profit distribution upon `shipment_delivered`, with a 30-day timeout scheduler.
 - **Reward System:**
-    - **Creator Rewards (45%):** Based on vote share per contest.
-    - **Voter Rewards (40%):** Managed via a DeFi Reward Per Share model in a `voterRewardPool`.
+    - **Creator Rewards (45%):** Based on vote share per contest. Tracked via per-order, per-creator rows (`creator_reward_distributions`).
+    - **Voter Rewards (40%):** Currently RPS model (`voterRewardPool`). Pre-Phase 3 migration planned → Direct Allocation (per-order rows, same as Creator) for unified tracking and explicit audit trail.
     - **Claiming:** In contract mode, users claim rewards via a single transaction combining `record_allocation` and `claim`, pre-signed by the admin for amount guarantee, with the user covering gas fees.
 - **SAMU Map:** Visualizes order locations globally using `react-leaflet` and CartoDB, color-coded by user profits, including routing to Printful fulfillment centers.
 - **Order Geocoding:** Uses OpenStreetMap Nominatim API for precise latitude/longitude based on postal code and country.
