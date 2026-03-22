@@ -3,6 +3,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { contestScheduler } from "./contest-scheduler";
 import { startDeliveryTimeoutScheduler } from "./delivery-timeout-scheduler";
+import { startPrintfulSyncScheduler } from "./printful-sync-scheduler";
 
 const app = express();
 
@@ -66,6 +67,9 @@ app.use((req, res, next) => {
 
   // Start delivery timeout scheduler (auto-distributes orders locked 30+ days)
   startDeliveryTimeoutScheduler();
+
+  // Start Printful sync scheduler (polls every 6h as webhook fallback)
+  startPrintfulSyncScheduler();
 
   // Serve static files from public directory in all environments
   app.use(express.static('public'));
