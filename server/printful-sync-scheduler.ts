@@ -1,8 +1,9 @@
 import { storage } from "./storage";
 import { distributeEscrowProfit } from "./routes/goods";
 import { logger } from "./utils/logger";
+import { config } from "./config";
 
-const STORE_ID = "17717241";
+const STORE_ID = config.PRINTFUL.STORE_ID;
 const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 const FINALIZED_STATUSES = new Set(["delivered", "returned", "canceled", "failed"]);
@@ -16,6 +17,11 @@ export interface SyncResult {
 }
 
 export async function syncPrintfulOrders(): Promise<{ synced: number; distributed: number; results: SyncResult[] }> {
+  if (!process.env.PRINTFUL_API_KEY) {
+    logger.warn("[PrintfulSync] PRINTFUL_API_KEY not set — skipping sync");
+    return { synced: 0, distributed: 0, results: [] };
+  }
+
   const orders = await storage.getAllOrders();
   const activeOrders = orders.filter(o => o.printfulOrderId && !FINALIZED_STATUSES.has(o.status));
 
