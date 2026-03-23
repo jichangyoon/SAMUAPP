@@ -1,4 +1,4 @@
-# SAMU 해커톤 데모 대본 (5분)
+# SAMU Protocol 해커톤 데모 대본 (5분)
 > 슬라이드 덱: `/hackathon-deck.html` | 총 10장 | ← → 키 또는 버튼으로 넘기기
 
 ---
