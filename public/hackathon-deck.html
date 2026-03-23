@@ -3,180 +3,118 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SAMU Protocol | Solana Hackathon</title>
+<title>SAMU Protocol | Meme IP Infrastructure on Solana</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --p: #9945FF; --g: #14F195; --b: #00C2FF;
-  --bg: #07070f; --s1: #0f0f1e; --s2: #161628;
+  --p: #9945FF; --g: #14F195; --b: #00C2FF; --o: #FF6B35;
+  --bg: #07070f; --s1: #0f0f1e; --s2: #161628; --s3: #1e1e36;
   --tx: #f0f0ff; --mu: #7070a0;
 }
 html, body { width: 100%; height: 100%; overflow: hidden; }
 body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--tx); }
 
-/* ── DECK & SLIDES ── */
 .deck { width: 100vw; height: 100vh; position: relative; }
 .slide {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
   justify-content: center; align-items: center;
-  padding: 56px 72px;
+  padding: 52px 72px;
   opacity: 0; pointer-events: none;
-  transition: opacity 0.45s ease;
+  transition: opacity 0.4s ease;
   text-align: center;
 }
 .slide.active { opacity: 1; pointer-events: auto; }
 
 /* ── CONTROLS ── */
 .progress { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg,var(--p),var(--g)); transition: width .4s; z-index: 99; }
-.ctrl {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-  display: flex; align-items: center; gap: 12px; z-index: 99;
-}
-.ctrl button {
-  background: rgba(153,69,255,.2); border: 1px solid rgba(153,69,255,.5);
-  color: var(--tx); padding: 7px 20px; border-radius: 999px;
-  cursor: pointer; font-size: 13px; transition: background .2s;
-}
+.ctrl { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; z-index: 99; }
+.ctrl button { background: rgba(153,69,255,.2); border: 1px solid rgba(153,69,255,.5); color: var(--tx); padding: 7px 22px; border-radius: 999px; cursor: pointer; font-size: 13px; transition: background .2s; }
 .ctrl button:hover { background: rgba(153,69,255,.45); }
 .ctrl .ctr { font-size: 12px; color: var(--mu); min-width: 44px; text-align: center; }
-.slide-num { position: fixed; top: 16px; right: 20px; font-size: 12px; color: var(--mu); z-index: 99; }
+.slide-num { position: fixed; top: 14px; right: 18px; font-size: 12px; color: var(--mu); z-index: 99; }
 
 /* ── TYPE ── */
-.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 3.5px; text-transform: uppercase; color: var(--g); margin-bottom: 18px; }
-h1 { font-size: clamp(38px, 5.5vw, 78px); font-weight: 900; line-height: 1.05; }
-h2 { font-size: clamp(26px, 3.5vw, 52px); font-weight: 800; line-height: 1.15; }
-p.sub { font-size: clamp(15px, 1.7vw, 21px); color: var(--mu); line-height: 1.7; max-width: 760px; margin-top: 16px; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 3.5px; text-transform: uppercase; color: var(--g); margin-bottom: 16px; }
+h1 { font-size: clamp(36px, 5.5vw, 76px); font-weight: 900; line-height: 1.05; }
+h2 { font-size: clamp(24px, 3.5vw, 50px); font-weight: 800; line-height: 1.15; }
+p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75; max-width: 740px; margin-top: 14px; }
 .grad { background: linear-gradient(135deg,var(--p),var(--g)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.gp  { color: var(--p); }
-.gg  { color: var(--g); }
-.gb  { color: var(--b); }
-
-/* ── CARDS ── */
-.cards { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin-top: 36px; }
-.card {
-  background: var(--s2); border: 1px solid rgba(153,69,255,.18);
-  border-radius: 18px; padding: 26px 28px; max-width: 280px; text-align: left;
-  transition: border-color .2s;
-}
-.card:hover { border-color: rgba(153,69,255,.45); }
-.card .ic { font-size: 30px; margin-bottom: 12px; }
-.card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
-.card p  { font-size: 14px; color: var(--mu); line-height: 1.6; }
-
-/* ── FLOW ── */
-.flow { display: flex; align-items: center; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 36px; }
-.fstep {
-  background: var(--s2); border: 1px solid rgba(20,241,149,.22);
-  border-radius: 12px; padding: 14px 22px;
-  font-weight: 700; font-size: clamp(13px,1.3vw,17px);
-  line-height: 1.3;
-}
-.fstep small { display: block; font-weight: 400; font-size: 11px; color: var(--mu); margin-top: 3px; }
-.farr { color: var(--g); font-size: 20px; flex-shrink: 0; }
-
-/* ── TRACTION ── */
-.traction { display: flex; gap: 32px; justify-content: center; flex-wrap: wrap; margin-top: 40px; }
-.tr {
-  background: var(--s2); border: 1px solid rgba(153,69,255,.2);
-  border-radius: 18px; padding: 28px 36px; min-width: 160px;
-}
-.tr .num { font-size: clamp(32px, 4vw, 56px); font-weight: 900; line-height: 1; }
-.tr .lbl { font-size: 13px; color: var(--mu); margin-top: 6px; }
-
-/* ── SPLIT ── */
-.split { display: flex; gap: 48px; align-items: flex-start; justify-content: center; flex-wrap: wrap; margin-top: 36px; }
-.col { flex: 1; min-width: 240px; max-width: 360px; text-align: left; }
-.col h3 { font-size: 18px; font-weight: 700; color: var(--g); margin-bottom: 14px; }
-.col ul { list-style: none; }
-.col li { padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.05); font-size: 15px; color: var(--mu); }
-.col li::before { content: '▸ '; color: var(--p); }
-
-/* ── MARKET ── */
-.mkt { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 36px; }
-.mkt-item {
-  background: var(--s2); border-radius: 16px; padding: 24px 30px;
-  border-top: 3px solid var(--p); min-width: 200px; text-align: center;
-}
-.mkt-item .sz { font-size: clamp(24px,3vw,40px); font-weight: 900; }
-.mkt-item .nm { font-size: 13px; color: var(--mu); margin-top: 6px; }
-
-/* ── WHY SOLANA ── */
-.why-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 32px; max-width: 680px; width: 100%; }
-.why-item {
-  background: var(--s2);
-  border-left: 3px solid var(--g);
-  border-radius: 0 14px 14px 0;
-  padding: 16px 20px; text-align: left;
-}
-.why-item .wt { font-size: 15px; font-weight: 700; color: var(--tx); margin-bottom: 4px; }
-.why-item .wd { font-size: 13px; color: var(--mu); }
-
-/* ── TECH ── */
-.tech-wrap { display: flex; gap: 20px; flex-direction: column; align-items: center; margin-top: 28px; max-width: 780px; width: 100%; }
-.tech-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; width: 100%; }
-.tech-badge {
-  background: var(--s2); border: 1px solid rgba(153,69,255,.25);
-  border-radius: 10px; padding: 12px 20px; font-size: 14px; font-weight: 600;
-  display: flex; align-items: center; gap: 8px;
-}
-.tech-badge .dot { width: 8px; height: 8px; border-radius: 50%; }
-
-/* ── PIE CHART ── */
-.pie-wrap { display: flex; align-items: center; gap: 48px; justify-content: center; flex-wrap: wrap; margin-top: 36px; }
-.pie-legend { display: flex; flex-direction: column; gap: 14px; }
-.legend-item { display: flex; align-items: center; gap: 12px; text-align: left; }
-.legend-dot { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
-.legend-pct { font-size: 22px; font-weight: 900; }
-.legend-lbl { font-size: 13px; color: var(--mu); margin-top: 1px; }
-
-/* ── TIMELINE ── */
-.tl { display: flex; justify-content: center; margin-top: 44px; max-width: 920px; width: 100%; }
-.tl-item { flex: 1; text-align: center; position: relative; }
-.tl-item::after {
-  content: ''; position: absolute; top: 17px; left: 50%; width: 100%;
-  height: 2px; background: rgba(153,69,255,.25); z-index: 0;
-}
-.tl-item:last-child::after { display: none; }
-.tl-dot {
-  width: 36px; height: 36px; border-radius: 50%;
-  margin: 0 auto 14px; display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 800; position: relative; z-index: 1;
-}
-.done { background: var(--g); color: #000; }
-.next { background: var(--p); color: #fff; }
-.fut  { background: var(--s2); border: 2px solid var(--mu); color: var(--mu); }
-.tl-ph { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--mu); margin-bottom: 4px; }
-.tl-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
-.tl-desc { font-size: 12px; color: var(--mu); padding: 0 6px; line-height: 1.5; }
+.gp { color: var(--p); } .gg { color: var(--g); } .gb { color: var(--b); } .go { color: var(--o); }
 
 /* ── BADGE ── */
-.badge {
-  display: inline-block;
-  background: rgba(20,241,149,.12); border: 1px solid var(--g);
-  color: var(--g); border-radius: 999px; padding: 5px 16px;
-  font-size: 12px; font-weight: 700; letter-spacing: 1px;
-}
+.badge { display: inline-block; background: rgba(20,241,149,.12); border: 1px solid var(--g); color: var(--g); border-radius: 999px; padding: 5px 18px; font-size: 12px; font-weight: 700; letter-spacing: 1px; }
+.badge-p { background: rgba(153,69,255,.15); border-color: var(--p); color: var(--p); }
+
+/* ── CARDS ── */
+.cards { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
+.card { background: var(--s2); border: 1px solid rgba(153,69,255,.18); border-radius: 18px; padding: 24px 26px; max-width: 270px; text-align: left; }
+.card .ic { font-size: 28px; margin-bottom: 10px; }
+.card h3 { font-size: 16px; font-weight: 700; margin-bottom: 7px; }
+.card p { font-size: 13px; color: var(--mu); line-height: 1.65; }
+
+/* ── FLOW ── */
+.flow { display: flex; align-items: center; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
+.fstep { background: var(--s2); border: 1px solid rgba(20,241,149,.22); border-radius: 12px; padding: 13px 20px; font-weight: 700; font-size: clamp(12px,1.2vw,16px); line-height: 1.3; }
+.fstep small { display: block; font-weight: 400; font-size: 11px; color: var(--mu); margin-top: 3px; }
+.farr { color: var(--g); font-size: 18px; flex-shrink: 0; }
+
+/* ── TRACTION ── */
+.traction { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; margin-top: 36px; }
+.tr { background: var(--s2); border: 1px solid rgba(153,69,255,.2); border-radius: 18px; padding: 26px 34px; min-width: 150px; }
+.tr .num { font-size: clamp(30px, 3.8vw, 52px); font-weight: 900; line-height: 1; }
+.tr .lbl { font-size: 13px; color: var(--mu); margin-top: 6px; }
+
+/* ── COMMUNITY LOGOS (text-based) ── */
+.comm-grid { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
+.comm-item { background: var(--s2); border-radius: 14px; padding: 18px 24px; text-align: center; border: 1px solid rgba(255,255,255,.08); min-width: 140px; }
+.comm-token { font-size: 22px; font-weight: 900; margin-bottom: 6px; }
+.comm-desc { font-size: 12px; color: var(--mu); line-height: 1.5; }
+.comm-status { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; margin-top: 8px; }
+
+/* ── MARKET ── */
+.mkt { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
+.mkt-item { background: var(--s2); border-radius: 16px; padding: 22px 28px; border-top: 3px solid var(--p); min-width: 190px; text-align: center; }
+.mkt-item .sz { font-size: clamp(22px,2.8vw,38px); font-weight: 900; }
+.mkt-item .nm { font-size: 12px; color: var(--mu); margin-top: 6px; line-height: 1.5; }
+
+/* ── WHY SOLANA ── */
+.why-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 28px; max-width: 660px; width: 100%; }
+.why-item { background: var(--s2); border-left: 3px solid var(--g); border-radius: 0 14px 14px 0; padding: 14px 18px; text-align: left; }
+.why-item .wt { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.why-item .wd { font-size: 12px; color: var(--mu); }
+
+/* ── PIE CHART ── */
+.pie-wrap { display: flex; align-items: center; gap: 44px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
+.pie-legend { display: flex; flex-direction: column; gap: 14px; }
+.legend-item { display: flex; align-items: center; gap: 12px; text-align: left; }
+.legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+.legend-pct { font-size: 20px; font-weight: 900; }
+
+/* ── TIMELINE ── */
+.tl { display: flex; justify-content: center; margin-top: 40px; max-width: 900px; width: 100%; }
+.tl-item { flex: 1; text-align: center; position: relative; }
+.tl-item::after { content: ''; position: absolute; top: 17px; left: 50%; width: 100%; height: 2px; background: rgba(153,69,255,.2); z-index: 0; }
+.tl-item:last-child::after { display: none; }
+.tl-dot { width: 36px; height: 36px; border-radius: 50%; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; position: relative; z-index: 1; }
+.done { background: var(--g); color: #000; } .next { background: var(--p); color: #fff; } .fut { background: var(--s2); border: 2px solid var(--mu); color: var(--mu); }
+.tl-ph { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--mu); margin-bottom: 4px; }
+.tl-title { font-size: 14px; font-weight: 700; margin-bottom: 5px; }
+.tl-desc { font-size: 11px; color: var(--mu); padding: 0 6px; line-height: 1.5; }
+
+/* ── PROTOCOL DIAGRAM ── */
+.proto { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 28px; max-width: 760px; width: 100%; }
+.proto-layer { display: flex; align-items: center; gap: 10px; width: 100%; }
+.proto-label { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--mu); width: 90px; text-align: right; flex-shrink: 0; }
+.proto-items { display: flex; gap: 10px; flex-wrap: wrap; flex: 1; }
+.proto-item { background: var(--s2); border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 600; border: 1px solid rgba(255,255,255,.08); }
+.proto-item.green { border-color: rgba(20,241,149,.3); color: var(--g); }
+.proto-item.purple { border-color: rgba(153,69,255,.3); color: var(--p); }
+.proto-item.blue { border-color: rgba(0,194,255,.3); color: var(--b); }
 
 /* ── SLIDE BACKGROUNDS ── */
-#s1 { background: radial-gradient(ellipse 60% 80% at 20% 50%, rgba(153,69,255,.14) 0%, transparent 70%), radial-gradient(ellipse 50% 70% at 80% 50%, rgba(20,241,149,.07) 0%, transparent 70%), var(--bg); }
-#s10 { background: radial-gradient(ellipse at center, rgba(153,69,255,.1) 0%, transparent 65%), var(--bg); }
-
-/* ── DEMO FLOW VISUAL ── */
-.demo-flow { display: flex; flex-direction: column; gap: 10px; max-width: 720px; width: 100%; margin-top: 28px; }
-.demo-row { display: flex; align-items: stretch; gap: 10px; }
-.demo-actor {
-  background: rgba(153,69,255,.15); border: 1px solid rgba(153,69,255,.3);
-  border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 700;
-  min-width: 100px; display: flex; align-items: center; justify-content: center;
-  color: var(--p);
-}
-.demo-steps { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.demo-step {
-  background: var(--s2); border-radius: 8px; padding: 8px 14px;
-  font-size: 13px; font-weight: 600; color: var(--tx);
-}
-.demo-arrow { color: var(--g); font-size: 14px; }
+#s1 { background: radial-gradient(ellipse 60% 80% at 15% 50%, rgba(153,69,255,.12) 0%, transparent 70%), radial-gradient(ellipse 50% 70% at 85% 50%, rgba(20,241,149,.06) 0%, transparent 70%), var(--bg); }
+#s10 { background: radial-gradient(ellipse at center, rgba(153,69,255,.08) 0%, transparent 65%), var(--bg); }
 </style>
 </head>
 <body>
@@ -186,182 +124,210 @@ p.sub { font-size: clamp(15px, 1.7vw, 21px); color: var(--mu); line-height: 1.7;
 
 <div class="deck">
 
-<!-- ─────────────── S1 HOOK ─────────────── -->
+<!-- ── S1 HOOK ── -->
 <div class="slide active" id="s1">
   <div class="eyebrow">Solana Hackathon 2025</div>
-  <h1>밈이 <span class="grad">IP</span>가<br>된다면?</h1>
-  <p class="sub">크리에이터와 커뮤니티가 함께 소유하는<br>온체인 밈 IP 프로토콜</p>
-  <div style="margin-top:44px; display:flex; align-items:center; gap:20px; justify-content:center;">
-    <div style="font-size:40px; font-weight:900; letter-spacing:-2px; background:linear-gradient(135deg,#fff,#9945FF); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">SAMU Protocol</div>
-    <div style="color:var(--mu); font-size:18px;">×</div>
-    <div style="font-size:16px; color:var(--g); font-weight:700; letter-spacing:2px;">SOLANA</div>
+  <h1>밈코인 커뮤니티에게<br><span class="grad">IP 인프라</span>를</h1>
+  <p class="sub">SAMU Protocol은 어떤 밈코인 커뮤니티든<br>자신들의 토큰으로 밈 IP를 만들고, 굿즈를 팔고, 수익을 분배할 수 있는 인프라입니다</p>
+  <div style="margin-top:40px; display:flex; align-items:center; gap:16px; justify-content:center; flex-wrap:wrap;">
+    <div style="font-size:38px; font-weight:900; letter-spacing:-1px; background:linear-gradient(135deg,#fff,#9945FF); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">SAMU Protocol</div>
+    <div style="color:var(--mu);">×</div>
+    <div style="font-size:15px; color:var(--g); font-weight:700; letter-spacing:2px;">SOLANA</div>
   </div>
-  <div class="badge" style="margin-top:32px;">🔴 MAINNET LIVE</div>
+  <div style="margin-top:28px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+    <span class="badge">🔴 MAINNET LIVE</span>
+    <span class="badge badge-p">⚓ Anchor Smart Contract</span>
+  </div>
 </div>
 
-<!-- ─────────────── S2 PROBLEM ─────────────── -->
+<!-- ── S2 PROBLEM ── -->
 <div class="slide" id="s2">
   <div class="eyebrow">Problem</div>
-  <h2>밈은 수십억 번 공유되는데<br><span class="gp">크리에이터는 왜 0원인가?</span></h2>
+  <h2>밈코인은 커뮤니티 에너지로 만들어지는데<br><span class="gp">그 가치가 어디로 가는지 아무도 모른다</span></h2>
   <div class="cards">
     <div class="card">
-      <div class="ic">😔</div>
-      <h3>크리에이터</h3>
-      <p>밈이 브랜드화되고 상품이 되어도 원작자는 IP를 증명할 수도, 수익을 받을 수도 없다</p>
+      <div class="ic">🎨</div>
+      <h3>밈 크리에이터</h3>
+      <p>내 밈이 바이럴돼서 토큰 가격을 올려도, 나에게 돌아오는 건 없다. IP를 증명할 방법도 없다.</p>
     </div>
     <div class="card">
       <div class="ic">🗳️</div>
       <h3>커뮤니티 투표자</h3>
-      <p>좋은 밈을 발굴하는 기여를 해도 보상 구조가 없다. 참여할 이유가 없다</p>
+      <p>좋은 밈을 발굴하고 커뮤니티를 만들어도 보상 구조가 없다. 참여할 이유가 약하다.</p>
     </div>
     <div class="card">
       <div class="ic">🏭</div>
-      <h3>플랫폼 독점</h3>
-      <p>콘텐츠 가치를 플랫폼이 독식한다. 크리에이터 경제의 구조적 실패</p>
+      <h3>프로젝트 팀</h3>
+      <p>밈을 IP로, 굿즈로 활용하고 싶어도 파이프라인이 없다. 매번 수동으로 처리해야 한다.</p>
     </div>
   </div>
-  <p class="sub" style="margin-top:32px;">밈은 인터넷에서 가장 강력한 문화 자산인데,<br>그 가치는 누구도 소유하지 못한다.</p>
+  <p class="sub" style="margin-top:24px;">밈코인 커뮤니티는 가장 강력한 문화 자산을 가지고 있지만,<br>그걸 가치로 전환하는 <strong style="color:var(--tx)">인프라가 없다</strong>.</p>
 </div>
 
-<!-- ─────────────── S3 SOLUTION ─────────────── -->
+<!-- ── S3 SOLUTION ── -->
 <div class="slide" id="s3">
   <div class="eyebrow">Solution</div>
-  <h2>SAMU: <span class="grad">Meme → IP → Reward</span></h2>
-  <p class="sub">밈 콘테스트부터 굿즈 수익 분배까지 — 전 과정이 Solana 온체인</p>
-  <div class="flow">
-    <div class="fstep">🎨 밈 업로드<small>누구나 참여</small></div>
+  <h2>SAMU Protocol:<br><span class="grad">밈 → IP → 굿즈 → 온체인 보상</span></h2>
+  <p class="sub">각 커뮤니티의 토큰으로 투표하고, 굿즈 수익이 자동으로 분배된다</p>
+  <div class="flow" style="margin-top:28px;">
+    <div class="fstep">🎨 밈 콘테스트<small>커뮤니티 토큰 투표</small></div>
     <div class="farr">→</div>
-    <div class="fstep">🗳️ SAMU 투표<small>온체인 SPL</small></div>
+    <div class="fstep">🏆 IP 아카이브<small>온체인 기록</small></div>
     <div class="farr">→</div>
-    <div class="fstep">🏆 아카이브<small>IP 확정</small></div>
+    <div class="fstep">🛍️ 굿즈 자동화<small>Printful 연동</small></div>
     <div class="farr">→</div>
-    <div class="fstep">🛍️ 굿즈 판매<small>Printful 자동화</small></div>
-    <div class="farr">→</div>
-    <div class="fstep">💰 SOL 보상<small>Anchor 자동분배</small></div>
+    <div class="fstep">💰 SOL 분배<small>Anchor 스마트 컨트랙트</small></div>
   </div>
-  <div style="margin-top:36px; background:var(--s2); border-radius:16px; padding:22px 40px; display:inline-flex; gap:36px; align-items:center;">
-    <div><span class="gg" style="font-size:26px; font-weight:900;">45%</span><div style="font-size:12px; color:var(--mu); margin-top:3px;">Creator</div></div>
-    <div style="width:1px; height:40px; background:rgba(255,255,255,.08);"></div>
-    <div><span class="gp" style="font-size:26px; font-weight:900;">40%</span><div style="font-size:12px; color:var(--mu); margin-top:3px;">Voter</div></div>
-    <div style="width:1px; height:40px; background:rgba(255,255,255,.08);"></div>
-    <div><span class="gb" style="font-size:26px; font-weight:900;">15%</span><div style="font-size:12px; color:var(--mu); margin-top:3px;">Platform</div></div>
+  <div style="margin-top:28px; background:var(--s2); border-radius:16px; padding:20px 36px; display:inline-flex; gap:32px; align-items:center; border:1px solid rgba(255,255,255,.07);">
+    <div><span class="gg" style="font-size:24px; font-weight:900;">45%</span><div style="font-size:12px; color:var(--mu); margin-top:3px;">Creator</div></div>
+    <div style="width:1px; height:36px; background:rgba(255,255,255,.08);"></div>
+    <div><span class="gp" style="font-size:24px; font-weight:900;">40%</span><div style="font-size:12px; color:var(--mu); margin-top:3px;">Voter</div></div>
+    <div style="width:1px; height:36px; background:rgba(255,255,255,.08);"></div>
+    <div><span class="gb" style="font-size:24px; font-weight:900;">15%</span><div style="font-size:12px; color:var(--mu); margin-top:3px;">Platform</div></div>
   </div>
+  <p style="margin-top:16px; font-size:13px; color:var(--mu);">모든 분배는 Anchor 스마트 컨트랙트가 자동 실행 — 신뢰 불필요</p>
 </div>
 
-<!-- ─────────────── S4 TRACTION ─────────────── -->
+<!-- ── S4 ANY COMMUNITY ── -->
 <div class="slide" id="s4">
-  <div class="eyebrow">Traction — Mainnet Live</div>
-  <h2>이미 <span class="grad">실사용자가 있습니다</span></h2>
-  <div class="traction">
-    <div class="tr">
-      <div class="num gg" id="cnt-users">0</div>
-      <div class="lbl">지갑 가입자</div>
+  <div class="eyebrow">Protocol Design</div>
+  <h2>SAMU만의 플랫폼이 아니다<br><span class="grad">어떤 밈코인이든 온보딩</span></h2>
+  <p class="sub">프로토콜은 토큰-애그노스틱이다. 각 커뮤니티가 자신의 토큰으로 콘테스트를 운영한다.</p>
+  <div class="comm-grid">
+    <div class="comm-item" style="border-color:rgba(20,241,149,.3);">
+      <div class="comm-token gg">SAMU</div>
+      <div class="comm-desc">첫 번째 커뮤니티<br>콘테스트 운영 중</div>
+      <div class="comm-status gg">✅ LIVE</div>
     </div>
-    <div class="tr">
-      <div class="num gp" id="cnt-memes">0</div>
-      <div class="lbl">업로드된 밈</div>
+    <div class="comm-item" style="border-color:rgba(255,107,53,.3);">
+      <div class="comm-token go">BONK</div>
+      <div class="comm-desc">Solana 대표 밈코인<br>커뮤니티 온보딩 가능</div>
+      <div class="comm-status go">→ NEXT</div>
     </div>
-    <div class="tr">
-      <div class="num gb" id="cnt-samu">0</div>
-      <div class="lbl">총 투표 SAMU</div>
+    <div class="comm-item" style="border-color:rgba(0,194,255,.3);">
+      <div class="comm-token gb">WIF</div>
+      <div class="comm-desc">글로벌 밈코인<br>굿즈 파이프라인 연결</div>
+      <div class="comm-status gb">→ NEXT</div>
     </div>
-    <div class="tr">
-      <div class="num" style="color:#FFD700;" id="cnt-sol">0</div>
-      <div class="lbl">배포된 SOL</div>
+    <div class="comm-item" style="border-color:rgba(153,69,255,.3);">
+      <div class="comm-token gp">ANY</div>
+      <div class="comm-desc">SPL 토큰이면<br>퍼미션리스 온보딩</div>
+      <div class="comm-status gp">PHASE 4</div>
     </div>
   </div>
-  <p class="sub" style="margin-top:32px;">MVP 런칭 후 실제 주문, 배송, 온체인 수익분배까지<br>전체 파이프라인이 메인넷에서 검증됐습니다.</p>
+  <p class="sub" style="margin-top:20px;">각 커뮤니티는 자신의 SPL 토큰으로 투표권을 행사하고,<br>굿즈 수익은 해당 커뮤니티 크리에이터 · 투표자에게 분배된다.</p>
 </div>
 
-<!-- ─────────────── S5 DEMO ─────────────── -->
+<!-- ── S5 TRACTION ── -->
 <div class="slide" id="s5">
-  <div class="eyebrow">Live Demo</div>
-  <h2>실제로 어떻게 동작하나요?</h2>
-  <div class="demo-flow">
-    <div class="demo-row">
-      <div class="demo-actor">User</div>
-      <div class="demo-steps">
-        <div class="demo-step">🎨 밈 업로드</div>
-        <div class="demo-arrow">→</div>
-        <div class="demo-step">🗳️ SAMU 전송 (온체인 투표)</div>
-        <div class="demo-arrow">→</div>
-        <div class="demo-step">📦 SOL로 굿즈 결제</div>
+  <div class="eyebrow">Traction — Mainnet Verified</div>
+  <h2>SAMU 커뮤니티로<br><span class="grad">전체 파이프라인 검증 완료</span></h2>
+  <div class="traction">
+    <div class="tr"><div class="num gg" id="cnt-users">0</div><div class="lbl">지갑 가입자</div></div>
+    <div class="tr"><div class="num gp" id="cnt-memes">0</div><div class="lbl">업로드된 밈</div></div>
+    <div class="tr"><div class="num gb" id="cnt-samu">0</div><div class="lbl">총 투표 SAMU</div></div>
+    <div class="tr"><div class="num" style="color:#FFD700;" id="cnt-sol">0</div><div class="lbl">배포된 SOL</div></div>
+  </div>
+  <p class="sub" style="margin-top:24px;">밈 업로드 → 투표 → 굿즈 주문 → 배송 → 온체인 수익분배까지<br>엔드-투-엔드 파이프라인이 <strong style="color:var(--g)">Solana 메인넷에서 실제로 작동</strong>했습니다.</p>
+  <div class="badge" style="margin-top:20px;">Program ID: GYfzt1mzWNMurBEej4557YbKmceTWwW3L6attC7pAmWS</div>
+</div>
+
+<!-- ── S6 HOW IT WORKS (TECH) ── -->
+<div class="slide" id="s6">
+  <div class="eyebrow">How It Works</div>
+  <h2>프로토콜 <span class="grad">아키텍처</span></h2>
+  <div class="proto">
+    <div class="proto-layer">
+      <div class="proto-label">커뮤니티</div>
+      <div class="proto-items">
+        <div class="proto-item green">SAMU 커뮤니티</div>
+        <div class="proto-item" style="border-style:dashed; color:var(--mu);">BONK 커뮤니티</div>
+        <div class="proto-item" style="border-style:dashed; color:var(--mu);">WIF 커뮤니티</div>
+        <div class="proto-item" style="border-style:dashed; color:var(--mu);">Any SPL Token ...</div>
       </div>
     </div>
-    <div class="demo-row">
-      <div class="demo-actor" style="color:var(--g); border-color:rgba(20,241,149,.3); background:rgba(20,241,149,.1);">Solana</div>
-      <div class="demo-steps">
-        <div class="demo-step">💼 Escrow PDA에 수익 잠금</div>
-        <div class="demo-arrow">→</div>
-        <div class="demo-step">🔗 Printful 배송 완료 감지</div>
-        <div class="demo-arrow">→</div>
-        <div class="demo-step">⚡ 자동 수익분배 실행</div>
+    <div style="font-size:20px; color:var(--mu);">↓</div>
+    <div class="proto-layer">
+      <div class="proto-label">프로토콜</div>
+      <div class="proto-items">
+        <div class="proto-item purple">밈 콘테스트 엔진</div>
+        <div class="proto-item purple">SPL 투표 처리</div>
+        <div class="proto-item purple">IP 아카이브 (R2)</div>
+        <div class="proto-item purple">Printful 굿즈 자동화</div>
       </div>
     </div>
-    <div class="demo-row">
-      <div class="demo-actor" style="color:#FFD700; border-color:rgba(255,215,0,.3); background:rgba(255,215,0,.08);">Reward</div>
-      <div class="demo-steps">
-        <div class="demo-step">🎨 Creator → 45% SOL</div>
-        <div class="demo-arrow">+</div>
-        <div class="demo-step">🗳️ Voter → 40% SOL</div>
-        <div class="demo-arrow">+</div>
-        <div class="demo-step">🏦 Platform → 15% SOL</div>
+    <div style="font-size:20px; color:var(--mu);">↓</div>
+    <div class="proto-layer">
+      <div class="proto-label">온체인</div>
+      <div class="proto-items">
+        <div class="proto-item blue">Anchor Escrow PDA</div>
+        <div class="proto-item blue">자동 수익분배 컨트랙트</div>
+        <div class="proto-item blue">Solana Blinks</div>
+      </div>
+    </div>
+    <div style="font-size:20px; color:var(--mu);">↓</div>
+    <div class="proto-layer">
+      <div class="proto-label">수익자</div>
+      <div class="proto-items">
+        <div class="proto-item green">Creator 45% SOL</div>
+        <div class="proto-item purple">Voter 40% SOL</div>
+        <div class="proto-item blue">Platform 15% SOL</div>
       </div>
     </div>
   </div>
-  <div class="badge" style="margin-top:28px;">Program ID: GYfzt1mzWNMurBEej4557YbKmceTWwW3L6attC7pAmWS</div>
 </div>
 
-<!-- ─────────────── S6 MARKET ─────────────── -->
-<div class="slide" id="s6">
+<!-- ── S7 MARKET ── -->
+<div class="slide" id="s7">
   <div class="eyebrow">Market Opportunity</div>
-  <h2>밈은 <span class="grad">새로운 IP 자산</span>입니다</h2>
+  <h2>밈코인은 이미 <span class="grad">수천억 달러 시장</span>이다</h2>
   <div class="mkt">
+    <div class="mkt-item">
+      <div class="sz gp">$60B+</div>
+      <div class="nm">밈코인 전체<br>시가총액</div>
+    </div>
     <div class="mkt-item">
       <div class="sz gg">$250B</div>
       <div class="nm">크리에이터 이코노미<br>(2025 전망)</div>
     </div>
     <div class="mkt-item">
-      <div class="sz gp">$400B</div>
-      <div class="nm">글로벌 굿즈·머천다이즈<br>시장 규모</div>
-    </div>
-    <div class="mkt-item">
-      <div class="sz gb">$26B</div>
-      <div class="nm">NFT·디지털 IP<br>시장 규모</div>
+      <div class="sz gb">$400B</div>
+      <div class="nm">글로벌 굿즈·<br>머천다이즈 시장</div>
     </div>
   </div>
-  <div style="margin-top:36px; background:var(--s2); border-radius:16px; padding:22px 36px; max-width:640px;">
-    <p style="font-size:16px; line-height:1.7; color:var(--mu);">
-      밈은 이미 <span style="color:var(--tx); font-weight:700;">가장 강력한 문화 바이럴</span>이지만 가치 귀속 시스템이 없다.<br>
-      SAMU는 밈에 <span style="color:var(--g); font-weight:700;">IP 레이어</span>를 더해 이 공백을 채운다.
+  <div style="margin-top:28px; background:var(--s2); border-radius:16px; padding:20px 36px; max-width:620px; border:1px solid rgba(255,255,255,.06);">
+    <p style="font-size:15px; line-height:1.75; color:var(--mu);">
+      수천만 밈코인 홀더들이 커뮤니티를 만들고, 밈을 만들고, 투표하지만<br>
+      <span style="color:var(--tx); font-weight:700;">그 에너지를 가치로 전환하는 인프라가 없다.</span><br>
+      SAMU Protocol이 그 인프라다.
     </p>
   </div>
 </div>
 
-<!-- ─────────────── S7 WHY SOLANA ─────────────── -->
-<div class="slide" id="s7">
+<!-- ── S8 WHY SOLANA ── -->
+<div class="slide" id="s8">
   <div class="eyebrow">Why Solana</div>
   <h2>밈 경제에는 <span class="grad">빠르고 저렴한 체인</span>이 필요하다</h2>
   <div class="why-grid">
     <div class="why-item">
-      <div class="wt">⚡ 65,000 TPS · 400ms 처리</div>
-      <div class="wd">투표가 실시간 반응처럼 느껴져야 한다. 밈은 속도가 생명.</div>
+      <div class="wt">⚡ 65,000 TPS · 400ms</div>
+      <div class="wd">투표가 실시간처럼 느껴져야 한다. 밈은 속도가 생명.</div>
     </div>
     <div class="why-item">
-      <div class="wt">💸 트랜잭션 비용 $0.00025</div>
-      <div class="wd">소액 투표·보상 분배가 가스비로 잠식되지 않아야 한다.</div>
+      <div class="wt">💸 트랜잭션 $0.00025</div>
+      <div class="wd">소액 투표·보상이 가스비에 잠식되지 않는다.</div>
     </div>
     <div class="why-item">
-      <div class="wt">🔗 Solana Blinks 지원</div>
-      <div class="wd">X(트위터)·SNS에서 앱 없이 바로 투표. 바이럴과 온체인의 결합.</div>
+      <div class="wt">🔗 Solana Blinks</div>
+      <div class="wd">X(트위터)에서 앱 없이 바로 투표. 바이럴과 온체인의 결합.</div>
     </div>
     <div class="why-item">
       <div class="wt">🌿 cNFT (Bubblegum)</div>
-      <div class="wd">Phase 3: 수백만 IP 지분 NFT를 거의 무료로 발행. Ethereum 불가능.</div>
+      <div class="wd">Phase 3: 수백만 IP 지분 NFT를 거의 무료로 발행. Ethereum 불가.</div>
     </div>
     <div class="why-item">
-      <div class="wt">🔐 SPL Token 생태계</div>
-      <div class="wd">SAMU 투표 토큰이 기존 지갑·DEX와 완벽 호환.</div>
+      <div class="wt">🪙 SPL Token 생태계</div>
+      <div class="wd">모든 밈코인이 SPL 기반 — 토큰 교체만으로 새 커뮤니티 온보딩.</div>
     </div>
     <div class="why-item">
       <div class="wt">⚓ Anchor 프레임워크</div>
@@ -370,47 +336,20 @@ p.sub { font-size: clamp(15px, 1.7vw, 21px); color: var(--mu); line-height: 1.7;
   </div>
 </div>
 
-<!-- ─────────────── S8 TECH ─────────────── -->
-<div class="slide" id="s8">
-  <div class="eyebrow">Architecture</div>
-  <h2>Solana-Native <span class="grad">풀스택</span></h2>
-  <div class="tech-wrap">
-    <div style="font-size:13px; color:var(--mu); margin-bottom:4px;">온체인 레이어</div>
-    <div class="tech-row">
-      <div class="tech-badge"><div class="dot" style="background:var(--g);"></div>Anchor Smart Contract</div>
-      <div class="tech-badge"><div class="dot" style="background:var(--g);"></div>SPL Token (SAMU)</div>
-      <div class="tech-badge"><div class="dot" style="background:var(--g);"></div>Escrow PDA</div>
-      <div class="tech-badge"><div class="dot" style="background:var(--g);"></div>Solana Blinks</div>
-    </div>
-    <div style="font-size:13px; color:var(--mu); margin-top:12px; margin-bottom:4px;">서버 · 외부 연동</div>
-    <div class="tech-row">
-      <div class="tech-badge"><div class="dot" style="background:var(--p);"></div>Privy (소셜 로그인 + 임베디드 월렛)</div>
-      <div class="tech-badge"><div class="dot" style="background:var(--p);"></div>Printful API (굿즈 자동화)</div>
-      <div class="tech-badge"><div class="dot" style="background:var(--p);"></div>Cloudflare R2 (아카이브)</div>
-    </div>
-    <div style="font-size:13px; color:var(--mu); margin-top:12px; margin-bottom:4px;">Phase 3 (예정)</div>
-    <div class="tech-row">
-      <div class="tech-badge"><div class="dot" style="background:var(--b);"></div>Metaplex Bubblegum (cNFT)</div>
-      <div class="tech-badge"><div class="dot" style="background:var(--b);"></div>Helius DAS API</div>
-    </div>
-  </div>
-</div>
-
-<!-- ─────────────── S9 TOKENOMICS ─────────────── -->
+<!-- ── S9 TOKENOMICS ── -->
 <div class="slide" id="s9">
   <div class="eyebrow">Token Economics</div>
   <h2>가치를 만든 사람에게<br><span class="grad">85%가 돌아간다</span></h2>
   <div class="pie-wrap">
-    <!-- SVG Pie Chart -->
-    <svg width="200" height="200" viewBox="0 0 200 200">
+    <svg width="190" height="190" viewBox="0 0 200 200">
       <!-- Creator 45% = 162° clockwise from top -->
       <path d="M100 100 L100 10 A90 90 0 0 1 127.8 185.6 Z" fill="#14F195" opacity="0.95"/>
-      <!-- Voter 40% = 144° continuing clockwise -->
+      <!-- Voter 40% = 144° continuing -->
       <path d="M100 100 L127.8 185.6 A90 90 0 0 1 27.2 47.1 Z" fill="#9945FF" opacity="0.95"/>
       <!-- Platform 15% = 54° back to top -->
       <path d="M100 100 L27.2 47.1 A90 90 0 0 1 100 10 Z" fill="#00C2FF" opacity="0.95"/>
-      <circle cx="100" cy="100" r="48" fill="var(--bg)"/>
-      <text x="100" y="95" text-anchor="middle" fill="white" font-size="13" font-weight="700">수익</text>
+      <circle cx="100" cy="100" r="50" fill="var(--bg)"/>
+      <text x="100" y="96" text-anchor="middle" fill="white" font-size="13" font-weight="700">수익</text>
       <text x="100" y="113" text-anchor="middle" fill="white" font-size="13" font-weight="700">분배</text>
     </svg>
     <div class="pie-legend">
@@ -418,41 +357,41 @@ p.sub { font-size: clamp(15px, 1.7vw, 21px); color: var(--mu); line-height: 1.7;
         <div class="legend-dot" style="background:#14F195;"></div>
         <div>
           <div class="legend-pct gg">45%</div>
-          <div style="font-size:16px; font-weight:700;">Creator</div>
-          <div style="font-size:13px; color:var(--mu);">투표 지분 비례 분배</div>
+          <div style="font-size:15px; font-weight:700;">Creator</div>
+          <div style="font-size:12px; color:var(--mu);">투표 지분 비례 SOL 분배</div>
         </div>
       </div>
       <div class="legend-item">
         <div class="legend-dot" style="background:#9945FF;"></div>
         <div>
           <div class="legend-pct gp">40%</div>
-          <div style="font-size:16px; font-weight:700;">Voter</div>
-          <div style="font-size:13px; color:var(--mu);">SAMU 투표량 비례 분배</div>
+          <div style="font-size:15px; font-weight:700;">Voter</div>
+          <div style="font-size:12px; color:var(--mu);">토큰 투표량 비례 SOL 분배</div>
         </div>
       </div>
       <div class="legend-item">
         <div class="legend-dot" style="background:#00C2FF;"></div>
         <div>
           <div class="legend-pct gb">15%</div>
-          <div style="font-size:16px; font-weight:700;">Platform</div>
-          <div style="font-size:13px; color:var(--mu);">지속 가능한 운영</div>
+          <div style="font-size:15px; font-weight:700;">Platform</div>
+          <div style="font-size:12px; color:var(--mu);">프로토콜 지속 운영</div>
         </div>
       </div>
     </div>
   </div>
-  <p class="sub" style="margin-top:28px;">모든 분배는 Anchor 스마트 컨트랙트로 자동 실행 — 신뢰 불필요</p>
+  <p class="sub" style="margin-top:20px;">어떤 커뮤니티가 온보딩해도 동일한 분배 구조 — 공정하고 투명하다</p>
 </div>
 
-<!-- ─────────────── S10 ROADMAP ─────────────── -->
+<!-- ── S10 ROADMAP ── -->
 <div class="slide" id="s10">
   <div class="eyebrow">Roadmap</div>
-  <h2>밈 → IP → <span class="grad">온체인 생태계</span></h2>
+  <h2>밈코인 <span class="grad">IP 인프라</span>로 확장</h2>
   <div class="tl">
     <div class="tl-item">
       <div class="tl-ph">PHASE 1</div>
       <div class="tl-dot done">✓</div>
-      <div class="tl-title">밈 콘테스트</div>
-      <div class="tl-desc">투표 · 아카이브<br>굿즈 · 보상 시스템</div>
+      <div class="tl-title">SAMU 커뮤니티</div>
+      <div class="tl-desc">콘테스트 · 굿즈<br>수익분배 검증</div>
     </div>
     <div class="tl-item">
       <div class="tl-ph">PHASE 2</div>
@@ -464,24 +403,26 @@ p.sub { font-size: clamp(15px, 1.7vw, 21px); color: var(--mu); line-height: 1.7;
       <div class="tl-ph">PHASE 3</div>
       <div class="tl-dot next">→</div>
       <div class="tl-title">cNFT IP Equity</div>
-      <div class="tl-desc">Bubblegum 압축 NFT<br>IP 지분 토큰화</div>
+      <div class="tl-desc">Bubblegum으로<br>IP 지분 NFT화</div>
     </div>
     <div class="tl-item">
       <div class="tl-ph">PHASE 4</div>
       <div class="tl-dot fut">4</div>
       <div class="tl-title">커뮤니티 팩토리</div>
-      <div class="tl-desc">퍼미션리스 콘테스트<br>누구나 배포</div>
+      <div class="tl-desc">SPL 토큰만 있으면<br>퍼미션리스 온보딩</div>
     </div>
   </div>
-  <div style="margin-top:44px; text-align:center;">
-    <p style="font-size:clamp(18px,2vw,26px); font-weight:700;">밈이 IP가 되고, 커뮤니티가 주주가 된다.</p>
-    <p style="font-size:15px; color:var(--mu); margin-top:10px;">SAMU Protocol &nbsp;·&nbsp; samu.ink &nbsp;·&nbsp; Solana Mainnet &nbsp;·&nbsp; Program: GYfzt1mz...</p>
+  <div style="margin-top:40px; text-align:center; max-width:680px;">
+    <p style="font-size:clamp(16px,2vw,24px); font-weight:700; line-height:1.5;">
+      모든 밈코인 커뮤니티가 자신들의 문화를<br>
+      <span class="grad">IP로, 굿즈로, 온체인 보상으로</span> 전환하는 날까지
+    </p>
+    <p style="font-size:13px; color:var(--mu); margin-top:12px;">SAMU Protocol &nbsp;·&nbsp; samu.ink &nbsp;·&nbsp; Solana Mainnet</p>
   </div>
 </div>
 
 </div><!-- /deck -->
 
-<!-- Controls -->
 <nav class="ctrl">
   <button onclick="go(-1)">← 이전</button>
   <span class="ctr" id="ctr"></span>
@@ -493,8 +434,7 @@ const slides = document.querySelectorAll('.slide');
 const N = slides.length;
 let cur = 0;
 
-/* counter animation */
-function animateCount(el, target, suffix = '', duration = 1200) {
+function animateCount(el, target, suffix = '', duration = 1300) {
   const start = performance.now();
   const isFloat = target % 1 !== 0;
   const step = ts => {
@@ -507,14 +447,14 @@ function animateCount(el, target, suffix = '', duration = 1200) {
   requestAnimationFrame(step);
 }
 
-let traction_animated = false;
+let traction_done = false;
 function maybeAnimateTraction(idx) {
-  if (idx !== 3 || traction_animated) return;
-  traction_animated = true;
+  if (idx !== 4 || traction_done) return;
+  traction_done = true;
   animateCount(document.getElementById('cnt-users'), 471, '+');
   animateCount(document.getElementById('cnt-memes'), 81, '개');
   animateCount(document.getElementById('cnt-samu'), 224, 'M');
-  animateCount(document.getElementById('cnt-sol'),  0.61, ' SOL');
+  animateCount(document.getElementById('cnt-sol'), 0.61, ' SOL');
 }
 
 function show(n) {
