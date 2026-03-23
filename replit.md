@@ -1,7 +1,7 @@
 # SAMU Meme Contest Application
 
 ## Overview
-The SAMU Meme Contest Application is a Solana blockchain-based platform designed to transform memecoins into intellectual property (IP). It enables users to upload and vote for memes using SAMU tokens. Winning memes are converted into merchandise (stickers), and the profits from sales are distributed in SOL. The project aims to create a self-sustaining ecosystem that rewards meme creators and voters while generating platform revenue. The long-term vision includes transitioning to cNFT-based IP equity, a permissionless community factory program, and eventually a Solana SVM Appchain for a full ecosystem.
+The SAMU Meme Contest Application is a Solana blockchain-based platform designed to transform memecoins into intellectual property (IP). It enables users to upload and vote for memes using SAMU tokens. Winning memes are converted into merchandise (stickers), and the profits from sales are distributed in SOL. The project aims to create a self-sustaining ecosystem that rewards meme creators and voters while generating platform revenue. The long-term vision includes transitioning to cNFT-based IP equity, a curated community listing program (verified communities onboard with their own SPL tokens), and eventually a Solana SVM Appchain for a full ecosystem. Curation is intentional — IP copyright risk management is a core moat.
 
 ## User Preferences
 - 한국어로 소통 선호
