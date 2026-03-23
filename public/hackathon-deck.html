@@ -403,12 +403,12 @@ p.sub { font-size: clamp(15px, 1.7vw, 21px); color: var(--mu); line-height: 1.7;
   <div class="pie-wrap">
     <!-- SVG Pie Chart -->
     <svg width="200" height="200" viewBox="0 0 200 200">
-      <!-- Creator 45% - green: 0° to 162° -->
-      <path d="M100 100 L100 10 A90 90 0 0 1 185.5 145 Z" fill="#14F195" opacity="0.9"/>
-      <!-- Voter 40% - purple: 162° to 306° -->
-      <path d="M100 100 L185.5 145 A90 90 0 1 1 27.4 22.9 Z" fill="#9945FF" opacity="0.9"/>
-      <!-- Platform 15% - blue: 306° to 360° -->
-      <path d="M100 100 L27.4 22.9 A90 90 0 0 1 100 10 Z" fill="#00C2FF" opacity="0.9"/>
+      <!-- Creator 45% = 162° clockwise from top -->
+      <path d="M100 100 L100 10 A90 90 0 0 1 127.8 185.6 Z" fill="#14F195" opacity="0.95"/>
+      <!-- Voter 40% = 144° continuing clockwise -->
+      <path d="M100 100 L127.8 185.6 A90 90 0 0 1 27.2 47.1 Z" fill="#9945FF" opacity="0.95"/>
+      <!-- Platform 15% = 54° back to top -->
+      <path d="M100 100 L27.2 47.1 A90 90 0 0 1 100 10 Z" fill="#00C2FF" opacity="0.95"/>
       <circle cx="100" cy="100" r="48" fill="var(--bg)"/>
       <text x="100" y="95" text-anchor="middle" fill="white" font-size="13" font-weight="700">수익</text>
       <text x="100" y="113" text-anchor="middle" fill="white" font-size="13" font-weight="700">분배</text>
