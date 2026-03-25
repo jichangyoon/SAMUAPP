@@ -186,7 +186,11 @@ router.post("/vote/:memeId", async (req, res) => {
     const treasuryPubkey = new PublicKey(TREASURY_WALLET);
     const tokenAmount = Math.round(samuAmount * Math.pow(10, SAMU_DECIMALS));
     
-    const senderATA = await getAssociatedTokenAddress(SAMU_TOKEN_MINT, userPublicKey);
+    // Use actual token account (not just canonical ATA) to support non-canonical ATAs
+    const senderTokenAccounts = await connection.getTokenAccountsByOwner(userPublicKey, { mint: SAMU_TOKEN_MINT });
+    const senderATA = senderTokenAccounts.value.length > 0
+      ? senderTokenAccounts.value[0].pubkey
+      : await getAssociatedTokenAddress(SAMU_TOKEN_MINT, userPublicKey);
     const treasuryATA = await getAssociatedTokenAddress(SAMU_TOKEN_MINT, treasuryPubkey);
 
     const transaction = new Transaction();
