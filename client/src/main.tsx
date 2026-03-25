@@ -49,7 +49,7 @@ createRoot(document.getElementById("root")!).render(
         theme: 'dark',
         accentColor: '#fbbf24',
         walletChainType: 'solana-only',
-        walletList: ['phantom', 'solflare', 'wallet_connect_qr'],
+        walletList: ['phantom', 'solflare'],
       },
       loginMethods: ['email', 'wallet'],
       embeddedWallets: {
