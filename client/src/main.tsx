@@ -37,7 +37,9 @@ const handleError = (event: ErrorEvent) => {
 window.addEventListener('unhandledrejection', handleUnhandledRejection, { passive: true });
 window.addEventListener('error', handleError, true);
 
-const solanaConnectors = toSolanaWalletConnectors();
+const solanaConnectors = toSolanaWalletConnectors({
+  walletConnectProjectId: '88a9959df96940fde81441818d3b9b3d',
+});
 
 createRoot(document.getElementById("root")!).render(
   <PrivyProvider
