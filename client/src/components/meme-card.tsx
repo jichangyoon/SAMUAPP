@@ -36,6 +36,7 @@ export const MemeCard = memo(function MemeCard({ meme, onVote, canVote }: MemeCa
   const [showUserModal, setShowUserModal] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
   const [voteAmount, setVoteAmount] = useState(1);
+  const [voteInputValue, setVoteInputValue] = useState('1');
   const samuBalanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { authenticated, user } = usePrivy();
   const { wallets, ready: walletsReady } = useSolanaWallets();
@@ -374,7 +375,7 @@ export const MemeCard = memo(function MemeCard({ meme, onVote, canVote }: MemeCa
                     max={Math.max(1, samuBalance)}
                     step={1}
                     value={[voteAmount]}
-                    onValueChange={(value) => setVoteAmount(value[0])}
+                    onValueChange={(value) => { setVoteAmount(value[0]); setVoteInputValue(value[0].toString()); }}
                     className="w-full"
                   />
                 </div>
@@ -393,10 +394,19 @@ export const MemeCard = memo(function MemeCard({ meme, onVote, canVote }: MemeCa
                   type="number"
                   min={1}
                   max={samuBalance}
-                  value={voteAmount}
+                  value={voteInputValue}
                   onChange={(e) => {
-                    const value = Math.max(1, Math.min(samuBalance, parseInt(e.target.value) || 1));
-                    setVoteAmount(value);
+                    setVoteInputValue(e.target.value);
+                    const parsed = parseInt(e.target.value);
+                    if (!isNaN(parsed) && parsed >= 1) {
+                      setVoteAmount(Math.min(samuBalance, parsed));
+                    }
+                  }}
+                  onBlur={() => {
+                    const parsed = parseInt(voteInputValue);
+                    const clamped = Math.max(1, Math.min(samuBalance, isNaN(parsed) ? 1 : parsed));
+                    setVoteInputValue(clamped.toString());
+                    setVoteAmount(clamped);
                   }}
                   className="mt-1"
                 />
