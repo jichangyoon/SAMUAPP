@@ -19,7 +19,6 @@ import { config } from "../config";
 
 const router = Router();
 
-const HELIUS_API_KEY = process.env.VITE_HELIUS_API_KEY;
 const SAMU_TOKEN_MINT = new PublicKey(config.SAMU_TOKEN_MINT);
 const SAMU_DECIMALS = 8;
 const TREASURY_WALLET = config.TREASURY_WALLET;
@@ -225,9 +224,8 @@ router.post("/vote/:memeId", async (req, res) => {
 
     const voteNonce = `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
     
-    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed");
+    const { blockhash } = await connection.getLatestBlockhash("confirmed");
     transaction.recentBlockhash = blockhash;
-    transaction.lastValidBlockHeight = lastValidBlockHeight;
     transaction.feePayer = userPublicKey;
 
     const serializedTransaction = transaction.serialize({

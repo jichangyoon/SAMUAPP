@@ -25,9 +25,6 @@ export async function verifyTransaction(
   const voterPubkey = new PublicKey(expectedVoterWallet);
   const expectedTokenAmount = Math.round(expectedSamuAmount * Math.pow(10, SAMU_DECIMALS));
 
-  const expectedSenderATA = await getAssociatedTokenAddress(SAMU_TOKEN_MINT, voterPubkey);
-  const expectedTreasuryATA = await getAssociatedTokenAddress(SAMU_TOKEN_MINT, treasuryPubkey);
-
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       const txInfo = await connection.getTransaction(txSignature, {
