@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, memo, useMemo, ChangeEvent } from "react";
 import { usePrivy } from "@privy-io/react-auth";
-import { useSignTransaction } from "@privy-io/react-auth/solana";
+import { useUniversalSignTransaction } from "@/hooks/use-universal-sign-transaction";
 import { Transaction, Connection } from "@solana/web3.js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,7 +33,6 @@ const SOL_CONNECTION = new Connection(
 
 const Profile = memo(() => {
   const { user, authenticated } = usePrivy();
-  const { signTransaction } = useSignTransaction();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
@@ -52,11 +51,13 @@ const Profile = memo(() => {
   const [showAllVotes, setShowAllVotes] = useState(false);
   const [expandedMemeContests, setExpandedMemeContests] = useState<Set<number>>(new Set());
   const [expandedVoteContests, setExpandedVoteContests] = useState<Set<number>>(new Set());
-  // 지갑 주소 가져오기 (홈과 동일한 로직)
+  // 지갑 주소 가져오기 (홈과 동일한 로직, 외부 지갑 우선)
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
-  const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
+  const solanaWallet = walletAccounts.find(w => w.chainType === 'solana' && (w as any).connectorType !== 'embedded') || walletAccounts.find(w => w.chainType === 'solana');
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
   const walletAddress = selectedWalletAccount?.address || '';
+
+  const signTransaction = useUniversalSignTransaction(walletAddress);
 
   // User profile data
   const { data: userProfile } = useQuery({
@@ -209,7 +210,7 @@ const Profile = memo(() => {
         for (const item of prepareData.transactions) {
           const tx = Transaction.from(Buffer.from(item.transaction, "base64"));
           toast({ title: `Signing claim for contest #${item.contestId}...`, duration: 3000 });
-          const signedTx = await signTransaction({ transaction: tx, connection: SOL_CONNECTION });
+          const signedTx = await signTransaction(tx, SOL_CONNECTION);
           const sig = await SOL_CONNECTION.sendRawTransaction(signedTx.serialize());
           await SOL_CONNECTION.confirmTransaction(sig, "confirmed");
           sigs.push(sig);

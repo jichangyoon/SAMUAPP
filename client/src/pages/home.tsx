@@ -16,7 +16,7 @@ const SamuMap = lazy(() => import("@/components/samu-map").then(m => ({ default:
 
 
 import { usePrivy } from '@privy-io/react-auth';
-import { useSolanaWallets, useSignTransaction } from '@privy-io/react-auth/solana';
+import { useUniversalSignTransaction } from "@/hooks/use-universal-sign-transaction";
 import { Transaction } from '@solana/web3.js';
 import { getSharedConnection } from "@/lib/solana";
 import { Button } from "@/components/ui/button";
@@ -138,8 +138,6 @@ export default function Home() {
 
   // Privy authentication
   const { authenticated, user } = usePrivy();
-  const { signTransaction } = useSignTransaction();
-  const { wallets: solWallets, ready: solWalletsReady } = useSolanaWallets();
   const { toast } = useToast();
   
   const solConnection = useMemo(() => getSharedConnection(), []);
@@ -153,6 +151,8 @@ export default function Home() {
 
   const isConnected = authenticated && !!selectedWalletAccount;
   const walletAddress = (selectedWalletAccount as any)?.address || '';
+
+  const signTransaction = useUniversalSignTransaction(walletAddress);
 
 
 
@@ -248,7 +248,7 @@ export default function Home() {
     const { transaction: serializedTx } = await prepareRes.json();
     const transaction = Transaction.from(Buffer.from(serializedTx, 'base64'));
 
-    const signedTx = await signTransaction({ transaction, connection: solConnection });
+    const signedTx = await signTransaction(transaction, solConnection);
     const txSignature = await solConnection.sendRawTransaction(signedTx.serialize());
     
     await solConnection.confirmTransaction(txSignature, 'confirmed');

@@ -4,7 +4,7 @@ import { WalletConnect } from "@/components/wallet-connect";
 
 import { MemeCard } from "@/components/meme-card";
 import { usePrivy } from '@privy-io/react-auth';
-import { useSolanaWallets, useSignTransaction } from '@privy-io/react-auth/solana';
+import { useUniversalSignTransaction } from "@/hooks/use-universal-sign-transaction";
 import { Transaction } from '@solana/web3.js';
 import { getSharedConnection } from "@/lib/solana";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,6 @@ interface PartnerContestProps {
 export function PartnerContest({ partnerId }: PartnerContestProps) {
   const [, setLocation] = useLocation();
   const { authenticated, user } = usePrivy();
-  const { signTransaction } = useSignTransaction();
   const { toast } = useToast();
   
   const solConnection = useMemo(() => getSharedConnection(), []);
@@ -36,10 +35,14 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
   const [viewMode, setViewMode] = useState<"card" | "grid">("card");
   const [samuBalance, setSamuBalance] = useState<number>(0);
 
-  // Get wallet address from user's linked accounts
-  const walletAddress = user?.linkedAccounts?.find(
-    account => account.type === 'wallet'
-  )?.address as string || '';
+  // Get wallet address - 외부 지갑 우선
+  const solanaWallets = user?.linkedAccounts?.filter(account =>
+    account.type === 'wallet' && account.chainType === 'solana'
+  ) || [];
+  const externalWallet = solanaWallets.find(w => (w as any).connectorType !== 'embedded');
+  const walletAddress = ((externalWallet || solanaWallets[0]) as any)?.address || '';
+
+  const signTransaction = useUniversalSignTransaction(walletAddress);
 
   const [selectedMeme, setSelectedMeme] = useState<Meme | null>(null);
   const [showVoteDialog, setShowVoteDialog] = useState(false);
@@ -109,7 +112,7 @@ export function PartnerContest({ partnerId }: PartnerContestProps) {
       const { transaction: serializedTx } = await prepareRes.json();
       const transaction = Transaction.from(Buffer.from(serializedTx, 'base64'));
 
-      const signedTx = await signTransaction({ transaction, connection: solConnection });
+      const signedTx = await signTransaction(transaction, solConnection);
       const txSignature = await solConnection.sendRawTransaction(signedTx.serialize());
 
       await solConnection.confirmTransaction(txSignature, 'confirmed');

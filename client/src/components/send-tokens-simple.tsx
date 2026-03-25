@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useSendTransaction, useSolanaWallets, useSignTransaction } from '@privy-io/react-auth/solana';
+import { useSendTransaction, useSolanaWallets } from '@privy-io/react-auth/solana';
+import { useUniversalSignTransaction } from "@/hooks/use-universal-sign-transaction";
 import { usePrivy } from '@privy-io/react-auth';
 import { useQueryClient } from "@tanstack/react-query";
 import { Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
@@ -29,8 +30,8 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
   const queryClient = useQueryClient();
 
 
-  const { signTransaction } = useSignTransaction();
   const { wallets, ready } = useSolanaWallets();
+  const signTransaction = useUniversalSignTransaction(walletAddress);
   
   const connection = getSharedConnection();
 
@@ -120,10 +121,7 @@ export function SendTokensSimple({ walletAddress, samuBalance, solBalance, chain
       }
 
       // signTransaction + sendRawTransaction approach (TextDecoder issue workaround)
-      const signedTx = await signTransaction({
-        transaction,
-        connection
-      });
+      const signedTx = await signTransaction(transaction, connection);
       
       const signature = await connection.sendRawTransaction(signedTx.serialize());
 

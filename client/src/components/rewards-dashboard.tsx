@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
-import { useSignTransaction } from "@privy-io/react-auth/solana";
+import { useUniversalSignTransaction } from "@/hooks/use-universal-sign-transaction";
 import { Transaction, Connection } from "@solana/web3.js";
 import { REWARD_COLORS, MiniDonut } from "@/lib/reward-utils";
 import { Card, CardContent } from "@/components/ui/card";
@@ -304,7 +304,7 @@ function SummaryCard({
 
 export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) {
   const { authenticated } = usePrivy();
-  const { signTransaction } = useSignTransaction();
+  const signTransaction = useUniversalSignTransaction(walletAddress ?? '');
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -347,7 +347,7 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
         for (const item of prepareData.transactions) {
           const tx = Transaction.from(Buffer.from(item.transaction, "base64"));
           toast({ title: `Signing claim for contest #${item.contestId}...`, duration: 3000 });
-          const signedTx = await signTransaction({ transaction: tx, connection: SOL_CONNECTION });
+          const signedTx = await signTransaction(tx, SOL_CONNECTION);
           const sig = await SOL_CONNECTION.sendRawTransaction(signedTx.serialize());
           await SOL_CONNECTION.confirmTransaction(sig, "confirmed");
           totalClaimed += item.solAmount;

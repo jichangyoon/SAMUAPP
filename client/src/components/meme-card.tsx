@@ -7,7 +7,8 @@ import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { usePrivy } from '@privy-io/react-auth';
-import { useSolanaWallets, useSignTransaction } from '@privy-io/react-auth/solana';
+import { useSolanaWallets } from '@privy-io/react-auth/solana';
+import { useUniversalSignTransaction } from "@/hooks/use-universal-sign-transaction";
 import { Transaction } from '@solana/web3.js';
 import { getSharedConnection } from "@/lib/solana";
 import { apiRequest } from "@/lib/queryClient";
@@ -37,7 +38,6 @@ export const MemeCard = memo(function MemeCard({ meme, onVote, canVote }: MemeCa
   const [voteAmount, setVoteAmount] = useState(1);
   const samuBalanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { authenticated, user } = usePrivy();
-  const { signTransaction } = useSignTransaction();
   const { wallets, ready: walletsReady } = useSolanaWallets();
   const queryClient = useQueryClient();
   
@@ -59,9 +59,11 @@ export const MemeCard = memo(function MemeCard({ meme, onVote, canVote }: MemeCa
   }, []);
 
   const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
-  const solanaWallet = walletAccounts.find(w => w.chainType === 'solana');
+  const solanaWallet = walletAccounts.find(w => w.chainType === 'solana' && (w as any).connectorType !== 'embedded') || walletAccounts.find(w => w.chainType === 'solana');
   const selectedWalletAccount = solanaWallet || walletAccounts[0];
   const walletAddress = selectedWalletAccount?.address || '';
+
+  const signTransaction = useUniversalSignTransaction(walletAddress);
   const { toast } = useToast();
 
   const { data: samuBalanceData } = useSamuBalance(walletAddress);
@@ -116,7 +118,7 @@ export const MemeCard = memo(function MemeCard({ meme, onVote, canVote }: MemeCa
         duration: 10000
       });
 
-      const signedTx = await signTransaction({ transaction, connection });
+      const signedTx = await signTransaction(transaction, connection);
       const txSignature = await connection.sendRawTransaction(signedTx.serialize());
 
       toast({

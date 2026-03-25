@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { usePrivy } from '@privy-io/react-auth';
-import { useSolanaWallets, useSignTransaction } from '@privy-io/react-auth/solana';
+import { useUniversalSignTransaction } from "@/hooks/use-universal-sign-transaction";
 import { Transaction } from '@solana/web3.js';
 import { getSharedConnection } from "@/lib/solana";
 import { useToast } from "@/hooks/use-toast";
@@ -331,10 +331,15 @@ export function GoodsShop() {
   const orderDataRef = useRef<{ item: any; size: string; color: string; paymentInfo: any; txSignature: string; shippingForm: any } | null>(null);
   const { authenticated, user } = usePrivy();
   const { toast } = useToast();
-  const { signTransaction } = useSignTransaction();
-  const { wallets: solWallets } = useSolanaWallets();
 
-  const walletAddress = solWallets?.[0]?.address || '';
+  const solanaWallets = user?.linkedAccounts?.filter(account =>
+    account.type === 'wallet' && account.chainType === 'solana'
+  ) || [];
+  const externalWallet = solanaWallets.find(w => (w as any).connectorType !== 'embedded');
+  const selectedWalletAccount = externalWallet || solanaWallets[0];
+  const walletAddress = (selectedWalletAccount as any)?.address || '';
+
+  const signTransaction = useUniversalSignTransaction(walletAddress);
 
   const solConnection = getSharedConnection();
 
@@ -390,7 +395,7 @@ export function GoodsShop() {
       toast({ title: "Please sign the transaction in your wallet", duration: 5000 });
 
       const transaction = Transaction.from(Buffer.from(paymentInfo.transaction, 'base64'));
-      const signedTx = await signTransaction({ transaction, connection: solConnection });
+      const signedTx = await signTransaction(transaction, solConnection);
       const sig = await solConnection.sendRawTransaction(signedTx.serialize());
       await solConnection.confirmTransaction(sig, 'confirmed');
 
