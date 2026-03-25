@@ -12,12 +12,11 @@ export const WalletConnect = memo(function WalletConnect() {
   const solanaWallets = user?.linkedAccounts?.filter(account =>
     account.type === 'wallet' && account.chainType === 'solana'
   ) || [];
-  const externalWallet = solanaWallets.find(w => (w as any).connectorType === 'injected' || (w as any).walletClientType === 'phantom');
+  const externalWallet = solanaWallets.find(w => (w as any).connectorType !== 'embedded');
   const selectedWalletAccount = externalWallet || solanaWallets[0];
 
   const isConnected = authenticated && !!selectedWalletAccount;
   const walletAddress = (selectedWalletAccount as any)?.address || '';
-  const isSolana = true; // 항상 Solana
 
   // 지갑 연결 안정성을 위한 에러 바운더리
   const [connectionError, setConnectionError] = useState<string | null>(null);
