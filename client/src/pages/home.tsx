@@ -144,13 +144,12 @@ export default function Home() {
   
   const solConnection = useMemo(() => getSharedConnection(), []);
 
-  // Solana 지갑만 사용 - 간단하고 깔끔한 로직
-  const walletAccounts = user?.linkedAccounts?.filter(account => 
-    account.type === 'wallet' && 
-    account.connectorType !== 'injected' && 
-    account.chainType === 'solana'
+  // Solana 지갑만 사용 - 외부(팬텀) 우선, 없으면 임베디드 지갑
+  const solanaWallets = user?.linkedAccounts?.filter(account =>
+    account.type === 'wallet' && account.chainType === 'solana'
   ) || [];
-  const selectedWalletAccount = walletAccounts[0]; // 유일한 Solana 지갑
+  const externalWallet = solanaWallets.find(w => (w as any).connectorType === 'injected' || (w as any).walletClientType === 'phantom');
+  const selectedWalletAccount = externalWallet || solanaWallets[0];
 
   const isConnected = authenticated && !!selectedWalletAccount;
   const walletAddress = (selectedWalletAccount as any)?.address || '';

@@ -48,7 +48,7 @@ createRoot(document.getElementById("root")!).render(
         accentColor: '#fbbf24',
         walletChainType: 'solana-only',
       },
-      loginMethods: ['email'],
+      loginMethods: ['email', 'wallet'],
       embeddedWallets: {
         createOnLogin: 'users-without-wallets',
         solana: {
