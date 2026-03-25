@@ -405,7 +405,7 @@ export function SamuMap({ walletAddress }: SamuMapProps) {
     : [];
 
   return (
-    <div className={`${isActive ? "fixed inset-0 z-[60] bg-[#0d0d1a] flex flex-col" : "space-y-4"}`}>
+    <div className={`${isActive ? "fixed inset-y-0 inset-x-0 z-[60] bg-[#0d0d1a] flex flex-col sm:left-[calc(50%-215px)] sm:right-auto sm:w-[430px]" : "space-y-4"}`}>
       <div className={`relative overflow-hidden ${isActive ? "h-[33vh] flex-shrink-0" : "rounded-lg border border-border/50"}`}>
         <MapContainer
           center={[20, 0]}
