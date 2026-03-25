@@ -74,6 +74,7 @@ const DrawerContent = React.forwardRef<
         ref={ref}
         className={cn(
           "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border bg-background",
+          "sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-[430px]",
           className
         )}
         style={dynamicStyle}
