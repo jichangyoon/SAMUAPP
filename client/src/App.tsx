@@ -13,7 +13,6 @@ import { SplashScreen } from "@/components/splash-screen";
 import { getDeviceId } from "./utils/deviceFingerprint";
 import wagusLogo from "@/assets/wagus-logo.webp";
 import doctorbirdLogo from "@/assets/doctorbird-logo.webp";
-import samuLogo from "@/assets/samu-logo.webp";
 
 const Router = memo(() => {
   return (
@@ -44,7 +43,7 @@ function App() {
         await getDeviceId();
         setDeviceIdReady(true);
 
-        const imagesToPreload = [wagusLogo, doctorbirdLogo, samuLogo];
+        const imagesToPreload = [wagusLogo, doctorbirdLogo];
 
         const imagePromises = imagesToPreload.map(src => {
           return new Promise((resolve) => {

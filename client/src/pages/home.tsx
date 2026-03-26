@@ -34,7 +34,7 @@ import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Meme } from "@shared/schema";
-import samuLogoImg from "@/assets/samu-logo.webp";
+const samuLogoImg = "data:image/webp;base64,UklGRrIDAABXRUJQVlA4IKYDAADQEgCdASpQAFAAPpE+mUilo6KhKln8OLASCWYA0TgXrXRmdtx5gNz/6hP0AOlMrPON272fiOF2VZYytZuMn0Y88z0x7A36y9bP0cEKXAQU/gsM8DKs3633nJ48B5/uohDLug0w3H/i7C7dYNpmJK7xPJRHlIYkOa4JRrFvpPYEFz6hjw6qvEwYoMBWg2irraumyNEu3rSc1jPrL9yRZgAA/voqy//ow//ww//ww/fS+6FwLNffePf8nJGwjZT7KWSoFZjdokFdm2fH4jK6MqqY57bqf87zfhZjrde8+2g5772UOVMW6e7YxVXpI+yInlxJOMQrHFjypJJybZAx8g9Ynv9gkEE2nRyzPWrnvM9TWhyEYAeRLlC5YmXFU236WDXQeKKqfl2xgN5MeDAJSi50JTBXUiw4v55B9NVc4ra0n6bAev6XBzlJX43kNyfDKxDdxTNFyAa2JetdizMdRqHF5ezA3q9q2YxbU1O2lCBrkAvVkGV8Hc/gEl0GzaJXBjeMIwTSD2PhYXMfw61r7w6f+O27yvE8pZwYuKt6GISmUR/5LYVbaS2JFCSxcZqDS2rhCtBr0CCvpCJeHlPt8+5vcCAlY0Fjh/47AAWvnDrW+iFdD+9YNEdj0wHiegU7pYhEhzFXWPTxCfE+dq4wVdKOm3U79dBXFl9o8yxG8Fb2VQRb9bxdt5Ost+uCdOTxtY3uftXHdrrF3tQwM6vXmX81acxszGMtH/p/pUVTC3spr8eA2KrfUrQh4Wp9Txr2mecQtNk5zu4fbjpLj6FQ5POFrQJtnB8TOV3dXDZ/H1Cv9rSdAPq4rLOWeIlgQLqKf53zpidyUpvCllPIgWFq25wSoetN3ajg4zsx0ipGbq0Jx9w/sqf739zdCKlUJRXuJ3cd7rn2r/aJRECcgjyd0GJ/wh8XWekubLKAOo8LEOH6KbtZUXd5vICIbHpmK1CvbjA31FLfbP5e7a9x0zp4lQXVPTMuk4Tdgu2am5thtVv1WG6EyiecbqQcMNaskYPuaItffxhrUU3ycV7047RQF1hdc6boITPBjCZ7ziMfiKlk9tCWpNw9wSJKc6IvjJTcFnoWmQKwgbtpsIRb6QvzBFnujuUMWEo2wCY/PqjAbbaqOjBSzo2unAVIQ6efDIq8m//zObjrAEjakgD6WpLG/3/B3F8/hY2lxfgbHeSYqIsfnliOdyZ5+UsJasyam+SZlrF0wegeXYv5uNqsMAp7fPl5my3MgAAA";
 import { useSamuBalance } from "@/hooks/use-samu-balance";
 
 // Real-time archive card component
@@ -421,8 +421,6 @@ export default function Home() {
                       src={samuLogoImg} 
                       alt="SAMU Wolf" 
                       className="w-full h-full object-cover rounded-full"
-                      decoding="sync"
-                      fetchPriority="high"
                     />
                   </div>
                   <span className="text-lg font-bold text-primary">SAMU</span>
