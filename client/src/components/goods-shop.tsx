@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { usePrivy } from '@privy-io/react-auth';
+import { useWalletAddress } from '@/hooks/use-wallet-address';
 import { useUniversalSignTransaction } from "@/hooks/use-universal-sign-transaction";
 import { Transaction } from '@solana/web3.js';
 import { getSharedConnection } from "@/lib/solana";
@@ -332,13 +333,7 @@ export function GoodsShop() {
   const { authenticated, user } = usePrivy();
   const { toast } = useToast();
 
-  const solanaWallets = user?.linkedAccounts?.filter(account =>
-    account.type === 'wallet' && account.chainType === 'solana'
-  ) || [];
-  const externalWallet = solanaWallets.find(w => (w as any).connectorType !== 'embedded');
-  const selectedWalletAccount = externalWallet || solanaWallets[0];
-  const walletAddress = (selectedWalletAccount as any)?.address || '';
-
+  const { walletAddress } = useWalletAddress();
   const signTransaction = useUniversalSignTransaction(walletAddress);
 
   const solConnection = getSharedConnection();

@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, memo, useMemo, ChangeEvent } from "react";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWalletAddress } from "@/hooks/use-wallet-address";
 import { useUniversalSignTransaction } from "@/hooks/use-universal-sign-transaction";
-import { Transaction, Connection } from "@solana/web3.js";
+import { Transaction } from "@solana/web3.js";
+import { getSharedConnection } from "@/lib/solana";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,15 +26,9 @@ import { useSamuBalance } from "@/hooks/use-samu-balance";
 
 import { getMediaType } from "@/utils/media-utils";
 
-const SOL_CONNECTION = new Connection(
-  import.meta.env.VITE_HELIUS_API_KEY
-    ? `https://rpc.helius.xyz/?api-key=${import.meta.env.VITE_HELIUS_API_KEY}`
-    : "https://api.mainnet-beta.solana.com",
-  "confirmed"
-);
-
 const Profile = memo(() => {
   const { user, authenticated } = usePrivy();
+  const { walletAddress, selectedWalletAccount } = useWalletAddress();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
@@ -51,11 +47,6 @@ const Profile = memo(() => {
   const [showAllVotes, setShowAllVotes] = useState(false);
   const [expandedMemeContests, setExpandedMemeContests] = useState<Set<number>>(new Set());
   const [expandedVoteContests, setExpandedVoteContests] = useState<Set<number>>(new Set());
-  // 지갑 주소 가져오기 (홈과 동일한 로직, 외부 지갑 우선)
-  const walletAccounts = user?.linkedAccounts?.filter(account => account.type === 'wallet') || [];
-  const solanaWallet = walletAccounts.find(w => w.chainType === 'solana' && (w as any).connectorType !== 'embedded') || walletAccounts.find(w => w.chainType === 'solana');
-  const selectedWalletAccount = solanaWallet || walletAccounts[0];
-  const walletAddress = selectedWalletAccount?.address || '';
 
   const signTransaction = useUniversalSignTransaction(walletAddress);
 
@@ -210,9 +201,10 @@ const Profile = memo(() => {
         for (const item of prepareData.transactions) {
           const tx = Transaction.from(Buffer.from(item.transaction, "base64"));
           toast({ title: `Signing claim for contest #${item.contestId}...`, duration: 3000 });
-          const signedTx = await signTransaction(tx, SOL_CONNECTION);
-          const sig = await SOL_CONNECTION.sendRawTransaction(signedTx.serialize());
-          await SOL_CONNECTION.confirmTransaction(sig, "confirmed");
+          const conn = getSharedConnection();
+          const signedTx = await signTransaction(tx, conn);
+          const sig = await conn.sendRawTransaction(signedTx.serialize());
+          await conn.confirmTransaction(sig, "confirmed");
           sigs.push(sig);
           totalClaimed += item.solAmount;
         }
@@ -801,7 +793,7 @@ const Profile = memo(() => {
                   {walletAddress}
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  {selectedWalletAccount?.chainType === 'solana' ? 'Solana Network' : 'Ethereum Network'}
+                  {(selectedWalletAccount as any)?.chainType === 'solana' ? 'Solana Network' : 'Ethereum Network'}
                 </div>
               </div>
             )}
@@ -813,7 +805,7 @@ const Profile = memo(() => {
                   walletAddress={walletAddress}
                   samuBalance={stats.currentSamuBalance}
                   solBalance={stats.currentSolBalance}
-                  chainType={selectedWalletAccount?.chainType || 'solana'}
+                  chainType={(selectedWalletAccount as any)?.chainType || 'solana'}
                 />
               </div>
             )}

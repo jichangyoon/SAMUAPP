@@ -16,6 +16,7 @@ const SamuMap = lazy(() => import("@/components/samu-map").then(m => ({ default:
 
 
 import { usePrivy } from '@privy-io/react-auth';
+import { useWalletAddress } from "@/hooks/use-wallet-address";
 import { useUniversalSignTransaction } from "@/hooks/use-universal-sign-transaction";
 import { Transaction } from '@solana/web3.js';
 import { getSharedConnection } from "@/lib/solana";
@@ -143,19 +144,8 @@ export default function Home() {
   
   const solConnection = useMemo(() => getSharedConnection(), []);
 
-  // Solana 지갑만 사용 - 외부(팬텀) 우선, 없으면 임베디드 지갑
-  const solanaWallets = user?.linkedAccounts?.filter(account =>
-    account.type === 'wallet' && account.chainType === 'solana'
-  ) || [];
-  const externalWallet = solanaWallets.find(w => (w as any).connectorType !== 'embedded');
-  const selectedWalletAccount = externalWallet || solanaWallets[0];
-
-  const isConnected = authenticated && !!selectedWalletAccount;
-  const walletAddress = (selectedWalletAccount as any)?.address || '';
-
+  const { walletAddress, isConnected } = useWalletAddress();
   const signTransaction = useUniversalSignTransaction(walletAddress);
-
-
 
   // Get archived contests
   const { data: archivedContests = [], isLoading: isLoadingArchives } = useQuery({

@@ -11,22 +11,9 @@ import { Admin } from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 import { SplashScreen } from "@/components/splash-screen";
 import { getDeviceId } from "./utils/deviceFingerprint";
-
-// Global error handler for Privy iframe issues
-window.addEventListener('error', (event) => {
-  const target = event.target as HTMLElement;
-  if (event.message?.includes('Privy iframe') || target?.tagName === 'IFRAME') {
-    event.preventDefault();
-    return false;
-  }
-});
-
-// Handle unhandled promise rejections
-window.addEventListener('unhandledrejection', (event) => {
-  if (event.reason?.message?.includes('Privy') || event.reason?.message?.includes('iframe')) {
-    event.preventDefault();
-  }
-});
+import wagusLogo from "@/assets/wagus-logo.webp";
+import doctorbirdLogo from "@/assets/doctorbird-logo.webp";
+import samuLogo from "@/assets/samu-logo.webp";
 
 const Router = memo(() => {
   return (
@@ -49,36 +36,25 @@ function App() {
   const [preloadComplete, setPreloadComplete] = useState(false);
   const [deviceIdReady, setDeviceIdReady] = useState(false);
 
-  // Set dark mode as default and preload images
   useEffect(() => {
     document.documentElement.classList.add('dark');
-    
-    // Initialize device ID first, then preload images
+
     const initializeApp = async () => {
       try {
-        // 1. 디바이스 ID 먼저 초기화
         await getDeviceId();
         setDeviceIdReady(true);
-        
-        // 2. 이미지 프리로드
-        const imagesToPreload = [
-          // Partner logos
-          '/src/assets/wagus-logo.webp',
-          '/src/assets/doctorbird-logo.webp',
-          // SAMU logo
-          '/src/assets/samu-logo.webp'
-        ];
-        
-        // Load all images with Promise.all to wait for completion
+
+        const imagesToPreload = [wagusLogo, doctorbirdLogo, samuLogo];
+
         const imagePromises = imagesToPreload.map(src => {
           return new Promise((resolve) => {
             const img = new Image();
             img.onload = resolve;
-            img.onerror = resolve; // Continue even if some images fail
+            img.onerror = resolve;
             img.src = src;
           });
         });
-        
+
         try {
           await Promise.all(imagePromises);
           setPreloadComplete(true);
@@ -91,15 +67,14 @@ function App() {
         setPreloadComplete(true);
       }
     };
-    
+
     initializeApp();
   }, []);
 
-  // Show splash screen on first load
   if (showSplash || !deviceIdReady) {
     return (
-      <SplashScreen 
-        onComplete={() => setShowSplash(false)} 
+      <SplashScreen
+        onComplete={() => setShowSplash(false)}
         preloadComplete={preloadComplete && deviceIdReady}
       />
     );

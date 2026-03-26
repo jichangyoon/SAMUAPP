@@ -1,23 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { LogOut, Mail, Settings } from "lucide-react";
 import { usePrivy } from '@privy-io/react-auth';
+import { useWalletAddress } from '@/hooks/use-wallet-address';
 import { useState, useEffect, memo } from 'react';
 import { useLocation } from "wouter";
 
 export const WalletConnect = memo(function WalletConnect() {
   const { ready, authenticated, user, login, logout } = usePrivy();
+  const { walletAddress, isConnected, selectedWalletAccount } = useWalletAddress();
   const [, setLocation] = useLocation();
   const [waitingForReady, setWaitingForReady] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-
-  const solanaWallets = user?.linkedAccounts?.filter(account =>
-    account.type === 'wallet' && account.chainType === 'solana'
-  ) || [];
-  const externalWallet = solanaWallets.find(w => (w as any).connectorType !== 'embedded');
-  const selectedWalletAccount = externalWallet || solanaWallets[0];
-
-  const isConnected = authenticated && !!selectedWalletAccount;
-  const walletAddress = (selectedWalletAccount as any)?.address || '';
 
   // ready 상태 대기 → 준비되면 자동으로 login 호출
   useEffect(() => {
