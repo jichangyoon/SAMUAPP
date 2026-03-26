@@ -51,7 +51,7 @@ createRoot(document.getElementById("root")!).render(
         walletChainType: 'solana-only',
         walletList: ['phantom', 'solflare'],
       },
-      loginMethods: ['email', 'wallet'],
+      loginMethods: ['email', 'wallet', 'google'],
       embeddedWallets: {
         createOnLogin: 'users-without-wallets',
         solana: {
