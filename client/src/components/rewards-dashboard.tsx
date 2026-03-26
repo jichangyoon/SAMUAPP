@@ -388,9 +388,18 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
       queryClient.invalidateQueries({ queryKey: ["/api/rewards/summary", walletAddress] });
       setOpenDrawer(null);
     } catch (err: any) {
+      const msg: string = err?.message ?? '';
+      const isInsufficientFunds =
+        msg.includes('insufficient') ||
+        msg.includes('Insufficient') ||
+        msg.includes('0x1') ||
+        msg.includes('lamports') ||
+        msg.includes('funds');
       toast({
         title: "Claim Failed",
-        description: err.message,
+        description: isInsufficientFunds
+          ? "Insufficient SOL balance for claim."
+          : msg || "Unknown error",
         variant: "destructive",
       });
     } finally {

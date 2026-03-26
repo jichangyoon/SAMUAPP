@@ -10,8 +10,12 @@ export function useUniversalSignTransaction(walletAddress: string) {
 
   return async (transaction: Transaction, connection: Connection): Promise<SolanaTransaction> => {
     const activeWallet = wallets.find(w => w.address === walletAddress);
-    if (activeWallet && (activeWallet as any).connectorType !== 'embedded') {
-      return activeWallet.signTransaction(transaction);
+
+    if (activeWallet) {
+      if ((activeWallet as any).connectorType !== 'embedded') {
+        return activeWallet.signTransaction(transaction);
+      }
+      return signTransaction({ transaction, connection }) as Promise<SolanaTransaction>;
     }
 
     const phantomProvider = (window as any).phantom?.solana ?? (window as any).solana;
