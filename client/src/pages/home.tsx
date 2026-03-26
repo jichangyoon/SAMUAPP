@@ -416,11 +416,13 @@ export default function Home() {
                 </>
               ) : (
                 <>
-                  <div className="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center samu-wolf-logo overflow-hidden flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-transparent flex items-center justify-center samu-wolf-logo overflow-hidden flex-shrink-0">
                     <img 
                       src={samuLogoImg} 
                       alt="SAMU Wolf" 
                       className="w-full h-full object-cover rounded-full"
+                      decoding="sync"
+                      fetchPriority="high"
                     />
                   </div>
                   <span className="text-lg font-bold text-primary">SAMU</span>
