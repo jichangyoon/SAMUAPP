@@ -38,7 +38,7 @@ window.addEventListener('unhandledrejection', handleUnhandledRejection, { passiv
 window.addEventListener('error', handleError, true);
 
 const solanaConnectors = toSolanaWalletConnectors({
-  walletConnectProjectId: '88a9959df96940fde81441818d3b9b3d',
+  shouldAutoConnect: false,
 });
 
 createRoot(document.getElementById("root")!).render(
