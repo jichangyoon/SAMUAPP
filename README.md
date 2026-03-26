@@ -76,7 +76,7 @@ A custom Anchor program (`samu-rewards`) replaces server-held escrow with PDA-co
 - `initialize` ✅ Mainnet deployed
 - `deposit_profit` ✅ Mainnet verified (SOL flows directly to escrow PDA at purchase)
 - `record_allocation` ✅ Mainnet verified (admin pre-signs, user covers gas)
-- `claim` ✅ Mainnet E2E verified (2026-03-20, single TX, SOL confirmed received)
+- `claim` ✅ Mainnet E2E verified (2026-03-26, single TX — Privy embedded wallet + external Phantom wallet both confirmed)
 
 ### Phase 3 — IP Equity cNFT 📐
 

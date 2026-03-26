@@ -16,7 +16,7 @@ The platform operates on a pipeline: Meme Contest → Goods (Printful) → Ecosy
 **Key Features:**
 - **Voting System:** On-chain SAMU SPL token transfers to a treasury wallet, supporting in-app voting and Solana Blinks with transaction verification.
 - **Escrow, Order & Accounting:** SOL payments for merchandise are split into cost price (to Treasury) and profit (to `escrow_pool` PDA in contract mode, or Escrow wallet otherwise). Profits are distributed as 45% to Creators, 40% to Voters, and 15% to the Platform.
-- **Printful Webhook:** Integrates with Printful v2 webhooks for automated order status updates and profit distribution upon `shipment_delivered`, with a 30-day timeout scheduler.
+- **Printful Webhook & Polling:** Integrates with Printful v2 webhooks for automated order status updates and profit distribution upon `shipment_delivered`, with a 30-day timeout scheduler. A polling scheduler (every 6 hours) additionally syncs order status and triggers profit distribution for any orders missed by webhooks.
 - **Reward System:**
     - **Creator Rewards (45%):** Based on vote share per contest. Tracked via per-order, per-creator rows (`creator_reward_distributions`).
     - **Voter Rewards (40%):** Currently RPS model (`voterRewardPool`). Pre-Phase 3 migration planned → Direct Allocation (per-order rows, same as Creator) for unified tracking and explicit audit trail.
@@ -25,10 +25,11 @@ The platform operates on a pipeline: Meme Contest → Goods (Printful) → Ecosy
 - **Order Geocoding:** Uses OpenStreetMap Nominatim API for precise latitude/longitude based on postal code and country.
 - **My Profile:** User dashboard showing "My Memes," "My Votes," "Rewards" (claimable SOL), and "Activity."
 - **Archiving System:** Processes ended contests for archiving into Cloudflare R2 with parallel processing and retry mechanisms, ensuring DB atomicity.
-- **Smart Contract Integration (Phase 2):** Solana program `samu-rewards` built with Anchor framework (`SAMU_REWARDS_PROGRAM_ID`).
+- **Smart Contract Integration (Phase 2 ✅ Fully Validated 2026-03-26):** Solana program `samu-rewards` built with Anchor framework (`SAMU_REWARDS_PROGRAM_ID`).
     - **Contract Structure:** `initialize_pool`, `deposit_profit`, `record_allocation` (single combined amount for Creator+Voter), `claim`.
-    - **Gas Fee Structure:** Fixed server gas fees for `initialize_pool` and `deposit_profit` per delivery; user pays minimal gas for `record_allocation` + `claim`.
+    - **Gas Fee Structure:** Fixed server gas fees for `initialize_pool` and `deposit_profit` per delivery; user pays minimal gas for `record_allocation` + `claim` (~0.002 SOL needed for first claim, covers PDA creation rent).
     - **Flows:** Profit directly to `escrow_pool` PDA on payment. Claim involves server building a single transaction, admin pre-signing, and user final signing.
+    - **Wallet Support:** Privy embedded wallets and external wallets (Phantom) both supported via `useUniversalSignTransaction` hook.
     - **Upgrades:** Contract upgrades are in-place, preserving Program ID and existing PDAs.
     - **Fallback:** Server-side Solana utility (`server/utils/solana.ts`) automatically activates contract mode if `SAMU_REWARDS_PROGRAM_ID` is set, otherwise falls back to DB-based distribution.
 
