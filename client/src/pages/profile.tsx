@@ -706,7 +706,11 @@ const Profile = memo(() => {
                   <div>
                     <h3 className="text-sm font-bold text-foreground truncate">{displayName}</h3>
                     <p className="text-xs text-muted-foreground">
-                      {user?.email?.address || "Guest User - Please login to edit profile"}
+                      {user?.email?.address 
+                        ? user.email.address
+                        : user
+                          ? "Wallet Connected"
+                          : "Guest User - Please login to edit profile"}
                     </p>
                   </div>
                 )}
