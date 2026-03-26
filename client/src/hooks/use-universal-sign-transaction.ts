@@ -13,6 +13,12 @@ export function useUniversalSignTransaction(walletAddress: string) {
     if (activeWallet && (activeWallet as any).connectorType !== 'embedded') {
       return activeWallet.signTransaction(transaction);
     }
+
+    const phantomProvider = (window as any).phantom?.solana ?? (window as any).solana;
+    if (phantomProvider?.isConnected) {
+      return phantomProvider.signTransaction(transaction) as Promise<SolanaTransaction>;
+    }
+
     return signTransaction({ transaction, connection }) as Promise<SolanaTransaction>;
   };
 }
