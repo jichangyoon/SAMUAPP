@@ -7,8 +7,9 @@ import { useLocation } from "wouter";
 export const WalletConnect = memo(function WalletConnect() {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const [, setLocation] = useLocation();
+  const [waitingForReady, setWaitingForReady] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Solana 지갑만 사용 - 외부(팬텀) 우선, 없으면 임베디드 지갑
   const solanaWallets = user?.linkedAccounts?.filter(account =>
     account.type === 'wallet' && account.chainType === 'solana'
   ) || [];
@@ -18,9 +19,33 @@ export const WalletConnect = memo(function WalletConnect() {
   const isConnected = authenticated && !!selectedWalletAccount;
   const walletAddress = (selectedWalletAccount as any)?.address || '';
 
-  // 지갑 연결 안정성을 위한 에러 바운더리
-  const [connectionError, setConnectionError] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  // ready 상태 대기 → 준비되면 자동으로 login 호출
+  useEffect(() => {
+    if (waitingForReady && ready) {
+      setWaitingForReady(false);
+      login();
+    }
+  }, [ready, waitingForReady, login]);
+
+  // 8초 타임아웃: ready가 여전히 false면 안내
+  useEffect(() => {
+    if (!waitingForReady) return;
+    const timeout = setTimeout(() => {
+      if (!ready) {
+        setWaitingForReady(false);
+        alert('연결 준비에 실패했습니다. 페이지를 새로고침 후 다시 시도해주세요.');
+      }
+    }, 8000);
+    return () => clearTimeout(timeout);
+  }, [waitingForReady, ready]);
+
+  const handleConnect = () => {
+    if (ready) {
+      login();
+    } else {
+      setWaitingForReady(true);
+    }
+  };
 
   // Check admin status
   useEffect(() => {
@@ -35,7 +60,6 @@ export const WalletConnect = memo(function WalletConnect() {
           const data = await response.json();
           setIsAdmin(data.isAdmin);
         } catch (error) {
-
           setIsAdmin(false);
         }
       } else {
@@ -46,15 +70,7 @@ export const WalletConnect = memo(function WalletConnect() {
     checkAdminStatus();
   }, [authenticated, user?.email?.address]);
 
-  useEffect(() => {
-    if (authenticated && !selectedWalletAccount) {
-      setConnectionError('Wallet connection failed');
-    } else {
-      setConnectionError(null);
-    }
-  }, [authenticated, selectedWalletAccount]);
-
-  if (!ready) {
+  if (!ready && !waitingForReady) {
     return (
       <Button disabled size="sm" className="bg-muted text-muted-foreground">
         <Mail className="h-4 w-4 mr-1" />
@@ -63,8 +79,17 @@ export const WalletConnect = memo(function WalletConnect() {
     );
   }
 
+  if (waitingForReady) {
+    return (
+      <Button disabled size="sm" className="bg-muted text-muted-foreground">
+        <Mail className="h-4 w-4 mr-1" />
+        Preparing...
+      </Button>
+    );
+  }
+
   if (authenticated && user && selectedWalletAccount) {
-    const displayAddress = walletAddress 
+    const displayAddress = walletAddress
       ? `${walletAddress.slice(0, 4)}...${walletAddress.slice(-3)}`
       : 'Connected';
 
@@ -101,11 +126,10 @@ export const WalletConnect = memo(function WalletConnect() {
 
   return (
     <Button
-          onClick={login}
-          disabled={!!connectionError}
-          className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold disabled:opacity-50"
-        >
-          {connectionError ? 'Connection Error' : 'Connect Wallet'}
-        </Button>
+      onClick={handleConnect}
+      className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+    >
+      Connect Wallet
+    </Button>
   );
 });
