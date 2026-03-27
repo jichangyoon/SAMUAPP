@@ -1,5 +1,5 @@
 # SAMU Protocol — Hackathon Demo Script (5 min)
-> Slide deck: `/hackathon-deck.html` | 12 slides | Navigate with ← → keys or buttons
+> Slide deck: `/hackathon-deck.html` | 14 slides | Navigate with ← → keys or buttons
 
 ---
 
@@ -15,7 +15,36 @@ On Solana, meme communities already have the story and the fans. They're just mi
 
 ---
 
-## Slide 2 — Hook (20 sec)
+## Slide 2 — Mickey Mouse → Disney (15 sec)
+
+1928. One sketch. That's how it started.
+
+A cartoon mouse became a $200 billion entertainment empire. That's the power of IP.
+
+---
+
+## Slide 3 — Pixar + DreamWorks (15 sec)
+
+It wasn't just Disney.
+
+Pixar started with a desk lamp. $7.4 billion — acquired by Disney.
+DreamWorks started with a panda. $3.8 billion — acquired by Comcast.
+
+One character. One story. Billion-dollar empire.
+
+---
+
+## Slide 4 — What about Web3? (20 sec)
+
+DOGE. WIF. BONK. PEPE. BOME.
+
+Billions in market cap. Millions of fans. Viral characters with global communities.
+
+But zero IP monetization. All that creative energy — and none of it captured.
+
+---
+
+## Slide 5 — Hook (20 sec)
 
 Memecoins are community-born IPs.
 
@@ -25,7 +54,7 @@ But most of them just die. The hype fades, the community scatters, and all that 
 
 ---
 
-## Slide 3 — Problem (30 sec)
+## Slide 6 — Problem (30 sec)
 
 Here's why they die.
 
@@ -39,7 +68,7 @@ Memecoin communities hold the most powerful cultural assets on the internet. But
 
 ---
 
-## Slide 4 — Solution (30 sec)
+## Slide 7 — Solution (30 sec)
 
 SAMU Protocol is that infrastructure.
 
@@ -51,84 +80,66 @@ No trust required. No manual steps. The contract handles everything.
 
 ---
 
-## Slide 5 — How It Works (35 sec)
+## Slide 8 — How It Works (30 sec)
 
 Three stakeholders. One flywheel.
 
 Creators upload original memes to the community contest. They earn 45% of all goods revenue — proportional to the votes their meme receives.
 
-Voters stake community SPL tokens to vote for the memes they believe in. They're curating the IP. They earn 40% of goods revenue — proportional to how much they staked.
+Voters stake community SPL tokens to vote for the memes they believe in. They're curating the IP. They earn 40% of goods revenue.
 
-The team runs the protocol infrastructure. The winning meme is archived, printed, and listed automatically. The team earns 15% to sustain operations.
+The team runs the protocol. Winning meme is archived, printed, listed — automatically. 15% sustains operations.
 
-When a customer buys the goods — the Anchor escrow releases, and SOL hits all three wallets simultaneously.
+When a customer buys the goods — the Anchor escrow releases, SOL hits all three wallets simultaneously.
 
 ---
 
-## Slide 6 — Protocol Design (25 sec)
+## Slide 9 — Protocol Design (20 sec)
 
-Here's the key design insight: this is not just a SAMU platform.
+Here's the key design insight: SAMU is first, but the protocol is designed to be token-agnostic.
 
-The protocol is token-agnostic. Any community with an SPL token can onboard and run their own contest. SAMU is the first IP. BONK, WIF — they could be next.
+Any community with an SPL token can eventually run their own contest. But like an exchange that doesn't list every token, we curate intentionally.
 
-But like an exchange that doesn't list every token, we curate. We gate on IP copyright risk and community quality. That curation is the moat.
+IP copyright risk management is the moat.
 
 > **Likely Q: "Why not permissionless?"**
-> "IP copyright risk. We curate intentionally. As we build automated screening tools and sufficient data, we'll open it up in stages."
+> "IP copyright risk. We curate intentionally. As we build automated screening tools, we'll open it up in stages."
 
 ---
 
-## Slide 7 — Traction (25 sec)
+## Slide 10 — Traction (25 sec)
 
 > Screen: animated counter display
 
-We've validated the full pipeline with the SAMU community on Solana mainnet.
+471 wallets joined. 81 memes uploaded. 220 million SAMU tokens voted.
 
-471 wallets joined. 81 memes uploaded. 220 million SAMU tokens voted. 0.61 SOL actually distributed to creators and voters.
+And the full pipeline has been completed end-to-end — meme upload, goods order, delivery, and revenue distributed on-chain.
 
-From meme upload to goods delivery to on-chain revenue distribution — end-to-end, verified on mainnet. This is not a demo. It works.
-
----
-
-## Slide 8 — Architecture (35 sec)
-
-> Screen: layer diagram
-
-Let me show you the architecture.
-
-At the top: communities. Right now SAMU, and eventually BONK, WIF, any SPL token community.
-
-Below that: the protocol layer. Contest engine, SPL voting processor, IP archive on R2, and Printful goods automation.
-
-On-chain: the Anchor Escrow PDA holds funds. When goods are purchased, the auto-distribution contract fires. And Blinks let users vote directly from X — no app install needed.
-
-At the bottom: recipients. Creator, voter, platform — all receiving SOL in the same transaction.
+Every step. Verified on Solana mainnet.
 
 ---
 
-## Slide 9 — Market Opportunity (20 sec)
+## Slide 11 — Market Opportunity (15 sec)
 
 The opportunity sits at the intersection of three massive markets.
 
 $60 billion-plus in memecoin market cap. $250 billion creator economy. $400 billion global merchandise market.
 
-Tens of millions of memecoin holders are already building communities and creating memes. SAMU Protocol turns that activity into a closed-loop revenue cycle.
+Tens of millions of memecoin holders are already creating memes and building communities. SAMU Protocol turns that activity into a closed-loop revenue cycle.
 
 ---
 
-## Slide 10 — Why Solana (20 sec)
+## Slide 12 — Why Solana (15 sec)
 
 Memes live and die in minutes. Speed is everything.
 
 65,000 TPS, $0.00025 per transaction. Votes feel instant. Micro-rewards aren't eaten by gas.
 
-Solana Blinks let users vote directly from X without opening an app — viral meets on-chain. And every memecoin is already SPL-based, so onboarding a new community is just a config change.
+Blinks let users vote directly from X without opening an app. Every memecoin is SPL-based — onboarding a new community is just a config change.
 
 ---
 
-## Slide 11 — Token Economics (20 sec)
-
-> Screen: pie chart
+## Slide 13 — Token Economics (15 sec)
 
 The revenue split is the same for every community that onboards.
 
@@ -138,13 +149,13 @@ Creator 45%, Voter 40%, Platform 15%.
 
 ---
 
-## Slide 12 — Roadmap + CTA (20 sec)
+## Slide 14 — Roadmap + CTA (25 sec)
 
 Phase 1 and 2 are done. Mainnet is live.
 
 Phase 3: cNFT IP equity via Bubblegum. IP ownership becomes tradeable on-chain. Millions of NFTs at near-zero cost — only possible on Solana.
 
-Phase 4: Curated community listing. Verified communities only, quality-gated — the same way great exchanges only list great projects.
+One more thing — I'm a medical doctor with zero prior coding experience. 1,750 commits. I built this entire pipeline solo. If there's one thing I can tell you: this founder ships.
 
 SAMU is the first IP.
 
@@ -159,16 +170,18 @@ Thank you.
 | # | Slide | Target | Cumulative |
 |---|---|---|---|
 | 1 | What is IP? | 25 sec | 0:25 |
-| 2 | Hook | 15 sec | 0:40 |
-| 3 | Problem | 30 sec | 1:10 |
-| 4 | Solution | 30 sec | 1:40 |
-| 5 | How It Works | 35 sec | 2:15 |
-| 6 | Protocol Design | 20 sec | 2:35 |
-| 7 | Traction | 25 sec | 3:00 |
-| 8 | Architecture | 30 sec | 3:30 |
-| 9 | Market Opportunity | 15 sec | 3:45 |
-| 10 | Why Solana | 20 sec | 4:05 |
-| 11 | Token Economics | 15 sec | 4:20 |
-| 12 | Roadmap + CTA | 20 sec | 4:40 |
+| 2 | Mickey → Disney | 15 sec | 0:40 |
+| 3 | Pixar + DreamWorks | 15 sec | 0:55 |
+| 4 | What about Web3? | 20 sec | 1:15 |
+| 5 | Hook | 20 sec | 1:35 |
+| 6 | Problem | 30 sec | 2:05 |
+| 7 | Solution | 30 sec | 2:35 |
+| 8 | How It Works | 30 sec | 3:05 |
+| 9 | Protocol Design | 20 sec | 3:25 |
+| 10 | Traction | 25 sec | 3:50 |
+| 11 | Market Opportunity | 15 sec | 4:05 |
+| 12 | Why Solana | 15 sec | 4:20 |
+| 13 | Token Economics | 15 sec | 4:35 |
+| 14 | Roadmap + CTA | 25 sec | 5:00 |
 
-> Total: ~4 min 40 sec. Leaves 20 seconds of buffer to stay comfortably within 5 minutes.
+> Total: exactly 5:00. 아슬아슬하게 맞춤 — 발표 중 조금 빠르게 하면 버퍼 생김.

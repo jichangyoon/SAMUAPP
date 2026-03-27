@@ -360,8 +360,8 @@ p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75
 <!-- ── S6: PROTOCOL DESIGN ── -->
 <div class="slide" id="s6">
   <div class="eyebrow">Protocol Design</div>
-  <h2>Token-agnostic.<br><span class="grad">Any community can onboard.</span></h2>
-  <p class="sub">SAMU is the first IP. BONK, WIF — any community with an SPL token can run their own contest.</p>
+  <h2>Designed to be<br><span class="grad">token-agnostic.</span></h2>
+  <p class="sub">SAMU is the first IP. The protocol is built so any SPL community can run their own contest — when they're ready to onboard.</p>
   <div class="comm-grid">
     <div class="comm-item" style="border-color:rgba(20,241,149,.3);">
       <div class="comm-token gg">SAMU</div>
@@ -370,13 +370,13 @@ p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75
     </div>
     <div class="comm-item" style="border-color:rgba(255,107,53,.3);">
       <div class="comm-token go">BONK</div>
-      <div class="comm-desc">Solana's flagship memecoin<br>Community ready to onboard</div>
-      <div class="comm-status go">→ NEXT</div>
+      <div class="comm-desc">Solana's flagship memecoin<br>Pipeline-compatible by design</div>
+      <div class="comm-status go">DESIGNED FOR</div>
     </div>
     <div class="comm-item" style="border-color:rgba(0,194,255,.3);">
       <div class="comm-token gb">WIF</div>
-      <div class="comm-desc">Global memecoin<br>Goods pipeline compatible</div>
-      <div class="comm-status gb">→ NEXT</div>
+      <div class="comm-desc">Global memecoin<br>Pipeline-compatible by design</div>
+      <div class="comm-status gb">DESIGNED FOR</div>
     </div>
     <div class="comm-item" style="border-color:rgba(153,69,255,.3);">
       <div class="comm-token gp">+MORE</div>
@@ -395,55 +395,13 @@ p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75
     <div class="tr"><div class="num gg" id="cnt-users">0</div><div class="lbl">Wallets Joined</div></div>
     <div class="tr"><div class="num gp" id="cnt-memes">0</div><div class="lbl">Memes Uploaded</div></div>
     <div class="tr"><div class="num gb" id="cnt-samu">0</div><div class="lbl">SAMU Votes Cast (220M)</div></div>
-    <div class="tr"><div class="num" style="color:#FFD700;" id="cnt-sol">0</div><div class="lbl">SOL Distributed</div></div>
+    <div class="tr" style="border-color:rgba(20,241,149,.3);">
+      <div style="font-size:32px; line-height:1; margin-bottom:4px;">✅</div>
+      <div class="lbl" style="font-size:14px; font-weight:700; color:var(--g);">Revenue Distributed<br>On-Chain</div>
+    </div>
   </div>
-  <p class="sub" style="margin-top:24px;">Meme upload → community vote → goods order → delivery → on-chain revenue distribution.<br>End-to-end pipeline <strong style="color:var(--g)">live and verified on Solana mainnet.</strong></p>
+  <p class="sub" style="margin-top:24px;">Meme upload → community vote → goods order → delivery → on-chain revenue distribution.<br>Every step of the pipeline has been <strong style="color:var(--g)">completed and verified on Solana mainnet.</strong></p>
   <div class="badge" style="margin-top:20px;">Program ID: GYfzt1mzWNMurBEej4557YbKmceTWwW3L6attC7pAmWS</div>
-</div>
-
-<!-- ── S8: ARCHITECTURE ── -->
-<div class="slide" id="s8">
-  <div class="eyebrow">Architecture</div>
-  <h2>Protocol <span class="grad">Layer Diagram</span></h2>
-  <div class="proto">
-    <div class="proto-layer">
-      <div class="proto-label">COMMUNITY</div>
-      <div class="proto-items">
-        <div class="proto-item green">SAMU Community</div>
-        <div class="proto-item" style="border-style:dashed; color:var(--mu);">BONK Community</div>
-        <div class="proto-item" style="border-style:dashed; color:var(--mu);">WIF Community</div>
-        <div class="proto-item" style="border-style:dashed; color:var(--mu);">Any SPL Token...</div>
-      </div>
-    </div>
-    <div style="font-size:20px; color:var(--mu);">↓</div>
-    <div class="proto-layer">
-      <div class="proto-label">PROTOCOL</div>
-      <div class="proto-items">
-        <div class="proto-item purple">Contest Engine</div>
-        <div class="proto-item purple">SPL Voting</div>
-        <div class="proto-item purple">IP Archive (R2)</div>
-        <div class="proto-item purple">Printful Automation</div>
-      </div>
-    </div>
-    <div style="font-size:20px; color:var(--mu);">↓</div>
-    <div class="proto-layer">
-      <div class="proto-label">ON-CHAIN</div>
-      <div class="proto-items">
-        <div class="proto-item blue">Anchor Escrow PDA</div>
-        <div class="proto-item blue">Auto Distribution Contract</div>
-        <div class="proto-item blue">Blinks (vote from X)</div>
-      </div>
-    </div>
-    <div style="font-size:20px; color:var(--mu);">↓</div>
-    <div class="proto-layer">
-      <div class="proto-label">RECIPIENTS</div>
-      <div class="proto-items">
-        <div class="proto-item green">Creator 45% SOL</div>
-        <div class="proto-item purple">Voter 40% SOL</div>
-        <div class="proto-item blue">Platform 15% SOL</div>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- ── S9: MARKET OPPORTUNITY ── -->
@@ -578,7 +536,16 @@ p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75
       <div class="tl-desc">Verified communities<br>only — quality gated</div>
     </div>
   </div>
-  <div style="margin-top:36px; text-align:center; max-width:720px;">
+  <div style="margin-top:28px; background:rgba(153,69,255,.08); border:1px solid rgba(153,69,255,.25); border-radius:16px; padding:16px 32px; max-width:680px; text-align:left; display:flex; align-items:flex-start; gap:16px;">
+    <div style="font-size:28px; line-height:1; flex-shrink:0;">👨‍⚕️</div>
+    <div>
+      <div style="font-size:12px; font-weight:700; letter-spacing:2px; color:var(--p); margin-bottom:6px;">FOUNDER</div>
+      <div style="font-size:14px; color:var(--tx); line-height:1.6;">Medical doctor. Zero prior coding experience.<br>
+      <span style="color:var(--g); font-weight:700;">1,750+ commits.</span> Built this entire pipeline solo — from wallet auth to Anchor smart contract to Printful automation.<br>
+      <span style="color:var(--mu);">This founder ships.</span></div>
+    </div>
+  </div>
+  <div style="margin-top:24px; text-align:center; max-width:720px;">
     <p style="font-size:clamp(15px,1.8vw,20px); color:var(--mu); margin-bottom:14px;">SAMU is the first IP.</p>
     <p style="font-size:clamp(22px,3vw,42px); font-weight:900; line-height:1.2; background:linear-gradient(135deg,#fff 30%,#9945FF 70%,#14F195); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
       The goal is to turn<br>Solana into Disney.
