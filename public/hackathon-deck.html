@@ -387,21 +387,30 @@ p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75
   <p class="sub" style="margin-top:20px;">Just like exchanges don't list every token — SAMU Protocol curates only verified communities.<br><strong style="color:var(--tx)">IP copyright risk management is the moat.</strong></p>
 </div>
 
-<!-- ── S7: TRACTION ── -->
+<!-- ── S7: WHAT WE BUILT ── -->
 <div class="slide" id="s7">
-  <div class="eyebrow">Traction — Mainnet Verified</div>
-  <h2>Full pipeline validated<br><span class="grad">on Solana mainnet.</span></h2>
-  <div class="traction">
-    <div class="tr"><div class="num gg" id="cnt-users">0</div><div class="lbl">Wallets Joined</div></div>
-    <div class="tr"><div class="num gp" id="cnt-memes">0</div><div class="lbl">Memes Uploaded</div></div>
-    <div class="tr"><div class="num gb" id="cnt-samu">0</div><div class="lbl">SAMU Votes Cast (220M)</div></div>
-    <div class="tr" style="border-color:rgba(20,241,149,.3);">
-      <div style="font-size:32px; line-height:1; margin-bottom:4px;">✅</div>
-      <div class="lbl" style="font-size:14px; font-weight:700; color:var(--g);">Revenue Distributed<br>On-Chain</div>
+  <div class="eyebrow">What We Built</div>
+  <h2>Full pipeline.<br><span class="grad">Every stage verified on mainnet.</span></h2>
+  <div style="display:flex; flex-direction:column; gap:12px; margin-top:32px; max-width:580px; width:100%;">
+    <div style="display:flex; align-items:center; gap:16px; background:var(--s2); border:1px solid rgba(20,241,149,.2); border-radius:14px; padding:14px 22px;">
+      <span style="font-size:20px; flex-shrink:0;">✅</span>
+      <div style="text-align:left;"><span style="font-weight:700; color:var(--tx);">Contest Engine</span> <span style="color:var(--mu); font-size:13px;">— meme upload, voting, winner selection</span></div>
+    </div>
+    <div style="display:flex; align-items:center; gap:16px; background:var(--s2); border:1px solid rgba(20,241,149,.2); border-radius:14px; padding:14px 22px;">
+      <span style="font-size:20px; flex-shrink:0;">✅</span>
+      <div style="text-align:left;"><span style="font-weight:700; color:var(--tx);">SPL Token Voting</span> <span style="color:var(--mu); font-size:13px;">— on-chain transfers, Blinks support</span></div>
+    </div>
+    <div style="display:flex; align-items:center; gap:16px; background:var(--s2); border:1px solid rgba(20,241,149,.2); border-radius:14px; padding:14px 22px;">
+      <span style="font-size:20px; flex-shrink:0;">✅</span>
+      <div style="text-align:left;"><span style="font-weight:700; color:var(--tx);">IP Archive + Printful Automation</span> <span style="color:var(--mu); font-size:13px;">— winning meme → goods, zero manual steps</span></div>
+    </div>
+    <div style="display:flex; align-items:center; gap:16px; background:var(--s2); border:1px solid rgba(20,241,149,.2); border-radius:14px; padding:14px 22px;">
+      <span style="font-size:20px; flex-shrink:0;">✅</span>
+      <div style="text-align:left;"><span style="font-weight:700; color:var(--tx);">Anchor Escrow + On-Chain Distribution</span> <span style="color:var(--mu); font-size:13px;">— Creator / Voter / Platform split, trustless</span></div>
     </div>
   </div>
-  <p class="sub" style="margin-top:24px;">Meme upload → community vote → goods order → delivery → on-chain revenue distribution.<br>Every step of the pipeline has been <strong style="color:var(--g)">completed and verified on Solana mainnet.</strong></p>
-  <div class="badge" style="margin-top:20px;">Program ID: GYfzt1mzWNMurBEej4557YbKmceTWwW3L6attC7pAmWS</div>
+  <p class="sub" style="margin-top:24px;">Every stage of the pipeline has been <strong style="color:var(--g)">completed and verified on Solana mainnet.</strong></p>
+  <div class="badge" style="margin-top:16px;">Program ID: GYfzt1mzWNMurBEej4557YbKmceTWwW3L6attC7pAmWS</div>
 </div>
 
 <!-- ── S9: MARKET OPPORTUNITY ── -->
@@ -580,14 +589,7 @@ function animateCount(el, target, suffix = '', duration = 1300) {
   requestAnimationFrame(step);
 }
 
-let traction_done = false;
-function maybeAnimateTraction(idx) {
-  if (idx !== 9 || traction_done) return;
-  traction_done = true;
-  animateCount(document.getElementById('cnt-users'), 471, '');
-  animateCount(document.getElementById('cnt-memes'), 81, '');
-  animateCount(document.getElementById('cnt-samu'), 220000000, '');
-}
+function maybeAnimateTraction(idx) {}
 
 function show(n) {
   slides[cur].classList.remove('active');

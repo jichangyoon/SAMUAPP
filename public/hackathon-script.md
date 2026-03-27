@@ -107,15 +107,13 @@ IP copyright risk management is the moat.
 
 ---
 
-## Slide 10 — Traction (25 sec)
+## Slide 10 — What We Built (20 sec)
 
-> Screen: animated counter display
+Here's what we've actually built and verified.
 
-471 wallets joined. 81 memes uploaded. 220 million SAMU tokens voted.
+Contest engine. SPL token voting with Blinks. IP archive and Printful automation — winning meme becomes goods with zero manual steps. And an Anchor escrow contract that splits the revenue on-chain, trustlessly.
 
-And the full pipeline has been completed end-to-end — meme upload, goods order, delivery, and revenue distributed on-chain.
-
-Every step. Verified on Solana mainnet.
+Every stage of that pipeline has been completed and verified on Solana mainnet.
 
 ---
 
@@ -178,7 +176,7 @@ Thank you.
 | 7 | Solution | 30 sec | 2:35 |
 | 8 | How It Works | 30 sec | 3:05 |
 | 9 | Protocol Design | 20 sec | 3:25 |
-| 10 | Traction | 25 sec | 3:50 |
+| 10 | What We Built | 20 sec | 3:45 |
 | 11 | Market Opportunity | 15 sec | 4:05 |
 | 12 | Why Solana | 15 sec | 4:20 |
 | 13 | Token Economics | 15 sec | 4:35 |
