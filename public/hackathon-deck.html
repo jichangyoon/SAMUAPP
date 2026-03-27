@@ -120,9 +120,29 @@ p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75
 .stake-card .s-do { font-size: 12px; color: var(--mu); margin-bottom: 6px; }
 .stake-card .s-get { font-size: 13px; font-weight: 700; }
 
+/* ── IP EMPIRE SLIDES ── */
+.ip-hero { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; width: 100%; }
+.ip-single { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+.ip-single img { width: clamp(160px, 22vw, 260px); height: clamp(160px, 22vw, 260px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(153,69,255,.35)); }
+.ip-arrow-row { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; justify-content: center; }
+.ip-company { text-align: center; }
+.ip-company .co-name { font-size: clamp(14px, 1.8vw, 20px); color: var(--mu); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; }
+.ip-company .co-val { font-size: clamp(36px, 6vw, 80px); font-weight: 900; line-height: 1; }
+.ip-caption { font-size: clamp(13px, 1.4vw, 17px); color: var(--mu); margin-top: 4px; }
+
+.ip-pair { display: flex; gap: clamp(28px, 5vw, 80px); justify-content: center; align-items: flex-start; flex-wrap: wrap; margin-top: 16px; }
+.ip-pair-item { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.ip-pair-item img { width: clamp(120px, 16vw, 200px); height: clamp(120px, 16vw, 200px); object-fit: contain; filter: drop-shadow(0 0 28px rgba(153,69,255,.3)); }
+.ip-val-sm { font-size: clamp(28px, 4vw, 52px); font-weight: 900; line-height: 1.1; }
+
+.meme-grid { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 28px; }
+.meme-coin { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.meme-coin img { width: clamp(56px, 8vw, 88px); height: clamp(56px, 8vw, 88px); border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,.12); }
+.meme-coin span { font-size: 13px; font-weight: 700; color: var(--mu); letter-spacing: 1px; }
+
 /* ── SLIDE BACKGROUNDS ── */
 #s1 { background: radial-gradient(ellipse 60% 80% at 15% 50%, rgba(153,69,255,.12) 0%, transparent 70%), radial-gradient(ellipse 50% 70% at 85% 50%, rgba(20,241,149,.06) 0%, transparent 70%), var(--bg); }
-#s12 { background: radial-gradient(ellipse at center, rgba(153,69,255,.08) 0%, transparent 65%), var(--bg); }
+.slide-cta { background: radial-gradient(ellipse at center, rgba(153,69,255,.08) 0%, transparent 65%), var(--bg); }
 </style>
 </head>
 <body>
@@ -165,7 +185,84 @@ p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75
   <p class="sub" style="margin-top:28px;">On Solana, meme communities already have the story and the fans.<br>They're missing the revenue cycle.</p>
 </div>
 
-<!-- ── S2: HOOK ── -->
+<!-- ── S2: MICKEY MOUSE → DISNEY ── -->
+<div class="slide" id="s-ip1">
+  <div class="eyebrow">What is IP?</div>
+  <div class="ip-hero">
+    <div class="ip-arrow-row">
+      <div class="ip-single">
+        <img src="https://upload.wikimedia.org/wikipedia/en/d/d4/Mickey_Mouse.png" alt="Mickey Mouse" onerror="this.style.fontSize='80px';this.outerHTML='<div style=\'font-size:100px\'>🐭</div>'">
+        <div class="ip-caption">1928. One sketch.</div>
+      </div>
+      <div style="font-size: clamp(40px, 6vw, 80px); color: var(--g); font-weight: 900;">→</div>
+      <div class="ip-company">
+        <div class="co-name">The Walt Disney Company</div>
+        <div class="co-val" style="background:linear-gradient(135deg,var(--p),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">$200B+</div>
+        <div class="ip-caption">empire built on one character</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── S3: PIXAR + DREAMWORKS ── -->
+<div class="slide" id="s-ip2">
+  <div class="eyebrow">What is IP?</div>
+  <p style="font-size:clamp(15px,1.8vw,20px); color:var(--mu); margin-bottom:8px;">It wasn't just Disney.</p>
+  <div class="ip-pair">
+    <div class="ip-pair-item">
+      <img src="https://upload.wikimedia.org/wikipedia/en/thumb/5/5d/Luxo_Jr._character.png/220px-Luxo_Jr._character.png" alt="Luxo Jr" onerror="this.style.fontSize='80px';this.outerHTML='<div style=\'font-size:80px\'>💡</div>'">
+      <div style="text-align:center;">
+        <div style="font-size:13px;color:var(--mu);letter-spacing:2px;text-transform:uppercase;">Pixar</div>
+        <div class="ip-val-sm" style="color:var(--g);">$7.4B</div>
+        <div style="font-size:12px;color:var(--mu);">1986. One desk lamp.<br>Acquired by Disney.</div>
+      </div>
+    </div>
+    <div style="font-size:clamp(28px,4vw,52px);color:var(--mu);align-self:center;">&</div>
+    <div class="ip-pair-item">
+      <img src="https://upload.wikimedia.org/wikipedia/en/7/76/Kung_fu_panda.png" alt="Kung Fu Panda" onerror="this.style.fontSize='80px';this.outerHTML='<div style=\'font-size:80px\'>🐼</div>'">
+      <div style="text-align:center;">
+        <div style="font-size:13px;color:var(--mu);letter-spacing:2px;text-transform:uppercase;">DreamWorks</div>
+        <div class="ip-val-sm" style="color:var(--p);">$3.8B</div>
+        <div style="font-size:12px;color:var(--mu);">2008. One panda.<br>Acquired by Comcast.</div>
+      </div>
+    </div>
+  </div>
+  <p style="margin-top:28px;font-size:clamp(16px,2vw,22px);font-weight:700;color:var(--tx);">One character. One story. <span class="grad">Billion-dollar empire.</span></p>
+</div>
+
+<!-- ── S4: WEB3 REVERSAL ── -->
+<div class="slide" id="s-ip3">
+  <div class="eyebrow">The Opportunity</div>
+  <h2>What about <span class="grad">Web3?</span></h2>
+  <div class="meme-grid">
+    <div class="meme-coin">
+      <img src="https://assets.coingecko.com/coins/images/5/large/dogecoin.png" alt="DOGE" onerror="this.outerHTML='<div style=\'font-size:56px\'>🐕</div>'">
+      <span>DOGE</span>
+    </div>
+    <div class="meme-coin">
+      <img src="https://assets.coingecko.com/coins/images/33566/large/dogwifhat.png" alt="WIF" onerror="this.outerHTML='<div style=\'font-size:56px\'>🎩</div>'">
+      <span>WIF</span>
+    </div>
+    <div class="meme-coin">
+      <img src="https://assets.coingecko.com/coins/images/28600/large/bonk.jpg" alt="BONK" onerror="this.outerHTML='<div style=\'font-size:56px\'>🐶</div>'">
+      <span>BONK</span>
+    </div>
+    <div class="meme-coin">
+      <img src="https://assets.coingecko.com/coins/images/29850/large/pepe-token.jpeg" alt="PEPE" onerror="this.outerHTML='<div style=\'font-size:56px\'>🐸</div>'">
+      <span>PEPE</span>
+    </div>
+    <div class="meme-coin">
+      <img src="https://assets.coingecko.com/coins/images/34238/large/bome.png" alt="BOME" onerror="this.outerHTML='<div style=\'font-size:56px\'>📖</div>'">
+      <span>BOME</span>
+    </div>
+  </div>
+  <div style="margin-top:32px;background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.35);border-radius:16px;padding:20px 44px;display:inline-block;">
+    <p style="font-size:clamp(18px,2.4vw,30px);font-weight:800;color:var(--o);">Billions in market cap. Zero IP monetization.</p>
+    <p style="font-size:14px;color:var(--mu);margin-top:8px;">They have the characters, the communities, the cultural energy.<br>They're missing the revenue cycle.</p>
+  </div>
+</div>
+
+<!-- ── S5: HOOK ── -->
 <div class="slide" id="s2">
   <div class="eyebrow">The Opportunity</div>
   <h1>Memecoins are<br><span class="grad">community-born IPs.</span></h1>
@@ -451,8 +548,8 @@ p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75
   <p class="sub" style="margin-top:20px;">Same structure for every community that onboards — fair, transparent, and trustless</p>
 </div>
 
-<!-- ── S12: ROADMAP + CTA ── -->
-<div class="slide" id="s12">
+<!-- ── S15: ROADMAP + CTA ── -->
+<div class="slide slide-cta" id="s12">
   <div class="eyebrow">Roadmap</div>
   <h2>Phase 1 &amp; 2 done. <span class="grad">Mainnet live.</span></h2>
   <div class="tl">
@@ -518,7 +615,7 @@ function animateCount(el, target, suffix = '', duration = 1300) {
 
 let traction_done = false;
 function maybeAnimateTraction(idx) {
-  if (idx !== 6 || traction_done) return;
+  if (idx !== 9 || traction_done) return;
   traction_done = true;
   animateCount(document.getElementById('cnt-users'), 471, '');
   animateCount(document.getElementById('cnt-memes'), 81, '');
