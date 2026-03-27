@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "fHE2U16ZV1L3jU7Iz-fVj"
+uri = "file://public/SAMU-Protocol-Pitch-Deck.pptx"
+type = "slides"
+title = "SAMU Protocol Pitch Deck (.pptx)"
