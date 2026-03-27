@@ -153,7 +153,7 @@ Phase 1 and 2 are done. Mainnet is live.
 
 Phase 3: cNFT IP equity via Bubblegum. IP ownership becomes tradeable on-chain. Millions of NFTs at near-zero cost — only possible on Solana.
 
-One more thing — I'm a medical doctor with zero prior coding experience. I built this entire pipeline solo. If there's one thing I can tell you: this founder ships.
+One more thing — I'm a medical doctor with no coding background. I used AI tools to build this from scratch — wallet auth, Anchor smart contract, Printful automation, all of it solo. It's live on Solana mainnet right now.
 
 SAMU is the first IP.
 
