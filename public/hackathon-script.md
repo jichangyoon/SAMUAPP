@@ -1,152 +1,174 @@
-# SAMU Protocol 해커톤 데모 대본 (5분)
-> 슬라이드 덱: `/hackathon-deck.html` | 총 10장 | ← → 키 또는 버튼으로 넘기기
+# SAMU Protocol — Hackathon Demo Script (5 min)
+> Slide deck: `/hackathon-deck.html` | 12 slides | Navigate with ← → keys or buttons
 
 ---
 
-## 🎬 슬라이드 1 — Hook (20초)
+## Slide 1 — What is IP? (25 sec)
 
-안녕하세요. SAMU Protocol입니다.
+Let's start with a simple question: what is IP?
 
-밈코인 커뮤니티에게 빠진 게 하나 있습니다. IP 인프라입니다.
+Disney built a $200 billion empire on a cartoon mouse. Pixar turned a desk lamp into a franchise.
 
-SAMU Protocol은 어떤 밈코인 커뮤니티든 자신들의 토큰으로 밈 IP를 만들고, 굿즈를 팔고, 수익을 온체인으로 분배할 수 있게 합니다.
+That's how IP works. Story plus community plus a revenue cycle that compounds forever — that's what makes IP a billion-dollar industry.
 
----
-
-## 🎬 슬라이드 2 — Problem (30초)
-
-밈코인은 커뮤니티의 에너지와 문화로 만들어집니다.
-
-그런데 밈을 만든 크리에이터는 IP를 증명할 수도, 수익을 받을 수도 없습니다.
-
-좋은 밈을 발굴하고 투표한 커뮤니티는 보상 구조가 없습니다.
-
-그리고 프로젝트 팀은 밈을 굿즈로 만들고 싶어도 파이프라인이 없습니다.
-
-수천억 달러짜리 밈코인 시장이 가진 문화 에너지를 가치로 전환하는 인프라가 없습니다.
+On Solana, meme communities already have the story and the fans. They're just missing the revenue cycle.
 
 ---
 
-## 🎬 슬라이드 3 — Solution (35초)
+## Slide 2 — Hook (20 sec)
 
-SAMU Protocol이 그 인프라입니다.
+Memecoins are community-born IPs.
 
-밈 콘테스트부터 굿즈 수익 분배까지 전체 파이프라인이 Solana 위에 있습니다.
+BONK became a cultural movement. WIF built a global fanbase. These communities have passionate creators and viral energy — everything a great IP needs.
 
-커뮤니티는 자신들의 토큰으로 투표합니다. 굿즈가 팔리면 Anchor 스마트 컨트랙트가 자동으로 수익을 분배합니다.
-
-크리에이터 45%, 투표자 40%, 플랫폼 15%. 신뢰가 필요 없습니다.
+But most of them just die. The hype fades, the community scatters, and all that creative energy evaporates. There's no infrastructure to capture and compound that value.
 
 ---
 
-## 🎬 슬라이드 4 — Any Community (40초)
+## Slide 3 — Problem (30 sec)
 
-중요한 게 있습니다. 이건 SAMU만을 위한 플랫폼이 아닙니다.
+Here's why they die.
 
-프로토콜은 토큰-애그노스틱입니다.
+The meme creator whose work goes viral and pumps the token gets nothing. No revenue, no proof of ownership.
 
-BONK 커뮤니티가 온보딩하면 BONK 토큰으로 투표하고, 굿즈 수익이 BONK 크리에이터와 투표자에게 갑니다. WIF도 마찬가지입니다.
+The community voter who curates the best memes and shapes the culture gets no reward. No reason to stay.
 
-단, 거래소가 아무 토큰이나 상장하지 않듯 — SAMU Protocol도 검증된 커뮤니티만 온보딩합니다. 미키마우스 같은 저작권 리스크, 스캠 프로젝트를 의도적으로 걸러냅니다. 이게 품질 관리이자 해자입니다.
+And the project team that wants to turn memes into real goods has no pipeline — everything is manual, one-off, and unscalable.
 
-SAMU는 첫 번째 커뮤니티입니다. 이미 메인넷에서 동작 중입니다.
-
-> **예상 Q: "왜 퍼미션리스 아닌가요?"**
-> "IP 저작권 리스크 때문에 의도적으로 큐레이션합니다. 자동 검수 시스템과 충분한 데이터가 갖춰지면 단계적으로 개방할 계획입니다."
+Memecoin communities hold the most powerful cultural assets on the internet. But they have no infrastructure to convert that energy into lasting value.
 
 ---
 
-## 🎬 슬라이드 5 — Traction (30초)
+## Slide 4 — Solution (30 sec)
 
-> 화면: 숫자 카운터 애니메이션
+SAMU Protocol is that infrastructure.
 
-SAMU 커뮤니티로 전체 파이프라인을 검증했습니다.
+The full pipeline runs on Solana: creator uploads a meme, community votes with their tokens, the winning meme is archived on-chain as IP, automatically printed as goods via Printful, and when it sells — the Anchor smart contract distributes the SOL instantly.
 
-471명의 지갑 가입자, 81개 밈, 2억 2천만 SAMU 투표, 그리고 0.61 SOL이 실제로 크리에이터와 투표자에게 분배됐습니다.
+Creator: 45%. Voter: 40%. Platform: 15%.
 
-밈 업로드부터 배송 완료 후 온체인 수익분배까지 — 엔드-투-엔드가 Solana 메인넷에서 검증됐습니다.
-
----
-
-## 🎬 슬라이드 6 — Architecture (45초)
-
-> 화면: 레이어 아키텍처 다이어그램
-
-아키텍처를 보면 이렇습니다.
-
-최상위에는 각 커뮤니티가 있습니다. 지금은 SAMU, 나중엔 BONK, WIF, 그 외 어떤 SPL 토큰이든.
-
-프로토콜 레이어가 그 아래 있습니다. 밈 콘테스트 엔진, SPL 투표 처리, Printful 굿즈 자동화.
-
-온체인 레이어에는 Anchor Escrow PDA와 자동 수익분배 컨트랙트, 그리고 Solana Blinks.
-
-그리고 수익자들이 SOL을 받습니다.
+No trust required. No manual steps. The contract handles everything.
 
 ---
 
-## 🎬 슬라이드 7 — Market (20초)
+## Slide 5 — How It Works (35 sec)
 
-밈코인 시장 전체 시가총액은 $60B 이상입니다.
+Three stakeholders. One flywheel.
 
-크리에이터 이코노미는 $250B, 글로벌 굿즈 시장은 $400B.
+Creators upload original memes to the community contest. They earn 45% of all goods revenue — proportional to the votes their meme receives.
 
-수천만 밈코인 홀더들이 커뮤니티를 만들고 있지만, 그 에너지를 가치로 전환하는 인프라가 없었습니다. SAMU Protocol이 그 인프라입니다.
+Voters stake community SPL tokens to vote for the memes they believe in. They're curating the IP. They earn 40% of goods revenue — proportional to how much they staked.
 
----
+The team runs the protocol infrastructure. The winning meme is archived, printed, and listed automatically. The team earns 15% to sustain operations.
 
-## 🎬 슬라이드 8 — Why Solana (25초)
-
-왜 Solana인가?
-
-밈은 속도가 생명입니다. 65,000 TPS, $0.00025 트랜잭션.
-
-Solana Blinks로 X에서 앱 없이 바로 투표 — 밈의 바이럴 특성과 완벽하게 맞습니다.
-
-그리고 SPL 토큰 생태계. 모든 밈코인이 SPL 기반이라 토큰 설정만 바꾸면 새 커뮤니티가 온보딩됩니다.
+When a customer buys the goods — the Anchor escrow releases, and SOL hits all three wallets simultaneously.
 
 ---
 
-## 🎬 슬라이드 9 — Tokenomics (20초)
+## Slide 6 — Protocol Design (25 sec)
 
-> 화면: SVG 파이 차트
+Here's the key design insight: this is not just a SAMU platform.
 
-분배 구조는 어떤 커뮤니티가 온보딩해도 동일합니다.
+The protocol is token-agnostic. Any community with an SPL token can onboard and run their own contest. SAMU is the first IP. BONK, WIF — they could be next.
 
-크리에이터 45%, 투표자 40%, 플랫폼 15%.
+But like an exchange that doesn't list every token, we curate. We gate on IP copyright risk and community quality. That curation is the moat.
 
-플랫폼이 독점하지 않습니다. 가치를 만든 사람들에게 85%가 돌아갑니다.
+> **Likely Q: "Why not permissionless?"**
+> "IP copyright risk. We curate intentionally. As we build automated screening tools and sufficient data, we'll open it up in stages."
 
 ---
 
-## 🎬 슬라이드 10 — Roadmap + CTA (20초)
+## Slide 7 — Traction (25 sec)
 
-Phase 1, 2는 SAMU 커뮤니티로 검증 완료, 메인넷 라이브.
+> Screen: animated counter display
 
-Phase 3는 cNFT로 밈 IP 지분을 NFT화합니다. IP가 거래 가능해집니다.
+We've validated the full pipeline with the SAMU community on Solana mainnet.
 
-Phase 4는 Curated Community Listing. 거래소가 검증된 프로젝트만 상장하듯, SAMU Protocol도 검증된 커뮤니티만 온보딩합니다. IP 저작권 리스크 관리가 곧 해자입니다.
+471 wallets joined. 81 memes uploaded. 220 million SAMU tokens voted. 0.61 SOL actually distributed to creators and voters.
+
+From meme upload to goods delivery to on-chain revenue distribution — end-to-end, verified on mainnet. This is not a demo. It works.
+
+---
+
+## Slide 8 — Architecture (35 sec)
+
+> Screen: layer diagram
+
+Let me show you the architecture.
+
+At the top: communities. Right now SAMU, and eventually BONK, WIF, any SPL token community.
+
+Below that: the protocol layer. Contest engine, SPL voting processor, IP archive on R2, and Printful goods automation.
+
+On-chain: the Anchor Escrow PDA holds funds. When goods are purchased, the auto-distribution contract fires. And Blinks let users vote directly from X — no app install needed.
+
+At the bottom: recipients. Creator, voter, platform — all receiving SOL in the same transaction.
+
+---
+
+## Slide 9 — Market Opportunity (20 sec)
+
+The opportunity sits at the intersection of three massive markets.
+
+$60 billion-plus in memecoin market cap. $250 billion creator economy. $400 billion global merchandise market.
+
+Tens of millions of memecoin holders are already building communities and creating memes. SAMU Protocol turns that activity into a closed-loop revenue cycle.
+
+---
+
+## Slide 10 — Why Solana (20 sec)
+
+Memes live and die in minutes. Speed is everything.
+
+65,000 TPS, $0.00025 per transaction. Votes feel instant. Micro-rewards aren't eaten by gas.
+
+Solana Blinks let users vote directly from X without opening an app — viral meets on-chain. And every memecoin is already SPL-based, so onboarding a new community is just a config change.
+
+---
+
+## Slide 11 — Token Economics (20 sec)
+
+> Screen: pie chart
+
+The revenue split is the same for every community that onboards.
+
+Creator 45%, Voter 40%, Platform 15%.
+
+85% goes back to the people who actually created the value. The platform doesn't extract — it enables.
+
+---
+
+## Slide 12 — Roadmap + CTA (20 sec)
+
+Phase 1 and 2 are done. Mainnet is live.
+
+Phase 3: cNFT IP equity via Bubblegum. IP ownership becomes tradeable on-chain. Millions of NFTs at near-zero cost — only possible on Solana.
+
+Phase 4: Curated community listing. Verified communities only, quality-gated — the same way great exchanges only list great projects.
 
 SAMU is the first IP.
 
 The goal is to turn Solana into Disney.
 
-감사합니다.
+Thank you.
 
 ---
 
-## ⏱ 타임체크 가이드
+## Timing Guide
 
-| # | 슬라이드 | 목표 | 누적 |
+| # | Slide | Target | Cumulative |
 |---|---|---|---|
-| 1 | Hook | 20초 | 0:20 |
-| 2 | Problem | 30초 | 0:50 |
-| 3 | Solution | 35초 | 1:25 |
-| 4 | Any Community | 40초 | 2:05 |
-| 5 | Traction | 30초 | 2:35 |
-| 6 | Architecture | 45초 | 3:20 |
-| 7 | Market | 20초 | 3:40 |
-| 8 | Why Solana | 25초 | 4:05 |
-| 9 | Tokenomics | 20초 | 4:25 |
-| 10 | Roadmap + CTA | 20초 | 4:45 |
+| 1 | What is IP? | 25 sec | 0:25 |
+| 2 | Hook | 15 sec | 0:40 |
+| 3 | Problem | 30 sec | 1:10 |
+| 4 | Solution | 30 sec | 1:40 |
+| 5 | How It Works | 35 sec | 2:15 |
+| 6 | Protocol Design | 20 sec | 2:35 |
+| 7 | Traction | 25 sec | 3:00 |
+| 8 | Architecture | 30 sec | 3:30 |
+| 9 | Market Opportunity | 15 sec | 3:45 |
+| 10 | Why Solana | 20 sec | 4:05 |
+| 11 | Token Economics | 15 sec | 4:20 |
+| 12 | Roadmap + CTA | 20 sec | 4:40 |
 
-> 총 4분 45초. 라이브 데모 시간 추가 시 슬라이드 6·7 압축 권장.
+> Total: ~4 min 40 sec. Leaves 20 seconds of buffer to stay comfortably within 5 minutes.

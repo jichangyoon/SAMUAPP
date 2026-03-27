@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SAMU Protocol | Meme IP Infrastructure on Solana</title>
+<title>SAMU Protocol | Community IP Infrastructure on Solana</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -112,9 +112,17 @@ p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75
 .proto-item.purple { border-color: rgba(153,69,255,.3); color: var(--p); }
 .proto-item.blue { border-color: rgba(0,194,255,.3); color: var(--b); }
 
+/* ── STAKEHOLDERS ── */
+.stake-grid { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin-top: 28px; }
+.stake-card { background: var(--s2); border-radius: 16px; padding: 22px 26px; min-width: 200px; max-width: 240px; text-align: left; }
+.stake-card .s-role { font-size: 12px; font-weight: 700; letter-spacing: 2px; margin-bottom: 10px; }
+.stake-card .s-title { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+.stake-card .s-do { font-size: 12px; color: var(--mu); margin-bottom: 6px; }
+.stake-card .s-get { font-size: 13px; font-weight: 700; }
+
 /* ── SLIDE BACKGROUNDS ── */
 #s1 { background: radial-gradient(ellipse 60% 80% at 15% 50%, rgba(153,69,255,.12) 0%, transparent 70%), radial-gradient(ellipse 50% 70% at 85% 50%, rgba(20,241,149,.06) 0%, transparent 70%), var(--bg); }
-#s10 { background: radial-gradient(ellipse at center, rgba(153,69,255,.08) 0%, transparent 65%), var(--bg); }
+#s12 { background: radial-gradient(ellipse at center, rgba(153,69,255,.08) 0%, transparent 65%), var(--bg); }
 </style>
 </head>
 <body>
@@ -124,150 +132,214 @@ p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75
 
 <div class="deck">
 
-<!-- ── S1 HOOK ── -->
+<!-- ── S1: WHAT IS IP? ── -->
 <div class="slide active" id="s1">
   <div class="eyebrow">Solana Hackathon 2026</div>
-  <h1>밈코인 커뮤니티에게<br><span class="grad">IP 인프라</span>를</h1>
-  <p class="sub">SAMU Protocol은 어떤 밈코인 커뮤니티든<br>자신들의 토큰으로 밈 IP를 만들고, 굿즈를 팔고, 수익을 분배할 수 있는 인프라입니다</p>
-  <div style="margin-top:40px; display:flex; align-items:center; gap:16px; justify-content:center; flex-wrap:wrap;">
-    <div style="font-size:38px; font-weight:900; letter-spacing:-1px; background:linear-gradient(135deg,#fff,#9945FF); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">SAMU Protocol</div>
-    <div style="color:var(--mu);">×</div>
-    <div style="font-size:15px; color:var(--g); font-weight:700; letter-spacing:2px;">SOLANA</div>
+  <h1>What is <span class="grad">IP</span>?</h1>
+  <p class="sub" style="max-width:800px; font-size:clamp(15px,1.8vw,22px); color:var(--tx); font-weight:500; margin-top:20px;">
+    Disney built a $200B empire on a mouse.<br>
+    Pixar turned a lamp into a franchise.<br>
+    <span style="color:var(--mu); font-weight:400;">IP is story + community + a revenue cycle that compounds forever.</span>
+  </p>
+  <div style="margin-top:36px; background:var(--s2); border-radius:18px; padding:22px 40px; display:inline-flex; gap:32px; align-items:center; border:1px solid rgba(255,255,255,.07); flex-wrap:wrap; justify-content:center;">
+    <div style="text-align:center;">
+      <div style="font-size:28px; font-weight:900; color:var(--g);">Story</div>
+      <div style="font-size:12px; color:var(--mu); margin-top:4px;">Creative energy</div>
+    </div>
+    <div style="font-size:22px; color:var(--mu);">+</div>
+    <div style="text-align:center;">
+      <div style="font-size:28px; font-weight:900; color:var(--p);">Community</div>
+      <div style="font-size:12px; color:var(--mu); margin-top:4px;">Fans who care</div>
+    </div>
+    <div style="font-size:22px; color:var(--mu);">+</div>
+    <div style="text-align:center;">
+      <div style="font-size:28px; font-weight:900; color:var(--b);">Revenue Cycle</div>
+      <div style="font-size:12px; color:var(--mu); margin-top:4px;">Goods → money → more story</div>
+    </div>
+    <div style="font-size:22px; color:var(--mu);">=</div>
+    <div style="text-align:center;">
+      <div style="font-size:28px; font-weight:900; background:linear-gradient(135deg,var(--p),var(--g)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">Billion-Dollar IP</div>
+      <div style="font-size:12px; color:var(--mu); margin-top:4px;">That's how IP works</div>
+    </div>
+  </div>
+  <p class="sub" style="margin-top:28px;">On Solana, meme communities already have the story and the fans.<br>They're missing the revenue cycle.</p>
+</div>
+
+<!-- ── S2: HOOK ── -->
+<div class="slide" id="s2">
+  <div class="eyebrow">The Opportunity</div>
+  <h1>Memecoins are<br><span class="grad">community-born IPs.</span></h1>
+  <p class="sub" style="margin-top:20px; font-size:clamp(16px,2vw,24px); color:var(--tx); font-weight:500;">
+    BONK became a cultural movement. WIF built a global fanbase.<br>
+    <span style="color:var(--mu); font-weight:400;">These are IPs — with passionate communities and viral creative energy.</span>
+  </p>
+  <div style="margin-top:36px; background:rgba(255,107,53,.08); border:1px solid rgba(255,107,53,.3); border-radius:16px; padding:20px 40px;">
+    <p style="font-size:clamp(18px,2.4vw,30px); font-weight:800; color:var(--o);">But most of them just die.</p>
+    <p style="font-size:14px; color:var(--mu); margin-top:10px; line-height:1.7;">The hype fades. The community scatters. The creative energy evaporates.<br>There's no infrastructure to capture and compound that value.</p>
   </div>
   <div style="margin-top:28px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-    <span class="badge">🔴 MAINNET LIVE</span>
-    <span class="badge badge-p">⚓ Anchor Smart Contract</span>
+    <span class="badge">$60B+ Memecoin Market Cap</span>
+    <span class="badge badge-p">Millions of Creators & Voters</span>
   </div>
 </div>
 
-<!-- ── S2 PROBLEM ── -->
-<div class="slide" id="s2">
+<!-- ── S3: PROBLEM ── -->
+<div class="slide" id="s3">
   <div class="eyebrow">Problem</div>
-  <h2>밈코인은 커뮤니티 에너지로 만들어지는데<br><span class="gp">그 가치가 어디로 가는지 아무도 모른다</span></h2>
+  <h2>The community creative energy<br><span class="gp">evaporates on Twitter.</span></h2>
   <div class="cards">
     <div class="card">
       <div class="ic">🎨</div>
-      <h3>밈 크리에이터</h3>
-      <p>내 밈이 바이럴돼서 토큰 가격을 올려도, 나에게 돌아오는 건 없다. IP를 증명할 방법도 없다.</p>
+      <h3>Meme Creator</h3>
+      <p>My meme went viral and pumped the token. I get zero revenue. No way to prove or monetize my IP.</p>
     </div>
     <div class="card">
       <div class="ic">🗳️</div>
-      <h3>커뮤니티 투표자</h3>
-      <p>좋은 밈을 발굴하고 커뮤니티를 만들어도 보상 구조가 없다. 참여할 이유가 약하다.</p>
+      <h3>Community Voter</h3>
+      <p>I curate great memes and build community culture. No reward structure. Not enough reason to stay engaged.</p>
     </div>
     <div class="card">
       <div class="ic">🏭</div>
-      <h3>프로젝트 팀</h3>
-      <p>밈을 IP로, 굿즈로 활용하고 싶어도 파이프라인이 없다. 매번 수동으로 처리해야 한다.</p>
+      <h3>Project Team</h3>
+      <p>We want to turn memes into real goods. No pipeline. Everything done manually, one-off, no scale.</p>
     </div>
   </div>
-  <p class="sub" style="margin-top:24px;">밈코인 커뮤니티는 가장 강력한 문화 자산을 가지고 있지만,<br>그걸 가치로 전환하는 <strong style="color:var(--tx)">인프라가 없다</strong>.</p>
+  <p class="sub" style="margin-top:24px;">Memecoin communities hold the most powerful cultural assets on the internet.<br>They have <strong style="color:var(--tx)">no infrastructure to convert that energy into lasting value.</strong></p>
 </div>
 
-<!-- ── S3 SOLUTION ── -->
-<div class="slide" id="s3">
+<!-- ── S4: SOLUTION ── -->
+<div class="slide" id="s4">
   <div class="eyebrow">Solution</div>
-  <h2>SAMU Protocol:<br><span class="grad">밈 → IP → 굿즈 → 온체인 보상</span></h2>
-  <p class="sub">각 커뮤니티의 토큰으로 투표하고, 굿즈 수익이 자동으로 분배된다</p>
+  <h2>SAMU Protocol:<br><span class="grad">Meme → IP → Goods → On-Chain Revenue</span></h2>
+  <p class="sub">Capture community energy. Archive it as IP. Connect to goods. Distribute revenue back to the creators.</p>
   <div class="flow" style="margin-top:28px;">
-    <div class="fstep">🎨 밈 콘테스트<small>커뮤니티 토큰 투표</small></div>
+    <div class="fstep">🎨 Upload Meme<small>Community contest</small></div>
     <div class="farr">→</div>
-    <div class="fstep">🏆 IP 아카이브<small>온체인 기록</small></div>
+    <div class="fstep">🗳️ Token Vote<small>SPL token staking</small></div>
     <div class="farr">→</div>
-    <div class="fstep">🛍️ 굿즈 자동화<small>Printful 연동</small></div>
+    <div class="fstep">🏆 IP Archive<small>On-chain record</small></div>
     <div class="farr">→</div>
-    <div class="fstep">💰 SOL 분배<small>Anchor 스마트 컨트랙트</small></div>
+    <div class="fstep">🛍️ Goods<small>Printful automation</small></div>
+    <div class="farr">→</div>
+    <div class="fstep">💰 SOL Distributed<small>Anchor smart contract</small></div>
   </div>
-  <div style="margin-top:28px; background:var(--s2); border-radius:16px; padding:20px 36px; display:inline-flex; gap:32px; align-items:center; border:1px solid rgba(255,255,255,.07);">
+  <div style="margin-top:28px; background:var(--s2); border-radius:16px; padding:18px 34px; display:inline-flex; gap:28px; align-items:center; border:1px solid rgba(255,255,255,.07); flex-wrap:wrap; justify-content:center;">
     <div><span class="gg" style="font-size:24px; font-weight:900;">45%</span><div style="font-size:12px; color:var(--mu); margin-top:3px;">Creator</div></div>
     <div style="width:1px; height:36px; background:rgba(255,255,255,.08);"></div>
     <div><span class="gp" style="font-size:24px; font-weight:900;">40%</span><div style="font-size:12px; color:var(--mu); margin-top:3px;">Voter</div></div>
     <div style="width:1px; height:36px; background:rgba(255,255,255,.08);"></div>
     <div><span class="gb" style="font-size:24px; font-weight:900;">15%</span><div style="font-size:12px; color:var(--mu); margin-top:3px;">Platform</div></div>
   </div>
-  <p style="margin-top:16px; font-size:13px; color:var(--mu);">모든 분배는 Anchor 스마트 컨트랙트가 자동 실행 — 신뢰 불필요</p>
+  <p style="margin-top:14px; font-size:13px; color:var(--mu);">All distribution executed automatically by Anchor smart contract — zero trust required</p>
 </div>
 
-<!-- ── S4 ANY COMMUNITY ── -->
-<div class="slide" id="s4">
+<!-- ── S5: HOW IT WORKS ── -->
+<div class="slide" id="s5">
+  <div class="eyebrow">How It Works</div>
+  <h2>Three stakeholders. <span class="grad">One flywheel.</span></h2>
+  <div class="stake-grid">
+    <div class="stake-card" style="border:1px solid rgba(20,241,149,.25);">
+      <div class="s-role gg">CREATOR</div>
+      <div class="s-title">Upload your meme</div>
+      <div class="s-do">Submit original meme to the community contest. Community votes with tokens to pick the best.</div>
+      <div class="s-get gg">Earns: 45% of goods revenue — proportional to votes received</div>
+    </div>
+    <div class="stake-card" style="border:1px solid rgba(153,69,255,.25);">
+      <div class="s-role gp">VOTER</div>
+      <div class="s-title">Stake tokens to vote</div>
+      <div class="s-do">Use community SPL tokens to vote for the best memes. Shape what becomes the official IP.</div>
+      <div class="s-get gp">Earns: 40% of goods revenue — proportional to tokens staked</div>
+    </div>
+    <div class="stake-card" style="border:1px solid rgba(0,194,255,.25);">
+      <div class="s-role gb">TEAM</div>
+      <div class="s-title">Run the protocol</div>
+      <div class="s-do">Winning meme is automatically archived on-chain, printed via Printful, and listed as goods.</div>
+      <div class="s-get gb">Earns: 15% — sustains the protocol infrastructure</div>
+    </div>
+  </div>
+  <div style="margin-top:24px; font-size:13px; color:var(--mu);">When a customer buys the goods → Anchor escrow releases → SOL hits all three wallets simultaneously</div>
+</div>
+
+<!-- ── S6: PROTOCOL DESIGN ── -->
+<div class="slide" id="s6">
   <div class="eyebrow">Protocol Design</div>
-  <h2>SAMU만의 플랫폼이 아니다<br><span class="grad">어떤 밈코인이든 온보딩</span></h2>
-  <p class="sub">프로토콜은 토큰-애그노스틱이다. 각 커뮤니티가 자신의 토큰으로 콘테스트를 운영한다.</p>
+  <h2>Token-agnostic.<br><span class="grad">Any community can onboard.</span></h2>
+  <p class="sub">SAMU is the first IP. BONK, WIF — any community with an SPL token can run their own contest.</p>
   <div class="comm-grid">
     <div class="comm-item" style="border-color:rgba(20,241,149,.3);">
       <div class="comm-token gg">SAMU</div>
-      <div class="comm-desc">첫 번째 커뮤니티<br>콘테스트 운영 중</div>
+      <div class="comm-desc">First community<br>Contest live on mainnet</div>
       <div class="comm-status gg">✅ LIVE</div>
     </div>
     <div class="comm-item" style="border-color:rgba(255,107,53,.3);">
       <div class="comm-token go">BONK</div>
-      <div class="comm-desc">Solana 대표 밈코인<br>커뮤니티 온보딩 가능</div>
+      <div class="comm-desc">Solana's flagship memecoin<br>Community ready to onboard</div>
       <div class="comm-status go">→ NEXT</div>
     </div>
     <div class="comm-item" style="border-color:rgba(0,194,255,.3);">
       <div class="comm-token gb">WIF</div>
-      <div class="comm-desc">글로벌 밈코인<br>굿즈 파이프라인 연결</div>
+      <div class="comm-desc">Global memecoin<br>Goods pipeline compatible</div>
       <div class="comm-status gb">→ NEXT</div>
     </div>
     <div class="comm-item" style="border-color:rgba(153,69,255,.3);">
       <div class="comm-token gp">+MORE</div>
-      <div class="comm-desc">검증된 커뮤니티<br>큐레이션 온보딩</div>
+      <div class="comm-desc">Curated communities<br>Quality-gated onboarding</div>
       <div class="comm-status gp">PHASE 4</div>
     </div>
   </div>
-  <p class="sub" style="margin-top:20px;">거래소가 아무 토큰이나 상장하지 않듯 — SAMU Protocol도 검증된 커뮤니티만 온보딩한다.<br>IP 저작권 리스크 관리가 곧 해자다.</p>
+  <p class="sub" style="margin-top:20px;">Just like exchanges don't list every token — SAMU Protocol curates only verified communities.<br><strong style="color:var(--tx)">IP copyright risk management is the moat.</strong></p>
 </div>
 
-<!-- ── S5 TRACTION ── -->
-<div class="slide" id="s5">
+<!-- ── S7: TRACTION ── -->
+<div class="slide" id="s7">
   <div class="eyebrow">Traction — Mainnet Verified</div>
-  <h2>SAMU 커뮤니티로<br><span class="grad">전체 파이프라인 검증 완료</span></h2>
+  <h2>Full pipeline validated<br><span class="grad">on Solana mainnet.</span></h2>
   <div class="traction">
-    <div class="tr"><div class="num gg" id="cnt-users">0</div><div class="lbl">지갑 가입자</div></div>
-    <div class="tr"><div class="num gp" id="cnt-memes">0</div><div class="lbl">업로드된 밈</div></div>
-    <div class="tr"><div class="num gb" id="cnt-samu">0</div><div class="lbl">총 투표 SAMU</div></div>
-    <div class="tr"><div class="num" style="color:#FFD700;" id="cnt-sol">0</div><div class="lbl">배포된 SOL</div></div>
+    <div class="tr"><div class="num gg" id="cnt-users">0</div><div class="lbl">Wallets Joined</div></div>
+    <div class="tr"><div class="num gp" id="cnt-memes">0</div><div class="lbl">Memes Uploaded</div></div>
+    <div class="tr"><div class="num gb" id="cnt-samu">0</div><div class="lbl">SAMU Votes Cast (220M)</div></div>
+    <div class="tr"><div class="num" style="color:#FFD700;" id="cnt-sol">0</div><div class="lbl">SOL Distributed</div></div>
   </div>
-  <p class="sub" style="margin-top:24px;">밈 업로드 → 투표 → 굿즈 주문 → 배송 → 온체인 수익분배까지<br>엔드-투-엔드 파이프라인이 <strong style="color:var(--g)">Solana 메인넷에서 실제로 작동</strong>했습니다.</p>
+  <p class="sub" style="margin-top:24px;">Meme upload → community vote → goods order → delivery → on-chain revenue distribution.<br>End-to-end pipeline <strong style="color:var(--g)">live and verified on Solana mainnet.</strong></p>
   <div class="badge" style="margin-top:20px;">Program ID: GYfzt1mzWNMurBEej4557YbKmceTWwW3L6attC7pAmWS</div>
 </div>
 
-<!-- ── S6 HOW IT WORKS (TECH) ── -->
-<div class="slide" id="s6">
-  <div class="eyebrow">How It Works</div>
-  <h2>프로토콜 <span class="grad">아키텍처</span></h2>
+<!-- ── S8: ARCHITECTURE ── -->
+<div class="slide" id="s8">
+  <div class="eyebrow">Architecture</div>
+  <h2>Protocol <span class="grad">Layer Diagram</span></h2>
   <div class="proto">
     <div class="proto-layer">
-      <div class="proto-label">커뮤니티</div>
+      <div class="proto-label">COMMUNITY</div>
       <div class="proto-items">
-        <div class="proto-item green">SAMU 커뮤니티</div>
-        <div class="proto-item" style="border-style:dashed; color:var(--mu);">BONK 커뮤니티</div>
-        <div class="proto-item" style="border-style:dashed; color:var(--mu);">WIF 커뮤니티</div>
-        <div class="proto-item" style="border-style:dashed; color:var(--mu);">Any SPL Token ...</div>
+        <div class="proto-item green">SAMU Community</div>
+        <div class="proto-item" style="border-style:dashed; color:var(--mu);">BONK Community</div>
+        <div class="proto-item" style="border-style:dashed; color:var(--mu);">WIF Community</div>
+        <div class="proto-item" style="border-style:dashed; color:var(--mu);">Any SPL Token...</div>
       </div>
     </div>
     <div style="font-size:20px; color:var(--mu);">↓</div>
     <div class="proto-layer">
-      <div class="proto-label">프로토콜</div>
+      <div class="proto-label">PROTOCOL</div>
       <div class="proto-items">
-        <div class="proto-item purple">밈 콘테스트 엔진</div>
-        <div class="proto-item purple">SPL 투표 처리</div>
-        <div class="proto-item purple">IP 아카이브 (R2)</div>
-        <div class="proto-item purple">Printful 굿즈 자동화</div>
+        <div class="proto-item purple">Contest Engine</div>
+        <div class="proto-item purple">SPL Voting</div>
+        <div class="proto-item purple">IP Archive (R2)</div>
+        <div class="proto-item purple">Printful Automation</div>
       </div>
     </div>
     <div style="font-size:20px; color:var(--mu);">↓</div>
     <div class="proto-layer">
-      <div class="proto-label">온체인</div>
+      <div class="proto-label">ON-CHAIN</div>
       <div class="proto-items">
         <div class="proto-item blue">Anchor Escrow PDA</div>
-        <div class="proto-item blue">자동 수익분배 컨트랙트</div>
-        <div class="proto-item blue">Solana Blinks</div>
+        <div class="proto-item blue">Auto Distribution Contract</div>
+        <div class="proto-item blue">Blinks (vote from X)</div>
       </div>
     </div>
     <div style="font-size:20px; color:var(--mu);">↓</div>
     <div class="proto-layer">
-      <div class="proto-label">수익자</div>
+      <div class="proto-label">RECIPIENTS</div>
       <div class="proto-items">
         <div class="proto-item green">Creator 45% SOL</div>
         <div class="proto-item purple">Voter 40% SOL</div>
@@ -277,80 +349,77 @@ p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75
   </div>
 </div>
 
-<!-- ── S7 MARKET ── -->
-<div class="slide" id="s7">
+<!-- ── S9: MARKET OPPORTUNITY ── -->
+<div class="slide" id="s9">
   <div class="eyebrow">Market Opportunity</div>
-  <h2>밈코인은 이미 <span class="grad">수천억 달러 시장</span>이다</h2>
+  <h2>Three massive markets. <span class="grad">One protocol.</span></h2>
   <div class="mkt">
     <div class="mkt-item">
       <div class="sz gp">$60B+</div>
-      <div class="nm">밈코인 전체<br>시가총액</div>
+      <div class="nm">Memecoin<br>Market Cap</div>
     </div>
     <div class="mkt-item">
       <div class="sz gg">$250B</div>
-      <div class="nm">크리에이터 이코노미<br>(2025 전망)</div>
+      <div class="nm">Creator Economy<br>(2025 Estimate)</div>
     </div>
     <div class="mkt-item">
       <div class="sz gb">$400B</div>
-      <div class="nm">글로벌 굿즈·<br>머천다이즈 시장</div>
+      <div class="nm">Global Merchandise<br>Market</div>
     </div>
   </div>
   <div style="margin-top:28px; background:var(--s2); border-radius:16px; padding:20px 36px; max-width:620px; border:1px solid rgba(255,255,255,.06);">
     <p style="font-size:15px; line-height:1.75; color:var(--mu);">
-      수천만 밈코인 홀더들이 커뮤니티를 만들고, 밈을 만들고, 투표하지만<br>
-      <span style="color:var(--tx); font-weight:700;">그 에너지를 가치로 전환하는 인프라가 없다.</span><br>
-      SAMU Protocol이 그 인프라다.
+      Tens of millions of memecoin holders are building communities, creating memes, voting — but<br>
+      <span style="color:var(--tx); font-weight:700;">there's no infrastructure to convert that energy into lasting value.</span><br>
+      SAMU Protocol is that infrastructure.
     </p>
   </div>
 </div>
 
-<!-- ── S8 WHY SOLANA ── -->
-<div class="slide" id="s8">
+<!-- ── S10: WHY SOLANA ── -->
+<div class="slide" id="s10">
   <div class="eyebrow">Why Solana</div>
-  <h2>밈 경제에는 <span class="grad">빠르고 저렴한 체인</span>이 필요하다</h2>
+  <h2>Memes need <span class="grad">speed and scale.</span></h2>
   <div class="why-grid">
     <div class="why-item">
       <div class="wt">⚡ 65,000 TPS · 400ms</div>
-      <div class="wd">투표가 실시간처럼 느껴져야 한다. 밈은 속도가 생명.</div>
+      <div class="wd">Voting feels instant. Memes live and die in minutes — speed is everything.</div>
     </div>
     <div class="why-item">
-      <div class="wt">💸 트랜잭션 $0.00025</div>
-      <div class="wd">소액 투표·보상이 가스비에 잠식되지 않는다.</div>
+      <div class="wt">💸 $0.00025 per transaction</div>
+      <div class="wd">Micro-votes and micro-rewards aren't eaten by gas. Every vote counts.</div>
     </div>
     <div class="why-item">
       <div class="wt">🔗 Solana Blinks</div>
-      <div class="wd">X(트위터)에서 앱 없이 바로 투표. 바이럴과 온체인의 결합.</div>
+      <div class="wd">Vote directly from X (Twitter) without opening an app. Viral meets on-chain.</div>
     </div>
     <div class="why-item">
       <div class="wt">🌿 cNFT (Bubblegum)</div>
-      <div class="wd">Phase 3: 수백만 IP 지분 NFT를 거의 무료로 발행. Ethereum 불가.</div>
+      <div class="wd">Phase 3: Mint millions of IP equity NFTs for near-zero cost. Impossible on Ethereum.</div>
     </div>
     <div class="why-item">
-      <div class="wt">💎 SPL Token 생태계</div>
-      <div class="wd">모든 밈코인이 SPL 기반 — 토큰 교체만으로 새 커뮤니티 온보딩.</div>
+      <div class="wt">💎 SPL Token Ecosystem</div>
+      <div class="wd">Every memecoin is SPL-based. Swap the token config — new community onboarded instantly.</div>
     </div>
     <div class="why-item">
-      <div class="wt">⚓ Anchor 프레임워크</div>
-      <div class="wd">Escrow PDA, 자동 분배 — 검증된 스마트 컨트랙트 패턴.</div>
+      <div class="wt">⚓ Anchor Framework</div>
+      <div class="wd">Escrow PDA, auto-distribution — battle-tested smart contract patterns, live on mainnet.</div>
     </div>
   </div>
 </div>
 
-<!-- ── S9 TOKENOMICS ── -->
-<div class="slide" id="s9">
+<!-- ── S11: TOKEN ECONOMICS ── -->
+<div class="slide" id="s11">
   <div class="eyebrow">Token Economics</div>
-  <h2>가치를 만든 사람에게<br><span class="grad">85%가 돌아간다</span></h2>
+  <h2>85% goes back to the people<br><span class="grad">who created the value.</span></h2>
   <div class="pie-wrap">
     <svg width="190" height="190" viewBox="0 0 200 200">
-      <!-- Creator 45% = 162° clockwise from top -->
       <path d="M100 100 L100 10 A90 90 0 0 1 127.8 185.6 Z" fill="#14F195" opacity="0.95"/>
-      <!-- Voter 40% = 144° continuing -->
       <path d="M100 100 L127.8 185.6 A90 90 0 0 1 27.2 47.1 Z" fill="#9945FF" opacity="0.95"/>
-      <!-- Platform 15% = 54° back to top -->
       <path d="M100 100 L27.2 47.1 A90 90 0 0 1 100 10 Z" fill="#00C2FF" opacity="0.95"/>
       <circle cx="100" cy="100" r="50" fill="var(--bg)"/>
-      <text x="100" y="96" text-anchor="middle" fill="white" font-size="13" font-weight="700">수익</text>
-      <text x="100" y="113" text-anchor="middle" fill="white" font-size="13" font-weight="700">분배</text>
+      <text x="100" y="96" text-anchor="middle" fill="white" font-size="13" font-weight="700">Revenue</text>
+      <text x="100" y="113" text-anchor="middle" fill="white" font-size="13" font-weight="700">Split</text>
     </svg>
     <div class="pie-legend">
       <div class="legend-item">
@@ -358,7 +427,7 @@ p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75
         <div>
           <div class="legend-pct gg">45%</div>
           <div style="font-size:15px; font-weight:700;">Creator</div>
-          <div style="font-size:12px; color:var(--mu);">투표 지분 비례 SOL 분배</div>
+          <div style="font-size:12px; color:var(--mu);">SOL distributed proportional to votes received</div>
         </div>
       </div>
       <div class="legend-item">
@@ -366,7 +435,7 @@ p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75
         <div>
           <div class="legend-pct gp">40%</div>
           <div style="font-size:15px; font-weight:700;">Voter</div>
-          <div style="font-size:12px; color:var(--mu);">토큰 투표량 비례 SOL 분배</div>
+          <div style="font-size:12px; color:var(--mu);">SOL distributed proportional to tokens staked</div>
         </div>
       </div>
       <div class="legend-item">
@@ -374,45 +443,45 @@ p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75
         <div>
           <div class="legend-pct gb">15%</div>
           <div style="font-size:15px; font-weight:700;">Platform</div>
-          <div style="font-size:12px; color:var(--mu);">프로토콜 지속 운영</div>
+          <div style="font-size:12px; color:var(--mu);">Protocol infrastructure and operations</div>
         </div>
       </div>
     </div>
   </div>
-  <p class="sub" style="margin-top:20px;">어떤 커뮤니티가 온보딩해도 동일한 분배 구조 — 공정하고 투명하다</p>
+  <p class="sub" style="margin-top:20px;">Same structure for every community that onboards — fair, transparent, and trustless</p>
 </div>
 
-<!-- ── S10 ROADMAP ── -->
-<div class="slide" id="s10">
+<!-- ── S12: ROADMAP + CTA ── -->
+<div class="slide" id="s12">
   <div class="eyebrow">Roadmap</div>
-  <h2>밈코인 <span class="grad">IP 인프라</span>로 확장</h2>
+  <h2>Phase 1 &amp; 2 done. <span class="grad">Mainnet live.</span></h2>
   <div class="tl">
     <div class="tl-item">
       <div class="tl-ph">PHASE 1</div>
       <div class="tl-dot done">✓</div>
-      <div class="tl-title">SAMU 커뮤니티</div>
-      <div class="tl-desc">콘테스트 · 굿즈<br>수익분배 검증</div>
+      <div class="tl-title">SAMU Community</div>
+      <div class="tl-desc">Contest · goods · revenue distribution validated</div>
     </div>
     <div class="tl-item">
       <div class="tl-ph">PHASE 2</div>
       <div class="tl-dot done">✓</div>
-      <div class="tl-title">스마트 컨트랙트</div>
-      <div class="tl-desc">Anchor Escrow<br><span style="color:var(--g); font-weight:700;">메인넷 라이브 ✅</span></div>
+      <div class="tl-title">Smart Contract</div>
+      <div class="tl-desc">Anchor Escrow<br><span style="color:var(--g); font-weight:700;">Mainnet Live ✅</span></div>
     </div>
     <div class="tl-item">
       <div class="tl-ph">PHASE 3</div>
       <div class="tl-dot next">→</div>
       <div class="tl-title">cNFT IP Equity</div>
-      <div class="tl-desc">Bubblegum으로<br>IP 지분 NFT화</div>
+      <div class="tl-desc">Bubblegum — IP<br>ownership as NFT</div>
     </div>
     <div class="tl-item">
       <div class="tl-ph">PHASE 4</div>
       <div class="tl-dot fut">4</div>
       <div class="tl-title">Curated Listing</div>
-      <div class="tl-desc">검증된 커뮤니티만<br>큐레이션 온보딩</div>
+      <div class="tl-desc">Verified communities<br>only — quality gated</div>
     </div>
   </div>
-  <div style="margin-top:40px; text-align:center; max-width:720px;">
+  <div style="margin-top:36px; text-align:center; max-width:720px;">
     <p style="font-size:clamp(15px,1.8vw,20px); color:var(--mu); margin-bottom:14px;">SAMU is the first IP.</p>
     <p style="font-size:clamp(22px,3vw,42px); font-weight:900; line-height:1.2; background:linear-gradient(135deg,#fff 30%,#9945FF 70%,#14F195); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
       The goal is to turn<br>Solana into Disney.
@@ -424,9 +493,9 @@ p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75
 </div><!-- /deck -->
 
 <nav class="ctrl">
-  <button onclick="go(-1)">← 이전</button>
+  <button onclick="go(-1)">← Prev</button>
   <span class="ctr" id="ctr"></span>
-  <button onclick="go(1)">다음 →</button>
+  <button onclick="go(1)">Next →</button>
 </nav>
 
 <script>
@@ -449,11 +518,11 @@ function animateCount(el, target, suffix = '', duration = 1300) {
 
 let traction_done = false;
 function maybeAnimateTraction(idx) {
-  if (idx !== 4 || traction_done) return;
+  if (idx !== 6 || traction_done) return;
   traction_done = true;
-  animateCount(document.getElementById('cnt-users'), 471, '+');
-  animateCount(document.getElementById('cnt-memes'), 81, '개');
-  animateCount(document.getElementById('cnt-samu'), 224, 'M');
+  animateCount(document.getElementById('cnt-users'), 471, '');
+  animateCount(document.getElementById('cnt-memes'), 81, '');
+  animateCount(document.getElementById('cnt-samu'), 220000000, '');
   animateCount(document.getElementById('cnt-sol'), 0.61, ' SOL');
 }
 
