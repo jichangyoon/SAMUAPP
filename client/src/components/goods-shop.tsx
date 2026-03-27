@@ -315,6 +315,41 @@ function PrintfulDetailSection({ orderId, wallet }: { orderId: number; wallet: s
   );
 }
 
+function GoodsListItem({ item, index, onClick }: { item: any; index: number; onClick: () => void }) {
+  const [imgLoaded, setImgLoaded] = useState(false);
+  return (
+    <Card
+      className="overflow-hidden cursor-pointer hover:bg-accent/50 transition-colors border-border animate-fade-in"
+      style={{ animationDelay: `${Math.min(index * 60, 300)}ms` }}
+      onClick={onClick}
+    >
+      <div className="flex p-3">
+        <div className="w-20 h-20 flex-shrink-0 bg-accent rounded-lg overflow-hidden relative">
+          {!imgLoaded && (
+            <div className="absolute inset-0 bg-accent animate-pulse rounded-lg" />
+          )}
+          <img
+            src={item.imageUrl}
+            alt={item.title}
+            className={`w-full h-full object-cover transition-opacity duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+            onLoad={() => setImgLoaded(true)}
+            onError={() => setImgLoaded(true)}
+          />
+        </div>
+        <div className="flex-1 ml-3 min-w-0">
+          <h3 className="font-semibold text-sm text-foreground truncate">{item.title}</h3>
+          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{item.description}</p>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-primary font-bold text-sm">${item.retailPrice}</span>
+            <Badge variant="outline" className="text-xs">{item.productType}</Badge>
+          </div>
+        </div>
+        <ChevronRight className="h-5 w-5 text-muted-foreground self-center flex-shrink-0" />
+      </div>
+    </Card>
+  );
+}
+
 export function GoodsShop() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [orderStep, setOrderStep] = useState<OrderStep>('browse');
@@ -752,9 +787,20 @@ export function GoodsShop() {
       </Drawer>
 
       {isLoading ? (
-        <div className="text-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
-          <p className="text-sm text-muted-foreground mt-2">Loading products...</p>
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="overflow-hidden border-border">
+              <div className="flex p-3 animate-pulse">
+                <div className="w-20 h-20 flex-shrink-0 bg-accent rounded-lg" />
+                <div className="flex-1 ml-3 space-y-2 py-1">
+                  <div className="h-4 bg-accent rounded w-3/4" />
+                  <div className="h-3 bg-accent rounded w-full" />
+                  <div className="h-3 bg-accent rounded w-1/2" />
+                  <div className="h-5 bg-accent rounded w-1/4 mt-1" />
+                </div>
+              </div>
+            </Card>
+          ))}
         </div>
       ) : goodsArray.length === 0 ? (
         <Card className="bg-accent/30 border-border">
@@ -766,31 +812,13 @@ export function GoodsShop() {
         </Card>
       ) : (
         <div className="space-y-3">
-          {goodsArray.map((item: any) => (
-            <Card
+          {goodsArray.map((item: any, index: number) => (
+            <GoodsListItem
               key={item.id}
-              className="overflow-hidden cursor-pointer hover:bg-accent/50 transition-colors border-border"
+              item={item}
+              index={index}
               onClick={() => openProductDetail(item)}
-            >
-              <div className="flex p-3">
-                <div className="w-20 h-20 flex-shrink-0 bg-accent rounded-lg overflow-hidden">
-                  <img
-                    src={item.imageUrl}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1 ml-3 min-w-0">
-                  <h3 className="font-semibold text-sm text-foreground truncate">{item.title}</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{item.description}</p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-primary font-bold text-sm">${item.retailPrice}</span>
-                    <Badge variant="outline" className="text-xs">{item.productType}</Badge>
-                  </div>
-                </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground self-center flex-shrink-0" />
-              </div>
-            </Card>
+            />
           ))}
         </div>
       )}

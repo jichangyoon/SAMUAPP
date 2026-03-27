@@ -819,11 +819,12 @@ export default function Home() {
                         All Contest Entries ({selectedArchiveContest.memes.length})
                       </h3>
                       <div className="grid grid-cols-3 gap-2">
-                        {selectedArchiveContest.memes.map((meme: any) => (
+                        {selectedArchiveContest.memes.map((meme: any, index: number) => (
                           <button
                             key={meme.id}
                             onClick={() => setSelectedArchiveMeme(meme)}
-                            className="aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-opacity relative group"
+                            className="aspect-square bg-accent flex items-center justify-center hover:opacity-90 transition-opacity relative group animate-fade-in"
+                            style={{ animationDelay: `${Math.min(index * 40, 400)}ms` }}
                           >
                             <MultiImageBadge count={1 + (meme.additionalImages?.length || 0)} />
                             <MediaDisplay
