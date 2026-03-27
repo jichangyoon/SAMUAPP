@@ -40,3 +40,7 @@ waitForPort = 5000
 
 [userenv.shared]
 TREASURY_WALLET_ADDRESS = "4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk"
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 20000
