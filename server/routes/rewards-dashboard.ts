@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { storage } from "../storage";
 import { config } from "../config";
-import { sendSolFromEscrow, isContractEnabled, buildClaimTransaction, buildRecordAndClaimTransaction, getOnChainClaimable } from "../utils/solana";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { sendSolFromEscrow, isContractEnabled, buildClaimTransaction, buildRecordAndClaimTransaction, getOnChainClaimable, getEscrowPoolPda } from "../utils/solana";
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { logger } from "../utils/logger";
 
 const router = Router();
@@ -789,6 +789,23 @@ router.post("/confirm-claim", async (req, res) => {
     res.json({ success: true, results });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+router.get("/escrow-pda/:contestId", async (req, res) => {
+  try {
+    const contestId = parseInt(req.params.contestId);
+    if (isNaN(contestId)) return res.status(400).json({ error: "Invalid contestId" });
+
+    if (!isContractEnabled()) {
+      return res.json({ pda: null, contractEnabled: false });
+    }
+
+    const programId = new PublicKey(config.SAMU_REWARDS_PROGRAM_ID!);
+    const [escrowPoolPda] = getEscrowPoolPda(contestId, programId);
+    return res.json({ pda: escrowPoolPda.toString(), contractEnabled: true });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
   }
 });
 

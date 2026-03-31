@@ -55,6 +55,12 @@ function OrderDetailDrawer({ order, walletAddress, open, onClose }: {
     enabled: !!order?.contestId && !!walletAddress,
   });
 
+  const { data: pdaData } = useQuery<{ pda: string | null; contractEnabled: boolean }>({
+    queryKey: [`/api/rewards/escrow-pda/${order?.contestId}`],
+    staleTime: Infinity,
+    enabled: !!order?.contestId,
+  });
+
   if (!order) return null;
 
   const s = getStatusStyle(order.status);
@@ -178,9 +184,25 @@ function OrderDetailDrawer({ order, walletAddress, open, onClose }: {
           )}
 
           {order.revenueStatus === "locked" && (
-            <p className="text-xs text-muted-foreground">
-              Funds locked in escrow — released when delivered
-            </p>
+            <div className="space-y-1.5">
+              <p className="text-xs text-muted-foreground">
+                Funds locked in escrow — released when delivered
+              </p>
+              {pdaData?.pda && (
+                <a
+                  href={`https://solscan.io/account/${pdaData.pda}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors group"
+                >
+                  <Lock className="h-3 w-3 flex-shrink-0 group-hover:text-primary" />
+                  <span className="font-mono truncate">
+                    {pdaData.pda.slice(0, 8)}…{pdaData.pda.slice(-6)}
+                  </span>
+                  <ExternalLink className="h-3 w-3 flex-shrink-0 opacity-60 group-hover:opacity-100" />
+                </a>
+              )}
+            </div>
           )}
 
           {order.trackingUrl && (
