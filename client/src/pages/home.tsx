@@ -150,7 +150,7 @@ export default function Home() {
   // Get archived contests
   const { data: archivedContests = [], isLoading: isLoadingArchives } = useQuery({
     queryKey: ["/api/admin/archived-contests"],
-    staleTime: 60000,
+    staleTime: 0,
   });
 
   // User profile data from database
