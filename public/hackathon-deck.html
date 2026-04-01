@@ -157,32 +157,8 @@ p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75
   </div>
   <p class="sub" style="margin-top:28px;">
     The winning meme is automatically produced as goods via <strong style="color:var(--tx);">Printful</strong>.<br>
-    When a sale happens, revenue is distributed transparently via <strong style="color:var(--tx);">Anchor smart contract</strong>.
+    Revenue splits automatically — <strong style="color:var(--g);">45% creator</strong>, <strong style="color:var(--p);">40% voters</strong>, <strong style="color:var(--b);">15% platform</strong> — via <strong style="color:var(--tx);">Anchor smart contract</strong>.
   </p>
-</div>
-
-<!-- ── S4: REVENUE SPLIT ── -->
-<div class="slide" id="s4">
-  <div class="eyebrow">Revenue Distribution</div>
-  <h2>Every goods sale goes back to<br><span class="grad">the people who created the value.</span></h2>
-  <div style="display:flex; gap:24px; justify-content:center; flex-wrap:wrap; margin-top:40px;">
-    <div style="background:var(--s2); border:2px solid rgba(20,241,149,.4); border-radius:20px; padding:36px 48px; text-align:center; min-width:180px;">
-      <div style="font-size:clamp(48px,7vw,80px); font-weight:900; color:var(--g); line-height:1;">45%</div>
-      <div style="font-size:16px; font-weight:700; color:var(--tx); margin-top:10px;">Creator</div>
-      <div style="font-size:12px; color:var(--mu); margin-top:6px; line-height:1.5;">Proportional to<br>votes received</div>
-    </div>
-    <div style="background:var(--s2); border:2px solid rgba(153,69,255,.4); border-radius:20px; padding:36px 48px; text-align:center; min-width:180px;">
-      <div style="font-size:clamp(48px,7vw,80px); font-weight:900; color:var(--p); line-height:1;">40%</div>
-      <div style="font-size:16px; font-weight:700; color:var(--tx); margin-top:10px;">Voter</div>
-      <div style="font-size:12px; color:var(--mu); margin-top:6px; line-height:1.5;">Proportional to<br>tokens staked</div>
-    </div>
-    <div style="background:var(--s2); border:2px solid rgba(0,194,255,.25); border-radius:20px; padding:36px 48px; text-align:center; min-width:180px;">
-      <div style="font-size:clamp(48px,7vw,80px); font-weight:900; color:var(--b); line-height:1;">15%</div>
-      <div style="font-size:16px; font-weight:700; color:var(--tx); margin-top:10px;">Platform</div>
-      <div style="font-size:12px; color:var(--mu); margin-top:6px; line-height:1.5;">Protocol<br>infrastructure</div>
-    </div>
-  </div>
-  <p style="margin-top:28px; font-size:14px; color:var(--mu);">Executed automatically by Anchor smart contract — no trust required · SOL hits wallets on delivery</p>
 </div>
 
 <!-- ── S5: DEMO ── -->
@@ -196,35 +172,6 @@ p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75
     <span style="background:var(--s2); border:1px solid rgba(0,194,255,.25); border-radius:999px; padding:8px 20px; font-size:13px; font-weight:600; color:var(--b);">Buy goods on-chain</span>
     <span style="background:var(--s2); border:1px solid rgba(255,107,53,.25); border-radius:999px; padding:8px 20px; font-size:13px; font-weight:600; color:var(--o);">Claim SOL rewards</span>
   </div>
-</div>
-
-<!-- ── S6: WHAT WE BUILT ── -->
-<div class="slide" id="s6">
-  <div class="eyebrow">What We Built</div>
-  <h2>Full pipeline. <span class="grad">Every stage on mainnet.</span></h2>
-  <div style="display:flex; flex-direction:column; gap:12px; margin-top:32px; max-width:600px; width:100%;">
-    <div style="display:flex; align-items:center; gap:16px; background:var(--s2); border:1px solid rgba(20,241,149,.2); border-radius:14px; padding:14px 22px;">
-      <span style="font-size:18px; flex-shrink:0;">✅</span>
-      <div style="text-align:left;"><span style="font-weight:700;">Contest Engine</span> <span style="color:var(--mu); font-size:13px;">— upload, vote, winner selection, IP archive</span></div>
-    </div>
-    <div style="display:flex; align-items:center; gap:16px; background:var(--s2); border:1px solid rgba(20,241,149,.2); border-radius:14px; padding:14px 22px;">
-      <span style="font-size:18px; flex-shrink:0;">✅</span>
-      <div style="text-align:left;"><span style="font-weight:700;">SPL Token Voting + Solana Blinks</span> <span style="color:var(--mu); font-size:13px;">— on-chain · vote from X (Twitter)</span></div>
-    </div>
-    <div style="display:flex; align-items:center; gap:16px; background:var(--s2); border:1px solid rgba(20,241,149,.2); border-radius:14px; padding:14px 22px;">
-      <span style="font-size:18px; flex-shrink:0;">✅</span>
-      <div style="text-align:left;"><span style="font-weight:700;">Printful Automation</span> <span style="color:var(--mu); font-size:13px;">— winning meme → goods, zero manual steps</span></div>
-    </div>
-    <div style="display:flex; align-items:center; gap:16px; background:var(--s2); border:1px solid rgba(20,241,149,.2); border-radius:14px; padding:14px 22px;">
-      <span style="font-size:18px; flex-shrink:0;">✅</span>
-      <div style="text-align:left;"><span style="font-weight:700;">Anchor Escrow + On-Chain Distribution</span> <span style="color:var(--mu); font-size:13px;">— 45/40/15 split, trustless, mainnet</span></div>
-    </div>
-    <div style="display:flex; align-items:center; gap:16px; background:var(--s2); border:1px solid rgba(20,241,149,.2); border-radius:14px; padding:14px 22px;">
-      <span style="font-size:18px; flex-shrink:0;">✅</span>
-      <div style="text-align:left;"><span style="font-weight:700;">SAMU Map</span> <span style="color:var(--mu); font-size:13px;">— global order visualization · revenue flow tracking</span></div>
-    </div>
-  </div>
-  <div class="badge" style="margin-top:20px; font-size:11px;">Program ID: GYfzt1mzWNMurBEej4557YbKmceTWwW3L6attC7pAmWS</div>
 </div>
 
 <!-- ── S7: VISION ── -->

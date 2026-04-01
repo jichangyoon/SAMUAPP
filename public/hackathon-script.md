@@ -1,6 +1,6 @@
-# SAMU Protocol — Hackathon Demo Script (3 min)
+# SAMU Protocol — Hackathon Demo Script (~2:30)
 
-> Slide deck: `/hackathon-deck.html` | 8 slides | Navigate with ← → keys or buttons
+> Slide deck: `/hackathon-deck.html` | 6 slides | Navigate with ← → keys or buttons
 
 ---
 
@@ -16,15 +16,9 @@
 
 ---
 
-## Slide 3 — Solution (15 sec)
+## Slide 3 — Solution (20 sec)
 
-"SAMU is that pipeline. Communities vote with their SPL tokens. The winning meme gets archived as IP. It's automatically produced as goods through Printful — no manual work. When a sale happens, revenue is distributed transparently via an Anchor smart contract."
-
----
-
-## Slide 4 — Revenue Split (10 sec)
-
-"45% to the creator. 40% to voters. 15% to the platform. Triggered automatically on delivery."
+"SAMU is that pipeline. Communities vote with their SPL tokens. The winning meme gets archived as IP and automatically produced as goods through Printful — no manual work. When a sale happens, revenue splits automatically: 45% to the creator, 40% to voters, 15% to the platform — via Anchor smart contract."
 
 ---
 
@@ -38,13 +32,7 @@ Flow to show:
 
 ---
 
-## Slide 6 — What We Built (15 sec)
-
-"Everything you just saw — contest engine, Solana Blinks, Printful automation, Anchor escrow and on-chain distribution — all verified on Solana mainnet."
-
----
-
-## Slide 7 — Vision (25 sec)
+## Slide 5 — Vision (25 sec)
 
 "In 1928, one sketch of a mouse built a $200 billion empire. Solana already has dozens of memecoin IPs — with communities, with creative energy, with cultural momentum. The only thing missing was infrastructure. SAMU is that infrastructure. SAMU is the first IP. The goal is to turn Solana into Disney.
 
@@ -52,7 +40,7 @@ Phase 2 is already generating real revenue. Phase 4 brings multi-community onboa
 
 ---
 
-## Slide 8 — CTA (5 sec)
+## Slide 6 — CTA (5 sec)
 
 "samu.ink — live on Solana mainnet right now. Thank you."
 
@@ -64,14 +52,12 @@ Phase 2 is already generating real revenue. Phase 4 brings multi-community onboa
 |---|-------|--------|------------|
 | 1 | Title | 10 sec | 0:10 |
 | 2 | Problem | 20 sec | 0:30 |
-| 3 | Solution | 15 sec | 0:45 |
-| 4 | Revenue Split | 10 sec | 0:55 |
-| — | **DEMO** | **~70 sec** | **2:05** |
-| 6 | What We Built | 15 sec | 2:20 |
-| 7 | Vision | 25 sec | 2:45 |
-| 8 | CTA | 5 sec | 2:50 |
+| 3 | Solution + Revenue | 20 sec | 0:50 |
+| — | **DEMO** | **~70 sec** | **2:00** |
+| 5 | Vision | 25 sec | 2:25 |
+| 6 | CTA | 5 sec | 2:30 |
 
-> Total: ~3 min — 10초 버퍼 있음.
+> Total: ~2:30 — 30초 버퍼 있음.
 
 ---
 
