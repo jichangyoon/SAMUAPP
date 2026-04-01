@@ -55,6 +55,14 @@ The platform operates on a pipeline: Meme Contest → Goods (Printful) → Ecosy
 
 **상세 기술 문서:** `.local/NOTES.md` 참조 (배포 전략, 컨트랙트 구조, Known Issues, 로드맵 등)
 
+## Third-Party Patches
+
+**Privy SDK v2.25.0 — Invalid hook call (patch-package)**
+- **Issue:** Privy's `AppConfigProvider` calls `useContext` from inside an async callback during `n.initialize()`, triggering React's "Invalid hook call" dev-mode warning. This is a Privy SDK bug, not a real hook violation.
+- **Fix:** `patch-package` patch at `patches/react+18.3.1.patch` adds a `globalThis.__SUPPRESS_INVALID_HOOK_CALL_WARNING__` guard to `react.development.js`'s `resolveDispatcher()`. The flag is set in `client/index.html` before any module loads.
+- **Reproducibility:** `patch-package` is a project dependency; `scripts/post-merge.sh` runs `npx patch-package` after every `npm install`. If packages are installed via the Replit platform (which runs `npm install` and wipes node_modules patches), re-run `npx patch-package` in the shell to reapply.
+- **Rollback:** Delete `patches/react+18.3.1.patch` and remove the inline script from `client/index.html` to revert to original React behaviour (error reappears but is non-functional).
+
 ## External Dependencies
 - **Solana Blockchain:** Core infrastructure for SPL tokens and smart contracts.
 - **Privy:** User authentication.

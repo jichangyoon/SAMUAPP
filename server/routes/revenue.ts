@@ -1,6 +1,6 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import { storage } from "../storage";
-import { insertRevenueSchema } from "@shared/schema";
+import { insertRevenueSchema, type InsertRevenueShare } from "@shared/schema";
 import { config } from "../config";
 import { logger } from "../utils/logger";
 
@@ -8,7 +8,7 @@ const router = Router();
 
 const PLATFORM_WALLET = config.TREASURY_WALLET;
 
-async function requireAdmin(req: any, res: any): Promise<boolean> {
+async function requireAdmin(req: Request, res: Response): Promise<boolean> {
   const email = req.headers["x-admin-email"] || req.body?.adminEmail;
   if (!email || !config.ADMIN_EMAILS.includes(String(email).toLowerCase())) {
     res.status(403).json({ message: "Admin access required" });
@@ -59,12 +59,12 @@ router.post("/:id/distribute", async (req, res) => {
     const contestId = revenue.contestId;
     const totalSol = revenue.totalAmountSol;
 
-    const archivedContests = await (storage as any).getArchivedContests();
+    const archivedContests = await storage.getArchivedContests();
     const archived = archivedContests.find(
-      (ac: any) => ac.originalContestId === contestId
+      (ac) => ac.originalContestId === contestId
     );
 
-    const shares: any[] = [];
+    const shares: InsertRevenueShare[] = [];
 
     if (archived?.winnerMemeId) {
       const contestMemes = await storage.getMemesByContestId(contestId);

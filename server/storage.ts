@@ -69,7 +69,6 @@ export interface IStorage {
   getRevenuesByContestId(contestId: number): Promise<Revenue[]>;
   getRevenueById(id: number): Promise<Revenue | undefined>;
   updateRevenueStatus(id: number, status: string, distributedAt?: Date): Promise<Revenue>;
-  createRevenueShare(share: InsertRevenueShare): Promise<RevenueShare>;
   createRevenueShares(shares: InsertRevenueShare[]): Promise<RevenueShare[]>;
   getRevenueSharesByWallet(walletAddress: string): Promise<RevenueShare[]>;
   getRevenueSharesByContestId(contestId: number): Promise<RevenueShare[]>;
@@ -405,7 +404,6 @@ export class MemStorage implements IStorage {
   async getRevenuesByContestId(_contestId: number): Promise<Revenue[]> { return []; }
   async getRevenueById(_id: number): Promise<Revenue | undefined> { return undefined; }
   async updateRevenueStatus(_id: number, _status: string): Promise<Revenue> { throw new Error("Not implemented"); }
-  async createRevenueShare(_share: InsertRevenueShare): Promise<RevenueShare> { throw new Error("Not implemented"); }
   async createRevenueShares(_shares: InsertRevenueShare[]): Promise<RevenueShare[]> { return []; }
   async getRevenueSharesByWallet(_walletAddress: string): Promise<RevenueShare[]> { return []; }
   async getRevenueSharesByContestId(_contestId: number): Promise<RevenueShare[]> { return []; }
@@ -1592,21 +1590,10 @@ export class DatabaseStorage implements IStorage {
     return revenue;
   }
 
-  async createRevenueShare(insertShare: InsertRevenueShare): Promise<RevenueShare> {
-    if (!this.db) throw new Error("Database not available");
-    const [share] = await this.db.insert(revenueShares).values(insertShare).returning();
-    return share;
-  }
-
   async createRevenueShares(insertShares: InsertRevenueShare[]): Promise<RevenueShare[]> {
     if (!this.db) throw new Error("Database not available");
     if (insertShares.length === 0) return [];
     return await this.db.insert(revenueShares).values(insertShares).returning();
-  }
-
-  async getRevenueSharesByRevenueId(revenueId: number): Promise<RevenueShare[]> {
-    if (!this.db) throw new Error("Database not available");
-    return await this.db.select().from(revenueShares).where(eq(revenueShares.revenueId, revenueId));
   }
 
   async getRevenueSharesByWallet(walletAddress: string): Promise<RevenueShare[]> {

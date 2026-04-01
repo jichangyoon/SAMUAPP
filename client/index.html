@@ -26,6 +26,12 @@
   <body>
     <div id="root"></div>
     <script>
+      // Suppress known Privy SDK v2.25.0 false-positive: internally calls useContext
+      // outside a React render cycle during async app config initialization.
+      // This only affects the dev-mode warning; functionality is not impacted.
+      globalThis.__SUPPRESS_INVALID_HOOK_CALL_WARNING__ = true;
+    </script>
+    <script>
       // Complete Buffer polyfill for browser compatibility
       (function() {
         if (typeof Buffer === 'undefined') {

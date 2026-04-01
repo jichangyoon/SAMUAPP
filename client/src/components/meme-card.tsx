@@ -6,8 +6,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, Dr
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { usePrivy } from '@privy-io/react-auth';
-import { useSolanaWallets } from '@privy-io/react-auth/solana';
+import { usePrivy, useSolanaWallets } from '@privy-io/react-auth';
 import { useUniversalSignTransaction } from "@/hooks/use-universal-sign-transaction";
 import { Transaction } from '@solana/web3.js';
 import { getSharedConnection } from "@/lib/solana";

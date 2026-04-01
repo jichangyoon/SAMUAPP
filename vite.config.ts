@@ -21,6 +21,15 @@ export default defineConfig({
       "@": path.resolve(import.meta.dirname, "client", "src"),
       "@shared": path.resolve(import.meta.dirname, "shared"),
     },
+    dedupe: ["react", "react-dom", "react/jsx-runtime"],
+  },
+  optimizeDeps: {
+    include: [
+      "react",
+      "react-dom",
+      "@privy-io/react-auth",
+      "@privy-io/react-auth/solana",
+    ],
   },
   root: path.resolve(import.meta.dirname, "client"),
   build: {

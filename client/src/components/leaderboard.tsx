@@ -9,8 +9,7 @@ import { Trophy, Medal, Crown, TrendingUp, Calendar, ChevronDown, ChevronUp, Vot
 import { Button } from "@/components/ui/button";
 import { UserInfoModal } from "@/components/user-info-modal";
 import { MemeDetailModal } from "@/components/meme-detail-modal";
-import { usePrivy } from '@privy-io/react-auth';
-import { useSolanaWallets } from '@privy-io/react-auth/solana';
+import { usePrivy, useSolanaWallets } from '@privy-io/react-auth';
 import type { Meme } from "@shared/schema";
 import { getMediaType } from "@/utils/media-utils";
 

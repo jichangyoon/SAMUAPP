@@ -1,4 +1,5 @@
-import { useSolanaWallets, useSignTransaction } from '@privy-io/react-auth/solana';
+import { useSignTransaction } from '@privy-io/react-auth/solana';
+import { useSolanaWallets } from '@privy-io/react-auth';
 import { Transaction, VersionedTransaction } from '@solana/web3.js';
 import { Connection } from '@solana/web3.js';
 

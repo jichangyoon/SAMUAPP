@@ -37,9 +37,7 @@ const handleError = (event: ErrorEvent) => {
 window.addEventListener('unhandledrejection', handleUnhandledRejection, { passive: true });
 window.addEventListener('error', handleError, true);
 
-const solanaConnectors = toSolanaWalletConnectors({
-  shouldAutoConnect: false,
-});
+const solanaConnectors = toSolanaWalletConnectors({ shouldAutoConnect: false });
 
 createRoot(document.getElementById("root")!).render(
   <PrivyProvider

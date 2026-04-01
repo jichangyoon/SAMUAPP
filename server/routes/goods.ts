@@ -1,6 +1,6 @@
-import { Router } from "express";
+import { Router, Request, Response, NextFunction } from "express";
 import { storage } from "../storage";
-import { insertGoodsSchema, insertOrderSchema } from "@shared/schema";
+import { insertGoodsSchema, insertOrderSchema, type EscrowDeposit } from "@shared/schema";
 import { config } from "../config";
 import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { uploadToR2 } from "../r2-storage";
@@ -14,7 +14,7 @@ const TREASURY_WALLET = config.TREASURY_WALLET;
 const ESCROW_WALLET = config.ESCROW_WALLET;
 const SHARE_RATIOS = config.REVENUE_SHARES;
 
-export async function distributeEscrowProfit(escrowDeposit: any) {
+export async function distributeEscrowProfit(escrowDeposit: EscrowDeposit) {
   const profitSol = escrowDeposit.profitSol;
   if (!profitSol || profitSol <= 0) return;
 
@@ -198,7 +198,7 @@ function normalizePhoneForPrintful(rawPhone: string, countryCode: string): strin
   return `${dialCode} ${localPart}`;
 }
 
-function requireAdmin(req: any, res: any, next: any) {
+function requireAdmin(req: Request, res: Response, next: NextFunction) {
   const email = req.headers["x-admin-email"] || req.body?.adminEmail;
   if (!email || !config.ADMIN_EMAILS.includes(String(email).toLowerCase())) {
     return res.status(403).json({ error: "Admin access required" });

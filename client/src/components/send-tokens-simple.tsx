@@ -6,9 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useSendTransaction, useSolanaWallets } from '@privy-io/react-auth/solana';
 import { useUniversalSignTransaction } from "@/hooks/use-universal-sign-transaction";
-import { usePrivy } from '@privy-io/react-auth';
+import { usePrivy, useSolanaWallets } from '@privy-io/react-auth';
 import { useQueryClient } from "@tanstack/react-query";
 import { Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { getSharedConnection } from "@/lib/solana";
