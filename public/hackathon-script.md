@@ -12,13 +12,13 @@
 
 ## Slide 2 — Problem (20 sec)
 
-"WIF, BONK, PEPE — these communities are already running meme contests. Community-created content goes viral, pumps the token, builds culture. But creators get nothing. Voters get nothing. There's no infrastructure to turn that energy into revenue."
+"Many communities are already running meme contests. Community-created content goes viral, pumps the token, builds culture. But creators get nothing. Voters get nothing. There's no infrastructure to turn that energy into revenue."
 
 ---
 
 ## Slide 3 — Solution (20 sec)
 
-"SAMU is that pipeline. Communities vote with their SPL tokens. The winning meme gets archived as IP and automatically produced as goods through Printful — no manual work. When a sale happens, revenue splits automatically: 45% to the creator, 40% to voters, 15% to the platform — via Anchor smart contract."
+"SAMU is that pipeline. Communities vote with their SPL tokens. The winning meme gets archived as IP and automatically produced as goods through Printful — no manual work. When a sale happens, revenue splits automatically— via Anchor smart contract."
 
 ---
 
