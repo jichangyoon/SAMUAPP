@@ -26,7 +26,6 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 }
 .slide.active { opacity: 1; pointer-events: auto; }
 
-/* ── CONTROLS ── */
 .progress { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg,var(--p),var(--g)); transition: width .4s; z-index: 99; }
 .ctrl { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; z-index: 99; }
 .ctrl button { background: rgba(153,69,255,.2); border: 1px solid rgba(153,69,255,.5); color: var(--tx); padding: 7px 22px; border-radius: 999px; cursor: pointer; font-size: 13px; transition: background .2s; }
@@ -34,7 +33,6 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 .ctrl .ctr { font-size: 12px; color: var(--mu); min-width: 44px; text-align: center; }
 .slide-num { position: fixed; top: 14px; right: 18px; font-size: 12px; color: var(--mu); z-index: 99; }
 
-/* ── TYPE ── */
 .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 3.5px; text-transform: uppercase; color: var(--g); margin-bottom: 16px; }
 h1 { font-size: clamp(36px, 5.5vw, 76px); font-weight: 900; line-height: 1.05; }
 h2 { font-size: clamp(24px, 3.5vw, 50px); font-weight: 800; line-height: 1.15; }
@@ -42,107 +40,25 @@ p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75
 .grad { background: linear-gradient(135deg,var(--p),var(--g)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .gp { color: var(--p); } .gg { color: var(--g); } .gb { color: var(--b); } .go { color: var(--o); }
 
-/* ── BADGE ── */
 .badge { display: inline-block; background: rgba(20,241,149,.12); border: 1px solid var(--g); color: var(--g); border-radius: 999px; padding: 5px 18px; font-size: 12px; font-weight: 700; letter-spacing: 1px; }
-.badge-p { background: rgba(153,69,255,.15); border-color: var(--p); color: var(--p); }
 
-/* ── CARDS ── */
-.cards { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
-.card { background: var(--s2); border: 1px solid rgba(153,69,255,.18); border-radius: 18px; padding: 24px 26px; max-width: 270px; text-align: left; }
-.card .ic { font-size: 28px; margin-bottom: 10px; }
-.card h3 { font-size: 16px; font-weight: 700; margin-bottom: 7px; }
-.card p { font-size: 13px; color: var(--mu); line-height: 1.65; }
-
-/* ── FLOW ── */
 .flow { display: flex; align-items: center; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
 .fstep { background: var(--s2); border: 1px solid rgba(20,241,149,.22); border-radius: 12px; padding: 13px 20px; font-weight: 700; font-size: clamp(12px,1.2vw,16px); line-height: 1.3; }
 .fstep small { display: block; font-weight: 400; font-size: 11px; color: var(--mu); margin-top: 3px; }
 .farr { color: var(--g); font-size: 18px; flex-shrink: 0; }
 
-/* ── TRACTION ── */
-.traction { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; margin-top: 36px; }
-.tr { background: var(--s2); border: 1px solid rgba(153,69,255,.2); border-radius: 18px; padding: 26px 34px; min-width: 150px; }
-.tr .num { font-size: clamp(30px, 3.8vw, 52px); font-weight: 900; line-height: 1; }
-.tr .lbl { font-size: 13px; color: var(--mu); margin-top: 6px; }
-
-/* ── COMMUNITY LOGOS (text-based) ── */
-.comm-grid { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
-.comm-item { background: var(--s2); border-radius: 14px; padding: 18px 24px; text-align: center; border: 1px solid rgba(255,255,255,.08); min-width: 140px; }
-.comm-token { font-size: 22px; font-weight: 900; margin-bottom: 6px; }
-.comm-desc { font-size: 12px; color: var(--mu); line-height: 1.5; }
-.comm-status { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; margin-top: 8px; }
-
-/* ── MARKET ── */
-.mkt { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
-.mkt-item { background: var(--s2); border-radius: 16px; padding: 22px 28px; border-top: 3px solid var(--p); min-width: 190px; text-align: center; }
-.mkt-item .sz { font-size: clamp(22px,2.8vw,38px); font-weight: 900; }
-.mkt-item .nm { font-size: 12px; color: var(--mu); margin-top: 6px; line-height: 1.5; }
-
-/* ── WHY SOLANA ── */
-.why-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 28px; max-width: 660px; width: 100%; }
-.why-item { background: var(--s2); border-left: 3px solid var(--g); border-radius: 0 14px 14px 0; padding: 14px 18px; text-align: left; }
-.why-item .wt { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
-.why-item .wd { font-size: 12px; color: var(--mu); }
-
-/* ── PIE CHART ── */
-.pie-wrap { display: flex; align-items: center; gap: 44px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
-.pie-legend { display: flex; flex-direction: column; gap: 14px; }
-.legend-item { display: flex; align-items: center; gap: 12px; text-align: left; }
-.legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
-.legend-pct { font-size: 20px; font-weight: 900; }
-
-/* ── TIMELINE ── */
-.tl { display: flex; justify-content: center; margin-top: 40px; max-width: 900px; width: 100%; }
-.tl-item { flex: 1; text-align: center; position: relative; }
-.tl-item::after { content: ''; position: absolute; top: 17px; left: 50%; width: 100%; height: 2px; background: rgba(153,69,255,.2); z-index: 0; }
-.tl-item:last-child::after { display: none; }
-.tl-dot { width: 36px; height: 36px; border-radius: 50%; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; position: relative; z-index: 1; }
-.done { background: var(--g); color: #000; } .next { background: var(--p); color: #fff; } .fut { background: var(--s2); border: 2px solid var(--mu); color: var(--mu); }
-.tl-ph { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--mu); margin-bottom: 4px; }
-.tl-title { font-size: 14px; font-weight: 700; margin-bottom: 5px; }
-.tl-desc { font-size: 11px; color: var(--mu); padding: 0 6px; line-height: 1.5; }
-
-/* ── PROTOCOL DIAGRAM ── */
-.proto { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 28px; max-width: 760px; width: 100%; }
-.proto-layer { display: flex; align-items: center; gap: 10px; width: 100%; }
-.proto-label { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--mu); width: 90px; text-align: right; flex-shrink: 0; }
-.proto-items { display: flex; gap: 10px; flex-wrap: wrap; flex: 1; }
-.proto-item { background: var(--s2); border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 600; border: 1px solid rgba(255,255,255,.08); }
-.proto-item.green { border-color: rgba(20,241,149,.3); color: var(--g); }
-.proto-item.purple { border-color: rgba(153,69,255,.3); color: var(--p); }
-.proto-item.blue { border-color: rgba(0,194,255,.3); color: var(--b); }
-
-/* ── STAKEHOLDERS ── */
-.stake-grid { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin-top: 28px; }
-.stake-card { background: var(--s2); border-radius: 16px; padding: 22px 26px; min-width: 200px; max-width: 240px; text-align: left; }
-.stake-card .s-role { font-size: 12px; font-weight: 700; letter-spacing: 2px; margin-bottom: 10px; }
-.stake-card .s-title { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
-.stake-card .s-do { font-size: 12px; color: var(--mu); margin-bottom: 6px; }
-.stake-card .s-get { font-size: 13px; font-weight: 700; }
-
-/* ── IP EMPIRE SLIDES ── */
-.ip-hero { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; width: 100%; }
-.ip-single { display: flex; flex-direction: column; align-items: center; gap: 20px; }
-.ip-single img { width: clamp(160px, 22vw, 260px); height: clamp(160px, 22vw, 260px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(153,69,255,.35)); }
-.ip-arrow-row { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; justify-content: center; }
-.ip-company { text-align: center; }
-.ip-company .co-name { font-size: clamp(14px, 1.8vw, 20px); color: var(--mu); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; }
-.ip-company .co-val { font-size: clamp(36px, 6vw, 80px); font-weight: 900; line-height: 1; }
-.ip-caption { font-size: clamp(13px, 1.4vw, 17px); color: var(--mu); margin-top: 4px; }
-
-.ip-pair { display: flex; gap: clamp(28px, 5vw, 80px); justify-content: center; align-items: flex-start; flex-wrap: wrap; margin-top: 16px; }
-.ip-pair-item { display: flex; flex-direction: column; align-items: center; gap: 16px; }
-.ip-pair-item img { width: clamp(120px, 16vw, 200px); height: clamp(120px, 16vw, 200px); object-fit: contain; filter: drop-shadow(0 0 28px rgba(153,69,255,.3)); }
-.ip-val-sm { font-size: clamp(28px, 4vw, 52px); font-weight: 900; line-height: 1.1; }
-
-.meme-grid { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 28px; }
 .meme-coin { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.meme-coin img { width: clamp(56px, 8vw, 88px); height: clamp(56px, 8vw, 88px); border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,.12); }
-.meme-coin span { font-size: 13px; font-weight: 700; color: var(--mu); letter-spacing: 1px; }
+.meme-coin img { width: clamp(52px, 7vw, 80px); height: clamp(52px, 7vw, 80px); border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,.12); }
+.meme-coin span { font-size: 12px; font-weight: 700; color: var(--mu); letter-spacing: 1px; }
 
-/* ── SLIDE BACKGROUNDS ── */
+.ip-single img { width: clamp(160px, 22vw, 260px); height: clamp(160px, 22vw, 260px); object-fit: contain; filter: drop-shadow(0 0 40px rgba(153,69,255,.45)); }
+.ip-company .co-name { font-size: clamp(14px, 1.8vw, 20px); color: var(--mu); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; }
+.ip-company .co-val { font-size: clamp(52px, 8vw, 100px); font-weight: 900; line-height: 1; }
+
 #s1 { background: radial-gradient(ellipse 60% 80% at 15% 50%, rgba(153,69,255,.12) 0%, transparent 70%), radial-gradient(ellipse 50% 70% at 85% 50%, rgba(20,241,149,.06) 0%, transparent 70%), var(--bg); }
-.slide-cta { background: radial-gradient(ellipse at center, rgba(153,69,255,.08) 0%, transparent 65%), var(--bg); }
+#s-demo { background: radial-gradient(ellipse at center, rgba(20,241,149,.07) 0%, transparent 65%), var(--bg); }
+#s-vision { background: radial-gradient(ellipse at center, rgba(153,69,255,.10) 0%, transparent 65%), var(--bg); }
+#s-cta { background: radial-gradient(ellipse 70% 80% at 50% 50%, rgba(153,69,255,.10) 0%, transparent 70%), var(--bg); }
 </style>
 </head>
 <body>
@@ -152,91 +68,47 @@ p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75
 
 <div class="deck">
 
-<!-- ── S1: WHAT IS IP? ── -->
+<!-- ── S1: TITLE ── -->
 <div class="slide active" id="s1">
   <div class="eyebrow">Solana Hackathon 2026</div>
-  <h1>What is <span class="grad">IP</span>?</h1>
-  <p class="sub" style="max-width:800px; font-size:clamp(15px,1.8vw,22px); color:var(--tx); font-weight:500; margin-top:20px;">
-    Disney built a $200B empire on a mouse.<br>
-    Pixar turned a lamp into a franchise.<br>
-    <span style="color:var(--mu); font-weight:400;">IP is story + community + a revenue cycle that compounds forever.</span>
+  <h1><span class="grad">SAMU Protocol</span></h1>
+  <p style="font-size:clamp(18px,2.2vw,28px); color:var(--mu); margin-top:20px; line-height:1.6; max-width:720px; font-weight:500;">
+    Memecoin communities run meme contests.<br>
+    <span style="color:var(--tx); font-weight:700;">We turn those contests into IP — and distribute the revenue on-chain.</span>
   </p>
-  <div style="margin-top:36px; background:var(--s2); border-radius:18px; padding:22px 40px; display:inline-flex; gap:32px; align-items:center; border:1px solid rgba(255,255,255,.07); flex-wrap:wrap; justify-content:center;">
-    <div style="text-align:center;">
-      <div style="font-size:28px; font-weight:900; color:var(--g);">Story</div>
-      <div style="font-size:12px; color:var(--mu); margin-top:4px;">Creative energy</div>
+  <div style="margin-top:40px; display:flex; gap:16px; flex-wrap:wrap; justify-content:center;">
+    <div style="background:var(--s2); border:1px solid rgba(20,241,149,.2); border-radius:12px; padding:14px 28px; text-align:center;">
+      <div style="font-size:22px; font-weight:900; color:var(--g);">Vote</div>
+      <div style="font-size:11px; color:var(--mu); margin-top:4px;">SPL Token</div>
     </div>
-    <div style="font-size:22px; color:var(--mu);">+</div>
-    <div style="text-align:center;">
-      <div style="font-size:28px; font-weight:900; color:var(--p);">Community</div>
-      <div style="font-size:12px; color:var(--mu); margin-top:4px;">Fans who care</div>
+    <div style="color:var(--g); font-size:22px; align-self:center;">→</div>
+    <div style="background:var(--s2); border:1px solid rgba(153,69,255,.2); border-radius:12px; padding:14px 28px; text-align:center;">
+      <div style="font-size:22px; font-weight:900; color:var(--p);">Archive</div>
+      <div style="font-size:11px; color:var(--mu); margin-top:4px;">IP Record</div>
     </div>
-    <div style="font-size:22px; color:var(--mu);">+</div>
-    <div style="text-align:center;">
-      <div style="font-size:28px; font-weight:900; color:var(--b);">Revenue Cycle</div>
-      <div style="font-size:12px; color:var(--mu); margin-top:4px;">Goods → money → more story</div>
+    <div style="color:var(--g); font-size:22px; align-self:center;">→</div>
+    <div style="background:var(--s2); border:1px solid rgba(0,194,255,.2); border-radius:12px; padding:14px 28px; text-align:center;">
+      <div style="font-size:22px; font-weight:900; color:var(--b);">Goods</div>
+      <div style="font-size:11px; color:var(--mu); margin-top:4px;">Printful</div>
     </div>
-    <div style="font-size:22px; color:var(--mu);">=</div>
-    <div style="text-align:center;">
-      <div style="font-size:28px; font-weight:900; background:linear-gradient(135deg,var(--p),var(--g)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">Billion-Dollar IP</div>
-      <div style="font-size:12px; color:var(--mu); margin-top:4px;">That's how IP works</div>
+    <div style="color:var(--g); font-size:22px; align-self:center;">→</div>
+    <div style="background:var(--s2); border:1px solid rgba(255,107,53,.2); border-radius:12px; padding:14px 28px; text-align:center;">
+      <div style="font-size:22px; font-weight:900; color:var(--o);">Revenue</div>
+      <div style="font-size:11px; color:var(--mu); margin-top:4px;">On-Chain SOL</div>
     </div>
   </div>
-  <p class="sub" style="margin-top:28px;">On Solana, meme communities already have the story and the fans.<br>They're missing the revenue cycle.</p>
-</div>
-
-<!-- ── S2: MICKEY MOUSE → DISNEY ── -->
-<div class="slide" id="s-ip1">
-  <div class="eyebrow">What is IP?</div>
-  <div class="ip-hero">
-    <div class="ip-arrow-row">
-      <div class="ip-single">
-        <img src="/mickey.png" alt="Mickey Mouse">
-        <div class="ip-caption">1928. One sketch.</div>
-      </div>
-      <div style="font-size: clamp(40px, 6vw, 80px); color: var(--g); font-weight: 900;">→</div>
-      <div class="ip-company">
-        <div class="co-name">The Walt Disney Company</div>
-        <div class="co-val" style="background:linear-gradient(135deg,var(--p),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">$200B+</div>
-        <div class="ip-caption">empire built on one character</div>
-      </div>
-    </div>
+  <div style="margin-top:32px;">
+    <span class="badge">samu.ink — Live on Solana Mainnet</span>
   </div>
 </div>
 
-<!-- ── S3: PIXAR + DREAMWORKS ── -->
-<div class="slide" id="s-ip2">
-  <div class="eyebrow">What is IP?</div>
-  <p style="font-size:clamp(15px,1.8vw,20px); color:var(--mu); margin-bottom:8px;">It wasn't just Disney.</p>
-  <div class="ip-pair">
-    <div class="ip-pair-item">
-      <img src="/luxo.png" alt="Luxo Jr">
-      <div style="text-align:center;">
-        <div style="font-size:13px;color:var(--mu);letter-spacing:2px;text-transform:uppercase;">Pixar</div>
-        <div class="ip-val-sm" style="color:var(--g);">$7.4B</div>
-        <div style="font-size:12px;color:var(--mu);">1986. One desk lamp.<br>Acquired by Disney.</div>
-      </div>
-    </div>
-    <div style="font-size:clamp(28px,4vw,52px);color:var(--mu);align-self:center;">&</div>
-    <div class="ip-pair-item">
-      <img src="/panda.png" alt="Kung Fu Panda">
-      <div style="text-align:center;">
-        <div style="font-size:13px;color:var(--mu);letter-spacing:2px;text-transform:uppercase;">DreamWorks</div>
-        <div class="ip-val-sm" style="color:var(--p);">$3.8B</div>
-        <div style="font-size:12px;color:var(--mu);">2008. One panda.<br>Acquired by Comcast.</div>
-      </div>
-    </div>
-  </div>
-  <p style="margin-top:28px;font-size:clamp(16px,2vw,22px);font-weight:700;color:var(--tx);">One character. One story. <span class="grad">Billion-dollar empire.</span></p>
-</div>
-
-<!-- ── S4: WEB3 REVERSAL ── -->
-<div class="slide" id="s-ip3">
-  <div class="eyebrow">The Opportunity</div>
-  <h2>What about <span class="grad">Web3?</span></h2>
-  <div class="meme-grid">
+<!-- ── S2: PROBLEM ── -->
+<div class="slide" id="s2">
+  <div class="eyebrow">Problem</div>
+  <h2>Memecoins are the most active<br><span class="grad">community-created IPs on earth.</span></h2>
+  <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin-top:32px;">
     <div class="meme-coin">
-      <img src="https://assets.coingecko.com/coins/images/5/large/dogecoin.png" alt="DOGE" onerror="this.outerHTML='<div style=\'font-size:56px\'>🐕</div>'">
+      <img src="https://assets.coingecko.com/coins/images/5/large/dogecoin.png" alt="DOGE" onerror="this.outerHTML='<div style=\'width:72px;height:72px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:32px\'>🐕</div>'">
       <span>DOGE</span>
     </div>
     <div class="meme-coin">
@@ -244,11 +116,11 @@ p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75
       <span>WIF</span>
     </div>
     <div class="meme-coin">
-      <img src="https://assets.coingecko.com/coins/images/28600/large/bonk.jpg" alt="BONK" onerror="this.outerHTML='<div style=\'font-size:56px\'>🐶</div>'">
+      <img src="https://assets.coingecko.com/coins/images/28600/large/bonk.jpg" alt="BONK" onerror="this.outerHTML='<div style=\'width:72px;height:72px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:32px\'>🐶</div>'">
       <span>BONK</span>
     </div>
     <div class="meme-coin">
-      <img src="https://assets.coingecko.com/coins/images/29850/large/pepe-token.jpeg" alt="PEPE" onerror="this.outerHTML='<div style=\'font-size:56px\'>🐸</div>'">
+      <img src="https://assets.coingecko.com/coins/images/29850/large/pepe-token.jpeg" alt="PEPE" onerror="this.outerHTML='<div style=\'width:72px;height:72px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:32px\'>🐸</div>'">
       <span>PEPE</span>
     </div>
     <div class="meme-coin">
@@ -264,358 +136,197 @@ p.sub { font-size: clamp(14px, 1.6vw, 19px); color: var(--mu); line-height: 1.75
       <span>PENGU</span>
     </div>
   </div>
-  <div style="margin-top:32px;background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.35);border-radius:16px;padding:20px 44px;display:inline-block;">
-    <p style="font-size:clamp(18px,2.4vw,30px);font-weight:800;color:var(--o);">Billions in market cap. Zero IP monetization.</p>
-    <p style="font-size:14px;color:var(--mu);margin-top:8px;">They have the characters, the communities, the cultural energy.<br>They're missing the revenue cycle.</p>
+  <div style="margin-top:32px; background:rgba(255,107,53,.08); border:1px solid rgba(255,107,53,.3); border-radius:16px; padding:22px 44px; display:inline-block; max-width:680px;">
+    <p style="font-size:clamp(16px,2vw,24px); font-weight:800; color:var(--o); line-height:1.4;">Meme contests already happen in every community.<br>Winners get nothing. Revenue goes nowhere.</p>
+    <p style="font-size:14px; color:var(--mu); margin-top:10px; line-height:1.7;">The communities, the creative energy, the cultural momentum — it's all there.<br><strong style="color:var(--tx);">There's no infrastructure to turn it into lasting value.</strong></p>
   </div>
 </div>
 
-<!-- ── S5: HOOK ── -->
-<div class="slide" id="s2">
-  <div class="eyebrow">The Opportunity</div>
-  <h1>Memecoins are<br><span class="grad">community-born IPs.</span></h1>
-  <p class="sub" style="margin-top:20px; font-size:clamp(16px,2vw,24px); color:var(--tx); font-weight:500;">
-    BONK became a cultural movement. WIF built a global fanbase.<br>
-    <span style="color:var(--mu); font-weight:400;">These are IPs — with passionate communities and viral creative energy.</span>
-  </p>
-  <div style="margin-top:36px; background:rgba(255,107,53,.08); border:1px solid rgba(255,107,53,.3); border-radius:16px; padding:20px 40px;">
-    <p style="font-size:clamp(18px,2.4vw,30px); font-weight:800; color:var(--o);">But most of them just die.</p>
-    <p style="font-size:14px; color:var(--mu); margin-top:10px; line-height:1.7;">The hype fades. The community scatters. The creative energy evaporates.<br>There's no infrastructure to capture and compound that value.</p>
-  </div>
-  <div style="margin-top:28px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-    <span class="badge">$60B+ Memecoin Market Cap</span>
-    <span class="badge badge-p">Millions of Creators & Voters</span>
-  </div>
-</div>
-
-<!-- ── S3: PROBLEM ── -->
+<!-- ── S3: WHAT SAMU DOES ── -->
 <div class="slide" id="s3">
-  <div class="eyebrow">Problem</div>
-  <h2>The community creative energy<br><span class="gp">evaporates on Twitter.</span></h2>
-  <div class="cards">
-    <div class="card">
-      <div class="ic">🎨</div>
-      <h3>Meme Creator</h3>
-      <p>My meme went viral and pumped the token. I get zero revenue. No way to prove or monetize my IP.</p>
-    </div>
-    <div class="card">
-      <div class="ic">🗳️</div>
-      <h3>Community Voter</h3>
-      <p>I curate great memes and build community culture. No reward structure. Not enough reason to stay engaged.</p>
-    </div>
-    <div class="card">
-      <div class="ic">🏭</div>
-      <h3>Project Team</h3>
-      <p>We want to turn memes into real goods. No pipeline. Everything done manually, one-off, no scale.</p>
-    </div>
-  </div>
-  <p class="sub" style="margin-top:24px;">Memecoin communities hold the most powerful cultural assets on the internet.<br>They have <strong style="color:var(--tx)">no infrastructure to convert that energy into lasting value.</strong></p>
-</div>
-
-<!-- ── S4: SOLUTION ── -->
-<div class="slide" id="s4">
   <div class="eyebrow">Solution</div>
-  <h2>SAMU Protocol:<br><span class="grad">Meme → IP → Goods → On-Chain Revenue</span></h2>
-  <p class="sub">Capture community energy. Archive it as IP. Connect to goods. Distribute revenue back to the creators.</p>
-  <div class="flow" style="margin-top:28px;">
-    <div class="fstep">🎨 Upload Meme<small>Community contest</small></div>
+  <h2>SAMU Protocol captures meme contests<br><span class="grad">and converts them into revenue.</span></h2>
+  <div class="flow">
+    <div class="fstep">🗳️ Community votes<small>SPL token transfers<br>+ Solana Blinks</small></div>
     <div class="farr">→</div>
-    <div class="fstep">🗳️ Token Vote<small>SPL token staking</small></div>
+    <div class="fstep">🏆 Winner archived<small>IP record on-chain<br>Contest snapshot</small></div>
     <div class="farr">→</div>
-    <div class="fstep">🏆 IP Archive<small>On-chain record</small></div>
+    <div class="fstep">🛍️ Auto-goods<small>Printful fulfillment<br>Zero manual work</small></div>
     <div class="farr">→</div>
-    <div class="fstep">🛍️ Goods<small>Printful automation</small></div>
-    <div class="farr">→</div>
-    <div class="fstep">💰 SOL Distributed<small>Anchor smart contract</small></div>
+    <div class="fstep">💰 SOL distributed<small>Anchor escrow<br>Trustless split</small></div>
   </div>
-  <div style="margin-top:28px; background:var(--s2); border-radius:16px; padding:18px 34px; display:inline-flex; gap:28px; align-items:center; border:1px solid rgba(255,255,255,.07); flex-wrap:wrap; justify-content:center;">
-    <div><span class="gg" style="font-size:24px; font-weight:900;">45%</span><div style="font-size:12px; color:var(--mu); margin-top:3px;">Creator</div></div>
-    <div style="width:1px; height:36px; background:rgba(255,255,255,.08);"></div>
-    <div><span class="gp" style="font-size:24px; font-weight:900;">40%</span><div style="font-size:12px; color:var(--mu); margin-top:3px;">Voter</div></div>
-    <div style="width:1px; height:36px; background:rgba(255,255,255,.08);"></div>
-    <div><span class="gb" style="font-size:24px; font-weight:900;">15%</span><div style="font-size:12px; color:var(--mu); margin-top:3px;">Platform</div></div>
-  </div>
-  <p style="margin-top:14px; font-size:13px; color:var(--mu);">All distribution executed automatically by Anchor smart contract — zero trust required</p>
+  <p class="sub" style="margin-top:28px;">
+    Any memecoin community with an SPL token can run a contest.<br>
+    The protocol handles everything — from vote to revenue — automatically.
+  </p>
 </div>
 
-<!-- ── S5: HOW IT WORKS ── -->
-<div class="slide" id="s5">
-  <div class="eyebrow">How It Works</div>
-  <h2>Three stakeholders. <span class="grad">One flywheel.</span></h2>
-  <div class="stake-grid">
-    <div class="stake-card" style="border:1px solid rgba(20,241,149,.25);">
-      <div class="s-role gg">CREATOR</div>
-      <div class="s-title">Upload your meme</div>
-      <div class="s-do">Submit original meme to the community contest. Community votes with tokens to pick the best.</div>
-      <div class="s-get gg">Earns: 45% of goods revenue — proportional to votes received</div>
+<!-- ── S4: REVENUE SPLIT ── -->
+<div class="slide" id="s4">
+  <div class="eyebrow">Revenue Distribution</div>
+  <h2>Every goods sale goes back to<br><span class="grad">the people who created the value.</span></h2>
+  <div style="display:flex; gap:24px; justify-content:center; flex-wrap:wrap; margin-top:40px;">
+    <div style="background:var(--s2); border:2px solid rgba(20,241,149,.4); border-radius:20px; padding:36px 48px; text-align:center; min-width:180px;">
+      <div style="font-size:clamp(48px,7vw,80px); font-weight:900; color:var(--g); line-height:1;">45%</div>
+      <div style="font-size:16px; font-weight:700; color:var(--tx); margin-top:10px;">Creator</div>
+      <div style="font-size:12px; color:var(--mu); margin-top:6px; line-height:1.5;">Proportional to<br>votes received</div>
     </div>
-    <div class="stake-card" style="border:1px solid rgba(153,69,255,.25);">
-      <div class="s-role gp">VOTER</div>
-      <div class="s-title">Stake tokens to vote</div>
-      <div class="s-do">Use community SPL tokens to vote for the best memes. Shape what becomes the official IP.</div>
-      <div class="s-get gp">Earns: 40% of goods revenue — proportional to tokens staked</div>
+    <div style="background:var(--s2); border:2px solid rgba(153,69,255,.4); border-radius:20px; padding:36px 48px; text-align:center; min-width:180px;">
+      <div style="font-size:clamp(48px,7vw,80px); font-weight:900; color:var(--p); line-height:1;">40%</div>
+      <div style="font-size:16px; font-weight:700; color:var(--tx); margin-top:10px;">Voter</div>
+      <div style="font-size:12px; color:var(--mu); margin-top:6px; line-height:1.5;">Proportional to<br>tokens staked</div>
     </div>
-    <div class="stake-card" style="border:1px solid rgba(0,194,255,.25);">
-      <div class="s-role gb">TEAM</div>
-      <div class="s-title">Run the protocol</div>
-      <div class="s-do">Winning meme is automatically archived on-chain, printed via Printful, and listed as goods.</div>
-      <div class="s-get gb">Earns: 15% — sustains the protocol infrastructure</div>
+    <div style="background:var(--s2); border:2px solid rgba(0,194,255,.25); border-radius:20px; padding:36px 48px; text-align:center; min-width:180px;">
+      <div style="font-size:clamp(48px,7vw,80px); font-weight:900; color:var(--b); line-height:1;">15%</div>
+      <div style="font-size:16px; font-weight:700; color:var(--tx); margin-top:10px;">Platform</div>
+      <div style="font-size:12px; color:var(--mu); margin-top:6px; line-height:1.5;">Protocol<br>infrastructure</div>
     </div>
   </div>
-  <div style="margin-top:24px; font-size:13px; color:var(--mu);">When a customer buys the goods → Anchor escrow releases → SOL hits all three wallets simultaneously</div>
+  <p style="margin-top:28px; font-size:14px; color:var(--mu);">Executed automatically by Anchor smart contract — no trust required · SOL hits wallets on delivery</p>
 </div>
 
-<!-- ── S6: PROTOCOL DESIGN ── -->
+<!-- ── S5: DEMO ── -->
+<div class="slide" id="s-demo">
+  <div class="eyebrow">Live Demo</div>
+  <div style="font-size:clamp(72px,12vw,140px); line-height:1; margin-bottom:20px;">▶</div>
+  <h2 style="color:var(--tx);">samu.ink</h2>
+  <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-top:28px;">
+    <span style="background:var(--s2); border:1px solid rgba(20,241,149,.25); border-radius:999px; padding:8px 20px; font-size:13px; font-weight:600; color:var(--g);">Vote with SAMU tokens</span>
+    <span style="background:var(--s2); border:1px solid rgba(153,69,255,.25); border-radius:999px; padding:8px 20px; font-size:13px; font-weight:600; color:var(--p);">Contest archive snapshot</span>
+    <span style="background:var(--s2); border:1px solid rgba(0,194,255,.25); border-radius:999px; padding:8px 20px; font-size:13px; font-weight:600; color:var(--b);">Buy goods on-chain</span>
+    <span style="background:var(--s2); border:1px solid rgba(255,107,53,.25); border-radius:999px; padding:8px 20px; font-size:13px; font-weight:600; color:var(--o);">Claim SOL rewards</span>
+  </div>
+</div>
+
+<!-- ── S6: WHAT WE BUILT ── -->
 <div class="slide" id="s6">
-  <div class="eyebrow">Protocol Design</div>
-  <h2>Designed to be<br><span class="grad">token-agnostic.</span></h2>
-  <p class="sub">SAMU is the first IP. The protocol is built so any SPL community can run their own contest — when they're ready to onboard.</p>
-  <div class="comm-grid">
-    <div class="comm-item" style="border-color:rgba(20,241,149,.3);">
-      <div class="comm-token gg">SAMU</div>
-      <div class="comm-desc">First community<br>Contest live on mainnet</div>
-      <div class="comm-status gg">✅ LIVE</div>
-    </div>
-    <div class="comm-item" style="border-color:rgba(255,107,53,.3);">
-      <div class="comm-token go">BONK</div>
-      <div class="comm-desc">Solana's flagship memecoin<br>Pipeline-compatible by design</div>
-      <div class="comm-status go">DESIGNED FOR</div>
-    </div>
-    <div class="comm-item" style="border-color:rgba(0,194,255,.3);">
-      <div class="comm-token gb">WIF</div>
-      <div class="comm-desc">Global memecoin<br>Pipeline-compatible by design</div>
-      <div class="comm-status gb">DESIGNED FOR</div>
-    </div>
-    <div class="comm-item" style="border-color:rgba(153,69,255,.3);">
-      <div class="comm-token gp">+MORE</div>
-      <div class="comm-desc">Curated communities<br>Quality-gated onboarding</div>
-      <div class="comm-status gp">PHASE 4</div>
-    </div>
-  </div>
-  <p class="sub" style="margin-top:20px;">Just like exchanges don't list every token — SAMU Protocol curates only verified communities.<br><strong style="color:var(--tx)">IP copyright risk management is the moat.</strong></p>
-</div>
-
-<!-- ── S7: WHAT WE BUILT ── -->
-<div class="slide" id="s7">
   <div class="eyebrow">What We Built</div>
-  <h2>Full pipeline.<br><span class="grad">Every stage verified on mainnet.</span></h2>
-  <div style="display:flex; flex-direction:column; gap:12px; margin-top:32px; max-width:580px; width:100%;">
+  <h2>Full pipeline. <span class="grad">Every stage on mainnet.</span></h2>
+  <div style="display:flex; flex-direction:column; gap:12px; margin-top:32px; max-width:600px; width:100%;">
     <div style="display:flex; align-items:center; gap:16px; background:var(--s2); border:1px solid rgba(20,241,149,.2); border-radius:14px; padding:14px 22px;">
-      <span style="font-size:20px; flex-shrink:0;">✅</span>
-      <div style="text-align:left;"><span style="font-weight:700; color:var(--tx);">Contest Engine</span> <span style="color:var(--mu); font-size:13px;">— meme upload, voting, winner selection</span></div>
+      <span style="font-size:18px; flex-shrink:0;">✅</span>
+      <div style="text-align:left;"><span style="font-weight:700;">Contest Engine</span> <span style="color:var(--mu); font-size:13px;">— upload, vote, winner selection, IP archive</span></div>
     </div>
     <div style="display:flex; align-items:center; gap:16px; background:var(--s2); border:1px solid rgba(20,241,149,.2); border-radius:14px; padding:14px 22px;">
-      <span style="font-size:20px; flex-shrink:0;">✅</span>
-      <div style="text-align:left;"><span style="font-weight:700; color:var(--tx);">SPL Token Voting</span> <span style="color:var(--mu); font-size:13px;">— on-chain transfers, Blinks support</span></div>
+      <span style="font-size:18px; flex-shrink:0;">✅</span>
+      <div style="text-align:left;"><span style="font-weight:700;">SPL Token Voting + Solana Blinks</span> <span style="color:var(--mu); font-size:13px;">— on-chain · vote from X (Twitter)</span></div>
     </div>
     <div style="display:flex; align-items:center; gap:16px; background:var(--s2); border:1px solid rgba(20,241,149,.2); border-radius:14px; padding:14px 22px;">
-      <span style="font-size:20px; flex-shrink:0;">✅</span>
-      <div style="text-align:left;"><span style="font-weight:700; color:var(--tx);">IP Archive + Printful Automation</span> <span style="color:var(--mu); font-size:13px;">— winning meme → goods, zero manual steps</span></div>
+      <span style="font-size:18px; flex-shrink:0;">✅</span>
+      <div style="text-align:left;"><span style="font-weight:700;">Printful Automation</span> <span style="color:var(--mu); font-size:13px;">— winning meme → goods, zero manual steps</span></div>
     </div>
     <div style="display:flex; align-items:center; gap:16px; background:var(--s2); border:1px solid rgba(20,241,149,.2); border-radius:14px; padding:14px 22px;">
-      <span style="font-size:20px; flex-shrink:0;">✅</span>
-      <div style="text-align:left;"><span style="font-weight:700; color:var(--tx);">Anchor Escrow + On-Chain Distribution</span> <span style="color:var(--mu); font-size:13px;">— Creator / Voter / Platform split, trustless</span></div>
+      <span style="font-size:18px; flex-shrink:0;">✅</span>
+      <div style="text-align:left;"><span style="font-weight:700;">Anchor Escrow + On-Chain Distribution</span> <span style="color:var(--mu); font-size:13px;">— 45/40/15 split, trustless, mainnet</span></div>
+    </div>
+    <div style="display:flex; align-items:center; gap:16px; background:var(--s2); border:1px solid rgba(20,241,149,.2); border-radius:14px; padding:14px 22px;">
+      <span style="font-size:18px; flex-shrink:0;">✅</span>
+      <div style="text-align:left;"><span style="font-weight:700;">SAMU Map</span> <span style="color:var(--mu); font-size:13px;">— global order visualization · revenue flow tracking</span></div>
     </div>
   </div>
-  <p class="sub" style="margin-top:24px;">Every stage of the pipeline has been <strong style="color:var(--g)">completed and verified on Solana mainnet.</strong></p>
-  <div class="badge" style="margin-top:16px;">Program ID: GYfzt1mzWNMurBEej4557YbKmceTWwW3L6attC7pAmWS</div>
+  <div class="badge" style="margin-top:20px; font-size:11px;">Program ID: GYfzt1mzWNMurBEej4557YbKmceTWwW3L6attC7pAmWS</div>
 </div>
 
-<!-- ── S9: MARKET OPPORTUNITY ── -->
-<div class="slide" id="s9">
-  <div class="eyebrow">Market Opportunity</div>
-  <h2>Three massive markets. <span class="grad">One protocol.</span></h2>
-  <div class="mkt">
-    <div class="mkt-item">
-      <div class="sz gp">$60B+</div>
-      <div class="nm">Memecoin<br>Market Cap</div>
+<!-- ── S7: VISION ── -->
+<div class="slide" id="s-vision">
+  <div class="eyebrow">Vision</div>
+  <div style="display:flex; align-items:center; gap:clamp(28px,5vw,80px); flex-wrap:wrap; justify-content:center;">
+    <div style="display:flex; flex-direction:column; align-items:center; gap:16px;">
+      <img src="/mickey.png" alt="Mickey Mouse" style="width:clamp(140px,18vw,220px); height:clamp(140px,18vw,220px); object-fit:contain; filter:drop-shadow(0 0 40px rgba(153,69,255,.4));">
+      <div style="text-align:center;">
+        <div style="font-size:13px; color:var(--mu); letter-spacing:2px; text-transform:uppercase;">Mickey Mouse</div>
+        <div style="font-size:clamp(28px,4vw,48px); font-weight:900; color:var(--g);">$200B+</div>
+        <div style="font-size:12px; color:var(--mu);">1928. One sketch.</div>
+      </div>
     </div>
-    <div class="mkt-item">
-      <div class="sz gg">$250B</div>
-      <div class="nm">Creator Economy<br>(2025 Estimate)</div>
-    </div>
-    <div class="mkt-item">
-      <div class="sz gb">$400B</div>
-      <div class="nm">Global Merchandise<br>Market</div>
+    <div style="font-size:clamp(36px,5vw,64px); color:var(--mu); font-weight:300;">→</div>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:16px;">
+      <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center; max-width:220px;">
+        <img src="/wif.png" alt="WIF" style="width:clamp(52px,7vw,80px); height:clamp(52px,7vw,80px); border-radius:50%; object-fit:cover; border:2px solid rgba(153,69,255,.4);">
+        <img src="/mew.png" alt="MEW" style="width:clamp(52px,7vw,80px); height:clamp(52px,7vw,80px); border-radius:50%; object-fit:cover; border:2px solid rgba(20,241,149,.4);">
+        <img src="/pengu.png" alt="PENGU" style="width:clamp(52px,7vw,80px); height:clamp(52px,7vw,80px); border-radius:50%; object-fit:cover; border:2px solid rgba(0,194,255,.4);">
+        <img src="/wen.png" alt="WEN" style="width:clamp(52px,7vw,80px); height:clamp(52px,7vw,80px); border-radius:50%; object-fit:cover; border:2px solid rgba(255,107,53,.4);">
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:13px; color:var(--mu); letter-spacing:2px; text-transform:uppercase;">Solana Memecoins</div>
+        <div style="font-size:clamp(28px,4vw,48px); font-weight:900; background:linear-gradient(135deg,var(--p),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">The Next IP</div>
+        <div style="font-size:12px; color:var(--mu);">With infrastructure.</div>
+      </div>
     </div>
   </div>
-  <div style="margin-top:28px; background:var(--s2); border-radius:16px; padding:20px 36px; max-width:620px; border:1px solid rgba(255,255,255,.06);">
-    <p style="font-size:15px; line-height:1.75; color:var(--mu);">
-      Tens of millions of memecoin holders are building communities, creating memes, voting — but<br>
-      <span style="color:var(--tx); font-weight:700;">there's no infrastructure to convert that energy into lasting value.</span><br>
-      SAMU Protocol is that infrastructure.
+  <div style="margin-top:36px; background:var(--s2); border:1px solid rgba(153,69,255,.25); border-radius:18px; padding:22px 44px; max-width:680px;">
+    <p style="font-size:clamp(16px,2vw,22px); font-weight:800; color:var(--tx); line-height:1.4;">
+      SAMU is the first IP.<br>
+      <span class="grad">The goal is to turn Solana into Disney.</span>
     </p>
   </div>
 </div>
 
-<!-- ── S10: WHY SOLANA ── -->
-<div class="slide" id="s10">
-  <div class="eyebrow">Why Solana</div>
-  <h2>Memes need <span class="grad">speed and scale.</span></h2>
-  <div class="why-grid">
-    <div class="why-item">
-      <div class="wt">⚡ 65,000 TPS · 400ms</div>
-      <div class="wd">Voting feels instant. Memes live and die in minutes — speed is everything.</div>
-    </div>
-    <div class="why-item">
-      <div class="wt">💸 $0.00025 per transaction</div>
-      <div class="wd">Micro-votes and micro-rewards aren't eaten by gas. Every vote counts.</div>
-    </div>
-    <div class="why-item">
-      <div class="wt">🔗 Solana Blinks</div>
-      <div class="wd">Vote directly from X (Twitter) without opening an app. Viral meets on-chain.</div>
-    </div>
-    <div class="why-item">
-      <div class="wt">🌿 cNFT (Bubblegum)</div>
-      <div class="wd">Phase 3: Mint millions of IP equity NFTs for near-zero cost. Impossible on Ethereum.</div>
-    </div>
-    <div class="why-item">
-      <div class="wt">💎 SPL Token Ecosystem</div>
-      <div class="wd">Every memecoin is SPL-based. Swap the token config — new community onboarded instantly.</div>
-    </div>
-    <div class="why-item">
-      <div class="wt">⚓ Anchor Framework</div>
-      <div class="wd">Escrow PDA, auto-distribution — battle-tested smart contract patterns, live on mainnet.</div>
+<!-- ── S8: CTA ── -->
+<div class="slide" id="s-cta">
+  <div class="eyebrow">Solana Hackathon 2026</div>
+  <h1><span class="grad">SAMU Protocol</span></h1>
+  <p style="font-size:clamp(16px,2vw,24px); color:var(--mu); margin-top:16px; line-height:1.65; font-weight:500;">
+    Community IP Infrastructure on Solana.<br>
+    <span style="color:var(--tx); font-weight:700;">Meme contests → IP archive → Goods → On-chain revenue.</span>
+  </p>
+  <div style="margin-top:40px; display:flex; gap:16px; flex-wrap:wrap; justify-content:center;">
+    <a href="https://samu.ink" target="_blank" style="background:linear-gradient(135deg,var(--p),var(--g)); color:#000; padding:14px 40px; border-radius:999px; font-weight:800; font-size:16px; text-decoration:none; letter-spacing:.5px;">samu.ink</a>
+    <div style="background:var(--s2); border:1px solid rgba(255,255,255,.1); color:var(--mu); padding:14px 28px; border-radius:999px; font-size:13px; display:flex; align-items:center; gap:8px;">
+      <span style="color:var(--g);">✅</span> Live on Solana Mainnet
     </div>
   </div>
-</div>
-
-<!-- ── S11: TOKEN ECONOMICS ── -->
-<div class="slide" id="s11">
-  <div class="eyebrow">Token Economics</div>
-  <h2>85% goes back to the people<br><span class="grad">who created the value.</span></h2>
-  <div class="pie-wrap">
-    <svg width="190" height="190" viewBox="0 0 200 200">
-      <path d="M100 100 L100 10 A90 90 0 0 1 127.8 185.6 Z" fill="#14F195" opacity="0.95"/>
-      <path d="M100 100 L127.8 185.6 A90 90 0 0 1 27.2 47.1 Z" fill="#9945FF" opacity="0.95"/>
-      <path d="M100 100 L27.2 47.1 A90 90 0 0 1 100 10 Z" fill="#00C2FF" opacity="0.95"/>
-      <circle cx="100" cy="100" r="50" fill="var(--bg)"/>
-      <text x="100" y="96" text-anchor="middle" fill="white" font-size="13" font-weight="700">Revenue</text>
-      <text x="100" y="113" text-anchor="middle" fill="white" font-size="13" font-weight="700">Split</text>
-    </svg>
-    <div class="pie-legend">
-      <div class="legend-item">
-        <div class="legend-dot" style="background:#14F195;"></div>
-        <div>
-          <div class="legend-pct gg">45%</div>
-          <div style="font-size:15px; font-weight:700;">Creator</div>
-          <div style="font-size:12px; color:var(--mu);">SOL distributed proportional to votes received</div>
-        </div>
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background:#9945FF;"></div>
-        <div>
-          <div class="legend-pct gp">40%</div>
-          <div style="font-size:15px; font-weight:700;">Voter</div>
-          <div style="font-size:12px; color:var(--mu);">SOL distributed proportional to tokens staked</div>
-        </div>
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background:#00C2FF;"></div>
-        <div>
-          <div class="legend-pct gb">15%</div>
-          <div style="font-size:15px; font-weight:700;">Platform</div>
-          <div style="font-size:12px; color:var(--mu);">Protocol infrastructure and operations</div>
-        </div>
-      </div>
+  <div style="margin-top:32px; display:flex; gap:20px; flex-wrap:wrap; justify-content:center;">
+    <div style="text-align:center;">
+      <div style="font-size:22px; font-weight:900; color:var(--g);">Phase 1–2</div>
+      <div style="font-size:12px; color:var(--mu); margin-top:4px;">Contest + Anchor escrow<br>✅ Complete</div>
     </div>
-  </div>
-  <p class="sub" style="margin-top:20px;">Same structure for every community that onboards — fair, transparent, and trustless</p>
-</div>
-
-<!-- ── S15: ROADMAP + CTA ── -->
-<div class="slide slide-cta" id="s12">
-  <div class="eyebrow">Roadmap</div>
-  <h2>Phase 1 &amp; 2 done. <span class="grad">Mainnet live.</span></h2>
-  <div class="tl">
-    <div class="tl-item">
-      <div class="tl-ph">PHASE 1</div>
-      <div class="tl-dot done">✓</div>
-      <div class="tl-title">SAMU Community</div>
-      <div class="tl-desc">Contest · goods · revenue distribution validated</div>
+    <div style="width:1px; background:rgba(255,255,255,.07); align-self:stretch;"></div>
+    <div style="text-align:center;">
+      <div style="font-size:22px; font-weight:900; color:var(--p);">Phase 3</div>
+      <div style="font-size:12px; color:var(--mu); margin-top:4px;">cNFT IP equity<br>Metaplex Bubblegum</div>
     </div>
-    <div class="tl-item">
-      <div class="tl-ph">PHASE 2</div>
-      <div class="tl-dot done">✓</div>
-      <div class="tl-title">Smart Contract</div>
-      <div class="tl-desc">Anchor Escrow<br><span style="color:var(--g); font-weight:700;">Mainnet Live ✅</span></div>
+    <div style="width:1px; background:rgba(255,255,255,.07); align-self:stretch;"></div>
+    <div style="text-align:center;">
+      <div style="font-size:22px; font-weight:900; color:var(--b);">Phase 4</div>
+      <div style="font-size:12px; color:var(--mu); margin-top:4px;">Multi-community<br>Curated onboarding</div>
     </div>
-    <div class="tl-item">
-      <div class="tl-ph">PHASE 3</div>
-      <div class="tl-dot next">→</div>
-      <div class="tl-title">cNFT IP Equity</div>
-      <div class="tl-desc">Bubblegum — IP<br>ownership as NFT</div>
-    </div>
-    <div class="tl-item">
-      <div class="tl-ph">PHASE 4</div>
-      <div class="tl-dot fut">4</div>
-      <div class="tl-title">Curated Listing</div>
-      <div class="tl-desc">Verified communities<br>only — quality gated</div>
-    </div>
-  </div>
-  <div style="margin-top:28px; background:rgba(153,69,255,.08); border:1px solid rgba(153,69,255,.25); border-radius:16px; padding:16px 32px; max-width:680px; text-align:left; display:flex; align-items:flex-start; gap:16px;">
-    <div style="font-size:28px; line-height:1; flex-shrink:0;">👨‍⚕️</div>
-    <div>
-      <div style="font-size:12px; font-weight:700; letter-spacing:2px; color:var(--p); margin-bottom:6px;">FOUNDER</div>
-      <div style="font-size:14px; color:var(--tx); line-height:1.6;">I'm a medical doctor with no coding background. I used AI tools to build this from scratch —<br>wallet auth, Anchor smart contract, Printful automation, all of it solo.<br>
-      <span style="color:var(--g); font-weight:700;">It's live on Solana mainnet right now.</span></div>
-    </div>
-  </div>
-  <div style="margin-top:24px; text-align:center; max-width:720px;">
-    <p style="font-size:clamp(15px,1.8vw,20px); color:var(--mu); margin-bottom:14px;">SAMU is the first IP.</p>
-    <p style="font-size:clamp(22px,3vw,42px); font-weight:900; line-height:1.2; background:linear-gradient(135deg,#fff 30%,#9945FF 70%,#14F195); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
-      The goal is to turn<br>Solana into Disney.
-    </p>
-    <p style="font-size:13px; color:var(--mu); margin-top:18px;">SAMU Protocol &nbsp;·&nbsp; samu.ink &nbsp;·&nbsp; Solana Mainnet</p>
   </div>
 </div>
 
 </div><!-- /deck -->
 
-<nav class="ctrl">
-  <button onclick="go(-1)">← Prev</button>
+<div class="ctrl">
+  <button id="prev">← Prev</button>
   <span class="ctr" id="ctr"></span>
-  <button onclick="go(1)">Next →</button>
-</nav>
+  <button id="next">Next →</button>
+</div>
 
 <script>
-const slides = document.querySelectorAll('.slide');
-const N = slides.length;
+const slides = Array.from(document.querySelectorAll('.slide'));
+const prog = document.getElementById('prog');
+const snum = document.getElementById('snum');
+const ctr = document.getElementById('ctr');
 let cur = 0;
 
-function animateCount(el, target, suffix = '', duration = 1300) {
-  const start = performance.now();
-  const isFloat = target % 1 !== 0;
-  const step = ts => {
-    const pct = Math.min((ts - start) / duration, 1);
-    const ease = 1 - Math.pow(1 - pct, 3);
-    const val = isFloat ? (target * ease).toFixed(2) : Math.round(target * ease);
-    el.textContent = val + suffix;
-    if (pct < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
-}
-
-function maybeAnimateTraction(idx) {}
-
-function show(n) {
+function go(n) {
   slides[cur].classList.remove('active');
-  cur = ((n % N) + N) % N;
+  cur = (n + slides.length) % slides.length;
   slides[cur].classList.add('active');
-  document.getElementById('ctr').textContent = `${cur+1} / ${N}`;
-  document.getElementById('snum').textContent = `${cur+1} / ${N}`;
-  document.getElementById('prog').style.width = `${((cur+1)/N)*100}%`;
-  maybeAnimateTraction(cur);
+  const pct = ((cur + 1) / slides.length * 100).toFixed(1);
+  prog.style.width = pct + '%';
+  snum.textContent = (cur + 1) + ' / ' + slides.length;
+  ctr.textContent = (cur + 1) + ' / ' + slides.length;
 }
 
-function go(d) { show(cur + d); }
-
+document.getElementById('next').onclick = () => go(cur + 1);
+document.getElementById('prev').onclick = () => go(cur - 1);
 document.addEventListener('keydown', e => {
-  if (['ArrowRight','ArrowDown',' '].includes(e.key)) { e.preventDefault(); go(1); }
-  if (['ArrowLeft','ArrowUp'].includes(e.key)) { e.preventDefault(); go(-1); }
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); go(cur + 1); }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); go(cur - 1); }
 });
 
-show(0);
+go(0);
 </script>
 </body>
 </html>
