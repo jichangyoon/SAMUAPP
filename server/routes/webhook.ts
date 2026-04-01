@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { storage } from "../storage";
 import crypto from "crypto";
-import { distributeEscrowProfit } from "./goods";
+import { distributeEscrowProfit } from "../utils/distribute";
 import { logger } from "../utils/logger";
 
 const router = Router();

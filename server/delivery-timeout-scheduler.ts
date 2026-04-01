@@ -1,5 +1,5 @@
 import { storage } from "./storage";
-import { distributeEscrowProfit } from "./routes/goods";
+import { distributeEscrowProfit } from "./utils/distribute";
 import { logger } from "./utils/logger";
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;

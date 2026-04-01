@@ -1,5 +1,5 @@
 import { storage } from "./storage";
-import { distributeEscrowProfit } from "./routes/goods";
+import { distributeEscrowProfit } from "./utils/distribute";
 import { logger } from "./utils/logger";
 import { config } from "./config";
 
