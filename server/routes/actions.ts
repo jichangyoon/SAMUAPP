@@ -79,6 +79,20 @@ router.get("/vote/:memeId", async (req, res) => {
       ? meme.imageUrl 
       : `${baseUrl}${meme.imageUrl}`;
 
+    // Contest has ended — meme gets a non-null contestId after archiving
+    if (meme.contestId !== null) {
+      const ended: ActionGetResponse = {
+        type: "action",
+        icon: iconUrl,
+        title: meme.title,
+        description: `이 콘테스트는 종료되었습니다. 최종 투표수: ${meme.votes.toLocaleString()} SAMU`,
+        label: "투표 마감",
+        disabled: true,
+        error: { message: "이미 종료된 콘테스트입니다. 투표가 불가합니다." },
+      };
+      return res.set(corsHeaders).json(ended);
+    }
+
     const response: ActionGetResponse = {
       type: "action",
       icon: iconUrl,
@@ -155,6 +169,10 @@ router.post("/vote/:memeId", async (req, res) => {
     const meme = await storage.getMemeById(memeId);
     if (!meme) {
       return res.set(corsHeaders).status(404).json({ error: "Meme not found" });
+    }
+
+    if (meme.contestId !== null) {
+      return res.set(corsHeaders).status(400).json({ error: "이미 종료된 콘테스트입니다. 투표가 불가합니다." });
     }
 
     const samuBalance = await getSamuBalance(userWallet);
