@@ -9,7 +9,7 @@ import { GoodsDistributionStorage } from "./storage/goods-distribution";
 import { VoterRewardStorage } from "./storage/voter-reward";
 import { EscrowStorage } from "./storage/escrow";
 
-import { memes, votes, partnerMemes, partnerVotes, users, contests, archivedContests, loginLogs, blockedIps, revenues, revenueShares, goods, orders, goodsRevenueDistributions, voterRewardPool, voterClaimRecords, escrowDeposits, creatorRewardDistributions, type Meme, type InsertMeme, type Vote, type InsertVote, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest, type LoginLog, type InsertLoginLog, type BlockedIp, type InsertBlockedIp, type Revenue, type InsertRevenue, type RevenueShare, type InsertRevenueShare, type Goods, type InsertGoods, type Order, type InsertOrder, type GoodsRevenueDistribution, type InsertGoodsRevenueDistribution, type VoterRewardPool, type InsertVoterRewardPool, type VoterClaimRecord, type InsertVoterClaimRecord, type EscrowDeposit, type InsertEscrowDeposit, type CreatorRewardDistribution, type InsertCreatorRewardDistribution } from "@shared/schema";
+import { memes, votes, partnerMemes, partnerVotes, users, contests, archivedContests, loginLogs, blockedIps, revenues, revenueShares, goods, orders, goodsRevenueDistributions, voterRewardPool, voterClaimRecords, escrowDeposits, creatorRewardDistributions, type Meme, type InsertMeme, type Vote, type InsertVote, type PartnerMeme, type InsertPartnerMeme, type PartnerVote, type InsertPartnerVote, type User, type InsertUser, type Contest, type InsertContest, type ArchivedContest, type InsertArchivedContest, type LoginLog, type InsertLoginLog, type BlockedIp, type InsertBlockedIp, type Revenue, type InsertRevenue, type RevenueShare, type InsertRevenueShare, type Goods, type InsertGoods, type Order, type InsertOrder, type GoodsRevenueDistribution, type InsertGoodsRevenueDistribution, type VoterRewardPool, type InsertVoterRewardPool, type VoterClaimRecord, type InsertVoterClaimRecord, type EscrowDeposit, type InsertEscrowDeposit, type CreatorRewardDistribution, type InsertCreatorRewardDistribution, type VoterRewardDistribution, type InsertVoterRewardDistribution } from "@shared/schema";
 import { getDatabase } from "./db";
 import { eq, and, desc, isNull, or, sql, inArray } from "drizzle-orm";
 import { logger } from "./utils/logger";
@@ -121,6 +121,11 @@ export interface IStorage {
   getCreatorRewardDistributionsByWallet(walletAddress: string): Promise<CreatorRewardDistribution[]>;
   getUnclaimedCreatorDistributionsByWallet(walletAddress: string): Promise<CreatorRewardDistribution[]>;
   markCreatorDistributionsClaimed(ids: number[], txSignature: string): Promise<void>;
+  createVoterRewardDistributions(data: InsertVoterRewardDistribution[]): Promise<VoterRewardDistribution[]>;
+  getUnclaimedVoterDistributionsByWallet(walletAddress: string): Promise<VoterRewardDistribution[]>;
+  getAllVoterDistributionsByWallet(walletAddress: string): Promise<VoterRewardDistribution[]>;
+  markVoterDistributionsClaimed(ids: number[], txSignature: string): Promise<void>;
+  getVoterRewardDistributionsByContestId(contestId: number): Promise<VoterRewardDistribution[]>;
   getAllVoterRewardPools(): Promise<VoterRewardPool[]>;
   createEscrowDeposit(data: InsertEscrowDeposit): Promise<EscrowDeposit>;
   getAllEscrowDeposits(): Promise<EscrowDeposit[]>;
@@ -470,6 +475,11 @@ export class MemStorage implements IStorage {
   async getCreatorRewardDistributionsByWallet(_walletAddress: string): Promise<CreatorRewardDistribution[]> { return []; }
   async getUnclaimedCreatorDistributionsByWallet(_walletAddress: string): Promise<CreatorRewardDistribution[]> { return []; }
   async markCreatorDistributionsClaimed(_ids: number[], _txSignature: string): Promise<void> {}
+  async createVoterRewardDistributions(_data: InsertVoterRewardDistribution[]): Promise<VoterRewardDistribution[]> { return []; }
+  async getUnclaimedVoterDistributionsByWallet(_walletAddress: string): Promise<VoterRewardDistribution[]> { return []; }
+  async getAllVoterDistributionsByWallet(_walletAddress: string): Promise<VoterRewardDistribution[]> { return []; }
+  async markVoterDistributionsClaimed(_ids: number[], _txSignature: string): Promise<void> {}
+  async getVoterRewardDistributionsByContestId(_contestId: number): Promise<VoterRewardDistribution[]> { return []; }
   async getAllVoterRewardPools(): Promise<VoterRewardPool[]> { return []; }
   async createEscrowDeposit(_data: InsertEscrowDeposit): Promise<EscrowDeposit> { throw new Error("Not implemented"); }
   async getAllEscrowDeposits(): Promise<EscrowDeposit[]> { return []; }
@@ -597,6 +607,11 @@ export class DatabaseStorage implements IStorage {
   getCreatorRewardDistributionsByWallet(walletAddress: string) { return this.voterStorage.getCreatorRewardDistributionsByWallet(walletAddress); }
   getUnclaimedCreatorDistributionsByWallet(walletAddress: string) { return this.voterStorage.getUnclaimedCreatorDistributionsByWallet(walletAddress); }
   markCreatorDistributionsClaimed(ids: number[], txSignature: string) { return this.voterStorage.markCreatorDistributionsClaimed(ids, txSignature); }
+  createVoterRewardDistributions(data: InsertVoterRewardDistribution[]) { return this.voterStorage.createVoterRewardDistributions(data); }
+  getUnclaimedVoterDistributionsByWallet(walletAddress: string) { return this.voterStorage.getUnclaimedVoterDistributionsByWallet(walletAddress); }
+  getAllVoterDistributionsByWallet(walletAddress: string) { return this.voterStorage.getAllVoterDistributionsByWallet(walletAddress); }
+  markVoterDistributionsClaimed(ids: number[], txSignature: string) { return this.voterStorage.markVoterDistributionsClaimed(ids, txSignature); }
+  getVoterRewardDistributionsByContestId(contestId: number) { return this.voterStorage.getVoterRewardDistributionsByContestId(contestId); }
 
   // Escrow operations
   getAllVoterRewardPools() { return this.escrowStorage.getAllVoterRewardPools(); }

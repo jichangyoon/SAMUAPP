@@ -274,6 +274,23 @@ export const creatorRewardDistributions = pgTable("creator_reward_distributions"
   index("idx_creator_reward_distributions_creator_wallet").on(table.creatorWallet),
 ]);
 
+export const voterRewardDistributions = pgTable("voter_reward_distributions", {
+  id: serial("id").primaryKey(),
+  distributionId: integer("distribution_id").notNull(),
+  contestId: integer("contest_id").notNull(),
+  orderId: integer("order_id").notNull(),
+  voterWallet: text("voter_wallet").notNull(),
+  solAmount: doublePrecision("sol_amount").notNull(),
+  voteSharePercent: doublePrecision("vote_share_percent").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  claimedAt: timestamp("claimed_at"),
+  claimTxSignature: text("claim_tx_signature"),
+}, (table) => [
+  index("idx_voter_reward_distributions_order_id").on(table.orderId),
+  index("idx_voter_reward_distributions_contest_id").on(table.contestId),
+  index("idx_voter_reward_distributions_voter_wallet").on(table.voterWallet),
+]);
+
 export const escrowDeposits = pgTable("escrow_deposits", {
   id: serial("id").primaryKey(),
   orderId: integer("order_id").notNull(),
@@ -323,6 +340,11 @@ export const insertCreatorRewardDistributionSchema = createInsertSchema(creatorR
   createdAt: true,
 });
 
+export const insertVoterRewardDistributionSchema = createInsertSchema(voterRewardDistributions).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertEscrowDepositSchema = createInsertSchema(escrowDeposits).omit({
   id: true,
   createdAt: true,
@@ -341,6 +363,8 @@ export type VoterClaimRecord = typeof voterClaimRecords.$inferSelect;
 export type InsertVoterClaimRecord = z.infer<typeof insertVoterClaimRecordSchema>;
 export type CreatorRewardDistribution = typeof creatorRewardDistributions.$inferSelect;
 export type InsertCreatorRewardDistribution = z.infer<typeof insertCreatorRewardDistributionSchema>;
+export type VoterRewardDistribution = typeof voterRewardDistributions.$inferSelect;
+export type InsertVoterRewardDistribution = z.infer<typeof insertVoterRewardDistributionSchema>;
 export type EscrowDeposit = typeof escrowDeposits.$inferSelect;
 export type InsertEscrowDeposit = z.infer<typeof insertEscrowDepositSchema>;
 

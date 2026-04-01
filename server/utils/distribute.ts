@@ -71,8 +71,29 @@ export async function distributeEscrowProfit(escrowDeposit: any) {
       }))
     );
 
-    await storage.getOrCreateVoterRewardPool(contestId, 100);
-    await storage.updateVoterRewardPool(contestId, voterPoolAmount);
+    if (voterPoolAmount > 0) {
+      const voterSummary = await storage.getContestVoteSummary(contestId);
+      const totalVoterSamu = voterSummary.reduce((s, v) => s + v.totalSamuAmount, 0);
+      if (totalVoterSamu > 0 && voterSummary.length > 0) {
+        const voterDistRows = voterSummary
+          .filter(v => v.totalSamuAmount > 0)
+          .map(v => {
+            const sharePercent = (v.totalSamuAmount / totalVoterSamu) * 100;
+            return {
+              distributionId: dist.id,
+              contestId,
+              orderId: escrowDeposit.orderId,
+              voterWallet: v.voterWallet,
+              solAmount: voterPoolAmount * (v.totalSamuAmount / totalVoterSamu),
+              voteSharePercent: sharePercent,
+            };
+          });
+        await storage.createVoterRewardDistributions(voterDistRows);
+      } else {
+        await storage.getOrCreateVoterRewardPool(contestId, 100);
+        await storage.updateVoterRewardPool(contestId, voterPoolAmount);
+      }
+    }
 
     await storage.updateEscrowStatus(escrowDeposit.id, "distributed", new Date());
   } catch (err) {

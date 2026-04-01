@@ -2,9 +2,10 @@ import { getDatabase } from "../db";
 import { eq, and, desc, isNull, or, sql, inArray } from "drizzle-orm";
 import { logger } from "../utils/logger";
 import {
-  voterRewardPool, voterClaimRecords, votes, memes, creatorRewardDistributions,
+  voterRewardPool, voterClaimRecords, votes, memes, creatorRewardDistributions, voterRewardDistributions,
   type VoterRewardPool, type InsertVoterRewardPool, type VoterClaimRecord, type InsertVoterClaimRecord,
-  type CreatorRewardDistribution, type InsertCreatorRewardDistribution
+  type CreatorRewardDistribution, type InsertCreatorRewardDistribution,
+  type VoterRewardDistribution, type InsertVoterRewardDistribution
 } from "@shared/schema";
 
 export class VoterRewardStorage {
@@ -252,5 +253,42 @@ export class VoterRewardStorage {
     await this.db.update(creatorRewardDistributions)
       .set({ claimedAt: new Date(), claimTxSignature: txSignature })
       .where(inArray(creatorRewardDistributions.id, ids));
+  }
+
+  async createVoterRewardDistributions(data: InsertVoterRewardDistribution[]): Promise<VoterRewardDistribution[]> {
+    if (!this.db) throw new Error("Database not available");
+    if (data.length === 0) return [];
+    const results = await this.db.insert(voterRewardDistributions).values(data).returning();
+    return results;
+  }
+
+  async getUnclaimedVoterDistributionsByWallet(walletAddress: string): Promise<VoterRewardDistribution[]> {
+    if (!this.db) throw new Error("Database not available");
+    return this.db.select().from(voterRewardDistributions)
+      .where(and(
+        eq(voterRewardDistributions.voterWallet, walletAddress),
+        isNull(voterRewardDistributions.claimedAt)
+      ));
+  }
+
+  async markVoterDistributionsClaimed(ids: number[], txSignature: string): Promise<void> {
+    if (!this.db) throw new Error("Database not available");
+    if (ids.length === 0) return;
+    await this.db.update(voterRewardDistributions)
+      .set({ claimedAt: new Date(), claimTxSignature: txSignature })
+      .where(inArray(voterRewardDistributions.id, ids));
+  }
+
+  async getVoterRewardDistributionsByContestId(contestId: number): Promise<VoterRewardDistribution[]> {
+    if (!this.db) throw new Error("Database not available");
+    return this.db.select().from(voterRewardDistributions)
+      .where(eq(voterRewardDistributions.contestId, contestId));
+  }
+
+  async getAllVoterDistributionsByWallet(walletAddress: string): Promise<VoterRewardDistribution[]> {
+    if (!this.db) throw new Error("Database not available");
+    return this.db.select().from(voterRewardDistributions)
+      .where(eq(voterRewardDistributions.voterWallet, walletAddress))
+      .orderBy(desc(voterRewardDistributions.createdAt));
   }
 }

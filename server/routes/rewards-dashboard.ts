@@ -132,11 +132,17 @@ router.get("/summary", async (req, res) => {
       }
 
       walletEarned.creatorEarned = creatorDists.reduce((s, d) => s + d.solAmount, 0);
-      // 배치 쿼리로 N+1 제거: 투표한 모든 콘테스트 claimable을 한 번에 조회
-      const batchResults = await storage.getBatchClaimableAmounts(Array.from(userVotedContests), walletAddress);
-      let voterEarnedTotal = 0;
-      for (const { claimable, totalClaimed } of batchResults.values()) {
-        voterEarnedTotal += claimable + totalClaimed;
+
+      // Voter earned: new direct allocation rows (all rows, claimed or not)
+      const allVoterDistsForEarned = await storage.getAllVoterDistributionsByWallet(walletAddress);
+      let voterEarnedTotal = allVoterDistsForEarned.reduce((s, d) => s + d.solAmount, 0);
+
+      // Legacy RPS: always include for all voted contests (new rows and legacy are mutually exclusive per order)
+      if (userVotedContests.size > 0) {
+        const batchResults = await storage.getBatchClaimableAmounts(Array.from(userVotedContests), walletAddress);
+        for (const { claimable, totalClaimed } of batchResults.values()) {
+          voterEarnedTotal += claimable + totalClaimed;
+        }
       }
       walletEarned.voterEarned = voterEarnedTotal;
     }
@@ -144,18 +150,48 @@ router.get("/summary", async (req, res) => {
     // Actual claimable: DB-backed (respects claim history)
     let actualClaimable = 0;
     const claimedContestIds = new Set<number>();
+    const voterClaimedOrderIds = new Set<number>();
     if (walletAddress) {
-      // batchResults는 이미 위에서 조회됨 — wallet이 있는 경우에만 다시 구성
-      const contestIdsArr = Array.from(userVotedContests);
-      const batchForClaimable = contestIdsArr.length > 0
-        ? await storage.getBatchClaimableAmounts(contestIdsArr, walletAddress)
+      const unclaimedCreator = await storage.getUnclaimedCreatorDistributionsByWallet(walletAddress);
+      actualClaimable += unclaimedCreator.reduce((s: number, d: any) => s + d.solAmount, 0);
+
+      // Voter: new direct allocation rows (unclaimed only)
+      const allVoterDistsForWallet = await storage.getAllVoterDistributionsByWallet(walletAddress);
+      const voterDistContestIds = new Set(allVoterDistsForWallet.map(d => d.contestId));
+      const unclaimedVoterDists = allVoterDistsForWallet.filter(d => !d.claimedAt);
+      actualClaimable += unclaimedVoterDists.reduce((s, d) => s + d.solAmount, 0);
+
+      // Build per-order voter claimed map: orderId → are all wallet's voter rows for that order claimed?
+      const voterDistsByOrderId = new Map<number, typeof allVoterDistsForWallet>();
+      for (const d of allVoterDistsForWallet) {
+        if (!voterDistsByOrderId.has(d.orderId)) voterDistsByOrderId.set(d.orderId, []);
+        voterDistsByOrderId.get(d.orderId)!.push(d);
+      }
+      for (const [oid, rows] of voterDistsByOrderId.entries()) {
+        if (rows.length > 0 && rows.every(r => r.claimedAt)) voterClaimedOrderIds.add(oid);
+      }
+
+      // Mark contests where all wallet voter distribution rows are claimed (for legacy fallback isClaimed)
+      for (const cid of voterDistContestIds) {
+        const walletDists = allVoterDistsForWallet.filter(d => d.contestId === cid);
+        if (walletDists.length > 0 && walletDists.every(d => d.claimedAt)) {
+          claimedContestIds.add(cid);
+        }
+      }
+
+      // Voter: legacy RPS — always include for all voted contests
+      // New rows and legacy RPS are mutually exclusive per order (distribute.ts does one or the other)
+      // so summing both is safe — no double-counting
+      const batchForClaimable = userVotedContests.size > 0
+        ? await storage.getBatchClaimableAmounts(Array.from(userVotedContests), walletAddress)
         : new Map<number, { claimable: number; totalClaimed: number }>();
       for (const [cid, { claimable, totalClaimed }] of batchForClaimable.entries()) {
         actualClaimable += claimable;
-        if (claimable <= 0.000001 && totalClaimed > 0.000001) claimedContestIds.add(cid);
+        if (claimable <= 0.000001 && totalClaimed > 0.000001 && !voterDistContestIds.has(cid)) {
+          claimedContestIds.add(cid);
+        }
       }
-      const unclaimedCreator = await storage.getUnclaimedCreatorDistributionsByWallet(walletAddress);
-      actualClaimable += unclaimedCreator.reduce((s: number, d: any) => s + d.solAmount, 0);
+
       // Mark contests where creator rewards are also fully claimed
       const allCreatorDists = await storage.getCreatorRewardDistributionsByWallet(walletAddress);
       const contestsWithCreator = new Set(allCreatorDists.map((d: any) => d.contestId));
@@ -210,9 +246,12 @@ router.get("/summary", async (req, res) => {
 
         // 주문 단위 claim 체크: 같은 콘테스트에 새 주문이 생겨도 기존 claimed 상태 유지
         const hasCreatorCutForOrder = (creatorDistByOrder.get(o.id) || 0) > 0;
+        // Voter isClaimed: prefer per-order direct rows (claimedAt-based), fallback to legacy contest-level
+        const voterIsClaimedForOrder = voterClaimedOrderIds.has(o.id) ||
+          (!hasCreatorCutForOrder && contestId != null && claimedContestIds.has(contestId));
         const isClaimed = (
           claimedOrderIds.has(o.id) ||  // 이 주문의 크리에이터 배분이 모두 claimed
-          (!hasCreatorCutForOrder && contestId != null && claimedContestIds.has(contestId))  // 투표자만인 경우 폴백
+          (!hasCreatorCutForOrder && voterIsClaimedForOrder)  // 투표자만인 경우 row-level 체크 우선
         ) && escrow?.status !== "locked";
 
         return {
@@ -326,7 +365,13 @@ router.post("/claim-all", async (req, res) => {
     const unclaimedCreatorDists = await storage.getUnclaimedCreatorDistributionsByWallet(walletAddress);
     const creatorTotal = unclaimedCreatorDists.reduce((s, d) => s + d.solAmount, 0);
 
-    // 2. Voter claimable across all contests where user voted
+    // 2. Voter claimable: new direct allocation rows first
+    const unclaimedVoterDists = await storage.getUnclaimedVoterDistributionsByWallet(walletAddress);
+    const newVoterTotal = unclaimedVoterDists.reduce((s, d) => s + d.solAmount, 0);
+
+    // 2b. Legacy RPS — always check all voted contests
+    // New rows and legacy RPS are mutually exclusive per order (distribute.ts does one or the other),
+    // so summing both is safe — no double-counting possible
     const userVotes = await storage.getUserVotes(walletAddress);
     const allMemes = await storage.getAllMemes();
     const memeContestMap = new Map<number, number>();
@@ -343,18 +388,19 @@ router.post("/claim-all", async (req, res) => {
     const allPools = await storage.getAllVoterRewardPools();
     const poolContestIds = new Set(allPools.map(p => p.contestId));
 
-    let voterTotal = 0;
+    let legacyVoterTotal = 0;
     const voterContestsToClaim: number[] = [];
 
     for (const contestId of votedContestIds) {
       if (!poolContestIds.has(contestId)) continue;
       const { claimable } = await storage.getClaimableAmount(contestId, walletAddress);
       if (claimable > 0.000001) {
-        voterTotal += claimable;
+        legacyVoterTotal += claimable;
         voterContestsToClaim.push(contestId);
       }
     }
 
+    const voterTotal = newVoterTotal + legacyVoterTotal;
     const totalSol = creatorTotal + voterTotal;
     if (totalSol < 0.000001) {
       return res.status(400).json({ error: "No rewards to claim" });
@@ -371,7 +417,15 @@ router.post("/claim-all", async (req, res) => {
       );
     }
 
-    // 5. Update voter claim records per contest
+    // 5. Mark new voter distribution rows as claimed
+    if (unclaimedVoterDists.length > 0) {
+      await storage.markVoterDistributionsClaimed(
+        unclaimedVoterDists.map(d => d.id),
+        txSignature
+      );
+    }
+
+    // 6. Update legacy voter claim records per contest
     for (const contestId of voterContestsToClaim) {
       await storage.claimVoterReward(contestId, walletAddress);
     }
@@ -664,6 +718,9 @@ router.get("/prepare-claim", async (req, res) => {
       }
     }
 
+    // DB에서 미청구 voter 분배 조회 (전체, 아래서 contestId 기준 필터링)
+    const allUnclaimedVoterDists = await storage.getUnclaimedVoterDistributionsByWallet(walletAddress);
+
     const transactions: {
       contestId: number;
       lamports: number;
@@ -671,6 +728,7 @@ router.get("/prepare-claim", async (req, res) => {
       creatorLamports: number;
       voterLamports: number;
       creatorDistributionIds: number[];
+      voterDistributionIds: number[];
       transaction: string;
     }[] = [];
 
@@ -688,6 +746,7 @@ router.get("/prepare-claim", async (req, res) => {
               creatorLamports: 0,
               voterLamports: onchain.lamports,
               creatorDistributionIds: [],
+              voterDistributionIds: [],
               transaction: txBase64,
             });
           }
@@ -696,7 +755,15 @@ router.get("/prepare-claim", async (req, res) => {
 
         // ── 온체인 record 없는 경우: Creator + Voter 합산해서 단일 TX ──
         const creatorSol = creatorByContest.get(contestId) ?? 0;
-        const { claimable: voterSol } = await storage.getClaimableAmount(contestId, walletAddress);
+
+        // Voter: new direct allocation rows + legacy RPS (mutually exclusive per order, safe to sum both)
+        const contestVoterDists = allUnclaimedVoterDists.filter(d => d.contestId === contestId);
+        const voterDistributionIds: number[] = contestVoterDists.map(d => d.id);
+        let voterSol = contestVoterDists.reduce((s, d) => s + d.solAmount, 0);
+
+        // Always also check legacy RPS — it may contain amounts from older orders in same contest
+        const { claimable: legacyVoterSol } = await storage.getClaimableAmount(contestId, walletAddress);
+        voterSol += legacyVoterSol;
 
         const totalSol = creatorSol + voterSol;
         if (totalSol <= 0.000001) continue;
@@ -718,6 +785,7 @@ router.get("/prepare-claim", async (req, res) => {
             creatorLamports,
             voterLamports,
             creatorDistributionIds,
+            voterDistributionIds,
             transaction: txBase64,
           });
         }
@@ -749,6 +817,7 @@ router.post("/confirm-claim", async (req, res) => {
         contestId: number;
         txSignature: string;
         creatorDistributionIds: number[];
+        voterDistributionIds?: number[];
         voterLamports: number;
       }[];
     };
@@ -760,7 +829,7 @@ router.post("/confirm-claim", async (req, res) => {
     const results: { contestId: number; creatorClaimed: boolean; voterClaimed: boolean }[] = [];
 
     for (const item of items) {
-      const { contestId, txSignature, creatorDistributionIds, voterLamports } = item;
+      const { contestId, txSignature, creatorDistributionIds, voterDistributionIds, voterLamports } = item;
       let creatorClaimed = false;
       let voterClaimed = false;
 
@@ -775,8 +844,33 @@ router.post("/confirm-claim", async (req, res) => {
 
       try {
         if (voterLamports > 0) {
-          await storage.claimVoterReward(contestId, walletAddress);
-          voterClaimed = true;
+          // Mark new direct allocation rows as claimed if present
+          if (voterDistributionIds && voterDistributionIds.length > 0) {
+            // Security: validate that submitted IDs belong to the requesting wallet and contest
+            const allWalletVoterDists = await storage.getUnclaimedVoterDistributionsByWallet(walletAddress);
+            const ownedIds = new Set(
+              allWalletVoterDists
+                .filter(d => d.contestId === contestId)
+                .map(d => d.id)
+            );
+            const validIds = voterDistributionIds.filter(id => ownedIds.has(id));
+            if (validIds.length !== voterDistributionIds.length) {
+              logger.warn(`[confirm-claim] voter distribution ID ownership mismatch for contest=${contestId} wallet=${walletAddress}: submitted ${voterDistributionIds.length} IDs, only ${validIds.length} are valid`);
+            }
+            if (validIds.length > 0) {
+              await storage.markVoterDistributionsClaimed(validIds, txSignature);
+              voterClaimed = true;
+            }
+          }
+          // Always also attempt legacy RPS claim (no-op if nothing to claim)
+          try {
+            await storage.claimVoterReward(contestId, walletAddress);
+            voterClaimed = true;
+          } catch (legacyErr: any) {
+            if (!legacyErr?.message?.includes("No rewards to claim") && !legacyErr?.message?.includes("No reward pool found")) {
+              logger.warn(`[confirm-claim] legacy voter DB update failed contest=${contestId}:`, legacyErr?.message);
+            }
+          }
         }
       } catch (e: any) {
         logger.warn(`[confirm-claim] voter DB update failed contest=${contestId}:`, e?.message);
