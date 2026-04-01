@@ -46,7 +46,9 @@ Flow to show:
 
 ## Slide 7 — Vision (25 sec)
 
-"In 1928, one sketch of a mouse built a $200 billion empire. Solana already has dozens of memecoin IPs — with communities, with creative energy, with cultural momentum. The only thing missing was infrastructure. SAMU is that infrastructure. SAMU is the first IP. The goal is to turn Solana into Disney."
+"In 1928, one sketch of a mouse built a $200 billion empire. Solana already has dozens of memecoin IPs — with communities, with creative energy, with cultural momentum. The only thing missing was infrastructure. SAMU is that infrastructure. SAMU is the first IP. The goal is to turn Solana into Disney.
+
+Phase 2 is already generating real revenue. Phase 4 brings multi-community onboarding — building a Community IP ecosystem on Solana that the rest of the world will look up to."
 
 ---
 
