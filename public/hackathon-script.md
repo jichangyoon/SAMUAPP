@@ -12,7 +12,7 @@
 
 ## Slide 2 — Problem (20 sec)
 
-"Many communities are already running meme contests. Community-created content goes viral, pumps the token, builds culture. But creators get nothing. Voters get nothing. There's no infrastructure to turn that energy into revenue."
+"Many communities are already running meme contests. Community-created content goes viral, pumps the token, builds culture. But comuunity that create the content get nothing. There's no infrastructure to turn that energy into revenue."
 
 ---
 
