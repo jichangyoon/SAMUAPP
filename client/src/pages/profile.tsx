@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send, Trash2, MoreVertical, Image as ImageIcon, RefreshCw, Coins, BarChart2, Palette, TrendingUp, ShoppingBag } from "lucide-react";
+import { User, Vote, Trophy, Upload, Zap, Settings, Camera, Save, ArrowLeft, Copy, Send, Trash2, MoreVertical, Image as ImageIcon, RefreshCw, Coins, BarChart2, Palette, TrendingUp, ShoppingBag, CheckCircle2, XCircle, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
@@ -184,6 +184,13 @@ const Profile = memo(() => {
   });
 
   const [isClaiming, setIsClaiming] = useState(false);
+  const [claimResult, setClaimResult] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+  useEffect(() => {
+    if (!claimResult) return;
+    const t = setTimeout(() => setClaimResult(null), 8000);
+    return () => clearTimeout(t);
+  }, [claimResult]);
 
   const handleClaimAll = useCallback(async () => {
     if (!walletAddress) return;
@@ -200,7 +207,6 @@ const Profile = memo(() => {
 
         for (const item of prepareData.transactions) {
           const tx = Transaction.from(Buffer.from(item.transaction, "base64"));
-          toast({ title: `Signing claim for contest #${item.contestId}...`, duration: 3000 });
           const conn = getSharedConnection();
           const signedTx = await signTransaction(tx, conn);
           const sig = await conn.sendRawTransaction(signedTx.serialize());
@@ -209,9 +215,9 @@ const Profile = memo(() => {
           totalClaimed += item.solAmount;
         }
 
-        toast({
-          title: "Claimed!",
-          description: `${totalClaimed.toFixed(4)} SOL received. ${sigs.length > 1 ? `${sigs.length} TXs` : `TX: ${sigs[0]?.slice(0, 8)}...`}`,
+        setClaimResult({
+          type: "success",
+          message: `${totalClaimed.toFixed(4)} SOL claimed! ${sigs.length > 1 ? `${sigs.length} transactions` : `TX: ${sigs[0]?.slice(0, 8)}...`}`,
         });
       } else {
         // Legacy: 서버가 escrow에서 전송
@@ -222,9 +228,9 @@ const Profile = memo(() => {
         });
         const result = await res.json();
         if (!res.ok) throw new Error(result.error || 'Claim failed');
-        toast({
-          title: "Claimed!",
-          description: `${result.totalSol.toFixed(4)} SOL sent to your wallet.`,
+        setClaimResult({
+          type: "success",
+          message: `${result.totalSol.toFixed(4)} SOL sent to your wallet.`,
         });
       }
 
@@ -232,10 +238,10 @@ const Profile = memo(() => {
     } catch (error: any) {
       const msg: string = error?.message ?? '';
       let description = "Claim failed. Please try again.";
-      if (msg.includes('insufficient') || msg.includes('Insufficient') || msg.includes('0x1') || msg.includes('lamports') || msg.includes('funds')) {
-        description = "Insufficient SOL balance. You need a small amount of SOL for gas fees.";
-      } else if (msg.includes('rejected') || msg.includes('cancelled') || msg.includes('canceled') || msg.includes('User rejected')) {
+      if (msg.includes('rejected') || msg.includes('cancelled') || msg.includes('canceled') || msg.includes('User rejected')) {
         description = "Transaction cancelled.";
+      } else if (msg.includes('insufficient') || msg.includes('Insufficient') || msg.includes('0x1') || msg.includes('lamports') || msg.includes('funds')) {
+        description = "Insufficient SOL for gas fees.";
       } else if (msg.includes('blockhash') || msg.includes('block hash') || msg.includes('expired')) {
         description = "Transaction expired. Please try again.";
       } else if (msg.includes('simulation failed') || msg.includes('Simulation failed')) {
@@ -243,17 +249,13 @@ const Profile = memo(() => {
       } else if (msg.includes('already claimed') || msg.includes('Already claimed')) {
         description = "Already claimed.";
       } else if (msg.includes('Network') || msg.includes('network') || msg.includes('fetch') || msg.includes('timeout')) {
-        description = "Network error. Please check your connection and try again.";
+        description = "Network error. Check your connection.";
       }
-      toast({
-        title: "Claim Failed",
-        description,
-        variant: "destructive",
-      });
+      setClaimResult({ type: "error", message: description });
     } finally {
       setIsClaiming(false);
     }
-  }, [walletAddress, toast, refetchRewards, signTransaction]);
+  }, [walletAddress, refetchRewards, signTransaction]);
 
   // Profile data now comes from database, not localStorage
 
@@ -1100,6 +1102,22 @@ const Profile = memo(() => {
                           </>
                         )}
                       </Button>
+                      {claimResult && (
+                        <div className={`flex items-start gap-2 rounded-lg px-3 py-2.5 text-sm font-medium ${
+                          claimResult.type === "success"
+                            ? "bg-green-500/15 text-green-400 border border-green-500/30"
+                            : "bg-red-500/15 text-red-400 border border-red-500/30"
+                        }`}>
+                          {claimResult.type === "success"
+                            ? <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
+                            : <XCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                          }
+                          <span className="flex-1">{claimResult.message}</span>
+                          <button onClick={() => setClaimResult(null)} className="shrink-0 opacity-60 hover:opacity-100">
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      )}
                       {escrow > 0.000001 && (
                         <div className="bg-accent/50 border border-border rounded-xl p-3 text-center">
                           <p className="text-xs text-muted-foreground">Pending delivery</p>
