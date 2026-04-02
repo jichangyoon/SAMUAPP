@@ -430,6 +430,7 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
       } else if (msg.includes('Network') || msg.includes('network') || msg.includes('fetch') || msg.includes('timeout')) {
         description = "Network error. Check your connection.";
       }
+      console.error("[Claim error]", err);
       setClaimResult({ type: "error", message: description });
     } finally {
       setIsClaiming(false);

@@ -5,6 +5,7 @@ import { contestScheduler } from "../contest-scheduler";
 import { logger } from "../utils/logger";
 import { syncPrintfulOrders } from "../printful-sync-scheduler";
 import { requireAdminMiddleware as requireAdmin } from "../utils/admin-auth";
+import { config } from "../config";
 
 const router = Router();
 
