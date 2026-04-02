@@ -107,7 +107,6 @@ export async function getPrintfulProductCost(
 
     const data = await printfulRequest("POST", "/orders/estimate-costs", estimatePayload);
     const costs = data.result?.costs;
-    logger.debug("[Printful estimate-costs] Full costs response:", JSON.stringify(costs));
     if (costs) {
       const productCost = parseFloat(costs.subtotal) || (item.basePrice || item.retailPrice * 0.6);
       const shippingCost = parseFloat(costs.shipping) || 4.99;

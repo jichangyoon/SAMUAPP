@@ -252,10 +252,13 @@ router.get("/ip-status/:ipAddress", async (req, res) => {
 
 router.post("/register-printful-webhook", requireAdmin, async (req, res) => {
   try {
-    const STORE_ID = "17717241";
-    const WEBHOOK_URL = "https://samu.ink/api/webhooks/printful";
+    const STORE_ID = config.PRINTFUL.STORE_ID;
+    const webhookSecret = process.env.PRINTFUL_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+      return res.status(500).json({ error: "PRINTFUL_WEBHOOK_SECRET not set" });
+    }
+    const WEBHOOK_URL = `https://samu.ink/api/webhooks/printful?secret=${webhookSecret}`;
 
-    // v2 API 먼저 시도 (shipment_delivered 지원)
     const V2_EVENTS = [
       { type: "shipment_sent" },
       { type: "shipment_delivered" },
@@ -266,10 +269,21 @@ router.post("/register-printful-webhook", requireAdmin, async (req, res) => {
       { type: "order_failed" },
       { type: "order_canceled" },
     ];
-    const v2Response = await fetch(`https://api.printful.com/v2/webhooks?store_id=${STORE_ID}`, {
+
+    // Delete existing webhook first, then re-register with correct URL
+    await fetch(`https://api.printful.com/v2/webhooks`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${process.env.PRINTFUL_API_KEY}`,
+        "X-PF-Store-Id": STORE_ID,
+      },
+    });
+
+    const v2Response = await fetch(`https://api.printful.com/v2/webhooks`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${process.env.PRINTFUL_API_KEY}`,
+        "X-PF-Store-Id": STORE_ID,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ default_url: WEBHOOK_URL, events: V2_EVENTS }),
@@ -277,11 +291,11 @@ router.post("/register-printful-webhook", requireAdmin, async (req, res) => {
     const v2Data = await v2Response.json() as any;
 
     if (v2Response.ok) {
-      logger.debug("[Admin] Printful webhook registered via v2:", JSON.stringify(v2Data));
+      logger.info("[Admin] Printful webhook registered:", WEBHOOK_URL);
       return res.json({ ok: true, result: v2Data });
     }
 
-    logger.error("[Admin] v2 registration failed:", JSON.stringify(v2Data));
+    logger.error("[Admin] Webhook registration failed:", JSON.stringify(v2Data));
     return res.status(500).json({ ok: false, error: v2Data });
   } catch (error: any) {
     logger.error("[Admin] Webhook registration error:", error.message);
