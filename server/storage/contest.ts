@@ -138,7 +138,7 @@ export class ContestStorage {
       const BATCH_SIZE = 10;
 
       const processMeme = async (meme: typeof contestMemes[0]) => {
-        const updateFields: { imageUrl?: string; additionalImages?: string[] } = {};
+        const updateFields: { imageUrl?: string; additionalImages?: string[]; animatedThumbnailUrl?: string | null } = {};
 
         if (meme.imageUrl) {
           const key = extractKeyFromUrl(meme.imageUrl);
@@ -155,6 +155,25 @@ export class ContestStorage {
             } catch (err: any) {
               archiveFail++;
               failedFiles.push(`meme-${meme.id}-main: ${meme.imageUrl}`);
+            }
+          }
+        }
+
+        if (meme.animatedThumbnailUrl) {
+          const key = extractKeyFromUrl(meme.animatedThumbnailUrl);
+          if (key) {
+            try {
+              const result = await moveToArchive(key, contestId);
+              if (result.success && result.url) {
+                updateFields.animatedThumbnailUrl = result.url;
+                archiveSuccess++;
+              } else {
+                archiveFail++;
+                failedFiles.push(`meme-${meme.id}-animated-thumb: ${meme.animatedThumbnailUrl}`);
+              }
+            } catch (err: any) {
+              archiveFail++;
+              failedFiles.push(`meme-${meme.id}-animated-thumb: ${meme.animatedThumbnailUrl}`);
             }
           }
         }

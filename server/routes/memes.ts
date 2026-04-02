@@ -148,7 +148,11 @@ router.delete("/:id", async (req, res) => {
       return res.status(403).json({ message: "Only the author can delete this meme" });
     }
 
-    const allImageUrls = [meme.imageUrl, ...(meme.additionalImages || [])];
+    const allImageUrls = [
+      meme.imageUrl,
+      ...(meme.additionalImages || []),
+      ...(meme.animatedThumbnailUrl ? [meme.animatedThumbnailUrl] : []),
+    ];
     for (const imageUrl of allImageUrls) {
       if (imageUrl.includes('r2.dev') || imageUrl.includes('r2.cloudflarestorage.com')) {
         try {
