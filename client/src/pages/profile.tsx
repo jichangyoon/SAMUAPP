@@ -238,16 +238,18 @@ const Profile = memo(() => {
     } catch (error: any) {
       const msg: string = error?.message ?? '';
       let description = "Claim failed. Please try again.";
-      if (msg.includes('rejected') || msg.includes('cancelled') || msg.includes('canceled') || msg.includes('User rejected')) {
+      if (msg.includes('exited') || msg.includes('rejected') || msg.includes('cancelled') || msg.includes('canceled') || msg.includes('dismissed')) {
         description = "Transaction cancelled.";
-      } else if (msg.includes('insufficient') || msg.includes('Insufficient') || msg.includes('0x1') || msg.includes('lamports') || msg.includes('funds')) {
-        description = "Insufficient SOL for gas fees.";
-      } else if (msg.includes('blockhash') || msg.includes('block hash') || msg.includes('expired')) {
-        description = "Transaction expired. Please try again.";
-      } else if (msg.includes('simulation failed') || msg.includes('Simulation failed')) {
-        description = "Transaction failed. Please try again in a moment.";
+      } else if (msg.includes('debit') || msg.includes('prior credit') || msg.includes('insufficient') || msg.includes('Insufficient') || msg.includes('0x1') || msg.includes('lamports') || msg.includes('funds') || msg.includes('rent-exempt')) {
+        description = "Insufficient SOL balance. You need SOL for gas fees.";
       } else if (msg.includes('already claimed') || msg.includes('Already claimed')) {
         description = "Already claimed.";
+      } else if (msg.includes('blockhash') || msg.includes('block hash') || msg.includes('Blockhash not found') || msg.includes('expired')) {
+        description = "Transaction expired. Please try again.";
+      } else if (msg.includes('not confirmed') || msg.includes('timed out') || msg.includes('Timed out')) {
+        description = "Transaction timed out. Check your wallet — it may have gone through.";
+      } else if (msg.includes('simulation failed') || msg.includes('Simulation failed')) {
+        description = "Transaction simulation failed. Please try again in a moment.";
       } else if (msg.includes('Network') || msg.includes('network') || msg.includes('fetch') || msg.includes('timeout')) {
         description = "Network error. Check your connection.";
       }
