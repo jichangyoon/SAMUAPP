@@ -12,19 +12,14 @@ function verifyPrintfulWebhook(req: any): boolean {
     logger.warn("[Printful Webhook] PRINTFUL_WEBHOOK_SECRET not set — rejecting request for security");
     return false;
   }
-  const signature = req.headers["x-printful-signature"] || req.headers["x-pf-signature"];
-  if (!signature) {
-    logger.warn("[Printful Webhook] No signature header found");
+  // Printful V2 does not send signature headers — verify via query param instead
+  const providedSecret = req.query.secret as string;
+  if (!providedSecret) {
+    logger.warn("[Printful Webhook] No secret query param found");
     return false;
   }
-  const rawBody: Buffer | undefined = req.rawBody;
-  if (!rawBody) {
-    logger.warn("[Printful Webhook] Raw body not available");
-    return false;
-  }
-  const expected = crypto.createHmac("sha256", webhookSecret).update(rawBody).digest("hex");
   try {
-    return crypto.timingSafeEqual(Buffer.from(signature as string), Buffer.from(expected));
+    return crypto.timingSafeEqual(Buffer.from(providedSecret), Buffer.from(webhookSecret));
   } catch {
     return false;
   }
@@ -46,7 +41,6 @@ async function triggerEscrowDistribution(orderId: number, eventType: string) {
 
 router.post("/printful", async (req, res) => {
   try {
-    logger.info("[Printful Webhook] Incoming headers: " + JSON.stringify(req.headers));
     if (!verifyPrintfulWebhook(req)) {
       logger.warn("[Printful Webhook] Invalid signature, rejecting request");
       return res.status(401).json({ error: "Unauthorized" });
