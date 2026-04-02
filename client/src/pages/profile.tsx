@@ -230,9 +230,24 @@ const Profile = memo(() => {
 
       refetchRewards();
     } catch (error: any) {
+      const msg: string = error?.message ?? '';
+      let description = "Claim failed. Please try again.";
+      if (msg.includes('insufficient') || msg.includes('Insufficient') || msg.includes('0x1') || msg.includes('lamports') || msg.includes('funds')) {
+        description = "Insufficient SOL balance. You need a small amount of SOL for gas fees.";
+      } else if (msg.includes('rejected') || msg.includes('cancelled') || msg.includes('canceled') || msg.includes('User rejected')) {
+        description = "Transaction cancelled.";
+      } else if (msg.includes('blockhash') || msg.includes('block hash') || msg.includes('expired')) {
+        description = "Transaction expired. Please try again.";
+      } else if (msg.includes('simulation failed') || msg.includes('Simulation failed')) {
+        description = "Transaction failed. Please try again in a moment.";
+      } else if (msg.includes('already claimed') || msg.includes('Already claimed')) {
+        description = "Already claimed.";
+      } else if (msg.includes('Network') || msg.includes('network') || msg.includes('fetch') || msg.includes('timeout')) {
+        description = "Network error. Please check your connection and try again.";
+      }
       toast({
         title: "Claim Failed",
-        description: error.message,
+        description,
         variant: "destructive",
       });
     } finally {

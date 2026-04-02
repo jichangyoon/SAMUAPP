@@ -3,19 +3,11 @@ import { storage } from "../storage";
 import { insertRevenueSchema, type InsertRevenueShare } from "@shared/schema";
 import { config } from "../config";
 import { logger } from "../utils/logger";
+import { requireAdminAsync as requireAdmin } from "../utils/admin-auth";
 
 const router = Router();
 
 const PLATFORM_WALLET = config.TREASURY_WALLET;
-
-async function requireAdmin(req: Request, res: Response): Promise<boolean> {
-  const email = req.headers["x-admin-email"] || req.body?.adminEmail;
-  if (!email || !config.ADMIN_EMAILS.includes(String(email).toLowerCase())) {
-    res.status(403).json({ message: "Admin access required" });
-    return false;
-  }
-  return true;
-}
 
 router.post("/", async (req, res) => {
   try {

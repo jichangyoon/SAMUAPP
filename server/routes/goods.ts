@@ -8,6 +8,7 @@ import { geocodeAddress } from "../utils/geocode";
 import { getConnection, isContractEnabled, getEscrowPoolPda } from "../utils/solana";
 import { logger } from "../utils/logger";
 import { distributeEscrowProfit } from "../utils/distribute";
+import { requireAdminMiddleware as requireAdmin } from "../utils/admin-auth";
 
 const router = Router();
 
@@ -37,14 +38,6 @@ function normalizePhoneForPrintful(rawPhone: string, countryCode: string): strin
   }
 
   return `${dialCode} ${localPart}`;
-}
-
-function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  const email = req.headers["x-admin-email"] || req.body?.adminEmail;
-  if (!email || !config.ADMIN_EMAILS.includes(String(email).toLowerCase())) {
-    return res.status(403).json({ error: "Admin access required" });
-  }
-  next();
 }
 
 const PRINTFUL_API_KEY = process.env.PRINTFUL_API_KEY || "";

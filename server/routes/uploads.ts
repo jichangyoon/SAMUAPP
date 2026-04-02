@@ -2,6 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import { uploadToR2, deleteFromR2, extractKeyFromUrl } from "../r2-storage";
 import { logger } from "../utils/logger";
+import { requireAdminMiddleware } from "../utils/admin-auth";
 
 const router = Router();
 
@@ -135,13 +136,8 @@ router.get("/health", async (req, res) => {
   }
 });
 
-router.post("/thumbnail", async (req, res) => {
+router.post("/thumbnail", requireAdminMiddleware, async (req, res) => {
   try {
-    const adminEmail = (req.body?.adminEmail || req.headers['x-admin-email'] || '').toLowerCase();
-    const { config } = await import('../config');
-    if (!adminEmail || !config.ADMIN_EMAILS.includes(adminEmail)) {
-      return res.status(401).json({ error: "Admin access required" });
-    }
 
     const { base64 } = req.body;
 

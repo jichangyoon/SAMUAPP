@@ -2,20 +2,11 @@ import { Router } from "express";
 import { insertContestSchema } from "@shared/schema";
 import { storage } from "../storage";
 import { contestScheduler } from "../contest-scheduler";
-import { config } from "../config";
 import { logger } from "../utils/logger";
 import { syncPrintfulOrders } from "../printful-sync-scheduler";
+import { requireAdminMiddleware as requireAdmin } from "../utils/admin-auth";
 
 const router = Router();
-
-// Admin 인증 미들웨어
-const requireAdmin = (req: any, res: any, next: any) => {
-  const email = (req.body?.adminEmail || req.headers['x-admin-email'] || '').toLowerCase();
-  if (!email || !config.ADMIN_EMAILS.includes(email)) {
-    return res.status(401).json({ error: "Admin access required" });
-  }
-  next();
-};
 
 // Check if user is admin
 router.post("/check-admin", async (req, res) => {
