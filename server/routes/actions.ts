@@ -80,18 +80,21 @@ router.get("/vote/:memeId", async (req, res) => {
       ? rawIconUrl
       : `${baseUrl}${rawIconUrl}`;
 
-    // Contest has ended — meme gets a non-null contestId after archiving
+    // Contest has ended — check contest status (not just contestId)
     if (meme.contestId !== null) {
-      const ended: ActionGetResponse = {
-        type: "action",
-        icon: iconUrl,
-        title: meme.title,
-        description: `This contest has ended. Final votes: ${meme.votes.toLocaleString()} SAMU`,
-        label: "Voting Closed",
-        disabled: true,
-        error: { message: "This contest has ended. Voting is no longer available." },
-      };
-      return res.set(corsHeaders).json(ended);
+      const contest = await storage.getContestById(meme.contestId);
+      if (!contest || contest.status !== 'active') {
+        const ended: ActionGetResponse = {
+          type: "action",
+          icon: iconUrl,
+          title: meme.title,
+          description: `This contest has ended. Final votes: ${meme.votes.toLocaleString()} SAMU`,
+          label: "Voting Closed",
+          disabled: true,
+          error: { message: "This contest has ended. Voting is no longer available." },
+        };
+        return res.set(corsHeaders).json(ended);
+      }
     }
 
     const response: ActionGetResponse = {
