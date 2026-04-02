@@ -23,9 +23,6 @@ export const config = {
   
   // Admin
   ADMIN_EMAILS: (process.env.ADMIN_EMAILS || "shon.shon89@gmail.com,shon89@gmail.com").split(',').map(email => email.trim().toLowerCase()),
-  // If set, ALL admin API calls must also supply this secret via x-admin-secret header.
-  // Leave unset to keep email-only auth (backward compatible).
-  ADMIN_SECRET: process.env.ADMIN_SECRET || "",
 
   // Wallets
   TREASURY_WALLET: process.env.TREASURY_WALLET_ADDRESS || "4WjMuna7iLjPE897m5fphErUt7AnSdjJTky1hyfZZaJk",
