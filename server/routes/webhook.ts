@@ -46,6 +46,7 @@ async function triggerEscrowDistribution(orderId: number, eventType: string) {
 
 router.post("/printful", async (req, res) => {
   try {
+    logger.info("[Printful Webhook] Incoming headers: " + JSON.stringify(req.headers));
     if (!verifyPrintfulWebhook(req)) {
       logger.warn("[Printful Webhook] Invalid signature, rejecting request");
       return res.status(401).json({ error: "Unauthorized" });
