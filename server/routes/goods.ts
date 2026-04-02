@@ -13,6 +13,8 @@ import { requireAdminMiddleware as requireAdmin } from "../utils/admin-auth";
 const router = Router();
 
 const TREASURY_WALLET = config.TREASURY_WALLET;
+const ESCROW_WALLET = config.ESCROW_WALLET;
+const SHARE_RATIOS = config.REVENUE_SHARES;
 const TRUNK_PREFIX_COUNTRIES = new Set([
   'KR', 'JP', 'CN', 'TW', 'HK', 'TH', 'VN', 'PH', 'IN', 'ID', 'MY', 'SG',
   'GB', 'DE', 'FR', 'AU', 'IT', 'ES', 'NL', 'SE', 'BR', 'MX', 'RU', 'TR',

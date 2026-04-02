@@ -18,7 +18,7 @@ export function RewardsTab({ walletAddress }: RewardsTabProps) {
 
       <TabsContent value="map" className="mt-4">
         <Suspense fallback={<div className="min-h-[300px] bg-accent animate-pulse rounded-lg" />}>
-          <SamuMap walletAddress={walletAddress} />
+          <SamuMap walletAddress={walletAddress ?? undefined} />
         </Suspense>
       </TabsContent>
 
