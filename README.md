@@ -43,6 +43,7 @@ Brands and developers license IP from cNFT holders on an open marketplace (Phase
 | On-chain escrow — goods revenue → PDA, enforced by contract | ✅ Live |
 | Creator & Voter SOL reward claiming (on-chain, single TX) | ✅ Live |
 | 45/40/15 split enforced on-chain (contract rejects mismatches) | ✅ Live |
+| Per-order, per-participant reward allocation (unified audit trail) | ✅ Live |
 | Global SAMU Map (orders visualized worldwide) | ✅ Live |
 | Contest archive with full stats & reward history | ✅ Live |
 | Privy embedded wallet + external wallet support | ✅ Live |

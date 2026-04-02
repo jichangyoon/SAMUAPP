@@ -19,7 +19,7 @@ The platform operates on a pipeline: Meme Contest → Goods (Printful) → Ecosy
 - **Printful Webhook & Polling:** Integrates with Printful v2 webhooks for automated order status updates and profit distribution upon `shipment_delivered`, with a 30-day timeout scheduler. A polling scheduler (every 6 hours) additionally syncs order status and triggers profit distribution for any orders missed by webhooks.
 - **Reward System:**
     - **Creator Rewards (45%):** Based on vote share per contest. Tracked via per-order, per-creator rows (`creator_reward_distributions`).
-    - **Voter Rewards (40%):** Currently RPS model (`voterRewardPool`). Pre-Phase 3 migration planned → Direct Allocation (per-order rows, same as Creator) for unified tracking and explicit audit trail.
+    - **Voter Rewards (40%):** Direct Allocation model — per-order, per-voter rows (`voter_reward_distributions`), same structure as Creator rewards. Unified tracking and explicit audit trail. (`voter_reward_pool` table is legacy read-only for old contests only.)
     - **Claiming:** In contract mode, users claim rewards via a single transaction combining `record_allocation` and `claim`, pre-signed by the admin for amount guarantee, with the user covering gas fees.
 - **SAMU Map:** Visualizes order locations globally using `react-leaflet` and CartoDB, color-coded by user profits, including routing to Printful fulfillment centers.
 - **Order Geocoding:** Uses OpenStreetMap Nominatim API for precise latitude/longitude based on postal code and country.
@@ -34,7 +34,7 @@ The platform operates on a pipeline: Meme Contest → Goods (Printful) → Ecosy
     - **Fallback:** Server-side Solana utility (`server/utils/solana.ts`) automatically activates contract mode if `SAMU_REWARDS_PROGRAM_ID` is set, otherwise falls back to DB-based distribution.
 
 **Technical Stack:**
-- **Frontend:** React 18, TypeScript, Vite, TanStack Query, Wouter, React Hook Form + Zod, Tailwind CSS, shadcn/ui, Vaul. Poppins font, dark theme support.
+- **Frontend:** React 18, TypeScript, Vite 5.4.15, TanStack Query, Wouter, React Hook Form + Zod, Tailwind CSS, shadcn/ui, Vaul. Poppins font, dark theme support.
 - **Backend:** Express.js + TypeScript, RESTful API.
 - **Database:** PostgreSQL + Drizzle ORM.
 - **Authentication:** Privy (Solana-only, email + embedded wallet + external wallets).
