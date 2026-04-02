@@ -372,7 +372,7 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
 
         // Phase 2: 유저가 직접 서명 (가스비 유저 부담)
         let totalClaimed = 0;
-        const confirmItems: { contestId: number; txSignature: string; creatorDistributionIds: number[]; voterLamports: number }[] = [];
+        const confirmItems: { contestId: number; txSignature: string; creatorDistributionIds: number[]; voterDistributionIds: number[]; voterLamports: number }[] = [];
 
         for (const item of prepareData.transactions) {
           const tx = Transaction.from(Buffer.from(item.transaction, "base64"));
@@ -384,6 +384,7 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
             contestId: item.contestId,
             txSignature: sig,
             creatorDistributionIds: item.creatorDistributionIds ?? [],
+            voterDistributionIds: item.voterDistributionIds ?? [],
             voterLamports: item.voterLamports ?? 0,
           });
         }

@@ -202,7 +202,7 @@ const Profile = memo(() => {
       if (prepareData.contractEnabled && prepareData.transactions?.length > 0) {
         // Phase 2: 유저가 직접 서명 (가스비 유저 부담)
         let totalClaimed = 0;
-        const sigs: string[] = [];
+        const confirmItems: { contestId: number; txSignature: string; creatorDistributionIds: number[]; voterDistributionIds: number[]; voterLamports: number }[] = [];
 
         for (const item of prepareData.transactions) {
           const tx = Transaction.from(Buffer.from(item.transaction, "base64"));
@@ -210,13 +210,26 @@ const Profile = memo(() => {
           const signedTx = await signTransaction(tx, conn);
           const sig = await conn.sendRawTransaction(signedTx.serialize());
           await conn.confirmTransaction(sig, "confirmed");
-          sigs.push(sig);
+          confirmItems.push({
+            contestId: item.contestId,
+            txSignature: sig,
+            creatorDistributionIds: item.creatorDistributionIds ?? [],
+            voterDistributionIds: item.voterDistributionIds ?? [],
+            voterLamports: item.voterLamports ?? 0,
+          });
           totalClaimed += item.solAmount;
         }
 
+        // TX 성공 후 DB 동기화
+        await fetch("/api/rewards/confirm-claim", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ walletAddress, items: confirmItems }),
+        });
+
         setClaimResult({
           type: "success",
-          message: `${totalClaimed.toFixed(4)} SOL claimed! ${sigs.length > 1 ? `${sigs.length} transactions` : `TX: ${sigs[0]?.slice(0, 8)}...`}`,
+          message: `${totalClaimed.toFixed(4)} SOL claimed! ${confirmItems.length > 1 ? `${confirmItems.length} transactions` : `TX: ${confirmItems[0]?.txSignature?.slice(0, 8)}...`}`,
         });
       } else {
         // Legacy: 서버가 escrow에서 전송
