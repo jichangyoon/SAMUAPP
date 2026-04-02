@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { storage } from "../storage";
 import { config } from "../config";
-import { sendSolFromEscrow, isContractEnabled, buildClaimTransaction, buildRecordAndClaimTransaction, getOnChainClaimable, getEscrowPoolPda } from "../utils/solana";
+import { sendSolFromEscrow, buildClaimTransaction, buildRecordAndClaimTransaction, getOnChainClaimable, getEscrowPoolPda } from "../utils/solana";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { logger } from "../utils/logger";
 
@@ -685,12 +685,6 @@ router.get("/prepare-claim", async (req, res) => {
     const walletAddress = req.query.wallet as string;
     if (!walletAddress) return res.status(400).json({ error: "wallet query param required" });
 
-    const contractEnabled = isContractEnabled();
-
-    if (!contractEnabled) {
-      return res.json({ contractEnabled: false, transactions: [] });
-    }
-
     // 유저가 참여한 콘테스트 목록 수집 (투표 + 크리에이터)
     const userVotes = await storage.getUserVotes(walletAddress);
     const allMemes = await storage.getAllMemes();
@@ -890,10 +884,6 @@ router.get("/escrow-pda/:contestId", async (req, res) => {
   try {
     const contestId = parseInt(req.params.contestId);
     if (isNaN(contestId)) return res.status(400).json({ error: "Invalid contestId" });
-
-    if (!isContractEnabled()) {
-      return res.json({ pda: null, contractEnabled: false });
-    }
 
     const programId = new PublicKey(config.SAMU_REWARDS_PROGRAM_ID!);
     const [escrowPoolPda] = getEscrowPoolPda(contestId, programId);

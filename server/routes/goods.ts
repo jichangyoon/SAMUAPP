@@ -1,164 +1,22 @@
-import { Router, Request, Response, NextFunction } from "express";
+import { Router } from "express";
 import { storage } from "../storage";
-import { insertGoodsSchema, insertOrderSchema, type EscrowDeposit } from "@shared/schema";
+import { insertOrderSchema } from "@shared/schema";
 import { config } from "../config";
-import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { uploadToR2 } from "../r2-storage";
+import { PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { geocodeAddress } from "../utils/geocode";
-import { getConnection, isContractEnabled, getEscrowPoolPda } from "../utils/solana";
+import { getConnection, getEscrowPoolPda } from "../utils/solana";
 import { logger } from "../utils/logger";
-import { distributeEscrowProfit } from "../utils/distribute";
-import { requireAdminMiddleware as requireAdmin } from "../utils/admin-auth";
+import {
+  PRINTFUL_API_KEY,
+  STICKER_PRODUCT_ID,
+  STICKER_VARIANT_MAP,
+  normalizePhoneForPrintful,
+  printfulRequest,
+  getPrintfulProductCost,
+} from "../utils/printful-api";
+import { getSOLPriceUSD } from "../utils/sol-pricing";
 
 const router = Router();
-
-const TREASURY_WALLET = config.TREASURY_WALLET;
-const ESCROW_WALLET = config.ESCROW_WALLET;
-const SHARE_RATIOS = config.REVENUE_SHARES;
-const TRUNK_PREFIX_COUNTRIES = new Set([
-  'KR', 'JP', 'CN', 'TW', 'HK', 'TH', 'VN', 'PH', 'IN', 'ID', 'MY', 'SG',
-  'GB', 'DE', 'FR', 'AU', 'IT', 'ES', 'NL', 'SE', 'BR', 'MX', 'RU', 'TR',
-  'ZA', 'NZ', 'IE', 'PT', 'AT', 'CH', 'BE', 'DK', 'NO', 'FI', 'PL', 'CZ',
-  'NG', 'EG', 'KE', 'GH', 'TZ', 'UG', 'ET', 'CM', 'CI', 'SN', 'MA', 'TN',
-  'SA', 'AE', 'IL', 'JO', 'LB', 'IQ', 'PK', 'BD', 'LK', 'NP', 'MM',
-  'AR', 'CL', 'CO', 'PE', 'VE', 'EC', 'BO', 'PY', 'UY',
-  'HU', 'RO', 'BG', 'HR', 'RS', 'SK', 'SI', 'LT', 'LV', 'EE', 'GR',
-]);
-
-function normalizePhoneForPrintful(rawPhone: string, countryCode: string): string {
-  if (!rawPhone) return '';
-  const parts = rawPhone.trim().split(/\s+/);
-  if (parts.length < 2) return rawPhone.trim();
-
-  const dialCode = parts[0];
-  let localPart = parts.slice(1).join(' ');
-
-  localPart = localPart.replace(/[-().]/g, ' ').replace(/\s+/g, ' ').trim();
-
-  if (TRUNK_PREFIX_COUNTRIES.has(countryCode) && localPart.startsWith('0')) {
-    localPart = localPart.substring(1).trim();
-  }
-
-  return `${dialCode} ${localPart}`;
-}
-
-const PRINTFUL_API_KEY = process.env.PRINTFUL_API_KEY || "";
-const PRINTFUL_BASE_URL = "https://api.printful.com";
-const STICKER_PRODUCT_ID = config.PRINTFUL.STICKER_PRODUCT_ID;
-
-const STICKER_VARIANT_MAP: Record<string, number> = {
-  '3"×3"': 10163,
-  '4"×4"': 10164,
-  '5.5"×5.5"': 10165,
-  '15"×3.75"': 16362,
-};
-
-const STICKER_PRINTFILE_SIZE: Record<number, { width: number; height: number }> = {
-  10163: { width: 900, height: 900 },
-  10164: { width: 1200, height: 1200 },
-  10165: { width: 1650, height: 1650 },
-  16362: { width: 4500, height: 1125 },
-};
-
-function getSolConnection(): Connection {
-  return getConnection();
-}
-
-async function getSOLPriceUSD(): Promise<number> {
-  try {
-    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
-    const data = await res.json();
-    return data.solana?.usd || 150;
-  } catch {
-    return 150;
-  }
-}
-
-async function getPrintfulCatalogPrice(variantId: number): Promise<number | null> {
-  if (!PRINTFUL_API_KEY) return null;
-  try {
-    const data = await printfulRequest("GET", `/products/${STICKER_PRODUCT_ID}`);
-    const variants = data.result?.variants || [];
-    const variant = variants.find((v: any) => v.id === variantId);
-    if (variant?.price) {
-      return parseFloat(variant.price);
-    }
-  } catch (err: any) {
-    logger.error("Printful catalog price fetch failed:", err.message);
-  }
-  return null;
-}
-
-async function getPrintfulProductCost(item: any, shippingAddress?: any): Promise<{ productCost: number; shippingCost: number; totalCost: number }> {
-  if (!PRINTFUL_API_KEY) {
-    const fallbackCost = (item.basePrice || item.retailPrice * 0.6);
-    return { productCost: fallbackCost, shippingCost: 4.99, totalCost: fallbackCost + 4.99 };
-  }
-
-  try {
-    const firstSize = item.sizes?.[0] || '3"×3"';
-    const variantId = STICKER_VARIANT_MAP[firstSize] || 10163;
-
-    const estimatePayload: any = {
-      items: [{
-        variant_id: variantId,
-        quantity: 1,
-        files: [{ url: item.imageUrl }],
-      }],
-    };
-
-    if (shippingAddress) {
-      estimatePayload.recipient = {
-        address1: shippingAddress.address1,
-        city: shippingAddress.city,
-        country_code: shippingAddress.country_code,
-        state_code: shippingAddress.state_code || undefined,
-        zip: shippingAddress.zip,
-      };
-    }
-
-    const data = await printfulRequest("POST", "/orders/estimate-costs", estimatePayload);
-    const costs = data.result?.costs;
-    logger.debug("[Printful estimate-costs] Full costs response:", JSON.stringify(costs));
-    if (costs) {
-      const productCost = parseFloat(costs.subtotal) || (item.basePrice || item.retailPrice * 0.6);
-      const shippingCost = parseFloat(costs.shipping) || 4.99;
-      const totalCost = parseFloat(costs.total) || (productCost + shippingCost);
-      logger.info(`[Printful estimate-costs] productCost=${productCost}, shippingCost=${shippingCost}, totalCost(from API)=${totalCost}, manual total=${productCost + shippingCost}`);
-      return { productCost, shippingCost, totalCost };
-    }
-  } catch (err: any) {
-    logger.error("Printful cost estimate failed, using fallback:", err.message);
-  }
-
-  const fallbackCost = (item.basePrice || item.retailPrice * 0.6);
-  return { productCost: fallbackCost, shippingCost: 4.99, totalCost: fallbackCost + 4.99 };
-}
-
-function getPrintfulHeaders() {
-  return {
-    "Authorization": `Bearer ${PRINTFUL_API_KEY}`,
-    "X-PF-Store-Id": config.PRINTFUL.STORE_ID,
-    "Content-Type": "application/json",
-  };
-}
-
-async function printfulRequest(method: string, path: string, body?: any) {
-  const url = `${PRINTFUL_BASE_URL}${path}`;
-  const options: RequestInit = {
-    method,
-    headers: getPrintfulHeaders(),
-  };
-  if (body) {
-    options.body = JSON.stringify(body);
-  }
-  const response = await fetch(url, options);
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(`Printful API error: ${data.error?.message || data.message || JSON.stringify(data)}`);
-  }
-  return data;
-}
 
 router.get("/", async (_req, res) => {
   try {
@@ -214,9 +72,7 @@ router.get("/orders/:orderId/printful-detail", async (req, res) => {
     const orderId = parseInt(req.params.orderId, 10);
 
     const order = await storage.getOrderById(orderId);
-    if (!order) {
-      return res.status(404).json({ error: "Order not found" });
-    }
+    if (!order) return res.status(404).json({ error: "Order not found" });
 
     const wallet = req.query.wallet as string;
     if (!wallet || order.buyerWallet !== wallet) {
@@ -277,13 +133,11 @@ router.get("/orders/:orderId/printful-detail", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-      return res.status(400).json({ error: "Invalid goods ID" });
-    }
+    if (isNaN(id)) return res.status(400).json({ error: "Invalid goods ID" });
+
     const item = await storage.getGoodsById(id);
-    if (!item) {
-      return res.status(404).json({ error: "Goods not found" });
-    }
+    if (!item) return res.status(404).json({ error: "Goods not found" });
+
     res.json(item);
   } catch (error) {
     logger.error("Error fetching goods item:", error);
@@ -294,13 +148,10 @@ router.get("/:id", async (req, res) => {
 router.get("/:id/story", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-      return res.status(400).json({ error: "Invalid goods ID" });
-    }
+    if (isNaN(id)) return res.status(400).json({ error: "Invalid goods ID" });
+
     const item = await storage.getGoodsById(id);
-    if (!item) {
-      return res.status(404).json({ error: "Goods not found" });
-    }
+    if (!item) return res.status(404).json({ error: "Goods not found" });
 
     let meme = null;
     let contest = null;
@@ -368,432 +219,13 @@ router.get("/:id/story", async (req, res) => {
   }
 });
 
-router.post("/admin/create-simple", requireAdmin, async (req, res) => {
-  try {
-    const { title, description, imageUrl, contestId, memeId, retailPrice, sizes, category, productType } = req.body;
-
-    if (!title || !imageUrl || !retailPrice) {
-      return res.status(400).json({ error: "title, imageUrl, and retailPrice are required" });
-    }
-
-    const selectedSizes = sizes || ['3"×3"', '4"×4"', '5.5"×5.5"'];
-    const firstSize = selectedSizes[0] || '3"×3"';
-    const variantId = STICKER_VARIANT_MAP[firstSize] || 10163;
-
-    let actualBasePrice = retailPrice * 0.6;
-    const catalogPrice = await getPrintfulCatalogPrice(variantId);
-    if (catalogPrice && catalogPrice > 0) {
-      actualBasePrice = catalogPrice;
-    }
-
-    const goodsData = insertGoodsSchema.parse({
-      title,
-      description: description || null,
-      imageUrl,
-      mockupUrls: [imageUrl],
-      contestId: contestId || null,
-      memeId: memeId || null,
-      category: category || "sticker",
-      productType: productType || "sticker",
-      basePrice: actualBasePrice,
-      retailPrice,
-      sizes: selectedSizes,
-      colors: [],
-      status: "active",
-    });
-
-    const item = await storage.createGoods(goodsData);
-    res.json(item);
-  } catch (error: any) {
-    logger.error("Error creating goods (simple):", error);
-    res.status(400).json({ error: error.message || "Failed to create goods" });
-  }
-});
-
-router.post("/admin/create", requireAdmin, async (req, res) => {
-  try {
-    const { title, description, imageUrl, contestId, memeId, retailPrice, sizes } = req.body;
-
-    if (!title || !imageUrl || !retailPrice) {
-      return res.status(400).json({ error: "title, imageUrl, and retailPrice are required" });
-    }
-
-    if (!PRINTFUL_API_KEY) {
-      return res.status(500).json({ error: "Printful API key not configured" });
-    }
-
-    const selectedSizes = sizes || ['3"×3"', '4"×4"', '5.5"×5.5"'];
-
-    const syncVariants: any[] = [];
-    for (const size of selectedSizes) {
-      const variantId = STICKER_VARIANT_MAP[size];
-      if (variantId) {
-        syncVariants.push({
-          variant_id: variantId,
-          retail_price: retailPrice.toFixed(2),
-          files: [{ url: imageUrl }],
-        });
-      }
-    }
-
-    if (syncVariants.length === 0) {
-      return res.status(400).json({ error: "No valid sticker size variants found" });
-    }
-
-    const productPayload = {
-      sync_product: {
-        name: title,
-        thumbnail: imageUrl,
-      },
-      sync_variants: syncVariants,
-    };
-
-    const productResult = await printfulRequest("POST", "/store/products", productPayload);
-    const createResult = productResult.result;
-    const printfulProductId = createResult?.sync_product?.id ?? createResult?.id ?? null;
-
-    let printfulVariantId: number | null = null;
-    if (createResult?.sync_variants?.length > 0) {
-      printfulVariantId = createResult.sync_variants[0].id;
-    } else if (printfulProductId) {
-      try {
-        const productDetail = await printfulRequest("GET", `/store/products/${printfulProductId}`);
-        const variants = productDetail.result?.sync_variants || [];
-        if (variants.length > 0) {
-          printfulVariantId = variants[0].id;
-        }
-      } catch (detailErr: any) {
-        logger.error("Failed to fetch product variants:", detailErr.message);
-      }
-    }
-
-    const firstSize = selectedSizes[0] || '3"×3"';
-    const firstVariantId = STICKER_VARIANT_MAP[firstSize] || 10163;
-
-    let actualBasePrice = retailPrice * 0.6;
-    const catalogPrice = await getPrintfulCatalogPrice(firstVariantId);
-    if (catalogPrice && catalogPrice > 0) {
-      actualBasePrice = catalogPrice;
-    }
-
-    const goodsData = insertGoodsSchema.parse({
-      printfulProductId,
-      printfulVariantId,
-      contestId: contestId || null,
-      memeId: memeId || null,
-      title,
-      description: description || null,
-      imageUrl: imageUrl,
-      mockupUrls: [imageUrl],
-      category: "sticker",
-      productType: "sticker",
-      basePrice: actualBasePrice,
-      retailPrice,
-      sizes: selectedSizes,
-      colors: [],
-      status: "active",
-    });
-
-    const item = await storage.createGoods(goodsData);
-    res.json({ goods: item, printfulProductId, printfulVariantId });
-  } catch (error: any) {
-    logger.error("Error creating goods with Printful:", error);
-    res.status(500).json({ error: error.message || "Failed to create goods with Printful" });
-  }
-});
-
-router.post("/admin/sync-printful/:id", requireAdmin, async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-      return res.status(400).json({ error: "Invalid goods ID" });
-    }
-
-    const item = await storage.getGoodsById(id);
-    if (!item) {
-      return res.status(404).json({ error: "Goods not found" });
-    }
-
-    if (!PRINTFUL_API_KEY) {
-      return res.status(500).json({ error: "Printful API key not configured" });
-    }
-
-    if (item.printfulProductId) {
-      return res.status(400).json({ error: "This item is already synced to Printful", printfulProductId: item.printfulProductId });
-    }
-
-    const selectedSizes = item.sizes || ['3"×3"', '4"×4"', '5.5"×5.5"'];
-    const syncVariants: any[] = [];
-    for (const size of selectedSizes) {
-      const variantId = STICKER_VARIANT_MAP[size as string];
-      if (variantId) {
-        syncVariants.push({
-          variant_id: variantId,
-          retail_price: (item.retailPrice || 4.99).toFixed(2),
-          files: [{ url: item.imageUrl }],
-        });
-      }
-    }
-
-    if (syncVariants.length === 0) {
-      return res.status(400).json({ error: "No valid sticker size variants found for this item" });
-    }
-
-    const productPayload = {
-      sync_product: {
-        name: item.title,
-        thumbnail: item.imageUrl,
-      },
-      sync_variants: syncVariants,
-    };
-
-    const productResult = await printfulRequest("POST", "/store/products", productPayload);
-    const result = productResult.result;
-    const printfulProductId = result?.sync_product?.id ?? result?.id ?? null;
-
-    let printfulVariantId: number | null = null;
-    if (result?.sync_variants?.length > 0) {
-      printfulVariantId = result.sync_variants[0].id;
-    } else if (printfulProductId) {
-      try {
-        const productDetail = await printfulRequest("GET", `/store/products/${printfulProductId}`);
-        const variants = productDetail.result?.sync_variants || [];
-        if (variants.length > 0) {
-          printfulVariantId = variants[0].id;
-        }
-      } catch (detailErr: any) {
-        logger.error("Failed to fetch product variants:", detailErr.message);
-      }
-    }
-
-    const updatedItem = await storage.updateGoods(id, {
-      printfulProductId,
-      printfulVariantId,
-    });
-
-    res.json({ goods: updatedItem, printfulProductId, printfulVariantId });
-  } catch (error: any) {
-    logger.error("Error syncing goods to Printful:", error);
-    res.status(500).json({ error: error.message || "Failed to sync to Printful" });
-  }
-});
-
-router.post("/admin/generate-mockup/:id", requireAdmin, async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-      return res.status(400).json({ error: "Invalid goods ID" });
-    }
-
-    const item = await storage.getGoodsById(id);
-    if (!item) {
-      return res.status(404).json({ error: "Goods not found" });
-    }
-
-    if (!PRINTFUL_API_KEY) {
-      return res.status(500).json({ error: "Printful API key not configured" });
-    }
-
-    const imageUrl = item.imageUrl;
-    const firstSize = item.sizes?.[0] || '3"×3"';
-    const variantId = STICKER_VARIANT_MAP[firstSize] || 10163;
-
-    const variantIds = [variantId];
-    const secondSize = item.sizes?.find((s: string) => s !== firstSize);
-    if (secondSize) {
-      const secondVariantId = STICKER_VARIANT_MAP[secondSize];
-      if (secondVariantId) variantIds.push(secondVariantId);
-    }
-
-    const printfileSize = STICKER_PRINTFILE_SIZE[variantId] || { width: 900, height: 900 };
-    const mockupPayload = {
-      variant_ids: variantIds,
-      format: "jpg",
-      files: [{
-        placement: "default",
-        image_url: imageUrl,
-        position: {
-          area_width: printfileSize.width,
-          area_height: printfileSize.height,
-          width: printfileSize.width,
-          height: printfileSize.height,
-          top: 0,
-          left: 0,
-        },
-      }],
-    };
-
-    const mockupTask = await printfulRequest(
-      "POST",
-      `/mockup-generator/create-task/${STICKER_PRODUCT_ID}`,
-      mockupPayload
-    );
-
-    if (!mockupTask.result?.task_key) {
-      return res.status(500).json({ error: "Failed to create mockup task", details: mockupTask });
-    }
-
-    const taskKey = mockupTask.result.task_key;
-    let mockupUrls: string[] = [];
-    let taskComplete = false;
-    let attempts = 0;
-
-    while (!taskComplete && attempts < 20) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      try {
-        const taskResult = await printfulRequest(
-          "GET",
-          `/mockup-generator/task?task_key=${taskKey}`
-        );
-        if (taskResult.result?.status === "completed") {
-          taskComplete = true;
-          const mockups = taskResult.result?.mockups || [];
-          mockupUrls = mockups.map((m: any) => m.mockup_url).filter(Boolean);
-        } else if (taskResult.result?.status === "failed") {
-          return res.status(500).json({ error: "Mockup generation failed", details: taskResult.result });
-        }
-      } catch (pollError: any) {
-        logger.error("Mockup poll error:", pollError.message);
-      }
-      attempts++;
-    }
-
-    if (mockupUrls.length === 0) {
-      return res.status(500).json({ error: "Mockup generation timed out or produced no results" });
-    }
-
-    const permanentUrls: string[] = [];
-    for (let i = 0; i < mockupUrls.length; i++) {
-      try {
-        const response = await fetch(mockupUrls[i]);
-        if (!response.ok) throw new Error(`Failed to download mockup: ${response.status}`);
-        const buffer = Buffer.from(await response.arrayBuffer());
-        const result = await uploadToR2(buffer, `mockup-${id}-${i}.jpg`, `goods/mockups`);
-        if (result.success && result.url) {
-          permanentUrls.push(result.url);
-        } else {
-          logger.error(`Failed to upload mockup ${i} to R2:`, result.error);
-          permanentUrls.push(mockupUrls[i]);
-        }
-      } catch (dlError: any) {
-        logger.error(`Failed to download/upload mockup ${i}:`, dlError.message);
-        permanentUrls.push(mockupUrls[i]);
-      }
-    }
-
-    const updatedItem = await storage.updateGoods(id, {
-      mockupUrls: permanentUrls,
-    });
-
-    res.json({ mockupUrls: permanentUrls, goods: updatedItem });
-  } catch (error: any) {
-    logger.error("Error generating mockup:", error);
-    res.status(500).json({ error: error.message || "Failed to generate mockup" });
-  }
-});
-
-router.post("/admin/refresh-all-mockups", requireAdmin, async (req, res) => {
-  try {
-    if (!PRINTFUL_API_KEY) {
-      return res.status(500).json({ error: "Printful API key not configured" });
-    }
-
-    const allGoods = await storage.getGoods();
-    const results: { id: number; title: string; status: string }[] = [];
-
-    for (const item of allGoods) {
-      const hasExpiredMockups = (item.mockupUrls || []).some(
-        (url: string) => url.includes('printful-upload.s3') || url.includes('/tmp/')
-      );
-      if (!hasExpiredMockups && (item.mockupUrls || []).length > 0) {
-        results.push({ id: item.id, title: item.title, status: "ok" });
-        continue;
-      }
-
-      try {
-        const imageUrl = item.imageUrl;
-        const firstSize = item.sizes?.[0] || '3"×3"';
-        const variantId = STICKER_VARIANT_MAP[firstSize] || 10163;
-        const variantIds = [variantId];
-        const secondSize = item.sizes?.find((s: string) => s !== firstSize);
-        if (secondSize) {
-          const secondVariantId = STICKER_VARIANT_MAP[secondSize];
-          if (secondVariantId) variantIds.push(secondVariantId);
-        }
-        const printfileSize = STICKER_PRINTFILE_SIZE[variantId] || { width: 900, height: 900 };
-
-        const mockupTask = await printfulRequest("POST", `/mockup-generator/create-task/${STICKER_PRODUCT_ID}`, {
-          variant_ids: variantIds,
-          format: "jpg",
-          files: [{ placement: "default", image_url: imageUrl, position: { area_width: printfileSize.width, area_height: printfileSize.height, width: printfileSize.width, height: printfileSize.height, top: 0, left: 0 } }],
-        });
-
-        if (!mockupTask.result?.task_key) {
-          results.push({ id: item.id, title: item.title, status: "failed_task_creation" });
-          continue;
-        }
-
-        let mockupUrls: string[] = [];
-        let taskComplete = false;
-        let attempts = 0;
-        while (!taskComplete && attempts < 20) {
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          const taskResult = await printfulRequest("GET", `/mockup-generator/task?task_key=${mockupTask.result.task_key}`);
-          if (taskResult.result?.status === "completed") {
-            taskComplete = true;
-            mockupUrls = (taskResult.result?.mockups || []).map((m: any) => m.mockup_url).filter(Boolean);
-          } else if (taskResult.result?.status === "failed") {
-            break;
-          }
-          attempts++;
-        }
-
-        if (mockupUrls.length === 0) {
-          results.push({ id: item.id, title: item.title, status: "no_mockups_generated" });
-          continue;
-        }
-
-        const permanentUrls: string[] = [];
-        for (let i = 0; i < mockupUrls.length; i++) {
-          try {
-            const response = await fetch(mockupUrls[i]);
-            if (!response.ok) throw new Error(`Download failed: ${response.status}`);
-            const buffer = Buffer.from(await response.arrayBuffer());
-            const result = await uploadToR2(buffer, `mockup-${item.id}-${i}.jpg`, `goods/mockups`);
-            if (result.success && result.url) {
-              permanentUrls.push(result.url);
-            } else {
-              permanentUrls.push(mockupUrls[i]);
-            }
-          } catch {
-            permanentUrls.push(mockupUrls[i]);
-          }
-        }
-
-        await storage.updateGoods(item.id, { mockupUrls: permanentUrls });
-        results.push({ id: item.id, title: item.title, status: "refreshed" });
-      } catch (err: any) {
-        results.push({ id: item.id, title: item.title, status: `error: ${err.message}` });
-      }
-    }
-
-    res.json({ results });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
 router.post("/:id/estimate-shipping", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-      return res.status(400).json({ error: "Invalid goods ID" });
-    }
+    if (isNaN(id)) return res.status(400).json({ error: "Invalid goods ID" });
 
     const item = await storage.getGoodsById(id);
-    if (!item) {
-      return res.status(404).json({ error: "Goods not found" });
-    }
+    if (!item) return res.status(404).json({ error: "Goods not found" });
 
     if (!PRINTFUL_API_KEY) {
       return res.json({
@@ -817,21 +249,11 @@ router.post("/:id/estimate-shipping", async (req, res) => {
     const firstSize = item.sizes?.[0] || '3"×3"';
     const variantId = STICKER_VARIANT_MAP[firstSize] || 10163;
 
-    const shippingPayload = {
-      recipient: {
-        address1,
-        city,
-        country_code,
-        state_code: state_code || undefined,
-        zip,
-      },
-      items: [{
-        variant_id: variantId,
-        quantity: 1,
-      }],
-    };
+    const data = await printfulRequest("POST", "/shipping/rates", {
+      recipient: { address1, city, country_code, state_code: state_code || undefined, zip },
+      items: [{ variant_id: variantId, quantity: 1 }],
+    });
 
-    const data = await printfulRequest("POST", "/shipping/rates", shippingPayload);
     const allRates = data.result || [];
     if (allRates.length > 1) {
       allRates.sort((a: any, b: any) => parseFloat(a.rate) - parseFloat(b.rate));
@@ -848,19 +270,13 @@ router.post("/:id/estimate-shipping", async (req, res) => {
 router.post("/:id/prepare-payment", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-      return res.status(400).json({ error: "Invalid goods ID" });
-    }
+    if (isNaN(id)) return res.status(400).json({ error: "Invalid goods ID" });
 
     const item = await storage.getGoodsById(id);
-    if (!item) {
-      return res.status(404).json({ error: "Goods not found" });
-    }
+    if (!item) return res.status(404).json({ error: "Goods not found" });
 
     const { buyerWallet, shippingAddress } = req.body;
-    if (!buyerWallet) {
-      return res.status(400).json({ error: "buyerWallet is required" });
-    }
+    if (!buyerWallet) return res.status(400).json({ error: "buyerWallet is required" });
     if (!shippingAddress || !shippingAddress.address1 || !shippingAddress.city || !shippingAddress.country_code) {
       return res.status(400).json({ error: "Complete shipping address is required" });
     }
@@ -873,21 +289,20 @@ router.post("/:id/prepare-payment", async (req, res) => {
 
     const costUSD = printfulCost.totalCost;
     const profitUSD = Math.max(0, totalUSD - costUSD);
-
     const costSol = parseFloat((costUSD / solPriceUSD).toFixed(6));
     const profitSol = parseFloat((profitUSD / solPriceUSD).toFixed(6));
 
     logger.info(`[prepare-payment] retailPrice=$${item.retailPrice}, shippingCost=$${serverShippingCost}, totalUSD=$${totalUSD}, costUSD=$${costUSD}, profitUSD=$${profitUSD}, solPrice=$${solPriceUSD}, costSol=${costSol}, profitSol=${profitSol}, totalSol=${solAmount}`);
 
-    const connection = getSolConnection();
+    const connection = getConnection();
     const buyerPubkey = new PublicKey(buyerWallet);
-    const treasuryPubkey = new PublicKey(TREASURY_WALLET);
+    const treasuryPubkey = new PublicKey(config.TREASURY_WALLET);
 
-    // Phase 2: 컨트랙트 활성화 + 콘테스트 연계 굿즈인 경우 → escrow_pool PDA로 전송
-    // 미활성화 또는 콘테스트 미연계인 경우 → 기존 ESCROW_WALLET으로 전송
-    let escrowRecipient: string = ESCROW_WALLET;
+    // Phase 2: 컨트랙트 활성화 + 콘테스트 연계 굿즈 → escrow_pool PDA
+    // 콘테스트 미연계 굿즈 → ESCROW_WALLET
+    let escrowRecipient: string = config.ESCROW_WALLET;
     let escrowRole = "escrow_profit";
-    if (isContractEnabled() && item.contestId) {
+    if (item.contestId) {
       const programId = new PublicKey(config.SAMU_REWARDS_PROGRAM_ID);
       const [escrowPoolPda] = getEscrowPoolPda(item.contestId, programId);
       escrowRecipient = escrowPoolPda.toBase58();
@@ -903,13 +318,13 @@ router.post("/:id/prepare-payment", async (req, res) => {
     const splits: { recipient: string; role: string; lamports: number; solAmount: number }[] = [];
 
     transaction.add(
-      SystemProgram.transfer({ fromPubkey: buyerPubkey, toPubkey: treasuryPubkey, lamports: costLamports })
+      SystemProgram.transfer({ fromPubkey: buyerPubkey, toPubkey: treasuryPubkey, lamports: costLamports }),
     );
-    splits.push({ recipient: TREASURY_WALLET, role: "cost", lamports: costLamports, solAmount: costLamports / LAMPORTS_PER_SOL });
+    splits.push({ recipient: config.TREASURY_WALLET, role: "cost", lamports: costLamports, solAmount: costLamports / LAMPORTS_PER_SOL });
 
     if (profitLamports > 0) {
       transaction.add(
-        SystemProgram.transfer({ fromPubkey: buyerPubkey, toPubkey: escrowPubkey, lamports: profitLamports })
+        SystemProgram.transfer({ fromPubkey: buyerPubkey, toPubkey: escrowPubkey, lamports: profitLamports }),
       );
       splits.push({ recipient: escrowRecipient, role: escrowRole, lamports: profitLamports, solAmount: profitLamports / LAMPORTS_PER_SOL });
     }
@@ -941,8 +356,8 @@ router.post("/:id/prepare-payment", async (req, res) => {
         printfulShippingCost: printfulCost.shippingCost,
       },
       distribution: {
-        treasury: { wallet: TREASURY_WALLET, amount: costLamports / LAMPORTS_PER_SOL, role: "production_cost" },
-        escrow: { wallet: ESCROW_WALLET, amount: profitLamports / LAMPORTS_PER_SOL, role: "profit_escrow" },
+        treasury: { wallet: config.TREASURY_WALLET, amount: costLamports / LAMPORTS_PER_SOL, role: "production_cost" },
+        escrow: { wallet: config.ESCROW_WALLET, amount: profitLamports / LAMPORTS_PER_SOL, role: "profit_escrow" },
       },
     });
   } catch (error: any) {
@@ -954,14 +369,10 @@ router.post("/:id/prepare-payment", async (req, res) => {
 router.post("/:id/order", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-      return res.status(400).json({ error: "Invalid goods ID" });
-    }
+    if (isNaN(id)) return res.status(400).json({ error: "Invalid goods ID" });
 
     const item = await storage.getGoodsById(id);
-    if (!item) {
-      return res.status(404).json({ error: "Goods not found" });
-    }
+    if (!item) return res.status(404).json({ error: "Goods not found" });
 
     const {
       size, buyerWallet, buyerEmail, txSignature, solAmount, shippingCostUSD,
@@ -981,7 +392,7 @@ router.post("/:id/order", async (req, res) => {
       return res.status(400).json({ error: "This transaction has already been used for an order (replay rejected)" });
     }
 
-    const connection = getSolConnection();
+    const connection = getConnection();
     const solPriceUSD = await getSOLPriceUSD();
 
     const shippingRes = await (async () => {
@@ -1000,9 +411,7 @@ router.post("/:id/order", async (req, res) => {
           items: [{ variant_id: sVariantId, quantity: 1 }],
         });
         const rates = data.result || [];
-        if (rates.length > 1) {
-          rates.sort((a: any, b: any) => parseFloat(a.rate) - parseFloat(b.rate));
-        }
+        if (rates.length > 1) rates.sort((a: any, b: any) => parseFloat(a.rate) - parseFloat(b.rate));
         return parseFloat(rates[0]?.rate) || 4.99;
       } catch { return 4.99; }
     })();
@@ -1029,11 +438,11 @@ router.post("/:id/order", async (req, res) => {
       const postBalances = txInfo.meta.postBalances;
       const accountKeys = txInfo.transaction.message.getAccountKeys().staticAccountKeys;
 
-      const treasuryPubkey = new PublicKey(TREASURY_WALLET);
-      const escrowPubkey = new PublicKey(ESCROW_WALLET);
+      const treasuryPubkey = new PublicKey(config.TREASURY_WALLET);
+      const escrowPubkey = new PublicKey(config.ESCROW_WALLET);
 
       let escrowPoolPda: PublicKey | null = null;
-      if (isContractEnabled() && item.contestId) {
+      if (item.contestId) {
         const programId = new PublicKey(config.SAMU_REWARDS_PROGRAM_ID);
         [escrowPoolPda] = getEscrowPoolPda(item.contestId, programId);
       }
@@ -1058,7 +467,7 @@ router.post("/:id/order", async (req, res) => {
 
       if (totalReceived < minAcceptableLamports) {
         return res.status(400).json({
-          error: `Insufficient payment: received ${totalReceived / LAMPORTS_PER_SOL} SOL, expected ~${expectedSOL.toFixed(6)} SOL`
+          error: `Insufficient payment: received ${totalReceived / LAMPORTS_PER_SOL} SOL, expected ~${expectedSOL.toFixed(6)} SOL`,
         });
       }
 
@@ -1082,7 +491,6 @@ router.post("/:id/order", async (req, res) => {
     if (PRINTFUL_API_KEY && item.printfulProductId) {
       try {
         const syncVariantId = item.printfulVariantId;
-
         const normalizedPhone = shippingPhone ? normalizePhoneForPrintful(shippingPhone, shippingCountry) : undefined;
 
         const orderPayload = {
@@ -1177,49 +585,10 @@ router.post("/:id/order", async (req, res) => {
   }
 });
 
-router.post("/admin/distribute-escrow/:orderId", requireAdmin, async (req, res) => {
-  try {
-    const orderId = parseInt(req.params.orderId);
-    if (isNaN(orderId)) {
-      return res.status(400).json({ error: "Invalid order ID" });
-    }
-
-    const escrow = await storage.getEscrowDepositByOrderId(orderId);
-    if (!escrow) {
-      return res.status(404).json({ error: "Escrow deposit not found for this order" });
-    }
-
-    if (escrow.status !== "locked") {
-      return res.status(400).json({ error: `Cannot distribute escrow with status '${escrow.status}'. Only 'locked' escrow deposits can be distributed.` });
-    }
-
-    const result = await distributeEscrowProfit(escrow);
-    res.json({ success: true, distribution: result, escrowId: escrow.id });
-  } catch (error: any) {
-    logger.error("Error distributing escrow:", error);
-    res.status(500).json({ error: error.message || "Failed to distribute escrow" });
-  }
-});
-
-router.get("/admin/escrow-deposits", requireAdmin, async (req, res) => {
-  try {
-    const contestId = req.query.contestId ? parseInt(req.query.contestId as string) : undefined;
-    const deposits = contestId 
-      ? await storage.getEscrowDepositsByContestId(contestId)
-      : await storage.getLockedEscrowDeposits();
-    res.json(deposits);
-  } catch (error: any) {
-    logger.error("Error fetching escrow deposits:", error);
-    res.status(500).json({ error: error.message || "Failed to fetch escrow deposits" });
-  }
-});
-
 router.get("/escrow/contest/:contestId", async (req, res) => {
   try {
     const contestId = parseInt(req.params.contestId);
-    if (isNaN(contestId)) {
-      return res.status(400).json({ error: "Invalid contest ID" });
-    }
+    if (isNaN(contestId)) return res.status(400).json({ error: "Invalid contest ID" });
 
     const deposits = await storage.getEscrowDepositsByContestId(contestId);
     const memeVoteSummary = await storage.getMemeVoteSummary(contestId);
@@ -1244,7 +613,7 @@ router.get("/escrow/contest/:contestId", async (req, res) => {
       totalDistributed,
       creatorBreakdown,
       creatorDistributions,
-      shareRatios: SHARE_RATIOS,
+      shareRatios: config.REVENUE_SHARES,
     });
   } catch (error: any) {
     logger.error("Error fetching escrow info:", error);

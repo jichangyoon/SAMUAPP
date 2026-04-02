@@ -13,6 +13,7 @@ import adminRouter from "./routes/admin";
 import { actionsRouter } from "./routes/actions";
 import revenueRouter from "./routes/revenue";
 import goodsRouter from "./routes/goods";
+import goodsAdminRouter from "./routes/goods-admin";
 import rewardsDashboardRouter from "./routes/rewards-dashboard";
 import webhookRouter from "./routes/webhook";
 
@@ -33,6 +34,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api", walletRouter);
   app.use("/api/actions", actionsRouter);
   app.use("/api/revenue", revenueRouter);
+  app.use("/api/goods", goodsAdminRouter);
   app.use("/api/goods", goodsRouter);
   app.use("/api/rewards", rewardsDashboardRouter);
   app.use("/api/webhooks", webhookRouter);
