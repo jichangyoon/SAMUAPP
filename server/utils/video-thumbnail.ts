@@ -8,13 +8,14 @@ import crypto from "crypto";
 import { uploadToR2 } from "../r2-storage";
 import { logger } from "./logger";
 
-// Prefer system ffmpeg; fall back to the bundled installer
+// Prefer bundled ffmpeg (has libwebp); fall back to system ffmpeg
 function resolveFfmpegPath(): string {
+  if (ffmpegInstaller.path) return ffmpegInstaller.path;
   try {
     const systemPath = execSync("which ffmpeg", { encoding: "utf-8" }).trim();
     if (systemPath) return systemPath;
   } catch {}
-  return ffmpegInstaller.path;
+  return "ffmpeg";
 }
 
 ffmpeg.setFfmpegPath(resolveFfmpegPath());
