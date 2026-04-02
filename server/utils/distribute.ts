@@ -90,8 +90,15 @@ export async function distributeEscrowProfit(escrowDeposit: any) {
           });
         await storage.createVoterRewardDistributions(voterDistRows);
       } else {
-        await storage.getOrCreateVoterRewardPool(contestId, 100);
-        await storage.updateVoterRewardPool(contestId, voterPoolAmount);
+        logger.warn(`[distributeEscrowProfit] contest=${contestId} has no voters — voter pool (${voterPoolAmount.toFixed(6)} SOL) redirected to Treasury`);
+        await storage.createVoterRewardDistributions([{
+          distributionId: dist.id,
+          contestId,
+          orderId: escrowDeposit.orderId,
+          voterWallet: config.TREASURY_WALLET,
+          solAmount: voterPoolAmount,
+          voteSharePercent: 100,
+        }]);
       }
     }
 

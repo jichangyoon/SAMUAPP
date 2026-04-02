@@ -1,6 +1,5 @@
 import { getDatabase } from "../db";
 import { eq, and, desc, isNull, or, sql, inArray } from "drizzle-orm";
-import { logger } from "../utils/logger";
 import {
   voterRewardPool, voterClaimRecords, votes, memes, creatorRewardDistributions, voterRewardDistributions,
   type VoterRewardPool, type InsertVoterRewardPool, type VoterClaimRecord, type InsertVoterClaimRecord,
@@ -23,62 +22,6 @@ export class VoterRewardStorage {
       summary.set(vote.voterWallet, current + (vote.samuAmount || 0));
     }
     return Array.from(summary.entries()).map(([voterWallet, totalSamuAmount]) => ({ voterWallet, totalSamuAmount }));
-  }
-
-  async getOrCreateVoterRewardPool(contestId: number, totalShares: number = 100): Promise<VoterRewardPool> {
-    if (!this.db) throw new Error("Database not available");
-    // onConflictDoNothing: unique index on contestId가 있어 동시 요청 시 race condition 없이 안전하게 처리
-    await this.db.insert(voterRewardPool).values({
-      contestId,
-      rewardPerShare: 0,
-      totalDeposited: 0,
-      totalClaimed: 0,
-      totalShares: 100,
-    }).onConflictDoNothing();
-    const [pool] = await this.db.select().from(voterRewardPool)
-      .where(eq(voterRewardPool.contestId, contestId)).limit(1);
-    return pool!;
-  }
-
-  async updateVoterRewardPool(contestId: number, depositAmount: number): Promise<VoterRewardPool> {
-    if (!this.db) throw new Error("Database not available");
-    let pool = await this.getVoterRewardPool(contestId);
-    if (!pool) {
-      logger.info(`Voter reward pool not found for contest ${contestId}, creating one automatically`);
-      const [newPool] = await this.db.insert(voterRewardPool)
-        .values({
-          contestId,
-          totalShares: 100,
-          rewardPerShare: 0,
-          totalDeposited: 0,
-        })
-        .returning();
-      pool = newPool;
-    }
-    if (pool.totalShares <= 0) {
-      logger.info(`Voter reward pool for contest ${contestId} had totalShares=0. Fixing to 100 and computing rewardPerShare.`);
-      const addedRewardPerShare = depositAmount / 100;
-      const [updated] = await this.db.update(voterRewardPool)
-        .set({
-          totalShares: 100,
-          rewardPerShare: pool.rewardPerShare + addedRewardPerShare,
-          totalDeposited: pool.totalDeposited + depositAmount,
-          updatedAt: new Date(),
-        })
-        .where(eq(voterRewardPool.contestId, contestId))
-        .returning();
-      return updated;
-    }
-    const addedRewardPerShare = depositAmount / pool.totalShares;
-    const [updated] = await this.db.update(voterRewardPool)
-      .set({
-        rewardPerShare: pool.rewardPerShare + addedRewardPerShare,
-        totalDeposited: pool.totalDeposited + depositAmount,
-        updatedAt: new Date(),
-      })
-      .where(eq(voterRewardPool.contestId, contestId))
-      .returning();
-    return updated;
   }
 
   async getVoterRewardPool(contestId: number): Promise<VoterRewardPool | undefined> {

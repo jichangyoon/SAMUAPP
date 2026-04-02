@@ -104,9 +104,7 @@ export interface IStorage {
   getGoodsRevenueDistributionByOrderId(orderId: number): Promise<GoodsRevenueDistribution | undefined>;
   deleteGoodsRevenueDistribution(id: number): Promise<void>;
 
-  // Voter Reward Pool operations
-  getOrCreateVoterRewardPool(contestId: number, totalShares: number): Promise<VoterRewardPool>;
-  updateVoterRewardPool(contestId: number, depositAmount: number): Promise<VoterRewardPool>;
+  // Voter Reward Pool operations (read-only — legacy RPS contests)
   getVoterRewardPool(contestId: number): Promise<VoterRewardPool | undefined>;
 
   // Voter Claim operations
@@ -462,8 +460,6 @@ export class MemStorage implements IStorage {
   async getGoodsRevenueDistributions(_contestId?: number): Promise<GoodsRevenueDistribution[]> { return []; }
   async getGoodsRevenueDistributionByOrderId(_orderId: number): Promise<GoodsRevenueDistribution | undefined> { return undefined; }
   async deleteGoodsRevenueDistribution(_id: number): Promise<void> {}
-  async getOrCreateVoterRewardPool(_contestId: number, _totalShares: number): Promise<VoterRewardPool> { throw new Error("Not implemented"); }
-  async updateVoterRewardPool(_contestId: number, _depositAmount: number): Promise<VoterRewardPool> { throw new Error("Not implemented"); }
   async getVoterRewardPool(_contestId: number): Promise<VoterRewardPool | undefined> { return undefined; }
   async getOrCreateVoterClaimRecord(_contestId: number, _voterWallet: string, _sharePercent: number): Promise<VoterClaimRecord> { throw new Error("Not implemented"); }
   async getClaimableAmount(_contestId: number, _voterWallet: string): Promise<{ claimable: number; totalClaimed: number; sharePercent: number }> { return { claimable: 0, totalClaimed: 0, sharePercent: 0 }; }
@@ -592,9 +588,7 @@ export class DatabaseStorage implements IStorage {
   getGoodsRevenueDistributionByOrderId(orderId: number) { return this.distStorage.getGoodsRevenueDistributionByOrderId(orderId); }
   deleteGoodsRevenueDistribution(id: number) { return this.distStorage.deleteGoodsRevenueDistribution(id); }
 
-  // Voter reward operations
-  getOrCreateVoterRewardPool(contestId: number, totalShares: number) { return this.voterStorage.getOrCreateVoterRewardPool(contestId, totalShares); }
-  updateVoterRewardPool(contestId: number, depositAmount: number) { return this.voterStorage.updateVoterRewardPool(contestId, depositAmount); }
+  // Voter reward operations (read-only — legacy RPS contests)
   getVoterRewardPool(contestId: number) { return this.voterStorage.getVoterRewardPool(contestId); }
   getOrCreateVoterClaimRecord(contestId: number, voterWallet: string, sharePercent: number) { return this.voterStorage.getOrCreateVoterClaimRecord(contestId, voterWallet, sharePercent); }
   getClaimableAmount(contestId: number, voterWallet: string) { return this.voterStorage.getClaimableAmount(contestId, voterWallet); }
