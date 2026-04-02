@@ -124,15 +124,16 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
     animatedThumbnailUrl?: string;
   }
 
-  const uploadFile = async (file: File): Promise<UploadFileResult> => {
+  const uploadFile = async (file: File, generateThumbnail: boolean): Promise<UploadFileResult> => {
     const formData = new FormData();
     formData.append('file', file);
 
+    const url = generateThumbnail ? '/api/uploads/upload' : '/api/uploads/upload?skipThumbnail=true';
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 120000);
 
     try {
-      const response = await fetch('/api/uploads/upload', {
+      const response = await fetch(url, {
         method: 'POST',
         body: formData,
         signal: controller.signal,
@@ -166,12 +167,22 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
     }
 
     setIsUploading(true);
-    setUploadProgress(10);
+    setUploadProgress(5);
     const uploadedUrls: string[] = [];
+    const results: UploadFileResult[] = [];
+
     try {
-      // 병렬 업로드 - 모든 파일을 동시에 업로드
-      const results = await Promise.all(selectedFiles.map(m => uploadFile(m.file)));
-      uploadedUrls.push(...results.map(r => r.fileUrl));
+      // 첫 번째 파일이 동영상일 때만 WebP 썸네일 생성 (Blinks는 첫 번째 파일만 표시)
+      const firstIsVideo = selectedFiles[0]?.file.type.startsWith('video/');
+      const total = selectedFiles.length;
+      // 파일 업로드: 0~75% 구간 순차 처리 (파일당 균등 분배)
+      for (let i = 0; i < total; i++) {
+        const generateThumbnail = i === 0 && firstIsVideo;
+        const result = await uploadFile(selectedFiles[i].file, generateThumbnail);
+        results.push(result);
+        uploadedUrls.push(result.fileUrl);
+        setUploadProgress(Math.round(5 + ((i + 1) / total) * 70));
+      }
       setUploadProgress(80);
 
       const primaryResult = results[0];

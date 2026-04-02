@@ -66,7 +66,8 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     }
     
     let animatedThumbnailUrl: string | null = null;
-    if (isVideoMimeType(req.file.mimetype)) {
+    const skipThumbnail = req.query.skipThumbnail === 'true';
+    if (!skipThumbnail && isVideoMimeType(req.file.mimetype)) {
       animatedThumbnailUrl = await generateAnimatedWebPThumbnail(req.file.buffer, req.file.originalname);
     }
 
