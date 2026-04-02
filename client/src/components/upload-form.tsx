@@ -175,13 +175,20 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       // 첫 번째 파일이 동영상일 때만 WebP 썸네일 생성 (Blinks는 첫 번째 파일만 표시)
       const firstIsVideo = selectedFiles[0]?.file.type.startsWith('video/');
       const total = selectedFiles.length;
-      // 파일 업로드: 0~75% 구간 순차 처리 (파일당 균등 분배)
-      for (let i = 0; i < total; i++) {
-        const generateThumbnail = i === 0 && firstIsVideo;
-        const result = await uploadFile(selectedFiles[i].file, generateThumbnail);
-        results.push(result);
-        uploadedUrls.push(result.fileUrl);
-        setUploadProgress(Math.round(5 + ((i + 1) / total) * 70));
+
+      // 첫 번째 파일 먼저 업로드 (WebP 결과 필요)
+      const firstResult = await uploadFile(selectedFiles[0].file, firstIsVideo);
+      results.push(firstResult);
+      uploadedUrls.push(firstResult.fileUrl);
+      setUploadProgress(Math.round(5 + (1 / total) * 70));
+
+      // 나머지 파일들 병렬 업로드
+      if (selectedFiles.length > 1) {
+        const restResults = await Promise.all(
+          selectedFiles.slice(1).map(m => uploadFile(m.file, false))
+        );
+        results.push(...restResults);
+        uploadedUrls.push(...restResults.map(r => r.fileUrl));
       }
       setUploadProgress(80);
 
