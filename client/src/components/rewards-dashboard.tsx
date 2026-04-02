@@ -334,6 +334,7 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
   const [selectedDetailOrder, setSelectedDetailOrder] = useState<any | null>(null);
   const [isClaiming, setIsClaiming] = useState(false);
   const [claimResult, setClaimResult] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [blockDrawerClose, setBlockDrawerClose] = useState(false);
 
   useEffect(() => {
     if (!claimResult) return;
@@ -436,6 +437,8 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
       setClaimResult({ type: "error", message: description });
     } finally {
       setIsClaiming(false);
+      setBlockDrawerClose(true);
+      setTimeout(() => setBlockDrawerClose(false), 1500);
     }
   }, [walletAddress, isClaiming, signTransaction, toast, queryClient]);
 
@@ -533,7 +536,7 @@ export function RewardsDashboard({ walletAddress }: { walletAddress?: string }) 
         />
       </div>
 
-      <Drawer open={!!openDrawer} onOpenChange={(open) => { if (!open) { setOpenDrawer(null); setClaimResult(null); } }}>
+      <Drawer open={!!openDrawer} onOpenChange={(open) => { if (!open && (isClaiming || blockDrawerClose)) return; if (!open) { setOpenDrawer(null); setClaimResult(null); } }}>
         <DrawerContent className="max-h-[80vh]">
           <DrawerHeader>
             <DrawerTitle>{active?.title}</DrawerTitle>
