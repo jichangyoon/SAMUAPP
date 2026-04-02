@@ -105,15 +105,8 @@ export interface IStorage {
   getGoodsRevenueDistributionByOrderId(orderId: number): Promise<GoodsRevenueDistribution | undefined>;
   deleteGoodsRevenueDistribution(id: number): Promise<void>;
 
-  // Voter Reward Pool operations (read-only — legacy RPS contests)
+  // Voter Reward Pool operations (read-only — legacy RPS admin view)
   getVoterRewardPool(contestId: number): Promise<VoterRewardPool | undefined>;
-
-  // Voter Claim operations
-  getOrCreateVoterClaimRecord(contestId: number, voterWallet: string, sharePercent: number): Promise<VoterClaimRecord>;
-  getClaimableAmount(contestId: number, voterWallet: string): Promise<{ claimable: number; totalClaimed: number; sharePercent: number }>;
-  getBatchClaimableAmounts(contestIds: number[], voterWallet: string): Promise<Map<number, { claimable: number; totalClaimed: number }>>;
-  claimVoterReward(contestId: number, voterWallet: string): Promise<{ claimedAmount: number }>;
-  getVoterClaimsByWallet(walletAddress: string): Promise<VoterClaimRecord[]>;
 
   createCreatorRewardDistributions(data: InsertCreatorRewardDistribution[]): Promise<CreatorRewardDistribution[]>;
   getCreatorRewardDistributionsByContestId(contestId: number): Promise<CreatorRewardDistribution[]>;
@@ -471,11 +464,6 @@ export class MemStorage implements IStorage {
   async getGoodsRevenueDistributionByOrderId(_orderId: number): Promise<GoodsRevenueDistribution | undefined> { return undefined; }
   async deleteGoodsRevenueDistribution(_id: number): Promise<void> {}
   async getVoterRewardPool(_contestId: number): Promise<VoterRewardPool | undefined> { return undefined; }
-  async getOrCreateVoterClaimRecord(_contestId: number, _voterWallet: string, _sharePercent: number): Promise<VoterClaimRecord> { throw new Error("Not implemented"); }
-  async getClaimableAmount(_contestId: number, _voterWallet: string): Promise<{ claimable: number; totalClaimed: number; sharePercent: number }> { return { claimable: 0, totalClaimed: 0, sharePercent: 0 }; }
-  async getBatchClaimableAmounts(_contestIds: number[], _voterWallet: string): Promise<Map<number, { claimable: number; totalClaimed: number }>> { return new Map(); }
-  async claimVoterReward(_contestId: number, _voterWallet: string): Promise<{ claimedAmount: number }> { throw new Error("Not implemented"); }
-  async getVoterClaimsByWallet(_walletAddress: string): Promise<VoterClaimRecord[]> { return []; }
   async createCreatorRewardDistributions(_data: InsertCreatorRewardDistribution[]): Promise<CreatorRewardDistribution[]> { return []; }
   async getCreatorRewardDistributionsByContestId(_contestId: number): Promise<CreatorRewardDistribution[]> { return []; }
   async getCreatorRewardDistributionsByWallet(_walletAddress: string): Promise<CreatorRewardDistribution[]> { return []; }
@@ -599,13 +587,8 @@ export class DatabaseStorage implements IStorage {
   getGoodsRevenueDistributionByOrderId(orderId: number) { return this.distStorage.getGoodsRevenueDistributionByOrderId(orderId); }
   deleteGoodsRevenueDistribution(id: number) { return this.distStorage.deleteGoodsRevenueDistribution(id); }
 
-  // Voter reward operations (read-only — legacy RPS contests)
+  // Voter reward operations (legacy RPS admin view)
   getVoterRewardPool(contestId: number) { return this.voterStorage.getVoterRewardPool(contestId); }
-  getOrCreateVoterClaimRecord(contestId: number, voterWallet: string, sharePercent: number) { return this.voterStorage.getOrCreateVoterClaimRecord(contestId, voterWallet, sharePercent); }
-  getClaimableAmount(contestId: number, voterWallet: string) { return this.voterStorage.getClaimableAmount(contestId, voterWallet); }
-  getBatchClaimableAmounts(contestIds: number[], voterWallet: string) { return this.voterStorage.getBatchClaimableAmounts(contestIds, voterWallet); }
-  claimVoterReward(contestId: number, voterWallet: string) { return this.voterStorage.claimVoterReward(contestId, voterWallet); }
-  getVoterClaimsByWallet(walletAddress: string) { return this.voterStorage.getVoterClaimsByWallet(walletAddress); }
   createCreatorRewardDistributions(data: InsertCreatorRewardDistribution[]) { return this.voterStorage.createCreatorRewardDistributions(data); }
   getCreatorRewardDistributionsByDistributionId(distributionId: number) { return this.voterStorage.getCreatorRewardDistributionsByDistributionId(distributionId); }
   getCreatorRewardDistributionsByContestId(contestId: number) { return this.voterStorage.getCreatorRewardDistributionsByContestId(contestId); }

@@ -133,17 +133,9 @@ router.get("/summary", async (req, res) => {
 
       walletEarned.creatorEarned = creatorDists.reduce((s, d) => s + d.solAmount, 0);
 
-      // Voter earned: new direct allocation rows (all rows, claimed or not)
+      // Voter earned: direct allocation rows (all rows, claimed or not)
       const allVoterDistsForEarned = await storage.getAllVoterDistributionsByWallet(walletAddress);
-      let voterEarnedTotal = allVoterDistsForEarned.reduce((s, d) => s + d.solAmount, 0);
-
-      // Legacy RPS: always include for all voted contests (new rows and legacy are mutually exclusive per order)
-      if (userVotedContests.size > 0) {
-        const batchResults = await storage.getBatchClaimableAmounts(Array.from(userVotedContests), walletAddress);
-        for (const { claimable, totalClaimed } of batchResults.values()) {
-          voterEarnedTotal += claimable + totalClaimed;
-        }
-      }
+      const voterEarnedTotal = allVoterDistsForEarned.reduce((s, d) => s + d.solAmount, 0);
       walletEarned.voterEarned = voterEarnedTotal;
     }
 
@@ -175,19 +167,6 @@ router.get("/summary", async (req, res) => {
       for (const cid of voterDistContestIds) {
         const walletDists = allVoterDistsForWallet.filter(d => d.contestId === cid);
         if (walletDists.length > 0 && walletDists.every(d => d.claimedAt)) {
-          claimedContestIds.add(cid);
-        }
-      }
-
-      // Voter: legacy RPS — always include for all voted contests
-      // New rows and legacy RPS are mutually exclusive per order (distribute.ts does one or the other)
-      // so summing both is safe — no double-counting
-      const batchForClaimable = userVotedContests.size > 0
-        ? await storage.getBatchClaimableAmounts(Array.from(userVotedContests), walletAddress)
-        : new Map<number, { claimable: number; totalClaimed: number }>();
-      for (const [cid, { claimable, totalClaimed }] of batchForClaimable.entries()) {
-        actualClaimable += claimable;
-        if (claimable <= 0.000001 && totalClaimed > 0.000001 && !voterDistContestIds.has(cid)) {
           claimedContestIds.add(cid);
         }
       }
@@ -750,14 +729,10 @@ router.get("/prepare-claim", async (req, res) => {
         // ── 온체인 record 없는 경우: Creator + Voter 합산해서 단일 TX ──
         const creatorSol = creatorByContest.get(contestId) ?? 0;
 
-        // Voter: new direct allocation rows + legacy RPS (mutually exclusive per order, safe to sum both)
+        // Voter: direct allocation rows
         const contestVoterDists = allUnclaimedVoterDists.filter(d => d.contestId === contestId);
         const voterDistributionIds: number[] = contestVoterDists.map(d => d.id);
-        let voterSol = contestVoterDists.reduce((s, d) => s + d.solAmount, 0);
-
-        // Always also check legacy RPS — it may contain amounts from older orders in same contest
-        const { claimable: legacyVoterSol } = await storage.getClaimableAmount(contestId, walletAddress);
-        voterSol += legacyVoterSol;
+        const voterSol = contestVoterDists.reduce((s, d) => s + d.solAmount, 0);
 
         const totalSol = creatorSol + voterSol;
         if (totalSol <= 0.000001) continue;
@@ -854,15 +829,6 @@ router.post("/confirm-claim", async (req, res) => {
             if (validIds.length > 0) {
               await storage.markVoterDistributionsClaimed(validIds, txSignature);
               voterClaimed = true;
-            }
-          }
-          // Always also attempt legacy RPS claim (no-op if nothing to claim)
-          try {
-            await storage.claimVoterReward(contestId, walletAddress);
-            voterClaimed = true;
-          } catch (legacyErr: any) {
-            if (!legacyErr?.message?.includes("No rewards to claim") && !legacyErr?.message?.includes("No reward pool found")) {
-              logger.warn(`[confirm-claim] legacy voter DB update failed contest=${contestId}:`, legacyErr?.message);
             }
           }
         }
