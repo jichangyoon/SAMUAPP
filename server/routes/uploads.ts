@@ -3,6 +3,7 @@ import multer from "multer";
 import { uploadToR2, deleteFromR2, extractKeyFromUrl } from "../r2-storage";
 import { logger } from "../utils/logger";
 import { requireAdminMiddleware } from "../utils/admin-auth";
+import { generateAnimatedWebPThumbnail, isVideoMimeType } from "../utils/video-thumbnail";
 
 const router = Router();
 
@@ -64,13 +65,22 @@ router.post("/upload", upload.single("file"), async (req, res) => {
       });
     }
     
-    const response = {
+    let animatedThumbnailUrl: string | null = null;
+    if (isVideoMimeType(req.file.mimetype)) {
+      animatedThumbnailUrl = await generateAnimatedWebPThumbnail(req.file.buffer, req.file.originalname);
+    }
+
+    const response: Record<string, unknown> = {
       success: true,
       fileUrl: uploadResult.url!,
       key: uploadResult.key!,
       originalName: req.file.originalname,
-      size: req.file.size
+      size: req.file.size,
     };
+
+    if (animatedThumbnailUrl) {
+      response.animatedThumbnailUrl = animatedThumbnailUrl;
+    }
 
     res.json(response);
   } catch (error: any) {
@@ -268,6 +278,71 @@ router.post('/profile', upload.single('image'), async (req, res) => {
       success: false,
       error: 'Internal server error during profile upload'
     });
+  }
+});
+
+// Thumbnail test/regeneration endpoint — admin only
+router.post("/thumbnail-test/:memeId", requireAdminMiddleware, async (req, res) => {
+  try {
+    const memeId = parseInt(req.params.memeId);
+    if (isNaN(memeId)) {
+      return res.status(400).json({ error: "Invalid meme ID" });
+    }
+
+    const { storage } = await import("../storage");
+    const meme = await storage.getMemeById(memeId);
+    if (!meme) {
+      return res.status(404).json({ error: "Meme not found" });
+    }
+
+    const videoUrl = meme.imageUrl;
+    const isVideo = /\.(mp4|mov|avi|webm)$/i.test(videoUrl);
+
+    if (!isVideo) {
+      return res.json({
+        memeId,
+        message: "Not a video meme — using imageUrl as-is",
+        animatedThumbnailUrl: null,
+        imageUrl: meme.imageUrl,
+        fallback: true,
+      });
+    }
+
+    // Fetch video from R2 and re-generate thumbnail
+    const videoResponse = await fetch(videoUrl);
+    if (!videoResponse.ok) {
+      return res.status(502).json({ error: "Failed to fetch video from storage", videoUrl });
+    }
+
+    const arrayBuffer = await videoResponse.arrayBuffer();
+    const videoBuffer = Buffer.from(arrayBuffer);
+
+    const ext = videoUrl.split("?")[0].split(".").pop() || "mp4";
+    const thumbnailUrl = await generateAnimatedWebPThumbnail(videoBuffer, `video.${ext}`);
+
+    if (!thumbnailUrl) {
+      return res.json({
+        memeId,
+        message: "Thumbnail generation failed — fallback to imageUrl",
+        animatedThumbnailUrl: null,
+        imageUrl: meme.imageUrl,
+        fallback: true,
+      });
+    }
+
+    // Update the meme record with new thumbnail URL
+    await storage.updateMemeAnimatedThumbnail(memeId, thumbnailUrl);
+
+    return res.json({
+      memeId,
+      message: "Thumbnail generated and saved",
+      animatedThumbnailUrl: thumbnailUrl,
+      imageUrl: meme.imageUrl,
+      fallback: false,
+    });
+  } catch (error: any) {
+    logger.error("[ThumbnailTest] Error:", error);
+    res.status(500).json({ error: "Thumbnail test failed", details: error?.message });
   }
 });
 

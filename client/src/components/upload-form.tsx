@@ -119,12 +119,17 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
     });
   };
 
-  const uploadFile = async (file: File): Promise<string> => {
+  interface UploadFileResult {
+    fileUrl: string;
+    animatedThumbnailUrl?: string;
+  }
+
+  const uploadFile = async (file: File): Promise<UploadFileResult> => {
     const formData = new FormData();
     formData.append('file', file);
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
 
     try {
       const response = await fetch('/api/uploads/upload', {
@@ -139,7 +144,10 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       }
       const result = await response.json();
       if (!result.fileUrl) throw new Error('No file URL received');
-      return result.fileUrl;
+      return {
+        fileUrl: result.fileUrl,
+        animatedThumbnailUrl: result.animatedThumbnailUrl,
+      };
     } catch (error: any) {
       clearTimeout(timeoutId);
       if (error.name === 'AbortError') throw new Error('Upload timeout');
@@ -163,10 +171,11 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
     try {
       // 병렬 업로드 - 모든 파일을 동시에 업로드
       const results = await Promise.all(selectedFiles.map(m => uploadFile(m.file)));
-      uploadedUrls.push(...results);
+      uploadedUrls.push(...results.map(r => r.fileUrl));
       setUploadProgress(80);
 
-      const memeData = {
+      const primaryResult = results[0];
+      const memeData: Record<string, unknown> = {
         title: values.title,
         description: values.description || "",
         imageUrl: uploadedUrls[0],
@@ -175,6 +184,10 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
         authorUsername: user?.email?.address || walletAddress.slice(0, 8) + '...' + walletAddress.slice(-4),
         contestId: currentContest?.id || null,
       };
+
+      if (primaryResult.animatedThumbnailUrl) {
+        memeData.animatedThumbnailUrl = primaryResult.animatedThumbnailUrl;
+      }
 
       const endpoint = partnerId ? `/api/partners/${partnerId}/memes` : "/api/memes";
       const response = await fetch(endpoint, {
@@ -207,7 +220,6 @@ export function UploadForm({ onSuccess, onClose, partnerId }: UploadFormProps) {
       setSelectedFiles([]);
       onSuccess();
     } catch (error: any) {
-      // R2에 이미 업로드된 파일 정리 (고아 파일 방지)
       if (uploadedUrls.length > 0) {
         uploadedUrls.forEach(url => {
           fetch('/api/uploads/delete', {

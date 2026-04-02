@@ -75,9 +75,10 @@ router.get("/vote/:memeId", async (req, res) => {
 
     const protocol = req.get("x-forwarded-proto") || req.protocol;
     const baseUrl = `${protocol}://${req.get("host")}`;
-    const iconUrl = meme.imageUrl.startsWith("http") 
-      ? meme.imageUrl 
-      : `${baseUrl}${meme.imageUrl}`;
+    const rawIconUrl = meme.animatedThumbnailUrl || meme.imageUrl;
+    const iconUrl = rawIconUrl.startsWith("http")
+      ? rawIconUrl
+      : `${baseUrl}${rawIconUrl}`;
 
     // Contest has ended — meme gets a non-null contestId after archiving
     if (meme.contestId !== null) {

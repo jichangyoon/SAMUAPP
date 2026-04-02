@@ -24,6 +24,7 @@ export const memes = pgTable("memes", {
   description: text("description"),
   imageUrl: text("image_url").notNull(),
   additionalImages: text("additional_images").array().default([]),
+  animatedThumbnailUrl: text("animated_thumbnail_url"),
   authorWallet: text("author_wallet").notNull(),
   authorUsername: text("author_username").notNull(),
   authorAvatarUrl: text("author_avatar_url"),

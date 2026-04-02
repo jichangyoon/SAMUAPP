@@ -156,5 +156,13 @@ export class MemeStorage {
       .where(eq(memes.id, memeId));
   }
 
+  async updateMemeAnimatedThumbnail(memeId: number, animatedThumbnailUrl: string): Promise<void> {
+    if (!this.db) throw new Error("Database not available");
+    await this.db
+      .update(memes)
+      .set({ animatedThumbnailUrl })
+      .where(eq(memes.id, memeId));
+  }
+
 
 }

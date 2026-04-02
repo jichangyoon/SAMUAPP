@@ -32,6 +32,7 @@ export interface IStorage {
   getMemeById(id: number): Promise<Meme | undefined>;
   getMemesByContestId(contestId: number): Promise<Meme[]>;
   deleteMeme(id: number): Promise<void>;
+  updateMemeAnimatedThumbnail(memeId: number, animatedThumbnailUrl: string): Promise<void>;
   
   // Vote operations
   createVote(vote: InsertVote): Promise<Vote>;
@@ -165,6 +166,7 @@ export class MemStorage implements IStorage {
       title: insertMeme.title,
       description: insertMeme.description || null,
       imageUrl: insertMeme.imageUrl,
+      animatedThumbnailUrl: insertMeme.animatedThumbnailUrl ?? null,
       authorWallet: insertMeme.authorWallet,
       authorUsername: insertMeme.authorUsername,
       authorAvatarUrl: insertMeme.authorAvatarUrl ?? null,
@@ -174,6 +176,13 @@ export class MemStorage implements IStorage {
     };
     this.memes.set(id, meme);
     return meme;
+  }
+
+  async updateMemeAnimatedThumbnail(memeId: number, animatedThumbnailUrl: string): Promise<void> {
+    const meme = this.memes.get(memeId);
+    if (meme) {
+      this.memes.set(memeId, { ...meme, animatedThumbnailUrl });
+    }
   }
 
   async getMemes(): Promise<Meme[]> {
@@ -348,6 +357,7 @@ export class MemStorage implements IStorage {
       title: insertMeme.title,
       description: insertMeme.description ?? null,
       imageUrl: insertMeme.imageUrl,
+      animatedThumbnailUrl: insertMeme.animatedThumbnailUrl ?? null,
       authorWallet: insertMeme.authorWallet,
       authorUsername: insertMeme.authorUsername,
       authorAvatarUrl: insertMeme.authorAvatarUrl ?? null,
@@ -519,6 +529,7 @@ export class DatabaseStorage implements IStorage {
   getMemeById(id: number) { return this.memeStorage.getMemeById(id); }
   getMemesByContestId(contestId: number) { return this.memeStorage.getMemesByContestId(contestId); }
   deleteMeme(id: number) { return this.memeStorage.deleteMeme(id); }
+  updateMemeAnimatedThumbnail(memeId: number, animatedThumbnailUrl: string) { return this.memeStorage.updateMemeAnimatedThumbnail(memeId, animatedThumbnailUrl); }
   getAllVotes() { return this.memeStorage.getAllVotes(); }
   createVote(vote: InsertVote) { return this.memeStorage.createVote(vote); }
   getVotesByMemeId(memeId: number) { return this.memeStorage.getVotesByMemeId(memeId); }
